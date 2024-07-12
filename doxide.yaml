@@ -1,0 +1,9 @@
+title: Palladium
+description: 
+files:
+  - "include/*.hpp"
+  - "include/pd/*.hpp"
+  - "include/pd/music/*.hpp"
+  - "include/*.h"
+  - "include/pd/*.h"
+  - "include/pd/music/*.h"
