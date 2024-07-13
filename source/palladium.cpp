@@ -308,7 +308,6 @@ Result Palladium::Init::Main(std::string app_name) {
   pdi_logger = LoggerBase::New();
   pdi_glogger = LoggerBase::New();
 
-  pdi_do_splash = (pd_flags & PDFlags_ShowSplash);
   pdi_enable_scene_system = (pd_flags & PDFlags_SceneSystem);
   pdi_enable_memtrack = (pd_flags & PDFlags_MemTrack);
 
@@ -378,7 +377,6 @@ Result Palladium::Init::Minimal(std::string app_name) {
   pdi_logger = LoggerBase::New();
   pdi_glogger = LoggerBase::New();
 
-  pdi_do_splash = (pd_flags & PDFlags_ShowSplash);
   pdi_enable_scene_system = (pd_flags & PDFlags_SceneSystem);
   pdi_enable_memtrack = (pd_flags & PDFlags_MemTrack);
 

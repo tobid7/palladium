@@ -16,7 +16,6 @@ enum PDFlags_ {
   PDFlags_None = 0,
   PDFlags_MemTrack = 1 << 0,
   PDFlags_SceneSystem = 1 << 1,
-  PDFlags_ShowSplash = 1 << 2,
   PDFlags_Default = PDFlags_SceneSystem,
 };
 

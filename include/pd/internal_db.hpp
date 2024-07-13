@@ -15,7 +15,6 @@
 #endif
 
 // Base
-extern bool pdi_do_splash;
 extern bool pdi_enable_scene_system;
 extern bool pdi_debugging;
 extern bool pdi_enable_memtrack;

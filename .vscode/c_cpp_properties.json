@@ -1,0 +1,18 @@
+{
+    "configurations": [
+        {
+            "name": "3DS | Windows",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "C:/devkitpro/libctru/include/**",
+                "C:/devkitpro/devkitARM/include/**",
+                "C:/devkitpro/devkitARM/arm-none-eabi/include/**",
+                "C:/devkitpro/portlibs/3ds/include/**",
+                "/opt/devkitpro/libctru/include/**",
+                "/opt/devkitpro/portlibs/**"
+                
+            ]
+        }
+    ],
+    "version": 4
+} 

@@ -79,7 +79,6 @@ touchPosition d7_touch;
 
 // Modern Global Api
 int pd_max_objects = C2D_DEFAULT_MAX_OBJECTS;
-bool pdi_do_splash = false;
 bool pdi_enable_scene_system = true;
 bool pdi_debugging = false;
 C3D_RenderTarget *pd_top;
