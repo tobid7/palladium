@@ -72,7 +72,7 @@ void Palladium::ThemeEditor::Draw() const {
         menu = 0;
       } else if (UI7::Button("Save")) {
         Palladium::AddOvl(std::make_unique<Ovl_Keyboard>(kbd_text, kbd_state,
-                                                        "<name>.theme"));
+                                                         "<name>.theme"));
       }
       for (auto& it : color_names) {
         UI7::ColorSelector(it.second, edit_theme->GetTableRef()[it.first]);
@@ -104,7 +104,7 @@ void Palladium::ThemeEditor::Draw() const {
             }
           } else {
             Palladium::PushMessage("ThemeEditor",
-                                  "Cannot Delete\nPalladium.theme!");
+                                   "Cannot Delete\nPalladium.theme!");
           }
         }
       }

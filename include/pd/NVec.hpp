@@ -36,6 +36,7 @@ struct NVec2 {
     // and swap it lol
     return !(*this == in);
   }
+
   // Internal Values
   float x;
   float y;

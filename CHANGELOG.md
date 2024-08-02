@@ -1,7 +1,14 @@
 # Palladium Changelog
 ## 1.0.0
-- Switch from C2D to LI7
+- Switch from C2D to Lithium (LI7)
 - For the Rest See RenderD7 Changelog below
+- swr -> Rubidium
+- LIFont (TTF Font Renderer)
+- Implement shbin as c++ array
+- Larger Mesaage Box
+- Add Texture Loader
+- Update Image/Error and other sytems to Lithium
+- Optimize Render2 for Lithium
 # RenderD7 Changelog
 ## 0.9.5
 - Remove Npi Intro and NVID Api

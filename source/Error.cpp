@@ -24,19 +24,20 @@ void Error(const std::string& msg) {
       hidScanInput();
       if (hidKeysDown() & KEY_START) break;
       C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
-      Palladium::ClearTextBufs();
-      C2D_TargetClear(pd_top, 0x00000000);
-      C2D_TargetClear(pd_bottom, 0x00000000);
+      C3D_RenderTargetClear(pd_top, C3D_CLEAR_ALL, 0x00000000, 0);
+      C3D_RenderTargetClear(pd_top_right, C3D_CLEAR_ALL, 0x00000000, 0);
+      C3D_RenderTargetClear(pd_bottom, C3D_CLEAR_ALL, 0x00000000, 0);
       Palladium::R2::OnScreen(R2Screen_Top);
       if (UI7::BeginMenu("Palladium - Error Manager", NVec2(),
                          UI7MenuFlags_TitleMid)) {
-        UI7::Label(msg, PDTextFlags_Wrap);
+        UI7::Label(msg);
         UI7::Label("Press Start to Exit!");
         UI7::EndMenu();
       }
       Palladium::R2::OnScreen(R2Screen_Bottom);
       UI7::Update();
       Palladium::R2::Process();
+      Palladium::LI7::Render(pd_top, pd_bottom);
       C3D_FrameEnd(0);
     }
     exit(0);

@@ -24,7 +24,7 @@ bool ___dir__predicate__(const Palladium::FileSystem::Entry &lhs,
 }
 
 std::string Palladium::FileSystem::GetParentPath(std::string path,
-                                                std::string mount_point) {
+                                                 std::string mount_point) {
   std::string tcl = path;
   if (path.substr(path.length() - 1, 1) != "/") {
     tcl += "/";

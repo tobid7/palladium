@@ -1,7 +1,8 @@
 #pragma once
 
+#include <3ds.h>  // Result
+
 #include <string>
-#include <3ds.h> // Result
 
 namespace Palladium {
 struct InstallerInfo {

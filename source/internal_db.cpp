@@ -96,8 +96,9 @@ Palladium::Net::Error pdi_soc_init() {
   Result ret = socInit((u32 *)pdi_soc_buf, 0x100000);
   if (R_FAILED(ret)) {
     free(pdi_soc_buf);
-    return ((static_cast<Palladium::Net::Error>(ret) << 32) |
-            static_cast<Palladium::Net::Error>(Palladium::Net::Error_CtrStatus));
+    return (
+        (static_cast<Palladium::Net::Error>(ret) << 32) |
+        static_cast<Palladium::Net::Error>(Palladium::Net::Error_CtrStatus));
   }
   return 0;
 }
@@ -172,7 +173,7 @@ class tcp_server {
 };
 
 #define stupid(x) &x, sizeof(x)
-#define pdi_reacttion(x)     \
+#define pdi_reacttion(x)      \
   {                           \
     int code = x;             \
     server.snd(stupid(code)); \

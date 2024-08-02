@@ -116,14 +116,13 @@ class DrawCmd {
     }
     Palladium::R2::OnScreen(screen ? R2Screen_Top : R2Screen_Bottom);
     if (type == DrawCmdType_Rect) {
-      Palladium::R2::AddRect(NVec2(rect.x, rect.y), NVec2(rect.z, rect.w),
-                              clr);
+      Palladium::R2::AddRect(NVec2(rect.x, rect.y), NVec2(rect.z, rect.w), clr);
     } else if (type == DrawCmdType_Triangle) {
-      Palladium::R2::AddTriangle(NVec2(rect.x, rect.y),
-                                  NVec2(rect.z, rect.w), add_coords, clr);
+      Palladium::R2::AddTriangle(NVec2(rect.x, rect.y), NVec2(rect.z, rect.w),
+                                 add_coords, clr);
     } else if (type == DrawCmdType_Text) {
       Palladium::R2::AddText(NVec2(rect.x, rect.y), text, clr, text_flags,
-                              text_box);
+                             text_box);
     } else if (type == DrawCmdType_Image) {
       Palladium::R2::AddImage(NVec2(rect.x, rect.y), img);
     } else if (type == DrawCmdType_Debug) {
@@ -136,17 +135,16 @@ class DrawCmd {
     if (stype == DrawCmdType_Rect) {
       Palladium::R2::DrawNextLined();
       Palladium::R2::AddTriangle(NVec2(rect.x, rect.y),
-                                  NVec2(rect.x + rect.z, rect.y),
-                                  NVec2(rect.x, rect.y + rect.w), 0xff0000ff);
+                                 NVec2(rect.x + rect.z, rect.y),
+                                 NVec2(rect.x, rect.y + rect.w), 0xff0000ff);
       Palladium::R2::DrawNextLined();
       Palladium::R2::AddTriangle(NVec2(rect.x + rect.z, rect.y + rect.w),
-                                  NVec2(rect.x + rect.z, rect.y),
-                                  NVec2(rect.x, rect.y + rect.w), 0xff0000ff);
+                                 NVec2(rect.x + rect.z, rect.y),
+                                 NVec2(rect.x, rect.y + rect.w), 0xff0000ff);
     } else if (stype == DrawCmdType_Triangle) {
       Palladium::R2::DrawNextLined();
-      Palladium::R2::AddTriangle(NVec2(rect.x, rect.y),
-                                  NVec2(rect.z, rect.w), add_coords,
-                                  0xff00ff00);
+      Palladium::R2::AddTriangle(NVec2(rect.x, rect.y), NVec2(rect.z, rect.w),
+                                 add_coords, 0xff00ff00);
     } else if (stype == DrawCmdType_Text) {
       auto szs = Palladium::R2::GetTextDimensions(text);
       if (text_flags & PDTextFlags_AlignRight) {
@@ -154,37 +152,37 @@ class DrawCmd {
       }
       Palladium::R2::DrawNextLined();
       Palladium::R2::AddTriangle(NVec2(rect.x, rect.y),
-                                  NVec2(rect.x + szs.x, rect.y),
-                                  NVec2(rect.x, rect.y + szs.y), 0xff00ffff);
+                                 NVec2(rect.x + szs.x, rect.y),
+                                 NVec2(rect.x, rect.y + szs.y), 0xff00ffff);
       Palladium::R2::DrawNextLined();
       Palladium::R2::AddTriangle(NVec2(rect.x + szs.x, rect.y + szs.y),
-                                  NVec2(rect.x + szs.x, rect.y),
-                                  NVec2(rect.x, rect.y + szs.y), 0xff00ffff);
+                                 NVec2(rect.x + szs.x, rect.y),
+                                 NVec2(rect.x, rect.y + szs.y), 0xff00ffff);
     } else if (stype == DrawCmdType_Image) {
       if (!img) return;
       rect.z = img->GetSize().x;
       rect.w = img->GetSize().y;
       Palladium::R2::DrawNextLined();
       Palladium::R2::AddTriangle(NVec2(rect.x, rect.y),
-                                  NVec2(rect.x + rect.z, rect.y),
-                                  NVec2(rect.x, rect.y + rect.w), 0xff0000ff);
+                                 NVec2(rect.x + rect.z, rect.y),
+                                 NVec2(rect.x, rect.y + rect.w), 0xff0000ff);
       Palladium::R2::DrawNextLined();
       Palladium::R2::AddTriangle(NVec2(rect.x + rect.z, rect.y + rect.w),
-                                  NVec2(rect.x + rect.z, rect.y),
-                                  NVec2(rect.x, rect.y + rect.w), 0xff0000ff);
+                                 NVec2(rect.x + rect.z, rect.y),
+                                 NVec2(rect.x, rect.y + rect.w), 0xff0000ff);
     }
   }
   PD_SMART_CTOR(DrawCmd)
 
-  NVec4 rect = NVec4();                // Position / Size
-  NVec2 add_coords = NVec2();          // Additional Coords
+  NVec4 rect = NVec4();                  // Position / Size
+  NVec2 add_coords = NVec2();            // Additional Coords
   unsigned int clr = 0;                  // Color
   std::string text = "";                 // Text
-  Palladium::Image::Ref img;              // Image
+  Palladium::Image::Ref img;             // Image
   DrawCmdType type = DrawCmdType_Skip;   // DrawCmd Type
   DrawCmdType stype = DrawCmdType_Skip;  // Second Type
-  PDTextFlags text_flags = 0;           // Flags for Text Rendering
-  NVec2 text_box = NVec2();            // Maximum text Box
+  PDTextFlags text_flags = 0;            // Flags for Text Rendering
+  NVec2 text_box = NVec2();              // Maximum text Box
   bool screen = false;                   // Defines Top or Bottom
 };
 
@@ -214,8 +212,7 @@ void UI7DrawList::AddRectangle(NVec2 pos, NVec2 szs, unsigned int clr) {
   AddCall(cmd);
 }
 
-void UI7DrawList::AddTriangle(NVec2 pos0, NVec2 pos1, NVec2 pos2,
-                              PDColor clr) {
+void UI7DrawList::AddTriangle(NVec2 pos0, NVec2 pos1, NVec2 pos2, PDColor clr) {
   auto cmd = DrawCmd::New();
   cmd->screen = Palladium::R2::GetCurrentScreen();
   cmd->rect.x = pos0.x;
@@ -316,9 +313,9 @@ void UI7DrawList::AddDebugCall(std::shared_ptr<DrawCmd> cmd) {
 struct UI7Menu {
   UI7Menu() {}
   UI7ID menuid;                    // menu ID
-  NVec2 cursor;                   // cursor
-  NVec2 cb;                       // backup cursor
-  NVec2 slc;                      // sameline cursor
+  NVec2 cursor;                    // cursor
+  NVec2 cb;                        // backup cursor
+  NVec2 slc;                       // sameline cursor
   float scrolling_offset = 0.f;    //  MenuScrolling Pos
   bool enable_scrolling = false;   // Menu Scrolling
   float scrolling_mod = 0.f;       // For Menu Scrolling effect
@@ -452,8 +449,8 @@ void UI7CtxEndMenu() {
                           (static_cast<float>(ui7_ctx->cm->scrolling_offset) /
                            static_cast<float>(ui7_ctx->cm->ms.y - 240.f)))));
       // Render Slider
-      ui7_ctx->cm->front->AddRectangle(
-          NVec2(sw - 12, tsp), NVec2(slider_w * 2, szs), PDColor_List0);
+      ui7_ctx->cm->front->AddRectangle(NVec2(sw - 12, tsp),
+                                       NVec2(slider_w * 2, szs), PDColor_List0);
       ui7_ctx->cm->front->AddRectangle(NVec2(sw - 10, slider_pos + 2),
                                        NVec2(slider_w, slider_rh), slider_clr);
     }
@@ -586,7 +583,7 @@ bool Button(const std::string &label, NVec2 size) {
   }
   ui7_ctx->cm->main->AddRectangle(pos, size, btn);
   pos = NVec2(pos.x + size.x * 0.5f - textdim.x * 0.5,
-               pos.y + size.y * 0.5f - textdim.y * 0.5);
+              pos.y + size.y * 0.5f - textdim.y * 0.5);
   ui7_ctx->cm->main->AddText(pos, label,
                              Palladium::ThemeActive()->AutoText(btn));
   return ret;
@@ -653,8 +650,7 @@ void Label(const std::string &label, PDTextFlags flags) {
 void Progressbar(float value) {
   if (!UI7CtxValidate()) return;
   NVec2 pos = GetCursorPos();
-  NVec2 size =
-      NVec2(Palladium::R2::GetCurrentScreenSize().x - (pos.x * 2), 20);
+  NVec2 size = NVec2(Palladium::R2::GetCurrentScreenSize().x - (pos.x * 2), 20);
   if (ui7_ctx->cm->show_scroolbar && ui7_ctx->cm->enable_scrolling)
     size.x -= 16;
   MoveCursor(size);
@@ -719,9 +715,8 @@ void BrowserList(const std::vector<std::string> &entrys, int &selection,
     ui7_ctx->cm->main->AddText(
         pos + NVec2(5, 15 * i), entrys[list_index],
         Palladium::ThemeActive()->AutoText(
-            selindex == (int)i
-                ? PDColor_Selector
-                : (i % 2 == 0 ? PDColor_List0 : PDColor_List1)),
+            selindex == (int)i ? PDColor_Selector
+                               : (i % 2 == 0 ? PDColor_List0 : PDColor_List1)),
         txtflags | PDTextFlags_Short, NVec2(size.x, 15));
   }
   Palladium::R2::SetTextSize(tmp_txt);
@@ -827,7 +822,7 @@ bool BeginMenu(const std::string &title, NVec2 size, UI7MenuFlags flags) {
         // Set modifier
         if (!InBox(np,
                    NVec2(Palladium::R2::GetCurrentScreenSize().x - 8 - 5,
-                          5 + ui7_ctx->cm->tbh),
+                         5 + ui7_ctx->cm->tbh),
                    NVec2(8, 240 - ui7_ctx->cm->tbh - 10))) {
           // Check if and do nothing if the scrolling ofset goes out of screen
           if (ui7_ctx->cm->scrolling_offset < ui7_ctx->cm->ms.y - 200 &&
@@ -874,7 +869,8 @@ bool BeginMenu(const std::string &title, NVec2 size, UI7MenuFlags flags) {
 
     ui7_ctx->cm->front->AddText(
         NVec2(5, 2), id.Title(),
-        Palladium::ThemeActive()->AutoText(PDColor_Header), txtflags);
+        Palladium::ThemeActive()->AutoText(PDColor_Header), txtflags,
+        NVec2(size.x, 0));
   }
 
   SetCursorPos(NVec2(5, ui7_ctx->cm->tbh + 5));
@@ -1043,8 +1039,7 @@ void ColorSelector(const std::string &label, unsigned int &color) {
     // Draw Color Name Shorted if needed
     ui7_ctx->cm->front->AddText(
         npos + NVec2(cbs.x + 7, 1), label,
-        Palladium::ThemeActive()->AutoText(PDColor_FrameBg),
-        PDTextFlags_Short);
+        Palladium::ThemeActive()->AutoText(PDColor_FrameBg), PDTextFlags_Short);
     // Add luminance text
     ui7_ctx->cm->front->AddText(
         npos + NVec2(2, cbs.y + 4), "lum: " + std::to_string(clr.luminance()),
@@ -1062,9 +1057,9 @@ void ColorSelector(const std::string &label, unsigned int &color) {
       ui7_ctx->cm->front->AddRectangle(
           npos + NVec2(2, cbs.y * 3 + 4),
           NVec2(50 * ((float)clr.m_r / 255.f), cbs.y), 0xff0000ff);
-      ui7_ctx->cm->front->AddText(
-          npos + NVec2(2, cbs.y * 3 + 4), "R: " + std::to_string(clr.m_r),
-          PDColor_Text, PDTextFlags_AlignMid, NVec2(50, 0));
+      ui7_ctx->cm->front->AddText(npos + NVec2(2, cbs.y * 3 + 4),
+                                  "R: " + std::to_string(clr.m_r), PDColor_Text,
+                                  PDTextFlags_AlignMid, NVec2(50, 0));
     }
     // Green
     {
@@ -1074,9 +1069,9 @@ void ColorSelector(const std::string &label, unsigned int &color) {
       ui7_ctx->cm->front->AddRectangle(
           npos + NVec2(54, cbs.y * 3 + 4),
           NVec2(50 * ((float)clr.m_g / 255.f), cbs.y), 0xff00ff00);
-      ui7_ctx->cm->front->AddText(
-          npos + NVec2(54, cbs.y * 3 + 4), "G: " + std::to_string(clr.m_g),
-          PDColor_Text, PDTextFlags_AlignMid, NVec2(50, 0));
+      ui7_ctx->cm->front->AddText(npos + NVec2(54, cbs.y * 3 + 4),
+                                  "G: " + std::to_string(clr.m_g), PDColor_Text,
+                                  PDTextFlags_AlignMid, NVec2(50, 0));
     }
     // Blue
     {
@@ -1086,9 +1081,9 @@ void ColorSelector(const std::string &label, unsigned int &color) {
       ui7_ctx->cm->front->AddRectangle(
           npos + NVec2(2, cbs.y * 4 + 4),
           NVec2(50 * ((float)clr.m_b / 255.f), cbs.y), 0xffff0000);
-      ui7_ctx->cm->front->AddText(
-          npos + NVec2(2, cbs.y * 4 + 4), "B: " + std::to_string(clr.m_b),
-          PDColor_Text, PDTextFlags_AlignMid, NVec2(50, 0));
+      ui7_ctx->cm->front->AddText(npos + NVec2(2, cbs.y * 4 + 4),
+                                  "B: " + std::to_string(clr.m_b), PDColor_Text,
+                                  PDTextFlags_AlignMid, NVec2(50, 0));
     }
     // Alpha
     {
@@ -1098,15 +1093,14 @@ void ColorSelector(const std::string &label, unsigned int &color) {
       ui7_ctx->cm->front->AddRectangle(
           npos + NVec2(54, cbs.y * 4 + 4),
           NVec2(50 * ((float)clr.m_a / 255.f), cbs.y), 0xffffffff);
-      ui7_ctx->cm->front->AddText(
-          npos + NVec2(54, cbs.y * 4 + 4), "A: " + std::to_string(clr.m_a),
-          PDColor_Text, PDTextFlags_AlignMid, NVec2(50, 0));
+      ui7_ctx->cm->front->AddText(npos + NVec2(54, cbs.y * 4 + 4),
+                                  "A: " + std::to_string(clr.m_a), PDColor_Text,
+                                  PDTextFlags_AlignMid, NVec2(50, 0));
     }
   }
 
   ui7_ctx->cm->main->AddRectangle(pos, cbs, outline);
-  ui7_ctx->cm->main->AddRectangle(pos + NVec2(2, 2), cbs - NVec2(4, 4),
-                                  color);
+  ui7_ctx->cm->main->AddRectangle(pos + NVec2(2, 2), cbs - NVec2(4, 4), color);
   ui7_ctx->cm->main->AddText(
       pos + NVec2(cbs.x + 5, 1), label,
       Palladium::ThemeActive()->AutoText(PDColor_Background));

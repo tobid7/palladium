@@ -89,9 +89,7 @@ void RegKeyUp(uint32_t &key_up) { hid_handler.setKup(key_up); }
 
 void RegKeyRepeat(uint32_t &repeat) { hid_handler.setKrepeat(repeat); }
 
-void RegTouchCoords(NVec2 &touch_pos) {
-  hid_handler.setTouchCoords(touch_pos);
-}
+void RegTouchCoords(NVec2 &touch_pos) { hid_handler.setTouchCoords(touch_pos); }
 
 void RegAnalog1Movement(NVec2 &movement) {
   hid_handler.setJS1Movement(movement);

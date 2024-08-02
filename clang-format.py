@@ -19,9 +19,6 @@ def fmt_dir(path):
 print('Formatting...')
 fmt_dir('source')
 fmt_dir('include')
-fmt_dir('include/renderd7')
+fmt_dir('include/pd')
 
-# Format LE and TF as well
-fmt_dir('rd7tf/source')
-#fmt_dir('rd7le/source')
 print('Done')

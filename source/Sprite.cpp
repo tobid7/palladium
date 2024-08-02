@@ -45,7 +45,7 @@ void Palladium::Sprite::SetRotCenter(NVec2 percentage) {
 }
 
 void Palladium::Sprite::FromImage(Palladium::Image::Ref img) {
-  C2D_SpriteFromImage(&this->sprite, img->Get());
+  // C2D_SpriteFromImage(&this->sprite, img->Get());
 }
 
 void Palladium::Sprite::SetScale(float x, float y) {

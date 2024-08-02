@@ -278,9 +278,10 @@ void Ovl_Ftrace::Draw(void) const {
   for (auto const& it : Palladium::Ftrace::pd_traces)
     if (it.second.is_ovl && dt.size() < 10) dt.push_back(it.second);
   for (size_t i = 0; i < (dt.size() < 10 ? dt.size() : 10); i++) {
-    R2::AddText(NVec2(5, 30 + i * 15), dt[i].func_name, PDColor_Text);
-    R2::AddText(NVec2(295, 30 + i * 15), Palladium::MsTimeFmt(dt[i].time_of),
-                  PDColor_Text);
+    std::string text = dt[i].func_name + ": " + Palladium::MsTimeFmt(dt[i].time_of);
+    auto dim = R2::GetTextDimensions(text);
+    R2::AddRect(NVec2(5, 30+i*dim.y), dim, PDColor_TextDisabled);
+    R2::AddText(NVec2(5, 30 + i * dim.y), text, PDColor_Text2);
   }
   R2::SetTextSize(tmp_txt);
 }
@@ -302,8 +303,7 @@ void Ovl_Metrik::Draw(void) const {
   float tmp_txt = R2::GetTextSize();
   R2::DefaultTextSize();
   R2::OnScreen(i_screen[0] ? R2Screen_Bottom : R2Screen_Top);
-  std::string info =
-      "Palladium " + std::string(PDVSTRING) + " Debug Overlay";
+  std::string info = "Palladium " + std::string(PDVSTRING) + " Debug Overlay";
   float dim_y = R2::GetTextDimensions(info).y;
   float infoy = 240 - dim_y;
   mt_fps = "FPS: " + Palladium::GetFramerate();
@@ -320,55 +320,56 @@ void Ovl_Metrik::Draw(void) const {
       "CMD: " + std::to_string(C3D_GetCmdBufUsage() * 100.0f).substr(0, 4) +
       "%";
   mt_lfr = "Linear: " + Palladium::FormatBytes(linearSpaceFree());
-  mt_tbs =
-      "TextBuf: " + std::to_string(C2D_TextBufGetNumGlyphs(pdi_text_buffer)) +
-      "/4096";
   if (pdi_enable_memtrack)
     mt_mem = "Mem: " + Palladium::FormatBytes(Palladium::Memory::GetCurrent()) +
              " | " +
              Palladium::FormatBytes(Palladium::Memory::GetTotalAllocated()) +
              " | " + Palladium::FormatBytes(Palladium::Memory::GetTotalFreed());
+  mt_vtx = "Vertices: " + std::to_string(LI7::Vertices());
+  mt_dmc = "DrawCmds: " + std::to_string(LI7::DarwCommands());
+  mt_drc = "DrawCalls: " + std::to_string(LI7::Drawcalls());
   R2::AddRect(NVec2(0, 0), R2::GetTextDimensions(mt_fps),
-                (unsigned int)i_mt_color[0]);
+              (unsigned int)i_mt_color[0]);
   R2::AddRect(NVec2(0, 50), R2::GetTextDimensions(mt_cpu),
-                (unsigned int)i_mt_color[0]);
+              (unsigned int)i_mt_color[0]);
   R2::AddRect(NVec2(0, 50 + dim_y * 1), R2::GetTextDimensions(mt_gpu),
-                (unsigned int)i_mt_color[0]);
+              (unsigned int)i_mt_color[0]);
   R2::AddRect(NVec2(0, 50 + dim_y * 2), R2::GetTextDimensions(mt_cmd),
-                (unsigned int)i_mt_color[0]);
+              (unsigned int)i_mt_color[0]);
   R2::AddRect(NVec2(0, 50 + dim_y * 3), R2::GetTextDimensions(mt_lfr),
-                (unsigned int)i_mt_color[0]);
-  R2::AddRect(NVec2(0, 50 + dim_y * 4), R2::GetTextDimensions(mt_tbs),
-                (unsigned int)i_mt_color[0]);
+              (unsigned int)i_mt_color[0]);
+  R2::AddRect(NVec2(0, 50 + dim_y * 4), R2::GetTextDimensions(mt_vtx),
+              (unsigned int)i_mt_color[0]);
+  R2::AddRect(NVec2(0, 50 + dim_y * 5), R2::GetTextDimensions(mt_dmc),
+              (unsigned int)i_mt_color[0]);
+  R2::AddRect(NVec2(0, 50 + dim_y * 6), R2::GetTextDimensions(mt_drc),
+              (unsigned int)i_mt_color[0]);
   if (pdi_enable_memtrack)
-    R2::AddRect(NVec2(0, 50 + dim_y * 5), R2::GetTextDimensions(mt_mem),
-                  (unsigned int)i_mt_color[0]);
-  R2::AddRect(NVec2(0, infoy), R2::GetTextDimensions(info),
+    R2::AddRect(NVec2(0, 50 + dim_y * 7), R2::GetTextDimensions(mt_mem),
                 (unsigned int)i_mt_color[0]);
+  R2::AddRect(NVec2(0, infoy), R2::GetTextDimensions(info),
+              (unsigned int)i_mt_color[0]);
   R2::AddText(NVec2(0, 0), mt_fps, (unsigned int)i_txt_color[0]);
   R2::AddText(NVec2(0, 50), mt_cpu, (unsigned int)i_txt_color[0]);
-  R2::AddText(NVec2(0, 50 + dim_y * 1), mt_gpu,
-                (unsigned int)i_txt_color[0]);
-  R2::AddText(NVec2(0, 50 + dim_y * 2), mt_cmd,
-                (unsigned int)i_txt_color[0]);
-  R2::AddText(NVec2(0, 50 + dim_y * 3), mt_lfr,
-                (unsigned int)i_txt_color[0]);
-  R2::AddText(NVec2(0, 50 + dim_y * 4), mt_tbs,
-                (unsigned int)i_txt_color[0]);
+  R2::AddText(NVec2(0, 50 + dim_y * 1), mt_gpu, (unsigned int)i_txt_color[0]);
+  R2::AddText(NVec2(0, 50 + dim_y * 2), mt_cmd, (unsigned int)i_txt_color[0]);
+  R2::AddText(NVec2(0, 50 + dim_y * 3), mt_lfr, (unsigned int)i_txt_color[0]);
+  R2::AddText(NVec2(0, 50 + dim_y * 4), mt_vtx, (unsigned int)i_txt_color[0]);
+  R2::AddText(NVec2(0, 50 + dim_y * 5), mt_dmc, (unsigned int)i_txt_color[0]);
+  R2::AddText(NVec2(0, 50 + dim_y * 6), mt_drc, (unsigned int)i_txt_color[0]);
   if (pdi_enable_memtrack)
-    R2::AddText(NVec2(0, 50 + dim_y * 5), mt_mem,
-                  (unsigned int)i_txt_color[0]);
+    R2::AddText(NVec2(0, 50 + dim_y * 7), mt_mem, (unsigned int)i_txt_color[0]);
   R2::AddText(NVec2(0, infoy), info, (unsigned int)i_txt_color[0]);
 
   // Force Bottom (Debug Touchpos)
   R2::OnScreen(R2Screen_Bottom);
   if (Hid::IsEvent("touch", Hid::Held)) {
     R2::AddLine(NVec2(Hid::GetTouchPosition().x, 0),
-                  NVec2(Hid::GetTouchPosition().x, 240),
-                  Palladium::Color::Hex("#ff0000"));
+                NVec2(Hid::GetTouchPosition().x, 240),
+                Palladium::Color::Hex("#ff0000"));
     R2::AddLine(NVec2(0, Hid::GetTouchPosition().y),
-                  NVec2(320, Hid::GetTouchPosition().y),
-                  Palladium::Color::Hex("#ff0000"));
+                NVec2(320, Hid::GetTouchPosition().y),
+                Palladium::Color::Hex("#ff0000"));
   }
   R2::SetTextSize(tmp_txt);
 }
@@ -407,14 +408,14 @@ void Ovl_Keyboard::Draw(void) const {
     key_table = keyboard_layout_shift;
   R2::OnScreen(R2Screen_Top);
   R2::AddRect(NVec2(0, 0), NVec2(400, 240),
-                Palladium::Color::RGBA(PDColor_FrameBg).changeA(150).toRGBA());
+              Palladium::Color::RGBA(PDColor_FrameBg).changeA(150).toRGBA());
   R2::OnScreen(R2Screen_Bottom);
   R2::AddRect(NVec2(0, 0), NVec2(320, 112),
-                Palladium::Color::RGBA(PDColor_FrameBg).changeA(150).toRGBA());
+              Palladium::Color::RGBA(PDColor_FrameBg).changeA(150).toRGBA());
   R2::AddRect(NVec2(0, 112), NVec2(320, 128), PDColor_FrameBg);
   R2::AddRect(NVec2(0, 112), NVec2(320, 20), PDColor_Header);
   R2::AddText(NVec2(5, 114), "> " + *typed_text,
-                Palladium::ThemeActive()->AutoText(PDColor_Header));
+              Palladium::ThemeActive()->AutoText(PDColor_Header));
   for (auto const& it : key_table) {
     NVec2 szs = it.size;
     NVec2 pos = it.pos;
@@ -454,7 +455,7 @@ void Ovl_Keyboard::Draw(void) const {
       szs += NVec2(2, 2);
     }
     NVec2 txtpos = NVec2(pos.x + szs.x * 0.5 - txtdim.x * 0.5,
-                           pos.y + szs.y * 0.5 - txtdim.y * 0.5);
+                         pos.y + szs.y * 0.5 - txtdim.y * 0.5);
     R2::AddRect(pos, szs, btn);
     R2::AddText(txtpos, it.disp, Palladium::ThemeActive()->AutoText(btn));
   }

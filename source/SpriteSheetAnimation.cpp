@@ -1,9 +1,10 @@
 #include <pd/SpriteAnimation.hpp>
 
 void Palladium::SpriteSheetAnimation::Setup(Palladium::Sheet::Ref sheet,
-                                           size_t imagecount, size_t startimage,
-                                           float frame_begin,
-                                           float frame_finish) {
+                                            size_t imagecount,
+                                            size_t startimage,
+                                            float frame_begin,
+                                            float frame_finish) {
   D_totaltime = frame_begin;
 
   this->images = imagecount;

@@ -44,11 +44,11 @@ enum PDColor_ {
   PDColor_TextDisabled,  /// Text Disabled Color
   PDColor_Text2,         ///< And This want for Texts on Dark Backgrounds
   PDColor_Background,    ///< Your Bg Color
-  PDColor_Header,    ///< Header Color (if the header is dark text2 is used)
-  PDColor_Selector,  ///< Selector Color
-  PDColor_SelectorFade,       ///< Selector FadingTo Color
-  PDColor_List0,              ///< List Color1
-  PDColor_List1,              ///< List Color2
+  PDColor_Header,        ///< Header Color (if the header is dark text2 is used)
+  PDColor_Selector,      ///< Selector Color
+  PDColor_SelectorFade,  ///< Selector FadingTo Color
+  PDColor_List0,         ///< List Color1
+  PDColor_List1,         ///< List Color2
   PDColor_MessageBackground,  ///< Message Background
   PDColor_Button,             ///< Button Color
   PDColor_ButtonHovered,      ///< Button Color if Hovered

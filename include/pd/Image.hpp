@@ -1,9 +1,9 @@
 #pragma once
 
 #include <3ds.h>
-#include <citro2d.h>
 
 #include <pd/NVec.hpp>
+#include <pd/Texture.hpp>
 #include <pd/nimg.hpp>
 #include <pd/smart_ctor.hpp>
 #include <string>
@@ -12,7 +12,6 @@ namespace Palladium {
 class Image {
  public:
   Image() = default;
-  Image(C2D_Image img) { this->img = img; }
   Image(const std::string& path) { this->Load(path); }
   ~Image() = default;
   PD_SMART_CTOR(Image)
@@ -20,14 +19,17 @@ class Image {
   void From_NIMG(const nimg& image);
   void Delete();
 
-  C2D_Image Get();
-  C2D_Image& GetRef();
-  void Set(const C2D_Image& i);
+  Texture::Ref Get();
+  void Set(Texture::Ref i, NVec4 uvs = NVec4(-1, -1, -1, -1));
   NVec2 GetSize();
+  NVec4 GetUV() {
+    return (custom_uvs.x != -1) ? custom_uvs : img->GetUV();
+  }
   bool Loadet();
 
  private:
   bool ext = false;
-  C2D_Image img;
+  Texture::Ref img;
+  NVec4 custom_uvs = NVec4(-1, -1, -1, -1);
 };
 }  // namespace Palladium

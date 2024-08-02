@@ -8,18 +8,19 @@
 extern bool pdi_debugging;
 
 static std::vector<std::shared_ptr<Palladium::Message>> msg_lst;
-static int fade_outs = 200;  // Start of fadeout
-static int idles = 60;       // start of Idle
-static int anim_len = 300;   // Full Length of Animation
+static int fade_outs = 200;             // Start of fadeout
+static int idles = 60;                  // start of Idle
+static int anim_len = 300;              // Full Length of Animation
+static NVec2 msg_box = NVec2(170, 50);  // Message Box Size
 
 NVec2 MakePos(int frame, int entry) {
   float fol = anim_len - fade_outs;
   if (frame > fade_outs)
     return NVec2(5, 240 - ((entry + 1) * 55) - 5 +
-                         (float)((frame - fade_outs) / fol) * -20);
+                        (float)((frame - fade_outs) / fol) * -20);
   if (frame > idles) return NVec2(5, 240 - ((entry + 1) * 55) - 5);
   return NVec2(-150 + ((float)(frame / (float)idles) * 155),
-                240 - ((entry + 1) * 55) - 5);
+               240 - ((entry + 1) * 55) - 5);
 }
 
 namespace Palladium {
@@ -51,12 +52,12 @@ void ProcessMessages() {
                      .toRGBA();
       auto tc =
           Palladium::Color::RGBA(PDColor_Text2).changeA(new_alpha).toRGBA();
-      R2::AddRect(pos, NVec2(150, 50), bgc);
+      R2::AddRect(pos, msg_box, bgc);
       R2::AddText(pos + NVec2(5, 1), msg_lst[i]->title, tc);
       R2::AddText(pos + NVec2(5, 17), msg_lst[i]->message, tc);
       if (pdi_debugging)
-        R2::AddText(pos + NVec2(155, 1),
-                      std::to_string(msg_lst[i]->animationframe), tc);
+        R2::AddText(pos + NVec2(msg_box.x+5, 1),
+                    std::to_string(msg_lst[i]->animationframe), tc);
       // Why Frameadd? because Message uses int as frame and
       // It seems that lower 0.5 will be rounded to 0
       // Why not replace int with float ?

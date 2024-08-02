@@ -1,5 +1,4 @@
-#include <citro2d.h>
-
+#include <pd/LI7.hpp>
 #include <pd/Render2.hpp>
 #include <pd/internal_db.hpp>
 
@@ -40,15 +39,10 @@ float R2::GetTextSize() { return text_size; }
 R2Screen R2::GetCurrentScreen() { return current_screen; }
 
 NVec2 R2::GetTextDimensions(const std::string& text) {
-  C2D_TextBufClear(pdi_d2_dimbuf);
-  float w = 0, h = 0;
-  C2D_Text c2dtext;
-  C2D_TextFontParse(&c2dtext, font->Ptr(), pdi_d2_dimbuf, text.c_str());
-  C2D_TextGetDimensions(&c2dtext, R2::text_size, R2::text_size, &w, &h);
-  return NVec2(w, h);
+  return LI7::GetTextDimensions(text);
 }
 
-std::string R2::WrapText(const std ::string& in, int maxlen) {
+std::string R2::WrapText(const std::string& in, int maxlen) {
   std::string out;
   std::string line;
   int line_x = 0;
@@ -63,7 +57,7 @@ std::string R2::WrapText(const std ::string& in, int maxlen) {
     } else {
       out += line + '\n';
       line = temp + ' ';
-      line_x = dim.x;
+      line_x = R2::GetTextDimensions(line).x;
     }
   }
   out += line;
@@ -73,27 +67,26 @@ std::string R2::WrapText(const std ::string& in, int maxlen) {
 std::string R2::ShortText(const std::string& in, int maxlen) {
   auto textdim = R2::GetTextDimensions(in);
   if (textdim.x < (float)maxlen) return in;
-  std::string ft = "";
+  std::string ext = "";
+  std::string ph = "(...)"; // placeholder
   std::string worker = in;
-  if (in.find_last_of('.') != in.npos) {
-    ft = in.substr(in.find_last_of('.'));
-    worker = in.substr(0, in.find_last_of('.'));
+  std::string out;
+  size_t ext_pos = in.find_last_of('.');
+  if (ext_pos != in.npos) {
+    ext = in.substr(ext_pos);
+    worker = in.substr(0, ext_pos);
   }
 
-  maxlen -= R2::GetTextDimensions(ft).x - R2::GetTextDimensions("(...)").x;
-  float len_mod = (float)maxlen / textdim.x;
-  int pos = (in.length() * len_mod) / pd_draw2_tsm;
-  std::string out;
+  maxlen -= R2::GetTextDimensions(ext).x;
+  maxlen -= R2::GetTextDimensions(ph).x;
 
-  out = in.substr(0, pos);
-
-  for (size_t i = pos; i < worker.length(); i++) {
-    out += worker[i];
-    if (R2::GetTextDimensions(out + "(...)" + ft).x > (float)maxlen) {
-      out += "(...)";
-      out += ft;
+  for (auto& it : worker) {
+    if (R2::GetTextDimensions(out).x > (float)maxlen) {
+      out += ph;
+      out += ext;
       return out;
     }
+    out += it;
   }
   return out;  // Impossible to reach
 }
@@ -104,105 +97,59 @@ NVec2 R2::GetCurrentScreenSize() {
 
 // Main Processing of Draw Calls
 void R2::Process() {
+  Palladium::Ftrace::ScopedTrace st("Render2", "ProcessList");
   for (auto& it : R2::commands) {
     if (it->type <= 0 || it->type > 6) {
       // Skip
       continue;
     }
-    C2D_SceneBegin(it->Screen ? pd_top : pd_bottom);
+    LI7::OnScreen(!it->Screen);
     if (it->type == 1) {
+      LI7::UseTexture();
       // Rect
       if (it->lined) {
-        C2D_DrawLine(it->pos.x, it->pos.y, it->clr, it->pos.x + it->pszs.x,
-                     it->pos.y, it->clr, 1.f, 0.5f);
-        C2D_DrawLine(it->pos.x, it->pos.y, it->clr, it->pos.x,
-                     it->pos.y + it->pszs.y, it->clr, 1.f, 0.5f);
-        C2D_DrawLine(it->pos.x + it->pszs.x, it->pos.y, it->clr,
-                     it->pos.x + it->pszs.x, it->pos.y + it->pszs.y, it->clr,
-                     1.f, 0.5f);
-        C2D_DrawLine(it->pos.x, it->pos.y + it->pszs.y, it->clr,
-                     it->pos.x + it->pszs.x, it->pos.y + it->pszs.y, it->clr,
-                     1.f, 0.5f);
+        LI7::Line(it->pos, NVec2(it->pos.x + it->pszs.x, it->pos.y), it->clr,
+                  1.f);
+        LI7::Line(it->pos, NVec2(it->pos.x, it->pos.y + it->pszs.y), it->clr,
+                  1.f);
+        LI7::Line(NVec2(it->pos.x + it->pszs.x, it->pos.y),
+                  NVec2(it->pos.x + it->pszs.x, it->pos.y + it->pszs.y),
+                  it->clr, 1.f);
+        LI7::Line(NVec2(it->pos.x, it->pos.y + it->pszs.y),
+                  NVec2(it->pos.x + it->pszs.x, it->pos.y + it->pszs.y),
+                  it->clr, 1.f);
       } else {
-        C2D_DrawRectSolid(it->pos.x, it->pos.y, 0.5, it->pszs.x, it->pszs.y,
-                          it->clr);
+        LI7::ColorRect(it->pos, it->pszs, it->clr);
       }
     } else if (it->type == 2) {
+      LI7::UseTexture();
       // Triangle
       if (it->lined) {
-        C2D_DrawLine(it->pos.x, it->pos.y, it->clr, it->pszs.x, it->pszs.y,
-                     it->clr, 1, 0.5f);
-        C2D_DrawLine(it->pos.x, it->pos.y, it->clr, it->ap.x, it->ap.y, it->clr,
-                     1, 0.5f);
-        C2D_DrawLine(it->pszs.x, it->pszs.y, it->clr, it->ap.x, it->ap.y,
-                     it->clr, 1, 0.5f);
+        LI7::Line(it->pos, it->pszs, it->clr, 1);
+        LI7::Line(it->pos, it->ap, it->clr, 1);
+        LI7::Line(it->pszs, it->ap, it->clr, 1);
       } else {
-        C2D_DrawTriangle(it->pos.x, it->pos.y, it->clr, it->pszs.x, it->pszs.y,
-                         it->clr, it->ap.x, it->ap.y, it->clr, 0.5);
+        LI7::Triangle(it->pos, it->pszs, it->ap, it->clr);
       }
     } else if (it->type == 3) {
-      // Text
-      // little patch for a freeze
-      if (it->text.length() < 1) continue;
-      if (it->pszs.x == 0.0f) {
-        it->pszs.x = it->Screen == R2Screen_Top ? 400 : 320;
+      std::string txt = it->text;
+      if (it->flags & PDTextFlags_Short) {
+        txt = ShortText(txt, it->pszs.x - it->pos.x);
+      } else if(it->flags & PDTextFlags_Wrap) {
+        txt = WrapText(it->text, it->pszs.x-it->pos.x);
       }
-      if (it->pszs.y == 0.0f) {
-        it->pszs.y = 240;
-      }
-      std::string edit_text = it->text;
-      if (edit_text.substr(it->text.length() - 1) != "\n")
-        edit_text.append("\n");  // Add \n to end if not exist
-      int line = 0;
-
-      if (it->flags & PDTextFlags_Wrap) {
-        edit_text = WrapText(it->text, it->pszs.x - it->pos.x);
-      }
-
-      while (edit_text.find('\n') != edit_text.npos) {
-        std::string current_line = edit_text.substr(0, edit_text.find('\n'));
-        if (it->flags & PDTextFlags_Short)
-          current_line = R2::ShortText(current_line, it->pszs.x - it->pos.x);
-        NVec2 newpos = it->pos;
-        // Check Flags
-        NVec2 dim = R2::GetTextDimensions(current_line);
-        if (it->flags & PDTextFlags_AlignRight) newpos.x = newpos.x - dim.x;
-        if (it->flags & PDTextFlags_AlignMid)  // Offset by inpos
-          newpos.x = (it->pszs.x * 0.5) - (dim.x * 0.5) + it->pos.x;
-        if (it->flags & PDTextFlags_Scroll) {  // Scroll Text
-          // Look into Old Draw2 Code
-          // TODO: Create Code for this
-        }
-        if (pdi_debugging) {
-          R2::DrawNextLined();
-          R2::AddRect(newpos, dim, 0xff0000ff);
-        }
-        C2D_Text c2dtext;
-        C2D_TextFontParse(&c2dtext, font->Ptr(), pdi_text_buffer,
-                          current_line.c_str());
-        C2D_TextOptimize(&c2dtext);
-
-        if (it->flags & PDTextFlags_Shaddow)  // performance Killer xd
-          C2D_DrawText(&c2dtext, C2D_WithColor, newpos.x + 1 + (dim.y * line),
-                       newpos.y + 1, 0.5, R2::text_size, R2::text_size,
-                       Palladium::ThemeActive()->Get(PDColor_TextDisabled));
-
-        C2D_DrawText(&c2dtext, C2D_WithColor, newpos.x,
-                     newpos.y + (dim.y * line), 0.5, R2::text_size,
-                     R2::text_size, it->clr);
-        edit_text = edit_text.substr(edit_text.find('\n') + 1);
-        line++;
-      }
+      LI7::DrawText(it->pos, it->clr, txt, it->flags, it->pszs);
     } else if (it->type == 4) {
       if (it->img->Loadet()) {
-        C2D_DrawImageAt(it->img->Get(), it->pos.x, it->pos.y, 0.5f);
+        LI7::UseTexture(it->img->Get());
+        LI7::Rect(it->pos, it->img->Get()->GetSize(), it->img->GetUV());
       }
     } else if (it->type == 5) {
       // TODO: Move the Draw Func into this API
-      it->spr->Draw();
+      // it->spr->Draw();
     } else if (it->type == 6) {
-      C2D_DrawLine(it->pos.x, it->pos.y, it->clr, it->pszs.x, it->pszs.y,
-                   it->clr, it->ap.x, 0.5f);
+      LI7::UseTexture();
+      LI7::Line(it->pos, it->pszs, it->clr, it->ap.x);
     }
   }
   R2::commands.clear();

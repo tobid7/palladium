@@ -48,7 +48,9 @@ class Ovl_Metrik : public Palladium::Ovl {
   mutable std::string mt_gpu;
   mutable std::string mt_cmd;
   mutable std::string mt_lfr;
-  mutable std::string mt_tbs;
+  mutable std::string mt_vtx;
+  mutable std::string mt_drc;
+  mutable std::string mt_dmc;
   mutable std::string mt_mem;
 
   // Importand Adresses

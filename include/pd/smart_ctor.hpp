@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#define PD_SMART_CTOR(type)                                     \
+#define PD_SMART_CTOR(type)                                      \
   using Ref = std::shared_ptr<type>;                             \
   template <typename... args>                                    \
   static Ref New(args&&... cargs) {                              \

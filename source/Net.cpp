@@ -7,9 +7,9 @@
 
 #include <filesystem>
 #include <fstream>
-#include <regex>
 #include <pd/Net.hpp>
 #include <pd/internal_db.hpp>
+#include <regex>
 
 static Palladium::Net::Error pdi_check_wifi() {
   // if (pdi_is_citra) return 0;
@@ -18,14 +18,13 @@ static Palladium::Net::Error pdi_check_wifi() {
 }
 
 static size_t pdi_handle_data(char* ptr, size_t size, size_t nmemb,
-                               void* userdata) {
+                              void* userdata) {
   size_t ms = size * nmemb;
   ((std::string*)userdata)->append(ptr, ms);
   return ms;
 }
 
-static size_t pdi_handle_file(char* ptr, size_t size, size_t nmemb,
-                               void* out) {
+static size_t pdi_handle_file(char* ptr, size_t size, size_t nmemb, void* out) {
   size_t ms = size * nmemb;
   ((std::ofstream*)out)->write(reinterpret_cast<const char*>(ptr), ms);
   return ms;
@@ -43,18 +42,17 @@ struct pdi_net_dl {
 static pdi_net_dl pdi_net_dl_spec;
 
 static int pdi_handle_curl_progress(CURL* hnd, curl_off_t dltotal,
-                                     curl_off_t dlnow, curl_off_t ultotal,
-                                     curl_off_t ulnow) {
+                                    curl_off_t dlnow, curl_off_t ultotal,
+                                    curl_off_t ulnow) {
   pdi_net_dl_spec.total = dltotal;
   pdi_net_dl_spec.current = dlnow;
   return 0;
 }
 
 static void pdi_setup_curl_context(CURL* hnd, const std::string& url,
-                                    void* userptr, bool mem) {
+                                   void* userptr, bool mem) {
   std::string user_agent =
-      pdi_app_name + "/Palladium (Version: " + std::string(PDVSTRING) +
-      ")";
+      pdi_app_name + "/Palladium (Version: " + std::string(PDVSTRING) + ")";
 
   if (!mem) {
     curl_easy_setopt(hnd, CURLOPT_FAILONERROR, 1L);

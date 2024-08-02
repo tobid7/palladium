@@ -81,6 +81,7 @@ class RSettings : public Palladium::Scene {
     RFTRACE,    // FTRace Menu
     RUI7,       // UI7 Menu
     RLOGS,      // Logs
+    RFV,        // Font Viewer
   };
 
   /// @param shared_request Defines requests from Draw to Logic
@@ -89,7 +90,8 @@ class RSettings : public Palladium::Scene {
   /// editable by const functions
   mutable std::map<unsigned int, unsigned int> shared_request;
   /// @param m_state Current menu State (Default=MainMenu aka RSETTINGS)
-  Palladium::RSettings::RState m_state = Palladium::RSettings::RState::RSETTINGS;
+  Palladium::RSettings::RState m_state =
+      Palladium::RSettings::RState::RSETTINGS;
 
   /// @brief Position in FTrace Menu
   int ftrace_index = 0;

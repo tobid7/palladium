@@ -1,10 +1,10 @@
 #include <pd/Hid.hpp>  // Integate HidApi
+#include <pd/LI7.hpp>
 #include <pd/Message.hpp>
 #include <pd/Overlays.hpp>
 #include <pd/ThemeEditor.hpp>
 #include <pd/UI7.hpp>
 #include <pd/palladium.hpp>
-#include <pd/LI7.hpp>
 
 // Config 2
 #include <pd/external/json.hpp>
@@ -14,25 +14,20 @@
 #include <filesystem>
 #include <random>
 
+#define DISPLAY_TRANSFER_FLAGS                                              \
+  (GX_TRANSFER_FLIP_VERT(0) | GX_TRANSFER_OUT_TILED(0) |                    \
+   GX_TRANSFER_RAW_COPY(0) | GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGBA8) | \
+   GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB8) |                           \
+   GX_TRANSFER_SCALING(GX_TRANSFER_SCALE_NO))
+
 Palladium::LoggerBase::Ref pdi_glogger;
 extern Palladium::LoggerBase::Ref pdi_logger;
 
-static void pdi_ExitHook() {
-  C2D_TextBufDelete(pdi_text_buffer);
-  C2D_TextBufDelete(pdi_d2_dimbuf);
+void exit_romfs() {
   romfsExit();
 }
 
-std::vector<std::string> string_to_lines(std::string input_str) {
-  std::vector<std::string> lines;
-  std::stringstream ss(input_str);
-  std::string line;
-  while (std::getline(ss, line)) {
-    lines.push_back(line);
-  }
-  return lines;
-}
-
+// TODO: Better Fader
 void Npifade() {
   if (pdi_fadein) {
     if (pdi_fadealpha < 255) {
@@ -121,8 +116,7 @@ void pdi_init_input() {
 }
 
 void pdi_init_config() {
-  pdi_config_path = "sdmc:/Palladium/Apps/";
-  pdi_config_path += pdi_app_name;
+  pdi_config_path = Palladium::GetAppDirectory();
   std::filesystem::create_directories(pdi_config_path.c_str());
   std::filesystem::create_directories("sdmc:/Palladium/Reports");
   bool renew = false;
@@ -222,7 +216,8 @@ void Palladium::Scene::doDraw() {
 
 void Palladium::Scene::doLogic() {
   Ftrace::ScopedTrace st("pd-core", f2s(Scene::doLogic));
-  if (!Palladium::Scene::scenes.empty()) Palladium::Scene::scenes.top()->Logic();
+  if (!Palladium::Scene::scenes.empty())
+    Palladium::Scene::scenes.top()->Logic();
 }
 
 void Palladium::Scene::Load(std::unique_ptr<Scene> scene, bool fade) {
@@ -259,8 +254,8 @@ bool Palladium::MainLoop() {
   // Deltatime
   uint64_t currentTime = svcGetSystemTick();
   pdi_dtm = ((float)(currentTime / (float)TICKS_PER_MSEC) -
-              (float)(pdi_last_tm / (float)TICKS_PER_MSEC)) /
-             1000.f;
+             (float)(pdi_last_tm / (float)TICKS_PER_MSEC)) /
+            1000.f;
   pdi_time += pdi_dtm;
   pdi_last_tm = currentTime;
 
@@ -274,11 +269,12 @@ bool Palladium::MainLoop() {
   Hid::Update();
   pdi_hid_touch_pos = NVec2(d7_touch.px, d7_touch.py);
 
-  Palladium::ClearTextBufs();
+  // Palladium::ClearTextBufs();
   C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
 
-  C2D_TargetClear(pd_top, C2D_Color32(0, 0, 0, 0));
-  C2D_TargetClear(pd_bottom, C2D_Color32(0, 0, 0, 0));
+  C3D_RenderTargetClear(pd_top, C3D_CLEAR_ALL, 0x00000000, 0);
+  C3D_RenderTargetClear(pd_top_right, C3D_CLEAR_ALL, 0x00000000, 0);
+  C3D_RenderTargetClear(pd_bottom, C3D_CLEAR_ALL, 0x00000000, 0);
   frameloop();
   if (pdi_enable_scene_system) {
     Palladium::Scene::doDraw();
@@ -286,8 +282,6 @@ bool Palladium::MainLoop() {
   }
   return pdi_running;
 }
-
-void Palladium::ClearTextBufs(void) { C2D_TextBufClear(pdi_text_buffer); }
 
 void Palladium::Init::Graphics() {
   C3D_Init(C3D_DEFAULT_CMDBUF_SIZE);
@@ -348,16 +342,22 @@ Result Palladium::Init::Main(std::string app_name) {
 
   C3D_Init(C3D_DEFAULT_CMDBUF_SIZE);
   atexit(C3D_Fini);
-  C2D_Init((size_t)pd_max_objects);
-  atexit(C2D_Fini);
-  atexit(pdi_ExitHook);
-  C2D_Prepare();
-  pd_top = C2D_CreateScreenTarget(GFX_TOP, GFX_LEFT);
-  pd_top_right = C2D_CreateScreenTarget(GFX_TOP, GFX_RIGHT);
-  pd_bottom = C2D_CreateScreenTarget(GFX_BOTTOM, GFX_LEFT);
-  pdi_text_buffer = C2D_TextBufNew(4096);
-  pdi_d2_dimbuf = C2D_TextBufNew(4096);
-  pdi_base_font = C2D_FontLoadSystem(CFG_REGION_USA);
+
+  pd_top =
+      C3D_RenderTargetCreate(240, 400, GPU_RB_RGBA8, GPU_RB_DEPTH24_STENCIL8);
+  C3D_RenderTargetSetOutput(pd_top, GFX_TOP, GFX_LEFT, DISPLAY_TRANSFER_FLAGS);
+  pd_top_right =
+      C3D_RenderTargetCreate(240, 400, GPU_RB_RGBA8, GPU_RB_DEPTH24_STENCIL8);
+  C3D_RenderTargetSetOutput(pd_top_right, GFX_TOP, GFX_RIGHT,
+                            DISPLAY_TRANSFER_FLAGS);
+  pd_bottom =
+      C3D_RenderTargetCreate(240, 320, GPU_RB_RGBA8, GPU_RB_DEPTH24_STENCIL8);
+  C3D_RenderTargetSetOutput(pd_bottom, GFX_BOTTOM, GFX_LEFT,
+                            DISPLAY_TRANSFER_FLAGS);
+  LI7::Init();
+  atexit(LI7::Exit);
+  atexit(exit_romfs);
+  R2::Init();
   R2::Init();
 
   pdi_graphics_on = true;
@@ -408,16 +408,21 @@ Result Palladium::Init::Minimal(std::string app_name) {
   osSetSpeedupEnable(true);
   C3D_Init(C3D_DEFAULT_CMDBUF_SIZE);
   atexit(C3D_Fini);
-  C2D_Init((size_t)pd_max_objects);
-  atexit(C2D_Fini);
-  atexit(pdi_ExitHook);
-  C2D_Prepare();
-  pd_top = C2D_CreateScreenTarget(GFX_TOP, GFX_LEFT);
-  pd_top_right = C2D_CreateScreenTarget(GFX_TOP, GFX_RIGHT);
-  pd_bottom = C2D_CreateScreenTarget(GFX_BOTTOM, GFX_LEFT);
-  pdi_text_buffer = C2D_TextBufNew(4096);
-  pdi_d2_dimbuf = C2D_TextBufNew(4096);
-  pdi_base_font = C2D_FontLoadSystem(CFG_REGION_USA);
+
+  pd_top =
+      C3D_RenderTargetCreate(240, 400, GPU_RB_RGBA8, GPU_RB_DEPTH24_STENCIL8);
+  C3D_RenderTargetSetOutput(pd_top, GFX_TOP, GFX_LEFT, DISPLAY_TRANSFER_FLAGS);
+  pd_top_right =
+      C3D_RenderTargetCreate(240, 400, GPU_RB_RGBA8, GPU_RB_DEPTH24_STENCIL8);
+  C3D_RenderTargetSetOutput(pd_top_right, GFX_TOP, GFX_RIGHT,
+                            DISPLAY_TRANSFER_FLAGS);
+  pd_bottom =
+      C3D_RenderTargetCreate(240, 320, GPU_RB_RGBA8, GPU_RB_DEPTH24_STENCIL8);
+  C3D_RenderTargetSetOutput(pd_bottom, GFX_BOTTOM, GFX_LEFT,
+                            DISPLAY_TRANSFER_FLAGS);
+  LI7::Init();
+  atexit(LI7::Exit);
+  atexit(exit_romfs);
   R2::Init();
 
   pdi_graphics_on = true;
@@ -500,6 +505,7 @@ void Palladium::FrameEnd() {
   OvlHandler();
   Npifade();
   R2::Process();
+  LI7::Render(pd_top, pd_bottom);
   C3D_FrameEnd(0);
 }
 
@@ -530,6 +536,13 @@ std::vector<std::string> StrHelper(std::string input) {
   return test1;
 }
 
+void DisplayCodepoint(char cp) {
+  if(!UI7::InMenu()) return;
+  NVec2 szs = NVec2(297, 52);
+  NVec2 pos = UI7::GetCursorPos();
+  UI7::MoveCursor(szs);
+}
+
 void Palladium::RSettings::Draw(void) const {
   if (m_state == RSETTINGS) {
     Palladium::R2::OnScreen(R2Screen_Top);
@@ -548,12 +561,16 @@ void Palladium::RSettings::Draw(void) const {
       UI7::EndMenu();
     }
     Palladium::R2::OnScreen(R2Screen_Bottom);
-    if (UI7::BeginMenu("Press \uE001 to go back!")) {
+    if (UI7::BeginMenu("Press B to go back!")) {
       if (UI7::Button("FTrace")) {
         shared_request[0x00000001] = RFTRACE;
       }
       if (UI7::Button("UI7")) {
         shared_request[0x00000001] = RUI7;
+      }
+      UI7::SameLine();
+      if (UI7::Button("Font")) {
+        shared_request[0x00000001] = RFV;
       }
       if (UI7::Button("Overlays")) {
         shared_request[0x00000001] = ROVERLAYS;
@@ -589,7 +606,7 @@ void Palladium::RSettings::Draw(void) const {
       UI7::EndMenu();
     }
     Palladium::R2::OnScreen(R2Screen_Bottom);
-    if (UI7::BeginMenu("Press \uE001 to go back!")) {
+    if (UI7::BeginMenu("Press B to go back!")) {
       if (UI7::Button("Start Server")) {
         Palladium::IDB::Start();
       }
@@ -640,10 +657,10 @@ void Palladium::RSettings::Draw(void) const {
     // List Bg
     for (int i = 0; i < 12; i++) {
       if ((i % 2 == 0))
-        UI7::GetBackgroundList()->AddRectangle(NVec2(0, 40 + (i) * 15),
+        UI7::GetBackgroundList()->AddRectangle(NVec2(0, 40 + (i)*15),
                                                NVec2(400, 15), PDColor_List0);
       else
-        UI7::GetBackgroundList()->AddRectangle(NVec2(0, 40 + (i) * 15),
+        UI7::GetBackgroundList()->AddRectangle(NVec2(0, 40 + (i)*15),
                                                NVec2(400, 15), PDColor_List1);
     }
 
@@ -655,7 +672,7 @@ void Palladium::RSettings::Draw(void) const {
     std::string _fkey__ = "0";
 
     while (ix < (int)Palladium::Ftrace::pd_traces.size() &&
-           ix < start_index + 10 && it != Palladium::Ftrace::pd_traces.end()) {
+           ix < start_index + 12 && it != Palladium::Ftrace::pd_traces.end()) {
       if (ix == ftrace_index) {
         _fkey__ = it->first;
         UI7::GetBackgroundList()->AddRectangle(
@@ -665,9 +682,9 @@ void Palladium::RSettings::Draw(void) const {
       auto clr = ix == ftrace_index
                      ? PDColor_Selector
                      : (ix % 2 == 0 ? PDColor_List0 : PDColor_List1);
-      UI7::GetBackgroundList()->AddText(NVec2(5, 40 + (ix - start_index) * 15),
-                                        it->second.func_name,
-                                        Palladium::ThemeActive()->AutoText(clr));
+      UI7::GetBackgroundList()->AddText(
+          NVec2(5, 40 + (ix - start_index) * 15), it->second.func_name,
+          Palladium::ThemeActive()->AutoText(clr));
       UI7::GetBackgroundList()->AddText(
           NVec2(395, 40 + (ix - start_index) * 15),
           Palladium::MsTimeFmt(it->second.time_of),
@@ -679,7 +696,7 @@ void Palladium::RSettings::Draw(void) const {
     Palladium::Ftrace::End("PDft", "display_traces");
 
     Palladium::R2::OnScreen(R2Screen_Bottom);
-    if (UI7::BeginMenu("Press \uE001 to go back!")) {
+    if (UI7::BeginMenu("Press B to go back!")) {
       auto jt = Palladium::Ftrace::pd_traces.begin();
       std::advance(jt, ftrace_index);
       UI7::Label("Group: " + jt->second.group);
@@ -718,7 +735,7 @@ void Palladium::RSettings::Draw(void) const {
     }
 
     Palladium::R2::OnScreen(R2Screen_Bottom);
-    if (UI7::BeginMenu("Press \uE001 to go back!", NVec2(),
+    if (UI7::BeginMenu("Press B to go back!", NVec2(),
                        UI7MenuFlags_Scrolling)) {
       if (UI7::Button("Go back")) {
         /// Request a state switch to state RSETTINGS
@@ -740,7 +757,7 @@ void Palladium::RSettings::Draw(void) const {
     }
 
     Palladium::R2::OnScreen(R2Screen_Bottom);
-    if (UI7::BeginMenu("Press \uE001 to go back!")) {
+    if (UI7::BeginMenu("Press B to go back!")) {
       UI7::Label("Metrik:");
       UI7::Checkbox("Enable Overlay", pdi_metrikd);
       UI7::Checkbox("Bottom Screen", pdi_mt_screen);
@@ -763,9 +780,27 @@ void Palladium::RSettings::Draw(void) const {
     }
 
     Palladium::R2::OnScreen(R2Screen_Bottom);
-    if (UI7::BeginMenu("Press \uE001 to go back!", NVec2(),
+    if (UI7::BeginMenu("Press B to go back!", NVec2(),
                        UI7MenuFlags_Scrolling)) {
       for (auto &it : pdi_logger->Lines()) UI7::Label(it, PDTextFlags_Wrap);
+      UI7::EndMenu();
+    }
+  } else if (m_state == RFV) {
+    Palladium::R2::OnScreen(R2Screen_Top);
+    if (UI7::BeginMenu("Palladium -> Font Viewer")) {
+      UI7::SetCursorPos(NVec2(395, 2));
+      UI7::Label(PDVSTRING, PDTextFlags_AlignRight);
+      UI7::RestoreCursor();
+      UI7::Label("Font: "+LI7::GetFont()->GetName());
+      UI7::EndMenu();
+    }
+
+    Palladium::R2::OnScreen(R2Screen_Bottom);
+    if (UI7::BeginMenu("Press B to go back!", NVec2(),
+                       UI7MenuFlags_Scrolling)) {
+      for(int i = 0; i < 255; i++) {
+        DisplayCodepoint(i);
+      }
       UI7::EndMenu();
     }
   }
@@ -779,7 +814,7 @@ void Palladium::RSettings::Logic() {
     } else if (it.first == 0x00000002) {
       if (it.second) {
         std::fstream cfg_wrt(pdi_config_path + "/config.rc7", std::ios::out);
-        pdi_config["metrik-settings"]["enableoverlay"] = pdi_metrikd;
+        pdi_config["metrik-settings"]["show"] = pdi_metrikd;
         pdi_config["metrik-settings"]["Screen"] = pdi_mt_screen;
         pdi_config["internal_logger"]["nowritetxt"] = pdi_lggrf;
         cfg_wrt << pdi_config.dump(4);
@@ -808,9 +843,9 @@ void Palladium::RSettings::Logic() {
   stateftold = pdi_ftraced;
 
   if (m_state == RSETTINGS) {
-    if (d7_hDown & KEY_B) {
+    if (d7_hUp & KEY_B) {
       std::fstream cfg_wrt(pdi_config_path + "/config.rc7", std::ios::out);
-      pdi_config["metrik-settings"]["enableoverlay"] = pdi_metrikd;
+      pdi_config["metrik-settings"]["show"] = pdi_metrikd;
       pdi_config["metrik-settings"]["Screen"] = pdi_mt_screen;
       pdi_config["internal_logger"]["nowritetxt"] = pdi_lggrf;
       cfg_wrt << pdi_config.dump(4);
@@ -820,20 +855,20 @@ void Palladium::RSettings::Logic() {
       Palladium::Scene::Back();
     }
   }
-  if (m_state == RUI7) {
-    if (d7_hDown & KEY_B) {
+  if (m_state == RUI7 || m_state == RFV) {
+    if (d7_hUp & KEY_B) {
       m_state = RSETTINGS;
     }
   }
   if (m_state == ROVERLAYS) {
     mtovlstate = pdi_metrikd ? "true" : "false";
     mtscreenstate = pdi_mt_screen ? "Bottom" : "Top";
-    if (d7_hDown & KEY_B) {
+    if (d7_hUp & KEY_B) {
       m_state = RSETTINGS;
     }
   }
   if (m_state == RIDB || m_state == RLOGS) {
-    if (d7_hDown & KEY_B) {
+    if (d7_hUp & KEY_B) {
       m_state = RSETTINGS;
     }
   }
@@ -845,7 +880,7 @@ void Palladium::RSettings::Logic() {
     if (d7_hDown & KEY_UP) {
       if (ftrace_index > 0) ftrace_index--;
     }
-    if (d7_hDown & KEY_B) {
+    if (d7_hUp & KEY_B) {
       m_state = RSETTINGS;
     }
   }
