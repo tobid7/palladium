@@ -13,26 +13,21 @@
 #include <unistd.h>
 /// 3ds Includes
 #include <3ds.h>
-#include <citro2d.h>
 #include <citro3d.h>
 /// Palladium Includes
-#include <pd/Color.hpp>
-#include <pd/FunctionTrace.hpp>
+#include <pd/base/Color.hpp>
+#include <pd/base/FunctionTrace.hpp>
 #include <pd/Hardware.hpp>
-#include <pd/Logger.hpp>
-#include <pd/Memory.hpp>
+#include <pd/base/Memory.hpp>
 #include <pd/Overlays.hpp>
 #include <pd/Ovl.hpp>
-#include <pd/Render2.hpp>
 #include <pd/ResultDecoder.hpp>
-#include <pd/Sheet.hpp>
 #include <pd/Sprite.hpp>
-#include <pd/SpriteAnimation.hpp>
 #include <pd/Tasks.hpp>
 #include <pd/Time.hpp>
-#include <pd/lang.hpp>
+#include <pd/base/Lang.hpp>
 #include <pd/parameter.hpp>
-#include <pd/stringtool.hpp>
+#include <pd/base/stringtool.hpp>
 #include <pd/thread.hpp>
 
 #define PDVSTRING "1.0.0"
@@ -43,8 +38,6 @@
 extern int pd_max_objects;
 
 namespace Palladium {
-// Reference to Global Logger
-LoggerBase::Ref Logger();
 /// @brief Get Deltatime
 /// @return Deltatime
 float GetDeltaTime();

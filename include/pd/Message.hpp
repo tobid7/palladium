@@ -7,12 +7,12 @@ struct Message {
   Message(std::string t, std::string m) {
     title = t;
     message = m;
-    animationframe = 0;
+    animtime = 0.f;
   }
 
   std::string title;
   std::string message;
-  int animationframe;
+  float animtime;
 };
 
 void ProcessMessages();

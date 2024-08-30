@@ -33,7 +33,6 @@ Sound::Sound(const string &path, int channel, bool toloop) {
     std::fstream fp(path, std::ios::in | std::ios::binary);
 
     if (!fp.is_open()) {
-      _pdi_logger()->Write("Could not open WAV: " + path, 0);
       return;
     }
 
@@ -42,7 +41,6 @@ Sound::Sound(const string &path, int channel, bool toloop) {
     size_t read = fp.tellg();
     if (read != sizeof(wavHeader)) {
       // Short read.
-      _pdi_logger()->Write("WAV Header is too short", 0);
       fp.close();
       return;
     }
@@ -51,7 +49,6 @@ Sound::Sound(const string &path, int channel, bool toloop) {
     static const char RIFF_magic[4] = {'R', 'I', 'F', 'F'};
     if (memcmp(wavHeader.magic, RIFF_magic, sizeof(wavHeader.magic)) != 0) {
       // Incorrect magic number.
-      _pdi_logger()->Write("Wrong Fileformat", 0);
       fp.close();
       return;
     }
@@ -60,7 +57,6 @@ Sound::Sound(const string &path, int channel, bool toloop) {
         (wavHeader.channels != 1 && wavHeader.channels != 2) ||
         (wavHeader.bits_per_sample != 8 && wavHeader.bits_per_sample != 16)) {
       // Unsupported WAV file.
-      _pdi_logger()->Write("File is invalid", 0);
       fp.close();
       return;
     }

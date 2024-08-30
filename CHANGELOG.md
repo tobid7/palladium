@@ -1,5 +1,7 @@
 # Palladium Changelog
 ## 1.0.0
+- Rename Everyting to PD
+- R7Vec -> NVec
 - Switch from C2D to Lithium (LI7)
 - For the Rest See RenderD7 Changelog below
 - swr -> Rubidium
@@ -8,7 +10,9 @@
 - Larger Mesaage Box
 - Add Texture Loader
 - Update Image/Error and other sytems to Lithium
-- Optimize Render2 for Lithium
+- Remove Render2
+- Add Deltatime to every moving object
+- Restructure Project
 # RenderD7 Changelog
 ## 0.9.5
 - Remove Npi Intro and NVID Api

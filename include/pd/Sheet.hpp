@@ -1,35 +1,24 @@
 #pragma once
-#include <3ds.h>  // Result
-#include <citro2d.h>
-#include <citro3d.h>
-
-#include <pd/Image.hpp>
 #include <pd/smart_ctor.hpp>
-#include <string>
+#include <pd/Texture.hpp>
+#include <pd/Image.hpp>
 
-namespace Palladium {
-/// @brief SpriteSheet Class
-class Sheet {
- public:
-  /// @brief Constructor
-  Sheet() = default;
-  Sheet(const std::string& path) { this->Load(path); }
-  /// @brief Deconstructor
-  ~Sheet() {
-    if (spritesheet) Free();
-  }
-  PD_SMART_CTOR(Sheet);
-  /// @brief Load A Spritesheet File
-  /// @param path Path to the t3x
-  /// @return Result Code
-  Result Load(const std::string& path);
-  /// @brief Unload the Sheet
-  void Free();
-  C2D_Image GetImage(int idx);
-  C2D_SpriteSheet Get() { return this->spritesheet; }
+#include <tex3ds.h>
 
- private:
-  /// \param spritesheet The Sheet
-  C2D_SpriteSheet spritesheet;
-};
-}  // namespace Palladium
+namespace Palladium
+{
+    class Sheet {
+        public:
+        Sheet() = default;
+        ~Sheet() = default;
+        PD_SMART_CTOR(Sheet)
+        void LoadT3X(const std::string& path);
+        Texture::Ref Get(int idx);
+        Image::Ref GetImage(int idx);
+
+        private:
+        std::vector<Texture::Ref> sprites;
+        Tex3DS_Texture sheet;
+        C3D_Tex* sheet_tex = nullptr;
+    };
+} // namespace Palladium

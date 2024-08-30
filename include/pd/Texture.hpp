@@ -1,7 +1,7 @@
 #pragma once
 #include <citro3d.h>
 
-#include <pd/NVec.hpp>
+#include <pd/maths/NVec.hpp>
 #include <pd/smart_ctor.hpp>
 #include <string>
 #include <vector>
@@ -19,10 +19,10 @@ class Texture {
   };
   Texture() {
     // Set Default UV
-    this->uvs.x = 0.0f;
-    this->uvs.y = 1.0f;
-    this->uvs.z = 1.0f;
-    this->uvs.w = 0.0f;
+    this->uvs[0] = 0.0f;
+    this->uvs[1] = 1.0f;
+    this->uvs[2] = 1.0f;
+    this->uvs[3] = 0.0f;
   };
   ~Texture() { Delete(); }
   PD_SMART_CTOR(Texture)

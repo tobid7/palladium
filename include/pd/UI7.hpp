@@ -1,19 +1,32 @@
 #pragma once
 
 #include <pd/Image.hpp>
-#include <pd/NVec.hpp>
-#include <pd/Render2.hpp>
+#include <pd/Lithium.hpp>
+#include <pd/base/Color.hpp>
+#include <pd/maths/NVec.hpp>
 #include <pd/smart_ctor.hpp>
 
 #define UI7MAKEFLAG(x) (1 << x)
 
-typedef int UI7MenuFlags;
+using UI7MenuFlags = unsigned int;
 
 enum UI7MenuFlags_ {
   UI7MenuFlags_None = 0,
   UI7MenuFlags_NoTitlebar = UI7MAKEFLAG(0),
   UI7MenuFlags_TitleMid = UI7MAKEFLAG(1),
   UI7MenuFlags_Scrolling = MAKEFLAG(2),
+};
+
+enum UI7Horizontal {
+  UI7Horizontal_Left = 0,
+  UI7Horizontal_Center = 1,
+  UI7Horizontal_Right = 2,
+};
+
+enum UI7Vertical {
+  UI7Vertical_Top = 0,
+  UI7Vertical_Center = 1,
+  UI7Vertical_Bot = 2,
 };
 
 class DrawCmd;
@@ -35,10 +48,16 @@ class UI7DrawList {
 
   void Process(bool auto_clear = true);
   void Clear();
+  int Layer() { return layer; }
+  void Layer(int v) { layer = v; }
+  int BaseLayer() { return bl; }
+  void BaseLayer(int v) { bl = v; }
 
   PD_SMART_CTOR(UI7DrawList)
 
  private:
+  int layer = 0;
+  int bl = 0;
   void AddDebugCall(std::shared_ptr<DrawCmd> cmd);
   std::vector<std::shared_ptr<DrawCmd>> list;
 };
@@ -77,10 +96,16 @@ void Grid(const std::string &name, const NVec2 &size, const NVec2 &entry_size,
 void ColorSelector(const std::string &label, unsigned int &color);
 bool BeginTree(const std::string &text);
 void EndTree();
+void Prompt(const std::string &label, int &res,
+            // For Translations
+            const std::string &lcf = "Confirm",
+            const std::string &lcc = "Cancel");
+void ClosePromts();
 NVec2 GetCursorPos();
 void SetCursorPos(NVec2 cp);
 void RestoreCursor();
 void SameLine();
+void Separator();
 // Internal API (For Creating Custom Objects)
 bool InBox(NVec2 inpos, NVec2 boxpos, NVec2 boxsize);
 void MoveCursor(NVec2 size);

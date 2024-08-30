@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include <pd/NVec.hpp>
+#include <pd/maths/NVec.hpp>
 #include <string>
 
 namespace Palladium {

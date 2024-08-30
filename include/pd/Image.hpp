@@ -2,7 +2,7 @@
 
 #include <3ds.h>
 
-#include <pd/NVec.hpp>
+#include <pd/maths/NVec.hpp>
 #include <pd/Texture.hpp>
 #include <pd/nimg.hpp>
 #include <pd/smart_ctor.hpp>
@@ -23,7 +23,7 @@ class Image {
   void Set(Texture::Ref i, NVec4 uvs = NVec4(-1, -1, -1, -1));
   NVec2 GetSize();
   NVec4 GetUV() {
-    return (custom_uvs.x != -1) ? custom_uvs : img->GetUV();
+    return (custom_uvs.x() != -1) ? custom_uvs : img->GetUV();
   }
   bool Loadet();
 

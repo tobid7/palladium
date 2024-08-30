@@ -7,7 +7,7 @@
 #include <unistd.h>
 
 #include <pd/Error.hpp>
-#include <pd/FileSystem.hpp>
+#include <pd/base/FileSystem.hpp>
 #include <pd/external/json.hpp>
 #include <pd/internal_db.hpp>
 #include <pd/palladium.hpp>
@@ -23,9 +23,6 @@ u8 pdi_system_region = CFG_REGION_USA;
 bool pdi_is_citra = false;
 bool pdi_settings = false;
 NVec2 pdi_hid_touch_pos;
-C2D_TextBuf pdi_text_buffer;
-C2D_Font pdi_base_font;
-C2D_TextBuf pdi_d2_dimbuf;
 bool pdi_is_ndsp = false;
 bool pdi_running = false;
 std::stack<std::unique_ptr<Palladium::Scene>> Palladium::Scene::scenes;
@@ -34,15 +31,15 @@ std::vector<std::unique_ptr<Palladium::Ovl>> pdi_overlays;
 unsigned int pdi_frames = 0;
 u64 pdi_last_time = 0;
 float pdi_framerate = 0.0f;
-u32 pdi_mt_color = 0xaa000000;
-u32 pdi_mt_txtcolor = 0xbbffffff;
+unsigned int pdi_mt_color = 0xaa000000;
+unsigned int pdi_mt_txtcolor = 0xbbffffff;
 bool pdi_mt_screen;
 float pdi_mt_txtSize;
 bool pdi_metrikd = false;
 bool pdi_ftraced = false;
 u64 pdi_delta_time;
-u64 pdi_last_tm;
-float pdi_dtm;
+u64 pdi_last_tm = 0;
+float pdi_dtm = 0.f;
 float pdi_time;
 bool pdi_fadeout = false, pdi_fadein = false, pdi_fadeout2 = false,
      pdi_fadein2 = false;
@@ -58,16 +55,7 @@ bool pdi_amdt = false;
 void *pdi_soc_buf = nullptr;
 bool pdi_is_am_init = false;
 Palladium::Theme::Ref pdi_active_theme;
-Palladium::LoggerBase::Ref pdi_logger;
 bool pdi_lggrf = false;
-
-Palladium::LoggerBase::Ref _pdi_logger() {
-  if (!pdi_logger) {
-    Palladium::Error(
-        "You're trying to use a Palladium Func without Init Palladium!");
-  }
-  return pdi_logger;
-}
 
 /// Global ///
 // Outdated HidApi (HidV2Patched)
@@ -78,12 +66,13 @@ u32 d7_hRepeat;  // Inofficial lol
 touchPosition d7_touch;
 
 // Modern Global Api
-int pd_max_objects = C2D_DEFAULT_MAX_OBJECTS;
 bool pdi_enable_scene_system = true;
 bool pdi_debugging = false;
 C3D_RenderTarget *pd_top;
 C3D_RenderTarget *pd_top_right;
 C3D_RenderTarget *pd_bottom;
+PDMetrikOverlayFlags pd_ovl_flags = PDMetrikOverlayFlags_Default;
+PDFTraceOverlayFlags pd_ftrace_ovl_flags = PDFTraceOverlayFlags_Default;
 
 Palladium::Net::Error pdi_soc_init() {
   if (pdi_soc_buf != nullptr) {
@@ -183,8 +172,7 @@ struct pak32 {
   pak32() {}
   pak32(const std::string &n0, float n1, unsigned char n2, unsigned char n3,
         bool n4, bool n5, bool n6, float n7, float n8, float n9, float n10,
-        unsigned int n11, unsigned int n12, unsigned int n13,
-        unsigned int n14) {
+        unsigned int n11, unsigned int n12, unsigned int n13) {
     magic = 0x44772277;
     for (int i = 0; i < 64; i++) app_name[i] = (char)0;
     int l = n0.length();
@@ -203,7 +191,6 @@ struct pak32 {
     mem_alloc = n11;
     mem_dalloc = n12;
     mem_ialloc = n13;
-    tbs = n14;
   }
   uint32_t magic;
   char app_name[64];
@@ -220,7 +207,6 @@ struct pak32 {
   unsigned int mem_alloc;
   unsigned int mem_dalloc;
   unsigned int mem_ialloc;
-  unsigned int tbs;
 };
 
 static bool pdi_idb_fp = false;
@@ -249,8 +235,7 @@ void ServerThread(Palladium::Parameter param) {
           pdi_is_citra, pdi_is_ndsp, pdi_settings, pdi_dtm, pdi_time,
           C3D_GetProcessingTime(), C3D_GetDrawingTime(),
           Palladium::Memory::GetTotalAllocated(),
-          Palladium::Memory::GetTotalFreed(), Palladium::Memory::GetCurrent(),
-          C2D_TextBufGetNumGlyphs(pdi_text_buffer));
+          Palladium::Memory::GetTotalFreed(), Palladium::Memory::GetCurrent());
       server.snd(stupid(pak));
     } else if (cmd == 2) {
       pdi_reacttion(2);

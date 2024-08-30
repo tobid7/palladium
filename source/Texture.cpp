@@ -3,6 +3,7 @@
 
 #include <pd/Texture.hpp>
 #include <pd/internal_db.hpp>
+#include <pd/Error.hpp>
 
 namespace pdi {
 static bool single_bit(unsigned int v) { return v && !(v & (v - 1)); }
@@ -56,13 +57,12 @@ int GetBPP(Texture::Type type) {
 void Texture::MakeTex(std::vector<unsigned char> &buf, int w, int h,
                       Type type) {
   if (!tex) {
-    _pdi_logger()->Write("Invalid Input (object has no adress!)");
     return;
   }
   // Don't check here as check done before
   int bpp = GetBPP(type);
   if (bpp == 4) {
-    // RGBA -> Abgr
+    //// RGBA -> Abgr
     for (int y = 0; y < h; y++) {
       for (int x = 0; x < w; x++) {
         int pos = (x + y * w) * bpp;
@@ -93,19 +93,19 @@ void Texture::MakeTex(std::vector<unsigned char> &buf, int w, int h,
 
   NVec2 tex_size(w, h);
   // Pow2
-  if (!pdi::single_bit(w)) tex_size.x = pdi::get_pow2((unsigned int)w);
-  if (!pdi::single_bit(h)) tex_size.y = pdi::get_pow2((unsigned int)h);
+  if (!pdi::single_bit(w)) tex_size.x() = pdi::get_pow2((unsigned int)w);
+  if (!pdi::single_bit(h)) tex_size.y() = pdi::get_pow2((unsigned int)h);
 
-  this->img_size.x = (u16)w;
-  this->img_size.y = (u16)h;
-  this->uvs.x = 0.0f;
-  this->uvs.y = 1.0f;
-  this->uvs.z = ((float)w / (float)tex_size.x);
-  this->uvs.w = 1.0 - ((float)h / (float)tex_size.y);
+  this->img_size.x() = (u16)w;
+  this->img_size.y() = (u16)h;
+  this->uvs.x() = 0.0f;
+  this->uvs.y() = 1.0f;
+  this->uvs.z() = ((float)w / (float)tex_size.x());
+  this->uvs.w() = 1.0 - ((float)h / (float)tex_size.y());
 
   // Texture Setup
   auto tex_fmt = GetTexFmt(type);
-  C3D_TexInit(tex, (u16)tex_size.x, (u16)tex_size.y, tex_fmt);
+  C3D_TexInit(tex, (u16)tex_size.x(), (u16)tex_size.y(), tex_fmt);
   C3D_TexSetFilter(tex, GPU_NEAREST, GPU_NEAREST);
 
   memset(tex->data, 0, tex->size);
@@ -113,7 +113,7 @@ void Texture::MakeTex(std::vector<unsigned char> &buf, int w, int h,
   if (bpp == 3 || bpp == 4) {
     for (int x = 0; x < w; x++) {
       for (int y = 0; y < h; y++) {
-        int dst_pos = ((((y >> 3) * ((int)tex_size.x >> 3) + (x >> 3)) << 6) +
+        int dst_pos = ((((y >> 3) * ((int)tex_size.x() >> 3) + (x >> 3)) << 6) +
                        ((x & 1) | ((y & 1) << 1) | ((x & 2) << 1) |
                         ((y & 2) << 2) | ((x & 4) << 2) | ((y & 4) << 3))) *
                       bpp;
@@ -131,6 +131,7 @@ void Texture::MakeTex(std::vector<unsigned char> &buf, int w, int h,
   C3D_TexSetWrap(tex, GPU_CLAMP_TO_BORDER, GPU_CLAMP_TO_BORDER);
 }
 void Texture::LoadFile(const std::string &path) {
+  Palladium::Ftrace::ScopedTrace st("texldr", path);
   int w, h, c = 0;
   unsigned char *image = stbi_load(path.c_str(), &w, &h, &c, 4);
   if (image == nullptr) {
@@ -232,10 +233,10 @@ void Texture::Delete() {
     delete tex;
     tex = nullptr;
     img_size = NVec2();
-    this->uvs.x = 0.0f;
-    this->uvs.y = 1.0f;
-    this->uvs.z = 1.0f;
-    this->uvs.w = 0.0f;
+    this->uvs.x() = 0.0f;
+    this->uvs.y() = 1.0f;
+    this->uvs.z() = 1.0f;
+    this->uvs.w() = 0.0f;
   }
 }
 }  // namespace Palladium

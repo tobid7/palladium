@@ -1,10 +1,8 @@
 #pragma once
 
-#include <citro2d.h>
 #include <citro3d.h>
 
 #include <pd/Image.hpp>
-#include <pd/Sheet.hpp>
 #include <pd/smart_ctor.hpp>
 
 namespace Palladium {
@@ -16,10 +14,6 @@ class Sprite {
   /// \brief Deconstruct Sprite
   ~Sprite() = default;
   PD_SMART_CTOR(Sprite)
-  /// \brief Load a Sprite From SpriteSheet
-  /// \param sheet the Sheet to load from.(Palladium::Sheet)
-  /// \param index the number of the Sprite in the Sheet
-  void FromSheet(Palladium::Sheet::Ref sheet, size_t index);
   /// \brief Load a Sprite From SpriteSheet
   /// \param img the Image to load from.(Palladium::Image)
   void FromImage(Palladium::Image::Ref img);
@@ -63,9 +57,7 @@ class Sprite {
   void SetRotCenter(NVec2 percentage);
 
  private:
-  /// @param tint ImageTint (unused)
-  C2D_ImageTint tint;
-  /// @param sprite The Sprite
-  C2D_Sprite sprite;
+  ///// @param sprite The Sprite
+  //C2D_Sprite sprite;
 };
 }  // namespace Palladium

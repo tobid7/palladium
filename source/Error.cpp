@@ -4,6 +4,7 @@
 #include <pd/UI7.hpp>
 #include <pd/internal_db.hpp>
 #include <pd/palladium.hpp>
+#include <fstream>
 
 void pdi_save_report(const std::string& msg) {
   auto ts = Palladium::GetTimeStr();
@@ -27,17 +28,16 @@ void Error(const std::string& msg) {
       C3D_RenderTargetClear(pd_top, C3D_CLEAR_ALL, 0x00000000, 0);
       C3D_RenderTargetClear(pd_top_right, C3D_CLEAR_ALL, 0x00000000, 0);
       C3D_RenderTargetClear(pd_bottom, C3D_CLEAR_ALL, 0x00000000, 0);
-      Palladium::R2::OnScreen(R2Screen_Top);
+      Palladium::LI::OnScreen(false);
       if (UI7::BeginMenu("Palladium - Error Manager", NVec2(),
                          UI7MenuFlags_TitleMid)) {
         UI7::Label(msg);
         UI7::Label("Press Start to Exit!");
         UI7::EndMenu();
       }
-      Palladium::R2::OnScreen(R2Screen_Bottom);
+      Palladium::LI::OnScreen(true);
       UI7::Update();
-      Palladium::R2::Process();
-      Palladium::LI7::Render(pd_top, pd_bottom);
+      Palladium::LI::Render(pd_top, pd_bottom);
       C3D_FrameEnd(0);
     }
     exit(0);

@@ -1,6 +1,8 @@
-#include <pd/FunctionTrace.hpp>
+#include <format>
 #include <pd/Hid.hpp>
+#include <pd/Lithium.hpp>
 #include <pd/Overlays.hpp>
+#include <pd/base/FunctionTrace.hpp>
 #include <pd/internal_db.hpp>
 #include <pd/palladium.hpp>
 
@@ -257,8 +259,9 @@ std::vector<Key> keyboard_layout_shift = {
 
 // From UI7
 bool UI7_InBox(NVec2 inpos, NVec2 boxpos, NVec2 boxsize) {
-  if ((inpos.x > boxpos.x) && (inpos.y > boxpos.y) &&
-      (inpos.x < boxpos.x + boxsize.x) && (inpos.y < boxpos.y + boxsize.y))
+  if ((inpos.x() > boxpos.x()) && (inpos.y() > boxpos.y()) &&
+      (inpos.x() < boxpos.x() + boxsize.x()) &&
+      (inpos.y() < boxpos.y() + boxsize.y()))
     return true;
   return false;
 }
@@ -267,111 +270,204 @@ namespace Palladium {
 Ovl_Ftrace::Ovl_Ftrace(bool* is_enabled) { i_is_enabled = is_enabled; }
 
 void Ovl_Ftrace::Draw(void) const {
-  float tmp_txt = R2::GetTextSize();
-  R2::DefaultTextSize();
-  R2::OnScreen(R2Screen_Top);
-  Palladium::Color::RGBA bg(PDColor_Background);
-  bg.changeA(150);
-  R2::AddRect(NVec2(0, 0), NVec2(400, 20), bg.toRGBA());
+  float tmp_txt = LI::GetTextScale();
+  LI::DefaultTextScale();
+  LI::OnScreen(false);
+  if (pd_ftrace_ovl_flags & PDFTraceOverlayFlags_FillBg) {
+    LI::NewLayer();
+    Palladium::Color::RGBA bg(PDColor_Background);
+    bg.changeA(150);
+    LI::DrawRect(NVec2(0, 0), NVec2(400, 20), bg.toRGBA());
+  }
+  LI::NewLayer();
+  int lrb = LI::Layer();
+  std::string label = "FTrace Overlay";
+  auto lbdim = LI::GetTextDimensions(label);
+  LI::DrawRect(NVec2(), lbdim,
+               Palladium::ThemeActive()->Get(PDColor_TextDisabled));
+  LI::Layer(lrb + 1);
+  LI::DrawText(NVec2(0, 0), Palladium::ThemeActive()->Get(PDColor_Text2),
+               label);
+  if (pd_ftrace_ovl_flags & PDFTraceOverlayFlags_DisplayHelp) {
+    std::string hlp =
+        (pd_ftrace_ovl_flags & PDFTraceOverlayFlags_DisplayName ? "Name" : "#");
+    hlp += ": Current";
+    if (pd_ftrace_ovl_flags & PDFTraceOverlayFlags_DisplayAverage ||
+        pd_ftrace_ovl_flags & PDFTraceOverlayFlags_DisplayMin ||
+        pd_ftrace_ovl_flags & PDFTraceOverlayFlags_DisplayMax) {
+      hlp += " |";
+      if (pd_ftrace_ovl_flags & PDFTraceOverlayFlags_DisplayAverage)
+        hlp += " Avg";
+      if (pd_ftrace_ovl_flags & PDFTraceOverlayFlags_DisplayMin) hlp += " Min";
+      if (pd_ftrace_ovl_flags & PDFTraceOverlayFlags_DisplayMax) hlp += " Max";
+    }
+    auto hlpdim = LI::GetTextDimensions(hlp);
+    LI::Layer(lrb);
+    LI::DrawRect(NVec2(0, 20), hlpdim,
+                 Palladium::ThemeActive()->Get(PDColor_TextDisabled));
+    LI::Layer(lrb + 1);
+    LI::DrawText(NVec2(0, 20), Palladium::ThemeActive()->Get(PDColor_Text2),
+                 hlp);
+  }
 
   std::vector<Palladium::Ftrace::FTRes> dt;
   for (auto const& it : Palladium::Ftrace::pd_traces)
     if (it.second.is_ovl && dt.size() < 10) dt.push_back(it.second);
   for (size_t i = 0; i < (dt.size() < 10 ? dt.size() : 10); i++) {
-    std::string text = dt[i].func_name + ": " + Palladium::MsTimeFmt(dt[i].time_of);
-    auto dim = R2::GetTextDimensions(text);
-    R2::AddRect(NVec2(5, 30+i*dim.y), dim, PDColor_TextDisabled);
-    R2::AddText(NVec2(5, 30 + i * dim.y), text, PDColor_Text2);
+    std::string slot = (pd_ftrace_ovl_flags & PDFTraceOverlayFlags_DisplayName
+                            ? dt[i].func_name
+                            : std::to_string(i));
+    slot += ": " + MsTimeFmt(dt[i].time_of);
+    if (pd_ftrace_ovl_flags & PDFTraceOverlayFlags_DisplayAverage ||
+        pd_ftrace_ovl_flags & PDFTraceOverlayFlags_DisplayMin ||
+        pd_ftrace_ovl_flags & PDFTraceOverlayFlags_DisplayMax) {
+      slot += " |";
+      if (pd_ftrace_ovl_flags & PDFTraceOverlayFlags_DisplayAverage)
+        slot += " " + MsTimeFmt(dt[i].ts.GetAverage());
+      if (pd_ftrace_ovl_flags & PDFTraceOverlayFlags_DisplayMin)
+        slot += " " + MsTimeFmt(dt[i].ts.GetMin());
+      if (pd_ftrace_ovl_flags & PDFTraceOverlayFlags_DisplayMax)
+        slot += " " + MsTimeFmt(dt[i].ts.GetMax());
+    }
+    auto dim = LI::GetTextDimensions(slot);
+    LI::Layer(lrb);
+    LI::DrawRect(NVec2(0, 37 + i * dim.y()), dim,
+                 Palladium::ThemeActive()->Get(PDColor_TextDisabled));
+    LI::Layer(lrb + 1);
+    LI::DrawText(NVec2(0, 37 + i * dim.y()),
+                 Palladium::ThemeActive()->Get(PDColor_Text2), slot);
   }
-  R2::SetTextSize(tmp_txt);
+  LI::SetTextScale(tmp_txt);
 }
 
 void Ovl_Ftrace::Logic() {
   if (!i_is_enabled[0]) this->Kill();
 }
 
-Ovl_Metrik::Ovl_Metrik(bool* is_enabled, bool* screen, uint32_t* mt_color,
-                       uint32_t* txt_color, float* txt_size) {
+Ovl_Metrik::Ovl_Metrik(bool* is_enabled, bool* screen, unsigned int* mt_color,
+                       unsigned int* txt_color, float* txt_size)
+    : cpu_stats(300), gpu_stats(300) {
   i_is_enabled = is_enabled;
   i_screen = screen;
   i_mt_color = mt_color;
   i_txt_color = txt_color;
   i_txt_size = txt_size;
+  v_update.Reset();
+}
+
+int MetrikEntry(const std::string& text, NVec2 pos, unsigned int clr1,
+                unsigned int clr2) {
+  int dim_y = LI::GetTextDimensions(text).y();
+  int lr = LI::Layer();
+  LI::DrawRect(pos, LI::GetTextDimensions(text), clr1);
+  LI::Layer(lr + 1);
+  LI::DrawText(pos, clr2, text);
+  LI::Layer(lr);
+  return dim_y + !LI::GetFont()->IsSystemFont();
+}
+
+void Graph(Palladium::Ftrace::TimeStats& s, NVec2 pos, NVec2 size, NVec2 range,
+           unsigned int clr, int lod = 1) {
+  float xs = static_cast<float>(size.x() / s.GetLen());
+  float ys = static_cast<float>(size.y() / (range.y() - range.x()));
+
+  std::vector<NVec2> nodes;
+  for (size_t i = 0; i < s.GetNumValues(); i += lod) {
+    nodes.push_back(
+        NVec2(pos.x() + i * xs, pos.y() + size.y() - (s[i] - range.x()) * ys));
+  }
+  for (size_t i = 1; i < nodes.size(); i++)
+    LI::DrawLine(nodes[i - 1], nodes[i], clr);
 }
 
 void Ovl_Metrik::Draw(void) const {
-  float tmp_txt = R2::GetTextSize();
-  R2::DefaultTextSize();
-  R2::OnScreen(i_screen[0] ? R2Screen_Bottom : R2Screen_Top);
+  float tmp_txt = LI::GetTextScale();
+  LI::SetTextScale(*i_txt_size);
+  LI::OnScreen(i_screen[0]);
+  LI::NewLayer();
   std::string info = "Palladium " + std::string(PDVSTRING) + " Debug Overlay";
-  float dim_y = R2::GetTextDimensions(info).y;
-  float infoy = 240 - dim_y;
-  mt_fps = "FPS: " + Palladium::GetFramerate();
+  float dim_y = LI::GetTextDimensions(info).y();
+  mt_fps = std::format("{:.2f}ms/f -> {:.1f} FPS", Palladium::GetDeltaTime(),
+                       1000.f / Palladium::GetDeltaTime());
   if (pdi_idb_running) mt_fps += " IDB -> ON";
-  mt_cpu = "CPU: " +
-           std::to_string(C3D_GetProcessingTime() * (Palladium::GetFps() / 10))
-               .substr(0, 4) +
-           "%/" + std::to_string(C3D_GetProcessingTime()).substr(0, 4) + "ms";
-  mt_gpu = "GPU: " +
-           std::to_string(C3D_GetDrawingTime() * (Palladium::GetFps() / 10))
-               .substr(0, 4) +
-           "%/" + std::to_string(C3D_GetDrawingTime()).substr(0, 4) + "ms";
-  mt_cmd =
-      "CMD: " + std::to_string(C3D_GetCmdBufUsage() * 100.0f).substr(0, 4) +
-      "%";
+  float cpu_time = C3D_GetProcessingTime();
+  cpu_stats.Add(cpu_time);
+  float gpu_time = C3D_GetDrawingTime();
+  gpu_stats.Add(gpu_time);
+  v_update.Tick();
+  if (v_update.Get() > 500.f) {
+    float fps_lim = C3D_FrameRate(0.f) / 10.f;
+    mt_cpu = std::format("CPU: {:.1f}% | {:.2f}ms | {:.2f}ms",
+                         cpu_time * fps_lim, cpu_time, cpu_stats.GetAverage());
+    mt_gpu = std::format("GPU: {:.1f}% | {:.2f}ms | {:.2f}ms",
+                         gpu_time * fps_lim, gpu_time, gpu_stats.GetAverage());
+    v_update.Reset();
+  }
+  mt_cmd = std::format("CMD: {:.2f}%", C3D_GetCmdBufUsage() * 100.f);
   mt_lfr = "Linear: " + Palladium::FormatBytes(linearSpaceFree());
-  if (pdi_enable_memtrack)
+  if (pd_flags & PDFlags_MemTrack)
     mt_mem = "Mem: " + Palladium::FormatBytes(Palladium::Memory::GetCurrent()) +
              " | " +
              Palladium::FormatBytes(Palladium::Memory::GetTotalAllocated()) +
              " | " + Palladium::FormatBytes(Palladium::Memory::GetTotalFreed());
-  mt_vtx = "Vertices: " + std::to_string(LI7::Vertices());
-  mt_dmc = "DrawCmds: " + std::to_string(LI7::DarwCommands());
-  mt_drc = "DrawCalls: " + std::to_string(LI7::Drawcalls());
-  R2::AddRect(NVec2(0, 0), R2::GetTextDimensions(mt_fps),
-              (unsigned int)i_mt_color[0]);
-  R2::AddRect(NVec2(0, 50), R2::GetTextDimensions(mt_cpu),
-              (unsigned int)i_mt_color[0]);
-  R2::AddRect(NVec2(0, 50 + dim_y * 1), R2::GetTextDimensions(mt_gpu),
-              (unsigned int)i_mt_color[0]);
-  R2::AddRect(NVec2(0, 50 + dim_y * 2), R2::GetTextDimensions(mt_cmd),
-              (unsigned int)i_mt_color[0]);
-  R2::AddRect(NVec2(0, 50 + dim_y * 3), R2::GetTextDimensions(mt_lfr),
-              (unsigned int)i_mt_color[0]);
-  R2::AddRect(NVec2(0, 50 + dim_y * 4), R2::GetTextDimensions(mt_vtx),
-              (unsigned int)i_mt_color[0]);
-  R2::AddRect(NVec2(0, 50 + dim_y * 5), R2::GetTextDimensions(mt_dmc),
-              (unsigned int)i_mt_color[0]);
-  R2::AddRect(NVec2(0, 50 + dim_y * 6), R2::GetTextDimensions(mt_drc),
-              (unsigned int)i_mt_color[0]);
-  if (pdi_enable_memtrack)
-    R2::AddRect(NVec2(0, 50 + dim_y * 7), R2::GetTextDimensions(mt_mem),
-                (unsigned int)i_mt_color[0]);
-  R2::AddRect(NVec2(0, infoy), R2::GetTextDimensions(info),
-              (unsigned int)i_mt_color[0]);
-  R2::AddText(NVec2(0, 0), mt_fps, (unsigned int)i_txt_color[0]);
-  R2::AddText(NVec2(0, 50), mt_cpu, (unsigned int)i_txt_color[0]);
-  R2::AddText(NVec2(0, 50 + dim_y * 1), mt_gpu, (unsigned int)i_txt_color[0]);
-  R2::AddText(NVec2(0, 50 + dim_y * 2), mt_cmd, (unsigned int)i_txt_color[0]);
-  R2::AddText(NVec2(0, 50 + dim_y * 3), mt_lfr, (unsigned int)i_txt_color[0]);
-  R2::AddText(NVec2(0, 50 + dim_y * 4), mt_vtx, (unsigned int)i_txt_color[0]);
-  R2::AddText(NVec2(0, 50 + dim_y * 5), mt_dmc, (unsigned int)i_txt_color[0]);
-  R2::AddText(NVec2(0, 50 + dim_y * 6), mt_drc, (unsigned int)i_txt_color[0]);
-  if (pdi_enable_memtrack)
-    R2::AddText(NVec2(0, 50 + dim_y * 7), mt_mem, (unsigned int)i_txt_color[0]);
-  R2::AddText(NVec2(0, infoy), info, (unsigned int)i_txt_color[0]);
-
-  // Force Bottom (Debug Touchpos)
-  R2::OnScreen(R2Screen_Bottom);
-  if (Hid::IsEvent("touch", Hid::Held)) {
-    R2::AddLine(NVec2(Hid::GetTouchPosition().x, 0),
-                NVec2(Hid::GetTouchPosition().x, 240),
-                Palladium::Color::Hex("#ff0000"));
-    R2::AddLine(NVec2(0, Hid::GetTouchPosition().y),
-                NVec2(320, Hid::GetTouchPosition().y),
-                Palladium::Color::Hex("#ff0000"));
+  mt_vtx = "Vertices: " + std::to_string(LI::Vertices());
+  mt_idx = "Indices: " + std::to_string(LI::Indices());
+  mt_dmc = "DrawCmds: " + std::to_string(LI::DarwCommands());
+  mt_drc = "DrawCalls: " + std::to_string(LI::Drawcalls());
+  // Rendering
+  int posy = 0;
+  if (pd_ovl_flags & PDMetrikOverlayFlags_FPS)
+    posy += MetrikEntry(mt_fps, NVec2(0, posy), i_mt_color[0], i_txt_color[0]);
+  // Mod PosY to 50
+  posy = 50;
+  if (pd_ovl_flags & PDMetrikOverlayFlags_CPU)
+    posy += MetrikEntry(mt_cpu, NVec2(0, posy), i_mt_color[0], i_txt_color[0]);
+  if (pd_ovl_flags & PDMetrikOverlayFlags_GPU)
+    posy += MetrikEntry(mt_gpu, NVec2(0, posy), i_mt_color[0], i_txt_color[0]);
+  if (pd_ovl_flags & PDMetrikOverlayFlags_CMD)
+    posy += MetrikEntry(mt_cmd, NVec2(0, posy), i_mt_color[0], i_txt_color[0]);
+  if (pd_ovl_flags & PDMetrikOverlayFlags_LMM)
+    posy += MetrikEntry(mt_lfr, NVec2(0, posy), i_mt_color[0], i_txt_color[0]);
+  if (pd_ovl_flags & PDMetrikOverlayFlags_LVT)
+    posy += MetrikEntry(mt_vtx, NVec2(0, posy), i_mt_color[0], i_txt_color[0]);
+  if (pd_ovl_flags & PDMetrikOverlayFlags_LID)
+    posy += MetrikEntry(mt_idx, NVec2(0, posy), i_mt_color[0], i_txt_color[0]);
+  if (pd_ovl_flags & PDMetrikOverlayFlags_LDM)
+    posy += MetrikEntry(mt_dmc, NVec2(0, posy), i_mt_color[0], i_txt_color[0]);
+  if (pd_ovl_flags & PDMetrikOverlayFlags_LDC)
+    posy += MetrikEntry(mt_drc, NVec2(0, posy), i_mt_color[0], i_txt_color[0]);
+  if (pd_flags & PDFlags_MemTrack && pd_ovl_flags & PDMetrikOverlayFlags_MTD)
+    posy += MetrikEntry(mt_mem, NVec2(0, posy), i_mt_color[0], i_txt_color[0]);
+  posy = 240 - dim_y;
+  if (pd_ovl_flags & PDMetrikOverlayFlags_PDO)
+    posy += MetrikEntry(info, NVec2(0, posy), i_mt_color[0], i_txt_color[0]);
+  if (pd_ovl_flags & PDMetrikOverlayFlags_CGR ||
+      pd_ovl_flags & PDMetrikOverlayFlags_GGR) {
+    LI::NewLayer();
+    float tl = 1000.f / GetFps();
+    std::string tlt = std::format("{:.2f}ms", tl);
+    auto tldim = LI::GetTextDimensions(tlt);
+    LI::DrawRect(NVec2(0, 17), NVec2(150 + tldim.x(), 33), i_mt_color[0]);
+    LI::NewLayer();
+    LI::DrawText(NVec2(150, 17), i_txt_color[0], tlt);
+    if (pd_ovl_flags & PDMetrikOverlayFlags_CGR)
+      Graph(cpu_stats, NVec2(0, 17), NVec2(150, 33), NVec2(0, tl), 0xff0000ff,
+            2);
+    if (pd_ovl_flags & PDMetrikOverlayFlags_GGR)
+      Graph(gpu_stats, NVec2(0, 17), NVec2(150, 33), NVec2(0, tl), 0xffff0000,
+            2);
   }
-  R2::SetTextSize(tmp_txt);
+  // Force Bottom (Debug Touchpos)
+  LI::OnScreen(true);
+  if (Hid::IsEvent("touch", Hid::Held)) {
+    LI::DrawLine(NVec2((int)Hid::GetTouchPosition().x(), 0),
+                 NVec2((int)Hid::GetTouchPosition().x(), 240),
+                 Palladium::Color::Hex("#ff0000"));
+    LI::DrawLine(NVec2(0, (int)Hid::GetTouchPosition().y()),
+                 NVec2(320, (int)Hid::GetTouchPosition().y()),
+                 Palladium::Color::Hex("#ff0000"));
+  }
+  LI::SetTextScale(tmp_txt);
 }
 
 void Ovl_Metrik::Logic() {
@@ -379,13 +475,15 @@ void Ovl_Metrik::Logic() {
 }
 
 Ovl_Keyboard::Ovl_Keyboard(std::string& ref, PDKeyboardState& state,
-                           const std::string& hint, PDKeyboard type) {
+                           const std::string& hint, PDKeyboard type,
+                           PDKeyboardFlags flags) {
   // Blocks All Input outside of Keyboard
   // Doesnt work for Hidkeys down etc
-  Palladium::Hid::Lock();
+  if (flags & PDKeyboardFlags_LockControls) Palladium::Hid::Lock();
   typed_text = &ref;
   this->state = &state;
   this->type = type;
+  this->flags = flags;
   *this->state = PDKeyboardState_None;
   str_bak = ref;
   ft3 = 0;
@@ -393,33 +491,47 @@ Ovl_Keyboard::Ovl_Keyboard(std::string& ref, PDKeyboardState& state,
 
 Ovl_Keyboard::~Ovl_Keyboard() {
   // And Unlock when closing Keyboard lol
-  Palladium::Hid::Unlock();
+  if (flags & PDKeyboardFlags_LockControls) Palladium::Hid::Unlock();
 }
 
 void Ovl_Keyboard::Draw(void) const {
-  float tmp_txt = R2::GetTextSize();
-  R2::DefaultTextSize();
-  if (ft3 > 5) Palladium::Hid::Unlock();
+  float tmp_txt = LI::GetTextScale();
+  LI::DefaultTextScale();
+  if (ft3 > 5) {
+    if (flags & PDKeyboardFlags_LockControls) Palladium::Hid::Unlock();
+  }
   auto key_table =
       (type == PDKeyboard_Numpad) ? keyboard_layout_num : keyboard_layout;
   if (mode == 1)
     key_table = keyboard_layout_caps;
   else if (mode == 2)
     key_table = keyboard_layout_shift;
-  R2::OnScreen(R2Screen_Top);
-  R2::AddRect(NVec2(0, 0), NVec2(400, 240),
-              Palladium::Color::RGBA(PDColor_FrameBg).changeA(150).toRGBA());
-  R2::OnScreen(R2Screen_Bottom);
-  R2::AddRect(NVec2(0, 0), NVec2(320, 112),
-              Palladium::Color::RGBA(PDColor_FrameBg).changeA(150).toRGBA());
-  R2::AddRect(NVec2(0, 112), NVec2(320, 128), PDColor_FrameBg);
-  R2::AddRect(NVec2(0, 112), NVec2(320, 20), PDColor_Header);
-  R2::AddText(NVec2(5, 114), "> " + *typed_text,
-              Palladium::ThemeActive()->AutoText(PDColor_Header));
+  if (flags & PDKeyboardFlags_BlendTop) {
+    LI::OnScreen(false);
+    LI::NewLayer();
+    LI::DrawRect(NVec2(0, 0), NVec2(400, 240),
+                 Palladium::Color::RGBA(PDColor_FrameBg).changeA(150).toRGBA());
+  }
+  LI::OnScreen(true);
+  LI::NewLayer();
+  if (flags & PDKeyboardFlags_BlendBottom) {
+    LI::DrawRect(NVec2(0, 0), NVec2(320, 112),
+                 Palladium::Color::RGBA(PDColor_FrameBg).changeA(150).toRGBA());
+  }
+  LI::DrawRect(NVec2(0, 112), NVec2(320, 128),
+               ThemeActive()->Get(PDColor_FrameBg));
+  LI::DrawRect(NVec2(0, 112), NVec2(320, 20),
+               ThemeActive()->Get(PDColor_Header));
+  LI::NewLayer();
+  LI::DrawText(
+      NVec2(5, 114),
+      ThemeActive()->Get(Palladium::ThemeActive()->AutoText(PDColor_Header)),
+      "> " + *typed_text);
+  int lr = LI::Layer();
   for (auto const& it : key_table) {
     NVec2 szs = it.size;
     NVec2 pos = it.pos;
-    NVec2 txtdim = R2::GetTextDimensions(it.disp);
+    NVec2 txtdim = LI::GetTextDimensions(it.disp);
     PDColor btn = PDColor_Button;
     if (Palladium::Hid::IsEvent("cancel", Palladium::Hid::Up)) {
       Palladium::Hid::Clear();
@@ -454,13 +566,19 @@ void Ovl_Keyboard::Draw(void) const {
       pos -= NVec2(1, 1);
       szs += NVec2(2, 2);
     }
-    NVec2 txtpos = NVec2(pos.x + szs.x * 0.5 - txtdim.x * 0.5,
-                         pos.y + szs.y * 0.5 - txtdim.y * 0.5);
-    R2::AddRect(pos, szs, btn);
-    R2::AddText(txtpos, it.disp, Palladium::ThemeActive()->AutoText(btn));
+    NVec2 txtpos = NVec2(pos.x() + szs.x() * 0.5 - txtdim.x() * 0.5,
+                         pos.y() + szs.y() * 0.5 - txtdim.y() * 0.5);
+    LI::Layer(lr);
+    LI::DrawRect(pos, szs, ThemeActive()->Get(btn));
+    LI::Layer(lr + 1);
+    LI::DrawText(txtpos,
+                 ThemeActive()->Get(Palladium::ThemeActive()->AutoText(btn)),
+                 it.disp);
   }
-  if (ft3 > 5) Palladium::Hid::Lock();
-  R2::SetTextSize(tmp_txt);
+  if (ft3 > 5) {
+    if (flags & PDKeyboardFlags_LockControls) Palladium::Hid::Lock();
+  }
+  LI::SetTextScale(tmp_txt);
 }
 
 void Ovl_Keyboard::Logic() {

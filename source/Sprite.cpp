@@ -1,5 +1,5 @@
 #include <pd/Sprite.hpp>
-
+/*
 void Palladium::Sprite::FromSheet(Palladium::Sheet::Ref sheet, size_t index) {
   C2D_SpriteFromSheet(&this->sprite, sheet->Get(), index);
 }
@@ -50,4 +50,4 @@ void Palladium::Sprite::FromImage(Palladium::Image::Ref img) {
 
 void Palladium::Sprite::SetScale(float x, float y) {
   C2D_SpriteScale(&this->sprite, x, y);
-}
+}*/

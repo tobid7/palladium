@@ -3,7 +3,7 @@ description:
 files:
   - "include/*.hpp"
   - "include/pd/*.hpp"
-  - "include/pd/music/*.hpp"
+  - "include/pd/base/*.hpp"
   - "include/*.h"
   - "include/pd/*.h"
-  - "include/pd/music/*.h"
+  - "include/pd/base/*.h"

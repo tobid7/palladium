@@ -22,14 +22,14 @@ void Image::From_NIMG(const nimg &image) {
 
 Texture::Ref Image::Get() {
   if (!Loadet()) {
-    _pdi_logger()->Write("Image not Loadet!");
+    return nullptr;
   }
   return img;
 }
 
 void Image::Set(Texture::Ref i, NVec4 uvs) {
   Delete();
-  if(uvs.x != -1) custom_uvs = uvs;
+  if(uvs.x() != -1) custom_uvs = uvs;
   img = i;
 }
 

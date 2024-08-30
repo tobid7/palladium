@@ -39,7 +39,7 @@ Palladium::ThemeEditor::~ThemeEditor() {
 }
 
 void Palladium::ThemeEditor::Draw() const {
-  Palladium::R2::OnScreen(R2Screen_Top);
+  Palladium::LI::OnScreen(false);
   if (UI7::BeginMenu("Palladium -> Theme Editor")) {
     UI7::Label("Sample Text");
     UI7::Checkbox("Checkbox", cm);
@@ -50,7 +50,7 @@ void Palladium::ThemeEditor::Draw() const {
                        edit_theme->GetTableRef()[PDColor_Progressbar]);
     UI7::EndMenu();
   }
-  Palladium::R2::OnScreen(R2Screen_Bottom);
+  Palladium::LI::OnScreen(true);
   if (UI7::BeginMenu("Theme", NVec2(), UI7MenuFlags_Scrolling)) {
     if (menu == 0) {
       if (UI7::Button("Create New")) {
