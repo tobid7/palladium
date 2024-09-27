@@ -38,7 +38,8 @@ Palladium::ThemeEditor::~ThemeEditor() {
   Palladium::ThemeSet(temp_theme);
 }
 
-void Palladium::ThemeEditor::Draw() const {
+void Palladium::ThemeEditor::Update() {
+  // Rendering / UI Logic
   Palladium::LI::OnScreen(false);
   if (UI7::BeginMenu("Palladium -> Theme Editor")) {
     UI7::Label("Sample Text");
@@ -111,9 +112,8 @@ void Palladium::ThemeEditor::Draw() const {
     }
     UI7::EndMenu();
   }
-}
 
-void Palladium::ThemeEditor::Logic() {
+  // Standart Logic
   if (kbd_state) {
     if (kbd_state == PDKeyboardState_Confirm) {
       auto path =

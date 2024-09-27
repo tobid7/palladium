@@ -8,8 +8,7 @@ class ThemeEditor : public Palladium::Scene {
   ThemeEditor();
   ~ThemeEditor();
 
-  void Draw(void) const override;
-  void Logic() override;
+  void Update() override;
 
  private:
   Theme::Ref edit_theme;
@@ -17,13 +16,13 @@ class ThemeEditor : public Palladium::Scene {
   Theme::Ref temp_theme;
 
   // temp vars for samples
-  mutable bool cm;
-  mutable std::string inpt;
-  mutable int menu = 0;
+  bool cm;
+  std::string inpt;
+  int menu = 0;
 
   // Keyboard
-  mutable PDKeyboardState kbd_state;
-  mutable std::string kbd_text;
-  mutable std::vector<std::string> theme_list;
+  PDKeyboardState kbd_state;
+  std::string kbd_text;
+  std::vector<std::string> theme_list;
 };
 }  // namespace Palladium

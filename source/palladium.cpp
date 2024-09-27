@@ -212,15 +212,10 @@ void Palladium::Init::NdspFirm() {
   }
 }
 
-void Palladium::Scene::doDraw() {
-  Ftrace::ScopedTrace st("pd-core", f2s(Scene::doDraw));
-  if (!Palladium::Scene::scenes.empty()) Palladium::Scene::scenes.top()->Draw();
-}
-
-void Palladium::Scene::doLogic() {
-  Ftrace::ScopedTrace st("pd-core", f2s(Scene::doLogic));
+void Palladium::Scene::doUpdate() {
+  Ftrace::ScopedTrace st("pd-core", f2s(Scene::doUpdate));
   if (!Palladium::Scene::scenes.empty())
-    Palladium::Scene::scenes.top()->Logic();
+    Palladium::Scene::scenes.top()->Update();
 }
 
 void Palladium::Scene::Load(std::unique_ptr<Scene> scene, bool fade) {
@@ -278,8 +273,7 @@ bool Palladium::MainLoop() {
   C3D_RenderTargetClear(pd_bottom, C3D_CLEAR_ALL, 0x00000000, 0);
   frameloop();
   if (pdi_enable_scene_system) {
-    Palladium::Scene::doDraw();
-    Palladium::Scene::doLogic();
+    Palladium::Scene::doUpdate();
   }
   return pdi_running;
 }
@@ -470,8 +464,7 @@ void Palladium::FrameEnd() {
   Ftrace::ScopedTrace st("pd-core", f2s(FrameEnd));
   C3D_FrameBegin(2);
   if (!pdi_enable_scene_system && pdi_settings) {
-    Palladium::Scene::doDraw();
-    Palladium::Scene::doLogic();
+    Palladium::Scene::doUpdate();
   }
   UI7::Update();
   UI7::Debug();
@@ -510,7 +503,9 @@ std::vector<std::string> StrHelper(std::string input) {
   return test1;
 }
 
-void Palladium::RSettings::Draw(void) const {
+void Palladium::RSettings::Update() {
+  // Rendering / UI Logic
+  /// TODO: Update code for new system
   if (m_state == RSETTINGS) {
     LI::OnScreen(false);
     if (UI7::BeginMenu("Palladium -> Settings")) {
@@ -793,9 +788,7 @@ void Palladium::RSettings::Draw(void) const {
       UI7::EndMenu();
     }
   }
-}
-
-void Palladium::RSettings::Logic() {
+  // Standart Logic
   /// Requests
   for (const auto &it : shared_request) {
     if (it.first == 0x00000001) {

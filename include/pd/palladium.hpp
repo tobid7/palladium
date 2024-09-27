@@ -15,19 +15,19 @@
 #include <3ds.h>
 #include <citro3d.h>
 /// Palladium Includes
-#include <pd/base/Color.hpp>
-#include <pd/base/FunctionTrace.hpp>
 #include <pd/Hardware.hpp>
-#include <pd/base/Memory.hpp>
 #include <pd/Overlays.hpp>
 #include <pd/Ovl.hpp>
 #include <pd/ResultDecoder.hpp>
 #include <pd/Sprite.hpp>
 #include <pd/Tasks.hpp>
 #include <pd/Time.hpp>
+#include <pd/base/Color.hpp>
+#include <pd/base/FunctionTrace.hpp>
 #include <pd/base/Lang.hpp>
-#include <pd/parameter.hpp>
+#include <pd/base/Memory.hpp>
 #include <pd/base/stringtool.hpp>
+#include <pd/parameter.hpp>
 #include <pd/thread.hpp>
 
 #define PDVSTRING "1.0.0"
@@ -49,9 +49,7 @@ class Scene {
   static std::stack<std::unique_ptr<Scene>> scenes;
   /// @brief Deconstructor
   virtual ~Scene() {}
-  virtual void Logic() = 0;
-  /// @brief Draw Func to Override
-  virtual void Draw() const = 0;
+  virtual void Update() = 0;
   /// @brief Push a Scene to Stack
   /// @param scene Scene to Push
   /// @param fade FadeEffect (Not Correctly Implementet yet)
@@ -59,8 +57,7 @@ class Scene {
   /// @brief Go Back a Scene
   static void Back();
   /// @brief do the Draw (Called in Palladium::MainLoop())
-  static void doDraw();
-  static void doLogic();
+  static void doUpdate();
 };
 
 /// @brief Integrated Setting Menu of Palladium
@@ -102,12 +99,9 @@ class RSettings : public Palladium::Scene {
  public:
   /// @brief Constructor
   RSettings();
-  /// @brief Override for Draw
-  /// @param
-  void Draw(void) const override;
   /// @brief Deconstructor
   ~RSettings();
-  void Logic() override;
+  void Update() override;
 };
 
 /// @brief Show Up the Palladium-Settings Menu

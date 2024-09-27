@@ -332,21 +332,30 @@ struct UI7Promt {
   PD_SMART_CTOR(UI7Promt)
 };
 
+struct UI7_ItemOpts {
+  UI7Vertical vertical_align = UI7Vertical_Top;
+  UI7Horizontal horizontal_align = UI7Horizontal_Left;
+};
+
 struct UI7Menu {
   UI7Menu() {}
-  UI7ID menuid;                    // menu ID
-  NVec2 cursor;                    // cursor
-  NVec2 cb;                        // backup cursor
-  NVec2 slc;                       // sameline cursor
-  NVec2 screen_size;               // MenuScreenSize
-  float scrolling_offset = 0.f;    //  MenuScrolling Pos
-  bool enable_scrolling = false;   // Menu Scrolling
-  float scrolling_mod = 0.f;       // For Menu Scrolling effect
-  float tbh;                       // TabBar Height
-  bool show_scroolbar = true;      // Show Scrollbar
-  bool scrolling_possible = true;  // Scrolling Possible?
-  bool has_touch = false;          // To Disable touch on Top Screen
-  NTCtrl::Ref ctrl;                // NonTouchControl
+  UI7ID menuid;                       // menu ID
+  NVec2 cursor;                       // cursor
+  NVec2 cb;                           // backup cursor
+  NVec2 slc;                          // sameline cursor
+  NVec2 screen_size;                  // MenuScreenSize
+  NVec2 scrolling_offset;             // MenuScrolling Pos
+  bool vertical_scrolling = false;    // Vertical Menu Scrolling
+  bool horizontal_scrolling = false;  // Horizontal Menu Scrolling
+  NVec2 scrolling_mod;                // For Menu Scrolling effect
+  float tbh = 0.f;                    // TabBar Height
+  bool show_vt_scroolbar = true;      // Show Vertical Scrollbar
+  bool show_hz_scroolbar = true;      // Show Horizontal Scrollbar
+  bool vtscrolling_possible = true;   // Vertical Scrolling Possible?
+  bool hzscrolling_possible = true;   // Horizontal Scrolling Possible?
+  bool has_touch = false;             // To Disable touch on Top Screen
+  NTCtrl::Ref ctrl;                   // NonTouchControl / Not in dev yet
+  UI7_ItemOpts next_item_opts;        // Next Itam Options
 
   // SubMenu
   std::string submenu;
@@ -472,12 +481,13 @@ bool UI7CtxBeginMenu(const std::string &lb) {
 void UI7CtxEndMenu() {
   if (!UI7CtxValidate()) return;
   if (!UI7CtxInMenu()) return;
-  // Draw Scrollbar
-  if (ui7_ctx->cm->enable_scrolling) {
-    ui7_ctx->cm->scrolling_possible = (ui7_ctx->cm->ms[1] < 235 ? false : true);
-    ui7_ctx->cm->show_scroolbar = ui7_ctx->cm->scrolling_possible;
+  // Draw Vertical Scrollbar
+  if (ui7_ctx->cm->vertical_scrolling) {
+    ui7_ctx->cm->vtscrolling_possible =
+        (ui7_ctx->cm->ms[1] < 235 ? false : true);
+    ui7_ctx->cm->show_vt_scroolbar = ui7_ctx->cm->vtscrolling_possible;
 
-    if (ui7_ctx->cm->show_scroolbar) {
+    if (ui7_ctx->cm->show_vt_scroolbar) {
       // Screen Width
       int sw = Palladium::LI::GetScreenSize().x();
       // Top Start Pos
@@ -486,6 +496,8 @@ void UI7CtxEndMenu() {
       int slider_w = 4;
       // Height of Slider
       int szs = 240 - tsp - 5;
+      // Modify if we have a horizontal scrollbar
+      if (ui7_ctx->cm->show_hz_scroolbar) szs -= slider_w - 2;
       // Lowest Height of Slider Obj
       int lszs = 20;  // Lowest Slider size
       // Calculate Slider Height
@@ -499,30 +511,31 @@ void UI7CtxEndMenu() {
       // Process MenuDragging
       auto objmbg = UI7CtxGetObject("menu_bg" + ui7_ctx->cm->menuid.real_id);
       // Patch that sets scrolling to 0 if max pos is not out of screen
-      if (ui7_ctx->cm->scrolling_offset != 0.f && ui7_ctx->cm->ms[1] < 235) {
-        ui7_ctx->cm->scrolling_offset = 0.f;
+      if (ui7_ctx->cm->scrolling_offset[1] != 0.f && ui7_ctx->cm->ms[1] < 235) {
+        ui7_ctx->cm->scrolling_offset[1] = 0.f;
       }
+      /// TODO: Use Deltatime somehow here
       // Auto scroll back if last object is on screen
-      if (ui7_ctx->cm->scrolling_offset > ui7_ctx->cm->ms[1] - 240 &&
+      if (ui7_ctx->cm->scrolling_offset[1] > ui7_ctx->cm->ms[1] - 240 &&
           ui7_ctx->cm->ms[1] != 0 && ui7_ctx->cm->ms[1] >= 235) {
-        ui7_ctx->cm->scrolling_offset -= 0.3 * ui7_ctx->delta;
+        ui7_ctx->cm->scrolling_offset[1] -= 3.f;
         // Patch to Scroll to perfect pos
-        if (ui7_ctx->cm->scrolling_offset < ui7_ctx->cm->ms[1] - 240) {
-          ui7_ctx->cm->scrolling_offset = ui7_ctx->cm->ms[1] - 240;
+        if (ui7_ctx->cm->scrolling_offset[1] < ui7_ctx->cm->ms[1] - 240) {
+          ui7_ctx->cm->scrolling_offset[1] = ui7_ctx->cm->ms[1] - 240;
         }
       }
       // Auto Scroll back if offset gets below 0
-      if (ui7_ctx->cm->scrolling_offset < 0) {
-        ui7_ctx->cm->scrolling_offset += 0.3 * ui7_ctx->delta;
-        if (ui7_ctx->cm->scrolling_offset > 0)
-          ui7_ctx->cm->scrolling_offset = 0;
+      if (ui7_ctx->cm->scrolling_offset[1] < 0) {
+        ui7_ctx->cm->scrolling_offset[1] += 3.f;
+        if (ui7_ctx->cm->scrolling_offset[1] > 0)
+          ui7_ctx->cm->scrolling_offset[1] = 0;
       }
 
       // Zero out scrolling_mod if it goeas < -40
       // or > 40 over the max size
-      if (ui7_ctx->cm->scrolling_offset < -40 ||
-          ui7_ctx->cm->scrolling_offset > ui7_ctx->cm->ms[1] - 200) {
-        ui7_ctx->cm->scrolling_mod = 0.f;
+      if (ui7_ctx->cm->scrolling_offset[1] < -40 ||
+          ui7_ctx->cm->scrolling_offset[1] > ui7_ctx->cm->ms[1] - 200) {
+        ui7_ctx->cm->scrolling_mod[1] = 0.f;
       }
       if (ui7_ctx->cm->has_touch) {
         auto np = Palladium::Hid::GetTouchPosition();
@@ -545,15 +558,15 @@ void UI7CtxEndMenu() {
                           NVec2(8, 240 - ui7_ctx->cm->tbh - 10))) {
             objmbg->is_dragged = true;
             // Check if and do nothing if the scrolling ofset goes out of screen
-            if (ui7_ctx->cm->scrolling_offset < ui7_ctx->cm->ms[1] - 200 &&
-                ui7_ctx->cm->scrolling_offset > -40) {
+            if (ui7_ctx->cm->scrolling_offset[1] < ui7_ctx->cm->ms[1] - 200 &&
+                ui7_ctx->cm->scrolling_offset[1] > -40) {
               float cursor_mod = (ui7_ctx->cm->mdp[1] - np[1]);
-              if (ui7_ctx->cm->scrolling_mod <= 4.f &&
-                  ui7_ctx->cm->scrolling_mod >= -4 && cursor_mod != 0.0f) {
+              if (ui7_ctx->cm->scrolling_mod[1] <= 4.f &&
+                  ui7_ctx->cm->scrolling_mod[1] >= -4 && cursor_mod != 0.0f) {
                 if (cursor_mod > 2) {
-                  ui7_ctx->cm->scrolling_mod = cursor_mod;
+                  ui7_ctx->cm->scrolling_mod[1] = cursor_mod;
                 } else if (cursor_mod < -2) {
-                  ui7_ctx->cm->scrolling_mod = cursor_mod;
+                  ui7_ctx->cm->scrolling_mod[1] = cursor_mod;
                 }
               }
             }
@@ -563,18 +576,18 @@ void UI7CtxEndMenu() {
         }
       }
       // New Scrolling efect
-      if (ui7_ctx->cm->scrolling_mod != 0)
-        ui7_ctx->cm->scrolling_offset += ui7_ctx->cm->scrolling_mod;
+      if (ui7_ctx->cm->scrolling_mod[1] != 0)
+        ui7_ctx->cm->scrolling_offset[1] += ui7_ctx->cm->scrolling_mod[1];
       // Slow out the effect
-      if (ui7_ctx->cm->scrolling_mod < 0.f) {
-        ui7_ctx->cm->scrolling_mod += 0.4f;
-        if (ui7_ctx->cm->scrolling_mod > 0.f) {
-          ui7_ctx->cm->scrolling_mod = 0.f;
+      if (ui7_ctx->cm->scrolling_mod[1] < 0.f) {
+        ui7_ctx->cm->scrolling_mod[1] += 0.4f;
+        if (ui7_ctx->cm->scrolling_mod[1] > 0.f) {
+          ui7_ctx->cm->scrolling_mod[1] = 0.f;
         }
-      } else if (ui7_ctx->cm->scrolling_mod > 0.f) {
-        ui7_ctx->cm->scrolling_mod -= 0.4f;
-        if (ui7_ctx->cm->scrolling_mod < 0.f) {
-          ui7_ctx->cm->scrolling_mod = 0.f;
+      } else if (ui7_ctx->cm->scrolling_mod[1] > 0.f) {
+        ui7_ctx->cm->scrolling_mod[1] -= 0.4f;
+        if (ui7_ctx->cm->scrolling_mod[1] < 0.f) {
+          ui7_ctx->cm->scrolling_mod[1] = 0.f;
         }
       }
       // Process Slider Dragging
@@ -595,7 +608,7 @@ void UI7CtxEndMenu() {
                                             (szs - slider_rh - 4)),
                          0.0f, 1.0f);
 
-          ui7_ctx->cm->scrolling_offset =
+          ui7_ctx->cm->scrolling_offset[1] =
               drag_pos * (ui7_ctx->cm->ms[1] - 240.0f);
         }
       } else if (Palladium::Hid::IsEvent("touch", Palladium::Hid::Up) &&
@@ -608,7 +621,7 @@ void UI7CtxEndMenu() {
           tsp +
           std::clamp(static_cast<float>(
                          (szs - slider_rh - 4) *
-                         (static_cast<float>(ui7_ctx->cm->scrolling_offset) /
+                         (static_cast<float>(ui7_ctx->cm->scrolling_offset[1]) /
                           static_cast<float>(ui7_ctx->cm->ms[1] - 240.f))),
                      0.f, static_cast<float>(szs - slider_rh - 4));
 
@@ -619,8 +632,8 @@ void UI7CtxEndMenu() {
                                        NVec2(slider_w, slider_rh), slider_clr);
     } else {
       // Set scrollingoffset and mod to 0 if not scrolling enabled
-      ui7_ctx->cm->scrolling_offset = 0.f;
-      ui7_ctx->cm->scrolling_mod = 0.f;
+      ui7_ctx->cm->scrolling_offset[1] = 0.f;
+      ui7_ctx->cm->scrolling_mod[1] = 0.f;
     }
   }
   ui7_ctx->active_menus.push_back(ui7_ctx->cm);
@@ -771,6 +784,10 @@ bool Button(const std::string &label, NVec2 size) {
   }
   PDColor btn = PDColor_Button;
   NVec2 pos = GetCursorPos();
+  if (ui7_ctx->cm->next_item_opts.horizontal_align == UI7Horizontal_Center) {
+    pos[0] =
+        ((ui7_ctx->cm->screen_size[0] - 10) * 0.5) - ((size[0] - pos[0]) * 0.5);
+  }
 
   MoveCursor(size);
   ui7_ctx->cm->ctrl->AddObj();
@@ -870,7 +887,7 @@ void Progressbar(float value) {
   if (!UI7CtxValidate()) return;
   NVec2 pos = GetCursorPos();
   NVec2 size = NVec2(Palladium::LI::GetScreenSize().x() - (pos[0] * 2), 20);
-  if (ui7_ctx->cm->show_scroolbar && ui7_ctx->cm->enable_scrolling)
+  if (ui7_ctx->cm->show_vt_scroolbar && ui7_ctx->cm->vertical_scrolling)
     size[0] -= 16;
   MoveCursor(size);
   ui7_ctx->cm->ctrl->AddObj();
@@ -1004,7 +1021,8 @@ bool BeginMenu(const std::string &title, NVec2 size, UI7MenuFlags flags) {
     ui7_ctx->cm->tbh = 0.f;
   }
   if (flags & UI7MenuFlags_TitleMid) txtflags = PDTextFlags_AlignMid;
-  ui7_ctx->cm->enable_scrolling = (flags & UI7MenuFlags_Scrolling);
+  ui7_ctx->cm->vertical_scrolling = (flags & UI7MenuFlags_VtScrolling);
+  ui7_ctx->cm->horizontal_scrolling = (flags & UI7MenuFlags_HzScrolling);
 
   // Render
   ui7_ctx->cm->background->AddRectangle(NVec2(), size, PDColor_Background);
@@ -1087,7 +1105,7 @@ void ColorSelector(const std::string &label, unsigned int &color) {
         InBox(Palladium::Hid::GetLastTouchPosition(), pos, inp)) {
       ui7_ctx->cm->submenu = id.ID();
       // Nullify scrolling mod to fix freeze
-      ui7_ctx->cm->scrolling_mod = 0.0f;
+      ui7_ctx->cm->scrolling_mod[1] = 0.0f;
       Palladium::Hid::Lock();
       Palladium::Hid::Clear();
     }
@@ -1308,7 +1326,7 @@ void Separator() {
   if (!UI7CtxInMenu()) return;
   NVec2 pos = GetCursorPos();
   NVec2 size = NVec2(
-      ui7_ctx->cm->screen_size[0] - (ui7_ctx->cm->enable_scrolling ? 24 : 10),
+      ui7_ctx->cm->screen_size[0] - (ui7_ctx->cm->vertical_scrolling ? 24 : 10),
       1);
   MoveCursor(size);
   ui7_ctx->cm->ctrl->AddObj();
@@ -1327,20 +1345,20 @@ void Debug() {
 float Menu::GetScrollingOffset() {
   if (!UI7CtxValidate()) return 0.f;
   if (!UI7CtxInMenu()) return 0.f;
-  return ui7_ctx->cm->scrolling_offset;
+  return ui7_ctx->cm->scrolling_offset[1];
 }
 
 void Menu::SetScrollingOffset(float off) {
   if (!UI7CtxValidate()) return;
   if (!UI7CtxInMenu()) return;
-  ui7_ctx->cm->scrolling_offset = off;
-  ui7_ctx->cm->scrolling_mod = 0.f;
+  ui7_ctx->cm->scrolling_offset[1] = off;
+  ui7_ctx->cm->scrolling_mod[1] = 0.f;
 }
 
 bool Menu::IsScrolling() {
   if (!UI7CtxValidate()) return false;
   if (!UI7CtxInMenu()) return false;
-  return ui7_ctx->cm->scrolling_mod != 0.f;
+  return ui7_ctx->cm->scrolling_mod[1] != 0.f;
 }
 
 void MoveCursor(NVec2 size) {
@@ -1356,12 +1374,13 @@ void MoveCursor(NVec2 size) {
     ui7_ctx->cm->cursor += NVec2(0, size[1] + 5);
   }
   ui7_ctx->cm->ms = NVec2(ui7_ctx->cm->slc[0], ui7_ctx->cm->cursor[1]);
+  ui7_ctx->cm->next_item_opts = UI7_ItemOpts();
 }
 
 bool HandleScrolling(NVec2 &pos, NVec2 size) {
-  if (ui7_ctx->cm->enable_scrolling) {
+  if (ui7_ctx->cm->vertical_scrolling) {
     NVec2 pb = pos;
-    pos -= NVec2(0, ui7_ctx->cm->scrolling_offset);
+    pos -= NVec2(0, ui7_ctx->cm->scrolling_offset[1]);
     if (pos[1] > 240 ||
         (pos[1] + size[1] < ui7_ctx->cm->tbh - 5 && pb[1] > ui7_ctx->cm->tbh))
       return true;
@@ -1418,5 +1437,12 @@ UI7DrawList::Ref Menu::GetForegroundList() {
   if (!UI7CtxValidate()) return nullptr;
   if (!UI7CtxInMenu()) return ui7_ctx->bdl;
   return ui7_ctx->cm->front;
+}
+
+void Next::Align(UI7Horizontal hz, UI7Vertical vt) {
+  if (!UI7CtxValidate()) return;
+  if (!UI7CtxInMenu()) return;
+  ui7_ctx->cm->next_item_opts.horizontal_align = hz;
+  ui7_ctx->cm->next_item_opts.vertical_align = vt;
 }
 }  // namespace UI7

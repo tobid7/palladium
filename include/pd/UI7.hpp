@@ -14,7 +14,9 @@ enum UI7MenuFlags_ {
   UI7MenuFlags_None = 0,
   UI7MenuFlags_NoTitlebar = UI7MAKEFLAG(0),
   UI7MenuFlags_TitleMid = UI7MAKEFLAG(1),
-  UI7MenuFlags_Scrolling = MAKEFLAG(2),
+  UI7MenuFlags_HzScrolling = MAKEFLAG(2),
+  UI7MenuFlags_VtScrolling = MAKEFLAG(3),
+  UI7MenuFlags_Scrolling = UI7MenuFlags_HzScrolling | UI7MenuFlags_VtScrolling,
 };
 
 enum UI7Horizontal {
@@ -121,6 +123,11 @@ float GetScrollingOffset();
 void SetScrollingOffset(float off);
 bool IsScrolling();
 }  // namespace Menu
+namespace Next {
+// Alignment in ScreenSpace
+void Align(UI7Horizontal hz = UI7Horizontal_Left,
+           UI7Vertical vt = UI7Vertical_Top);
+}  // namespace Next
 // DrawLists
 UI7DrawList::Ref GetForegroundList();
 UI7DrawList::Ref GetBackgroundList();

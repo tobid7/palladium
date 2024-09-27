@@ -2,9 +2,13 @@
 
 #include <filesystem>
 #include <fstream>
+#include <map>
 #include <pd/base/Lang.hpp>
 
 static nlohmann::json appJson;
+
+/// Lang Map    KEY          STRING
+static std::map<std::string, std::string> lang_table;
 
 std::string Palladium::Lang::GetSys() {
   u8 language = 1;
@@ -65,10 +69,9 @@ std::string Palladium::Lang::GetSys() {
   }
 }
 std::string Palladium::Lang::Get(const std::string &key) {
-  if (!appJson.contains("keys")) return "ERR-01";
-  nlohmann::json js = appJson["keys"];
-  if (!js.contains(key)) return key;
-  return js.at(key).get<std::string>();
+  auto tmp = lang_table.find(key);
+  if (tmp == lang_table.end()) return "ERR-02";
+  return tmp->second;
 }
 
 void Palladium::Lang::Load(const std::string &lang) {
@@ -82,7 +85,6 @@ void Palladium::Lang::Load(const std::string &lang) {
     if (appJson.is_discarded()) {
       appJson = {};
     }
-    return;
   } else {
     values.open("romfs:/lang/en/app.json", std::ios::in);
     if (values.is_open()) {
@@ -92,7 +94,12 @@ void Palladium::Lang::Load(const std::string &lang) {
     if (appJson.is_discarded()) {
       appJson = {};
     }
-    return;
+  }
+  lang_table.clear();
+  if (appJson.contains("keys")) {
+    for (auto &it : appJson["keys"].items()) {
+      lang_table[it.key()] = it.value().get<std::string>();
+    }
   }
 }
 
