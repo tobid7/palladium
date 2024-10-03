@@ -120,6 +120,15 @@ class DrawCmd {
     }
     Palladium::LI::OnScreen(screen);
     Palladium::LI::Layer(layer);
+    // floor the coords to prevent graphical glitches
+    if (fcs) {
+      rect[0] = std::floor(rect[0]);
+      rect[1] = std::floor(rect[1]);
+      rect[2] = std::floor(rect[2]);
+      rect[3] = std::floor(rect[3]);
+      add_coords[0] = std::floor(add_coords[0]);
+      add_coords[1] = std::floor(add_coords[1]);
+    }
     if (type == DrawCmdType_Rect) {
       Palladium::LI::DrawRect(NVec2(rect[0], rect[1]), NVec2(rect[2], rect[3]),
                               clr);
@@ -189,6 +198,7 @@ class DrawCmd {
   NVec2 text_box = NVec2();              // Maximum text Box
   bool screen = false;                   // Defines Top or Bottom
   int layer = 0;                         // Defines the Rendering Layer
+  bool fcs = false;                       // Floor Coords System
 };
 
 void UI7DrawList::AddRectangle(NVec2 pos, NVec2 szs, PDColor clr) {
@@ -201,6 +211,7 @@ void UI7DrawList::AddRectangle(NVec2 pos, NVec2 szs, PDColor clr) {
   cmd->clr = Palladium::ThemeActive()->Get(clr);
   cmd->type = DrawCmdType_Rect;
   cmd->layer = bl + layer;
+  cmd->fcs = true;
   AddDebugCall(cmd);
   AddCall(cmd);
 }
@@ -215,6 +226,7 @@ void UI7DrawList::AddRectangle(NVec2 pos, NVec2 szs, unsigned int clr) {
   cmd->clr = clr;
   cmd->type = DrawCmdType_Rect;
   cmd->layer = bl + layer;
+  cmd->fcs = true;
   AddDebugCall(cmd);
   AddCall(cmd);
 }
@@ -262,6 +274,7 @@ void UI7DrawList::AddText(NVec2 pos, const std::string &text, PDColor clr,
   cmd->text_box = box;
   cmd->type = DrawCmdType_Text;
   cmd->layer = bl + layer + 1;
+  cmd->fcs = true;
   AddDebugCall(cmd);
   AddCall(cmd);
 }
@@ -278,6 +291,7 @@ void UI7DrawList::AddText(NVec2 pos, const std::string &text, unsigned int clr,
   cmd->clr = clr;
   cmd->type = DrawCmdType_Text;
   cmd->layer = bl + layer + 1;
+  cmd->fcs = true;
   AddDebugCall(cmd);
   AddCall(cmd);
 }
@@ -290,6 +304,7 @@ void UI7DrawList::AddImage(NVec2 pos, Palladium::Image::Ref img) {
   cmd->img = img;
   cmd->type = DrawCmdType_Image;
   cmd->layer = bl + layer + 1;  // USe Text Layer as well
+  cmd->fcs = true;
   AddDebugCall(cmd);
   AddCall(cmd);
 }

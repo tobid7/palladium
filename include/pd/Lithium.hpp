@@ -30,6 +30,7 @@ enum PDLithiumFlags_ {
   PDLithiumFlags_None = 0,
   PDLithiumFlags_TMS = MAKEFLAG(0),  // Text Map System
   PDLithiumFlags_LRS = MAKEFLAG(1),  // Layer Render System
+  PDLithiumFlags_FCS = MAKEFLAG(2),  // Floor Coords System
   PDLithiumFlags_Default = PDLithiumFlags_TMS,
 };
 
@@ -112,6 +113,7 @@ class LI {
     NVec4 uv;
     int layer = 0;
     int cmd_type = 0;
+    bool fcs = false; // Floor Coords System
     unsigned int clr = 0;
     bool sfr = false;  // SysFontRender
     Texture::Ref tex = nullptr;

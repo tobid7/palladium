@@ -375,6 +375,17 @@ void LI::RenderFrame(bool bottom) {
         }
         sfr = c.sfr;
       }
+      // FCS
+      if (c.fcs) {
+        c.top[0] = std::floor(c.top[0]);
+        c.top[1] = std::floor(c.top[1]);
+        c.top[2] = std::ceil(c.top[2]);
+        c.top[3] = std::floor(c.top[3]);
+        c.bot[0] = std::floor(c.bot[0]);
+        c.bot[1] = std::ceil(c.bot[1]);
+        c.bot[2] = std::ceil(c.bot[2]);
+        c.bot[3] = std::ceil(c.bot[3]);
+      }
       if (c.cmd_type == 1) {
         // Tiangle 1
         idx_buffer[idx_index++] = vertex_index + 0;
@@ -491,6 +502,7 @@ void LI::DrawRect(NVec2 pos, NVec2 size, unsigned int clr, NVec4 uvs) {
     return;
 
   MakeRect(c.top, c.bot, pos, size);
+  c.fcs = flags & PDLithiumFlags_FCS;
   c.uv = uvs;
   c.clr = clr;
   c.tex = active_texture;
@@ -511,6 +523,7 @@ void LI::DrawTriangle(NVec2 a, NVec2 b, NVec2 c, unsigned int clr) {
        c[1] > screen_size[1]) ||
       (a[0] < 0 && b[0] < 0 && c[0] < 0) || (a[1] < 0 && b[1] < 0 && c[1] < 0))
     return;
+  cmd.fcs = flags & PDLithiumFlags_FCS;
   cmd.top = NVec4(a, b);
   cmd.bot = NVec4(c, NVec2());
   cmd.uv = NVec4(0, 1, 1, 0);
@@ -525,6 +538,8 @@ void LI::DrawTriangle(NVec2 a, NVec2 b, NVec2 c, unsigned int clr) {
 void LI::DrawCircle(NVec2 pos, float r, unsigned int color, int segments) {
   if (segments < 3) return;
   Cmd c;
+  // Not Tested yet ...
+  c.fcs = flags & PDLithiumFlags_FCS;
   c.top = NVec4(pos, NVec2(r, segments));
   c.bot = NVec4();
   c.uv = NVec4(0, 1, 1, 0);
@@ -557,6 +572,8 @@ void LI::DrawLine(NVec2 a, NVec2 b, unsigned int clr, int t) {
   float py3 = b[1] - offset[1];
 
   Cmd c;
+  // Schould be always true as lines otherwise could disappear for some reason
+  c.fcs = flags & PDLithiumFlags_FCS;
   c.top = NVec4(px2, py2, px3, py3);
   c.bot = NVec4(px0, py0, px1, py1);
   c.uv = NVec4(0, 1, 1, 0);
@@ -693,6 +710,9 @@ NVec2 LI::GetTextDimensions(const std::string& text) {
 void LI::DrawText(NVec2 pos, unsigned int color, const std::string& text,
                   PDTextFlags flags, NVec2 ap) {
   if (!font) return;
+  PDLithiumFlags tmp_flags = flags;
+  // Do not use FCS in Text Rendering...
+  flags &= ~PDLithiumFlags_FCS;
   std::string txt = text;
   NVec2 offset;
   float txt_scale = text_scale;
@@ -763,5 +783,6 @@ void LI::DrawText(NVec2 pos, unsigned int color, const std::string& text,
     offset[1] += line_height;
     offset[0] = 0;
   }
+  flags = tmp_flags;
 }
 }  // namespace Palladium
