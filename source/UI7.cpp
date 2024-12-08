@@ -198,7 +198,7 @@ class DrawCmd {
   NVec2 text_box = NVec2();              // Maximum text Box
   bool screen = false;                   // Defines Top or Bottom
   int layer = 0;                         // Defines the Rendering Layer
-  bool fcs = false;                       // Floor Coords System
+  bool fcs = false;                      // Floor Coords System
 };
 
 void UI7DrawList::AddRectangle(NVec2 pos, NVec2 szs, PDColor clr) {

@@ -130,7 +130,8 @@ void LIFont::LoadTFF(const std::string path, int px_size) {
     free(bitmap);
     cpmap[c] = codepoint;
   }
-  ftex->LoadPixels(fmap, type, type);
+  ftex->LoadPixels(fmap, type, type, Palladium::Texture::RGBA32,
+                   Palladium::Texture::LINEAR);
   this->tex.push_back(ftex);
 }
 

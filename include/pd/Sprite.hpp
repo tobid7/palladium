@@ -58,6 +58,6 @@ class Sprite {
 
  private:
   ///// @param sprite The Sprite
-  //C2D_Sprite sprite;
+  // C2D_Sprite sprite;
 };
 }  // namespace Palladium

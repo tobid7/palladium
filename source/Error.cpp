@@ -1,10 +1,10 @@
 #include <3ds.h>
 
+#include <fstream>
 #include <pd/Error.hpp>
 #include <pd/UI7.hpp>
 #include <pd/internal_db.hpp>
 #include <pd/palladium.hpp>
-#include <fstream>
 
 void pdi_save_report(const std::string& msg) {
   auto ts = Palladium::GetTimeStr();

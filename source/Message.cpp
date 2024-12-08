@@ -1,9 +1,9 @@
 #include <algorithm>
 #include <memory>
-#include <pd/base/Color.hpp>
-#include <pd/Message.hpp>
-#include <pd/palladium.hpp>
 #include <pd/Lithium.hpp>
+#include <pd/Message.hpp>
+#include <pd/base/Color.hpp>
+#include <pd/palladium.hpp>
 #include <vector>
 
 extern bool pdi_debugging;
@@ -61,13 +61,13 @@ void ProcessMessages() {
       LI::DrawText(pos + NVec2(5, 17), tc, msg_lst[i]->message);
       if (pdi_debugging)
         LI::DrawText(pos + NVec2(msg_box.x() + 5, 1), tc,
-                    std::to_string((int)msg_lst[i]->animtime));
+                     std::to_string((int)msg_lst[i]->animtime));
       // fix for Startup lol
       // Todo: Only do this on AppStart
       if (msg_lst[i]->animtime == 0) {
         msg_lst[i]->animtime += 1;
       } else {
-        msg_lst[i]->animtime += Palladium::GetDeltaTime()*0.1f;
+        msg_lst[i]->animtime += Palladium::GetDeltaTime() * 0.1f;
       }
       if (msg_lst[i]->animtime > anim_len) {
         msg_lst.erase(msg_lst.begin() + i);

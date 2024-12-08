@@ -113,7 +113,7 @@ class LI {
     NVec4 uv;
     int layer = 0;
     int cmd_type = 0;
-    bool fcs = false; // Floor Coords System
+    bool fcs = false;  // Floor Coords System
     unsigned int clr = 0;
     bool sfr = false;  // SysFontRender
     Texture::Ref tex = nullptr;

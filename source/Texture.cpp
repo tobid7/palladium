@@ -1,9 +1,9 @@
 #include <pd/external/stb_image.h>
 #include <pd/external/stb_image_write.h>
 
+#include <pd/Error.hpp>
 #include <pd/Texture.hpp>
 #include <pd/internal_db.hpp>
-#include <pd/Error.hpp>
 
 namespace pdi {
 static bool single_bit(unsigned int v) { return v && !(v & (v - 1)); }
@@ -54,8 +54,8 @@ int GetBPP(Texture::Type type) {
     return 1;
   return 0;  // Error
 }
-void Texture::MakeTex(std::vector<unsigned char> &buf, int w, int h,
-                      Type type) {
+void Texture::MakeTex(std::vector<unsigned char> &buf, int w, int h, Type type,
+                      Filter filter) {
   if (!tex) {
     return;
   }
@@ -104,9 +104,10 @@ void Texture::MakeTex(std::vector<unsigned char> &buf, int w, int h,
   this->uvs.w() = 1.0 - ((float)h / (float)tex_size.y());
 
   // Texture Setup
+  auto fltr = (filter == NEAREST ? GPU_NEAREST : GPU_LINEAR);
   auto tex_fmt = GetTexFmt(type);
   C3D_TexInit(tex, (u16)tex_size.x(), (u16)tex_size.y(), tex_fmt);
-  C3D_TexSetFilter(tex, GPU_NEAREST, GPU_NEAREST);
+  C3D_TexSetFilter(tex, fltr, fltr);
 
   memset(tex->data, 0, tex->size);
 
@@ -202,7 +203,7 @@ NVec2 Texture::GetTexSize() {
 }
 
 void Texture::LoadPixels(const std::vector<unsigned char> &data, int w, int h,
-                         Type type) {
+                         Type type, Filter filter) {
   Delete();
   int bpp = GetBPP(type);
   Palladium::InlineAssert(bpp, "Invalid Type");
@@ -216,7 +217,7 @@ void Texture::LoadPixels(const std::vector<unsigned char> &data, int w, int h,
   }
   tex = new C3D_Tex;
   std::vector<unsigned char> wimg(data);
-  MakeTex(wimg, w, h, type);
+  MakeTex(wimg, w, h, type, filter);
 }
 
 void Texture::ExternalLoad(C3D_Tex *tex, NVec2 rszs, NVec4 uvs) {

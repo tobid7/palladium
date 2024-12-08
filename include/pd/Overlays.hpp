@@ -26,8 +26,9 @@ enum PDKeyboardFlags_ {
   PDKeyboardFlags_BlendTop = 1 << 0,
   PDKeyboardFlags_BlendBottom = 1 << 1,
   PDKeyboardFlags_LockControls = 1 << 2,
-  PDKeyboardFlags_Default =
-      PDKeyboardFlags_BlendTop | PDKeyboardFlags_BlendBottom | PDKeyboardFlags_LockControls,
+  PDKeyboardFlags_Default = PDKeyboardFlags_BlendTop |
+                            PDKeyboardFlags_BlendBottom |
+                            PDKeyboardFlags_LockControls,
 };
 
 namespace Palladium {

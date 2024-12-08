@@ -17,6 +17,11 @@ class Texture {
     RGB24,
     A8,
   };
+
+  enum Filter {
+    NEAREST,
+    LINEAR,
+  };
   Texture() {
     // Set Default UV
     this->uvs[0] = 0.0f;
@@ -45,10 +50,11 @@ class Texture {
   /// @param w Width of data
   /// @param h Height of Data
   /// @param type Type of Data (default is RGBA32)
-  void LoadPixels(const std::vector<unsigned char>& data, int w, int h, Type type = RGBA32);
+  void LoadPixels(const std::vector<unsigned char>& data, int w, int h,
+                  Type type = RGBA32, Filter filter = NEAREST);
 
   /// @brief This function sets up a texture Object based on the input
-  /// Data and a self setup C3D_Tex. You dont need to delete it as 
+  /// Data and a self setup C3D_Tex. You dont need to delete it as
   /// This class does this automatically
   void ExternalLoad(C3D_Tex* tex, NVec2 rszs, NVec4 uvs);
 
@@ -61,7 +67,8 @@ class Texture {
   void AutoDelete(bool enable) { ad = enable; }
 
  private:
-  void MakeTex(std::vector<unsigned char>& buf, int w, int h, Type type = RGBA32);
+  void MakeTex(std::vector<unsigned char>& buf, int w, int h,
+               Type type = RGBA32, Filter filter = NEAREST);
   C3D_Tex* tex = nullptr;
   NVec2 img_size;
   NVec4 uvs;

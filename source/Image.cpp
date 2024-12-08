@@ -29,7 +29,7 @@ Texture::Ref Image::Get() {
 
 void Image::Set(Texture::Ref i, NVec4 uvs) {
   Delete();
-  if(uvs.x() != -1) custom_uvs = uvs;
+  if (uvs.x() != -1) custom_uvs = uvs;
   img = i;
 }
 

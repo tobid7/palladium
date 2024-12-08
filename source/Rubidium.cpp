@@ -1,7 +1,7 @@
 #include <pd/external/stb_image.h>
 
-#include <pd/base/Color.hpp>
 #include <pd/Rubidium.hpp>
+#include <pd/base/Color.hpp>
 
 void d7_pixel_blend(Palladium::Rubidium* rb, int x, int y, unsigned int clr,
                     float blend) {
