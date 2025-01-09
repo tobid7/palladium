@@ -7,12 +7,30 @@
                 "C:/devkitpro/libctru/include/**",
                 "C:/devkitpro/devkitARM/include/**",
                 "C:/devkitpro/devkitARM/arm-none-eabi/include/**",
-                "C:/devkitpro/portlibs/3ds/include/**",
+                "C:/devkitpro/portlibs/3ds/include/**"
+            ],
+            "defines": [
+                "BUILD_CTR"
+            ],
+            "compilerPath": "C:/devkitPro/devkitARM/bin/arm-none-eabi-g++.exe",
+            "intelliSenseMode": "gcc-arm",
+            "cStandard": "c11",
+            "cppStandard": "c++20"
+        },
+        {
+            "name": "3DS | Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
                 "/opt/devkitpro/libctru/include/**",
-                "/opt/devkitpro/portlibs/**"
-                
-            ]
+                "/opt/devkitpro/portlibs/3ds/include/**"
+            ],
+            "defines": [
+                "BUILD_CTR"
+            ],
+            "cStandard": "c17",
+            "cppStandard": "gnu++20",
+            "intelliSenseMode": "gcc-arm"
         }
     ],
     "version": 4
-} 
+}

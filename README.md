@@ -1,62 +1,41 @@
 # Palladium
-Create README ? 
-# RenderD7 as Submodule (0.9.5+)
-To use RenderD7 just use this command: `git submodule add https://github.com/NPI-D7/RenderD7` and add `-b v0.9.5` for example for a specific version.
 
+## Build types
 
-And in Your Project Makefile add this
-```
-# Make Sure to Change this paths if your Submodule
-# is located somewhere else
-RENDERD7_SRC := RenderD7/source RenderD7/external
-RENDERD7_INC := RenderD7/include
-# Libraries used for RenderD7
-# if you already use -lm, -lctru etc place a # before -lm
-RENDERD7_LIBS := -lcurl -lmbedtls -lmbedx509 -lmbedcrypto -lz -lm -lcitro2dd -lcitro3d -lctru
-```
-Now you need to add it to your sources and includes
-```
-SOURCES		:=	source $(RENDERD7_SRC)
-INCLUDES	:=	source $(RENDERD7_INC)
+```bash
+PD_EXTENDED_DEBUG=0 # Include things like ResultDecoder and Check for Memory usage
+PD_DEBUG=0          # not yet
+PD_NO_SAFE_CODE=0   # Remove All not important safetey checks
 ```
 
-Example from rd7tf
-### Installation (0.8.0-0.9.4) (OUTDATED)
-Download a Package From Releses Page
-`https://github.com/NPI-D7/RenderD7/releases/download/v0.9.4/renderd7.tar.bz2 -o renderd7.tar.bz2`
-Then Extract it to your Libraries Path
-`bzip2 -cd renderd7.tar.bz2 | tar -xf - -C path_to_your_libs`
-Finally put `-lrenderd7` to the First Place and add the path_to_your_libs
-```
-LIBS	:= -lrenderd7 -lcurl -lstdc++ -lm -lcitro2d -lcitro3d -lctru
-#---------------------------------------------------------------------------------
-# list of directories containing libraries, this must be the top level containing
-# include and lib
-#---------------------------------------------------------------------------------
-LIBDIRS	:= $(PORTLIBS) $(CTRULIB) ../path_to_your_libs
-```
-Make sure that `-lrenderd7` is before `-lcitro2d`, `-lcitro3d`, `-lctru`.
-Here an example tree
-```
-Example-App
-├── gfx
-├── libs
-│   ├── include
-│   │   ├── rd7.hpp
-│   │   └── renderd7
-│   └── lib
-│       ├── librenderd7.a
-│       └── librenderd7d.a
-├── Makefile
-├── romfs
-│   └── gfx
-└── src
-    └── main.cpp
-```
-# Credits
-- NPI-D7
-  - Tobi-D7 Main Dev
+## Building
 
-Some Icons are From
-https://icons8.de/
-See Subfolder Readmes
+Install Dependencies:
+
+```bash
+# This Command will install everything
+(dkp-)pacman -S --noconfirm 3ds-dev 3ds-portlibs
+```
+
+Building:
+
+If you want to have the lib in a projects `libs` dir or so you can simply add `-DCMAKE_INSTALL_PREFIX=./res` to the cmake command and copy the dirs from res to you libs folder
+
+For Debug build the Cmake Script generates a `libpalladiumd.a`
+
+```bash
+mkdir -p build
+cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release # Make sure to build in Release Mode (exept you want to debug some issues)
+make
+make install
+```
+
+## Credits
+| Icon | Username | Description |
+|---|---|---|
+| <img src="https://github.com/tobid7.png" alt="https://github.com/tobid7" width="48"/>                 | [tobid7](https://github.com/tobid7)                 | main dev of RenderD7, Palladium                               |
+| <img src="https://github.com/devkitpro.png" alt="https://github.com/devkitpro" width="48"/>           | [devkitpro](https://github.com/devkitpro)           | devkitarm, picasso, libctru and citro3d                       |
+| <img src="https://github.com/Universal-Team.png" alt="https://github.com/Universal-Team" width="48"/> | [Universal-Team](https://github.com/Universal-Team) | Inspiration for Lang System, Cia Installer Code |
+| <img src="https://github.com/nothings.png" alt="https://github.com/nothings" width="48"/>             | [nothings](https://github.com/nothings)             | stb_image(_write) and stb_truetype                            |
+| <img src="https://github.com/nlohmann.png" alt="https://github.com/nlohmann" width="48"/>             | [nlohmann](https://github.com/nlohmann)             | for json.hpp                                                  |

@@ -1,27 +1,42 @@
 #pragma once
 
-#include <pd/Error.hpp>
-#include <pd/Hid.hpp>
-#include <pd/Image.hpp>
-#include <pd/Installer.hpp>
-#include <pd/Lithium.hpp>
-#include <pd/Message.hpp>
-#include <pd/Net.hpp>
-#include <pd/Overlays.hpp>
-#include <pd/Rubidium.hpp>
-#include <pd/Sheet.hpp>
-#include <pd/Sound.hpp>
-#include <pd/Texture.hpp>
-#include <pd/Timer.hpp>
-#include <pd/UI7.hpp>
-#include <pd/base/Allocator.hpp>
-#include <pd/base/FileSystem.hpp>
-#include <pd/global_db.hpp>
-#include <pd/palladium.hpp>
+/*
+MIT License
 
-namespace Palladium {
-using Lithium = LI;
-using RB = Rubidium;
-}  // namespace Palladium
+Copyright (c) 2024 tobid7
 
-namespace PD = Palladium;
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+ */
+
+// Common
+#include <pd/common/app.hpp>
+#include <pd/common/lang.hpp>
+#include <pd/common/strings.hpp>
+#include <pd/common/sys.hpp>
+#include <pd/common/timetrace.hpp>
+// Graphics
+#include <pd/graphics/lithium.hpp>
+#include <pd/graphics/texture.hpp>
+// Maths
+#include <pd/maths/bit_util.hpp>
+#include <pd/maths/color.hpp>
+#include <pd/maths/img_convert.hpp>
+#include <pd/maths/vec.hpp>
+
+// namespace Palladium = PD;
