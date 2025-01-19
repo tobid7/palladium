@@ -31,5 +31,6 @@ enum UI7MenuFlags_ {
   UI7MenuFlags_CenterTitle = 1 << 1,
   UI7MenuFlags_HzScrolling = 1 << 2,
   UI7MenuFlags_VtScrolling = 1 << 3,
+  UI7MenuFlags_NoBackground = 1 << 4,
   UI7MenuFlags_Scrolling = UI7MenuFlags_HzScrolling | UI7MenuFlags_VtScrolling,
 };

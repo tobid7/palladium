@@ -23,33 +23,48 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/common/common.hpp>
-#include <pd/graphics/lithium.hpp>
-#include <pd/ui7/theme.hpp>
+#include <pd/ui7/drawlist.hpp>
 
 namespace PD {
 namespace UI7 {
-class DrawList : public SmartCtor<DrawList> {
+class Menu : public SmartCtor<Menu> {
  public:
-  DrawList(LI::Renderer::Ref r) { ren = r; }
-  ~DrawList() = default;
-
-  void AddRectangle(vec2 pos, vec2 szs, const UI7Color& clr);
-  void AddTriangle(vec2 pos0, vec2 pos1, vec2 pos2, const UI7Color& clr);
-  void AddText(vec2 pos, const std::string& text, const UI7Color& clr,
-               LITextFlags flags = 0, vec2 box = vec2());
-  void AddImage(vec2 pos, Texture::Ref img);
-
-  void Clear();
-  void Process();
-
-  int Layer() const { return layer; }
-  void Layer(int v) { layer = v; }
+  Menu(u32 id) {
+    this->id = id;
+    scrolling[0] = false;
+    scrolling[1] = false;
+    scrollbar[0] = false;
+    scrollbar[1] = false;
+    scroll_allowed[0] = false;
+    scroll_allowed[1] = false;
+  };
+  ~Menu() {};
 
  private:
-  int layer;
-  LI::Renderer::Ref ren;
-  std::vector<LI::Command::Ref> commands;
+  u32 id;
+  vec2 cursor;
+  vec2 bcursor;
+  vec2 slcursor;
+  vec4 view_area;
+  vec2 scrolling_off;
+  bool scrolling[2];
+  vec2 scroll_mod;
+  float tbh;
+  bool scrollbar[2];
+  bool scroll_allowed[2];
+  bool has_touch;
+
+  Menu::Ref submenu;
+
+  // DrawLists
+  DrawList::Ref back;
+  DrawList::Ref main;
+  DrawList::Ref front;
+
+  vec2 max;
+  vec2 mouse;
+  vec2 bslpos;
+  vec2 last_size;
 };
 }  // namespace UI7
 }  // namespace PD

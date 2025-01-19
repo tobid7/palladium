@@ -24,7 +24,8 @@ SOFTWARE.
 #include <pd/ui7/drawlist.hpp>
 
 namespace PD {
-void UI7DrawList::AddRectangle(vec2 pos, vec2 szs, const UI7Color& clr) {
+namespace UI7 {
+void DrawList::AddRectangle(vec2 pos, vec2 szs, const UI7Color& clr) {
   if (!ren->InBox(pos, szs, ren->GetViewport())) {
     return;
   }
@@ -37,8 +38,8 @@ void UI7DrawList::AddRectangle(vec2 pos, vec2 szs, const UI7Color& clr) {
   commands.push_back(cmd);
 }
 
-void UI7DrawList::AddTriangle(vec2 pos0, vec2 pos1, vec2 pos2,
-                              const UI7Color& clr) {
+void DrawList::AddTriangle(vec2 pos0, vec2 pos1, vec2 pos2,
+                           const UI7Color& clr) {
   if (!ren->InBox(pos0, pos1, pos2, ren->GetViewport())) {
     return;
   }
@@ -50,16 +51,15 @@ void UI7DrawList::AddTriangle(vec2 pos0, vec2 pos1, vec2 pos2,
   commands.push_back(cmd);
 }
 
-void UI7DrawList::AddText(vec2 pos, const std::string& text,
-                          const UI7Color& clr, LITextFlags flags = 0,
-                          vec2 box = vec2()) {
+void DrawList::AddText(vec2 pos, const std::string& text, const UI7Color& clr,
+                       LITextFlags flags, vec2 box) {
   // Dont create a Command here as TextCommand has autosetup
   // cause it needs to generate multiple commands if
   // Font uses multiple textures
   ren->TextCommand(commands, pos, clr, text, flags, box);
 }
 
-void UI7DrawList::AddImage(vec2 pos, Texture::Ref img) {
+void DrawList::AddImage(vec2 pos, Texture::Ref img) {
   if (!ren->InBox(pos, img->GetSize(), ren->GetViewport())) {
     return;
   }
@@ -72,14 +72,14 @@ void UI7DrawList::AddImage(vec2 pos, Texture::Ref img) {
   commands.push_back(cmd);
 }
 
-void UI7DrawList::Clear() { commands.clear(); }
+void DrawList::Clear() { commands.clear(); }
 
-void UI7DrawList::Process() {
+void DrawList::Process() {
   // UI7 Commands Use LI7 as default feature
   ren->OptiCommandList(commands);
   for (auto command : commands) {
     ren->PushCommand(command);
   }
 }
-
+}  // namespace UI7
 }  // namespace PD

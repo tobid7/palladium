@@ -45,7 +45,9 @@ bool StringEndsWith(const std::string& str,
 }
 
 std::wstring MakeWstring(const std::string& s) {
-  return std::wstring(s.begin(), s.end());
+  // As std::wstring(s.begin(), s.end()); doesn't convert it
+  // Normally this should not be done like this but it works
+  return std::filesystem::path(s).wstring();
 }
 
 const std::string FormatNanos(unsigned long long nanos) {
@@ -124,5 +126,13 @@ const std::string ToHex(const T& v) {
   std::stringstream s;
   s << "0x" << std::setfill('0') << std::setw(sizeof(v) * 2) << std::hex << v;
   return s.str();
+}
+
+u32 FastHash(const std::string& s) {
+  u32 hash = 5381;
+  for (auto& it : s) {
+    hash = (hash * 33) + static_cast<u8>(it);
+  }
+  return hash;
 }
 }  // namespace PD::Strings

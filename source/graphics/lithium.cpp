@@ -75,10 +75,12 @@ void Font::LoadTTF(const std::string& path, int height) {
       off[0] = 0;
     }
 
-    c.uv(vec4(static_cast<float>(off.x() / (float)quad),
-              static_cast<float>(1.f - (off.y() / (float)quad)),
-              static_cast<float>((float)(off.x() + w) / (float)quad),
-              static_cast<float>((float)(off.y() + h) / (float)quad)));
+    vec4 uvs;
+    uvs[0] = static_cast<float>(off.x() / (float)quad);
+    uvs[1] = static_cast<float>(1.f - (off.y() / (float)quad));
+    uvs[2] = static_cast<float>((float)(off.x() + w) / (float)quad);
+    uvs[3] = static_cast<float>(1.f - (float)(off.y() + h) / (float)quad);
+    c.uv(uvs);
 
     c.tex(tex);
     c.size(vec2(w, h));
@@ -94,7 +96,8 @@ void Font::LoadTTF(const std::string& path, int height) {
         font_tex[map_pos + 3] = bitmap[x + y * w];
       }
     }
-    off[0] += w;
+    // Small Patch to avoid some possible artifacts
+    off[0] += w + 1;
     if (off[0] + w > quad) {
       off[1] += pixel_height;
       off[0] = 0;
@@ -123,7 +126,9 @@ void Font::LoadSystemFont() {
   const auto fnt_info = fontGetInfo(fnt);
   const auto glyph_info = fontGetGlyphInfo(fnt);
   this->textures.resize(glyph_info->nSheets + 1);
-  pixel_height = glyph_info->cellHeight;
+  /// Modify the Pixel Height by 1.1f to fit the
+  /// Size og ttf font Rendering
+  pixel_height = glyph_info->cellHeight * 1.1f;
   for (size_t i = 0; i < glyph_info->nSheets; i++) {
     auto stex = Texture::New();
     auto tx = new C3D_Tex;
@@ -226,9 +231,9 @@ Renderer::Renderer(RenderFlags flags) {
   white = Texture::New(pixels, 16, 16);
   UseTex(white);
 
-  font = Font::New();
-  font->LoadSystemFont();
-  // font->LoadTTF("romfs:/ComicNeue.ttf", 32);
+  // Not Loading as Systemfont is freezing
+  // font = Font::New();
+  // font->LoadSystemFont();
 
   area_size = top->GetSize();
 }
@@ -238,12 +243,18 @@ Renderer::~Renderer() {
   C3D_Fini();
 }
 
-bool Renderer::InBox(vec2 pos, vec2 szs, vec4 rect) {
+bool Renderer::InBox(const vec2& pos, const vec2& szs, const vec4& rect) {
   return (pos[0] < rect[2] || pos[1] < rect[3] || pos[0] + szs[0] > rect[0] ||
           pos[1] + szs[1] > rect[1]);
 }
 
-bool Renderer::InBox(vec2 alpha, vec2 bravo, vec2 charlie, vec4 rect) {
+bool Renderer::InBox(const vec2& pos, const vec4& rect) {
+  return (pos.x() > rect.x() && pos.x() < rect.x() + rect.z() &&
+          pos.y() > rect.y() && pos.y() < rect.y() + rect.w());
+}
+
+bool Renderer::InBox(const vec2& alpha, const vec2& bravo, const vec2& charlie,
+                     const vec4& rect) {
   return ((alpha[0] < rect[2] && bravo[0] < rect[2] && charlie[0] < rect[2]) ||
           (alpha[1] < rect[3] && bravo[1] < rect[3] && charlie[1] < rect[3]) ||
           (alpha[0] > 0 && bravo[0] > 0 && charlie[0] > 0) ||
@@ -256,7 +267,7 @@ void Renderer::RotateCorner(vec2& v, float s, float c) {
   v = vec2(x, y);
 }
 
-Rect Renderer::CreateRect(vec2 pos, vec2 size, float angle) {
+Rect Renderer::CreateRect(const vec2& pos, const vec2& size, float angle) {
   vec2 c = size * 0.5f;  // Center
   vec2 corner[4] = {
       vec2(-c[0], -c[1]),
@@ -279,7 +290,7 @@ Rect Renderer::CreateRect(vec2 pos, vec2 size, float angle) {
               corner[3] + pos + c);
 }
 
-Rect Renderer::CreateLine(vec2 a, vec2 b, int t) {
+Rect Renderer::CreateLine(const vec2& a, const vec2& b, int t) {
   // Usin g th evec maths api makes the code as short as it is
   vec2 dir = a - b;
   float len = dir.len();
@@ -306,7 +317,7 @@ void Renderer::SetupCommand(Command::Ref cmd) {
   cmd->Index(cmd_idx++).Layer(current_layer).Tex(current_tex);
 }
 
-void Renderer::QuadCommand(Command::Ref cmd, const Rect& quad, vec4 uv,
+void Renderer::QuadCommand(Command::Ref cmd, const Rect& quad, const vec4& uv,
                            u32 col) {
   cmd->PushIndex(0).PushIndex(1).PushIndex(2);
   cmd->PushIndex(0).PushIndex(2).PushIndex(3);
@@ -320,8 +331,8 @@ void Renderer::QuadCommand(Command::Ref cmd, const Rect& quad, vec4 uv,
       Vertex(vec2(quad.Bot().x(), quad.Bot().y()), vec2(uv.x(), uv.w()), col));
 }
 
-void Renderer::TriangleCommand(Command::Ref cmd, vec2 a, vec2 b, vec2 c,
-                               u32 col) {
+void Renderer::TriangleCommand(Command::Ref cmd, const vec2& a, const vec2& b,
+                               const vec2& c, u32 col) {
   cmd->Index(cmd_idx++).Layer(current_layer).Tex(current_tex);
   cmd->PushIndex(2).PushIndex(1).PushIndex(0);
   cmd->PushVertex(Vertex(a, vec2(0.f, 1.f), col));
@@ -330,9 +341,9 @@ void Renderer::TriangleCommand(Command::Ref cmd, vec2 a, vec2 b, vec2 c,
 }
 
 /// TO BE REWRITTEN
-void Renderer::TextCommand(std::vector<Command::Ref>& cmds, vec2 pos, u32 color,
-                           const std::string& text, LITextFlags flags,
-                           vec2 box) {
+void Renderer::TextCommand(std::vector<Command::Ref>& cmds, const vec2& pos,
+                           u32 color, const std::string& text,
+                           LITextFlags flags, const vec2& box) {
   if (!font) {
     return;
   }
@@ -378,7 +389,7 @@ void Renderer::TextCommand(std::vector<Command::Ref>& cmds, vec2 pos, u32 color,
         }
       }
       if (jt == '\t') {
-        off[0] += 4 * cfs;
+        off[0] += 16 * cfs;
       } else {
         if (jt != ' ') {
           int lr = current_layer;
@@ -395,6 +406,10 @@ void Renderer::TextCommand(std::vector<Command::Ref>& cmds, vec2 pos, u32 color,
                                 cp.size() * cfs, 0.f);
           QuadCommand(cmd, rec, cp.uv(), color);
           current_layer = lr;
+        } else {
+          if (!font->SystemFont()) {
+            off[0] += 2 * cfs;
+          }
         }
         off[0] += cp.size().x() * cfs + 2 * cfs;
       }
@@ -449,8 +464,14 @@ vec2 Renderer::GetTextDimensions(const std::string& text) {
         x = 0.f;
         break;
       case '\t':
-        x += 8 * cfs;
+        x += 16 * cfs;
         break;
+      case ' ':
+        if (!font->SystemFont()) {
+          x += 2 * cfs;
+        }
+      // Fall trough here to get the same result as in
+      // TextCommand if/else Section
       default:
         x += cp.size().x() * cfs;
         if (index != wtext.size()) {
@@ -472,19 +493,16 @@ void Renderer::UpdateRenderMode(const RenderMode& mode) {
   switch (mode) {
     case RenderMode_SysFont:
       C3D_TexEnvInit(env);
-      C3D_TexEnvSrc(env, C3D_RGB, GPU_PRIMARY_COLOR, (GPU_TEVSRC)0,
-                    (GPU_TEVSRC)0);
+      C3D_TexEnvSrc(env, C3D_RGB, GPU_PRIMARY_COLOR);
       C3D_TexEnvFunc(env, C3D_RGB, GPU_REPLACE);
-      C3D_TexEnvSrc(env, C3D_Alpha, GPU_PRIMARY_COLOR, GPU_TEXTURE0,
-                    (GPU_TEVSRC)0);
+      C3D_TexEnvSrc(env, C3D_Alpha, GPU_TEXTURE0);
       C3D_TexEnvFunc(env, C3D_Alpha, GPU_MODULATE);
       break;
     // Fall trough instead of defining twice
     case RenderMode_RGBA:
     default:
       C3D_TexEnvInit(env);
-      C3D_TexEnvSrc(env, C3D_Both, GPU_TEXTURE0, GPU_PRIMARY_COLOR,
-                    (GPU_TEVSRC)0);
+      C3D_TexEnvSrc(env, C3D_Both, GPU_TEXTURE0);
       C3D_TexEnvFunc(env, C3D_Both, GPU_MODULATE);
       break;
   }
@@ -506,9 +524,9 @@ void Renderer::RenderOn(bool bot) {
   commands = cmds.size();
   size_t index = 0;
 
-  if (flags & RenderFlags_LRS) {
-    OptiCommandList(cmds);
-  }
+  // if (flags & RenderFlags_LRS) {
+  OptiCommandList(cmds);
+  //}
 
   while (index < cmds.size()) {
     C3D_Tex* tex = cmds[index]->Tex()->GetTex();
@@ -589,7 +607,8 @@ void Renderer::Render() {
   }
 }
 
-void Renderer::DrawRect(vec2 pos, vec2 size, u32 color, vec4 uv) {
+void Renderer::DrawRect(const vec2& pos, const vec2& size, u32 color,
+                        const vec4& uv) {
   if (!InBox(pos, size, GetViewport())) {
     // Instand abort as it is out of screen
     return;
@@ -601,12 +620,13 @@ void Renderer::DrawRect(vec2 pos, vec2 size, u32 color, vec4 uv) {
   draw_list[bottom].push_back(cmd);
 }
 
-void Renderer::DrawRectSolid(vec2 pos, vec2 size, u32 color) {
+void Renderer::DrawRectSolid(const vec2& pos, const vec2& size, u32 color) {
   UseTex();
   DrawRect(pos, size, color);
 }
 
-void Renderer::DrawTriangle(vec2 a, vec2 b, vec2 c, u32 color) {
+void Renderer::DrawTriangle(const vec2& a, const vec2& b, const vec2& c,
+                            u32 color) {
   if (!InBox(a, b, c, GetViewport())) {
     return;
   }
@@ -617,7 +637,8 @@ void Renderer::DrawTriangle(vec2 a, vec2 b, vec2 c, u32 color) {
   draw_list[bottom].push_back(cmd);
 }
 
-void Renderer::DrawCircle(vec2 center_pos, float r, u32 color, int segments) {
+void Renderer::DrawCircle(const vec2& center_pos, float r, u32 color,
+                          int segments) {
   if (segments < 3) {
     return;
   }
@@ -639,7 +660,7 @@ void Renderer::DrawCircle(vec2 center_pos, float r, u32 color, int segments) {
   draw_list[bottom].push_back(cmd);
 }
 
-void Renderer::DrawLine(vec2 a, vec2 b, u32 color, int t) {
+void Renderer::DrawLine(const vec2& a, const vec2& b, u32 color, int t) {
   UseTex();
   Rect line = CreateLine(a, b, t);
 
@@ -649,13 +670,13 @@ void Renderer::DrawLine(vec2 a, vec2 b, u32 color, int t) {
   draw_list[bottom].push_back(cmd);
 }
 
-void Renderer::DrawImage(vec2 pos, Texture::Ref tex, vec2 scale) {
+void Renderer::DrawImage(const vec2& pos, Texture::Ref tex, const vec2& scale) {
   UseTex(tex);
   DrawRect(pos, tex->GetSize() * scale, 0xffffffff, tex->GetUV());
 }
 
-void Renderer::DrawText(vec2 pos, u32 color, const std::string& text, u32 flags,
-                        vec2 ap) {
+void Renderer::DrawText(const vec2& pos, u32 color, const std::string& text,
+                        u32 flags, const vec2& ap) {
   TextCommand(draw_list[bottom], pos, color, text, flags, ap);
 }
 

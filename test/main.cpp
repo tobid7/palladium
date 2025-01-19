@@ -25,6 +25,7 @@ SOFTWARE.
 
 #include <ctime>
 #include <pd.hpp>
+#include <pd/maths/tween.hpp>
 
 using vec2 = PD::vec2;
 using vec3 = PD::vec3;
@@ -37,36 +38,35 @@ class Test : public PD::App {
 
   void Init() override {
     test = PD::Texture::New("romfs:/icon.png");
-    cpu = PD::TimeStats::New(100);
+    Overlays()->Push(PD::New<PD::Performance>(dbg, dbg_screen));
+    font = PD::LI::Font::New();
+    // font->LoadSystemFont();
+    font->LoadTTF("romfs:/ComicNeue.ttf", 32);
+    Renderer()->Font(font);
+    ui7 = PD::UI7::Context::New();
   }
 
-  bool MainLoop(unsigned long long delta, float time) override {
-    cpu->Add(C3D_GetProcessingTime());
-    hidScanInput();
+  bool MainLoop(float delta, float time) override {
     DrawFancyBG(time);
-    Renderer()->TextScale(0.6f);
-    vec2 start(5, 100);
-    DebugText(start, "FPS: " + std::to_string((int)GetFps()));
-    DebugText(start, "DrawCalls: " + std::to_string(Renderer()->DrawCalls()));
-    DebugText(start, "DrawCommands: " + std::to_string(Renderer()->Commands()));
-    DebugText(start, "Vertices: " + std::to_string(Renderer()->Vertices()));
-    DebugText(start, "Indices: " + std::to_string(Renderer()->Indices()));
-    DebugText(start, "Ren [AVG]: " + PD::Strings::FormatNanos(
-                                         PD::Sys::GetTraceRef("LI_RenderAll")
-                                             ->GetProtocol()
-                                             ->GetAverage()));
-    DebugText(start, "App [AVG]: " + PD::Strings::FormatNanos(
-                                         PD::Sys::GetTraceRef("App_MainLoop")
-                                             ->GetProtocol()
-                                             ->GetAverage()));
-    Renderer()->DefaultTextScale();
     Renderer()->OnScreen(PD::Screen::Bottom);
     Renderer()->DrawRectSolid(0, vec2(320, 240), PD::Color("#222222"));
     Renderer()->UseTex(test);
-    Renderer()->DrawImage(vec2(130, 90), test);
+    Renderer()->Layer(Renderer()->Layer() + 1);
+    Renderer()->DrawImage(
+        Renderer()->GetViewport().zw() * 0.5 - test->GetSize() * 0.5, test);
     Renderer()->DrawText(5, 0xffffffff, "Hello World!", LITextFlags_None);
-    if (hidKeysDown() & KEY_START) {
+    if (Input()->IsDown(PD::Hid::Start)) {
       return false;
+    }
+    if (Input()->IsDown(Input()->A)) {
+      Overlays()->Push(PD::New<PD::Performance>(dbg, dbg_screen));
+      Messages()->Push("Test", "Oder SO");
+      // what.To(vec2(5, 200)).From(vec2(-100,
+      // 200)).In(0.5).As(what.EaseInQuad);
+    }
+    if (Input()->IsUp(Input()->B)) {
+      Overlays()->Push(PD::New<PD::Keyboard>(text, state));
+      // what.To(vec2(5, 180)).From(vec2(5, 200)).In(0.5).As(what.EaseOutQuad);
     }
     return true;
   }
@@ -97,16 +97,13 @@ class Test : public PD::App {
                   .36f + .38f * color_effect));
   }
 
-  void DebugText(vec2& pos, const std::string& text) {
-    auto tbs = Renderer()->GetTextDimensions(text);
-    Renderer()->DrawRectSolid(pos, tbs, 0xaa000000);
-    Renderer()->DrawText(pos, 0xffff00ff, text);
-    pos[1] += tbs[1];  // Auto set new pos
-  }
-
  private:
   PD::Texture::Ref test;
-  PD::TimeStats::Ref cpu;
+  bool dbg = false, dbg_screen = false;
+  std::string text;
+  PD::Keyboard::State state;
+  PD::UI7::Context::Ref ui7;
+  PD::LI::Font::Ref font;
 };
 
 int main() {

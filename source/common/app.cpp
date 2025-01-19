@@ -33,16 +33,21 @@ void App::Run() {
   this->Init();
   last_time = Sys::GetTime();
   while (aptMainLoop()) {
-    u64 current = Sys::GetTime();
-    u64 dt = current - last_time;
-    app_time += float(dt / 1000.f);
+    input_mgr->Update();
+    u64 current = Sys::GetNanoTime();
+    float dt = static_cast<float>(current - last_time) / 1000000.f;
+    app_time += dt / 1000.f;
     last_time = current;
-    fps = 1000.f / (float)dt;
+    fps = 1000.f / dt;
     PD::TT::Beg("App_MainLoop");
     if (!this->MainLoop(dt, app_time)) {
       break;
     }
     PD::TT::End("App_MainLoop");
+    PD::TT::Beg("Ovl_Update");
+    overlay_mgr->Update(dt);
+    msg_mgr->Update(dt);
+    PD::TT::End("Ovl_Update");
     renderer->Render();
   }
   this->Deinit();
@@ -54,11 +59,17 @@ void App::PreInit() {
   gfxInitDefault();
   cfguInit();
   romfsInit();
+  input_mgr = Hid::New();
   renderer = LI::Renderer::New();
+  msg_mgr = MessageMgr::New(renderer);
+  overlay_mgr = OverlayMgr::New(renderer, input_mgr);
 }
 
 void App::PostDeinit() {
   renderer = nullptr;
+  msg_mgr = nullptr;
+  overlay_mgr = nullptr;
+  input_mgr = nullptr;
   gfxExit();
   cfguExit();
   romfsExit();

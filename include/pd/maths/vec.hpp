@@ -332,6 +332,20 @@ struct vec4 {
     v[3] = i;
   }
 
+  vec4(const vec3 &xyz, float w) {
+    v[0] = xyz[0];
+    v[1] = xyz[1];
+    v[2] = xyz[2];
+    v[3] = w;
+  }
+
+  vec4(float x, const vec3 &yzw) {
+    v[0] = x;
+    v[1] = yzw[1];
+    v[2] = yzw[2];
+    v[3] = yzw[3];
+  }
+
   // Operators
   // Add
   vec4 &operator+=(const vec4 &i) {
@@ -371,7 +385,7 @@ struct vec4 {
   }
 
   // Base
-  vec3 operator-() const { return vec3(-v[0], -v[1], -v[2]); }
+  vec4 operator-() const { return vec4(-v[0], -v[1], -v[2], -v[3]); }
   float operator[](int i) const { return v[i]; }
   float &operator[](int i) { return v[i]; }
 
@@ -380,7 +394,7 @@ struct vec4 {
     return v[0] * v[0] + v[1] * v[1] + v[2] * v[2] + v[3] * v[3];
   }
 
-  // Vec2 Acess
+  // Vec Acess
   float x() const { return v[0]; }
   float &x() { return v[0]; }
   float y() const { return v[1]; }
@@ -389,6 +403,10 @@ struct vec4 {
   float &z() { return v[2]; }
   float w() const { return v[3]; }
   float &w() { return v[3]; }
+  vec2 xy() const { return vec2(v[0], v[1]); }
+  vec2 zw() const { return vec2(v[2], v[3]); }
+  vec3 xyz() const { return vec3(v[0], v[1], v[2]); }
+  vec3 yzw() const { return vec3(v[1], v[2], v[3]); }
   // Quaternion Acess
   float r() const { return v[0]; }
   float &r() { return v[0]; }
@@ -398,6 +416,10 @@ struct vec4 {
   float &j() { return v[2]; }
   float i() const { return v[3]; }
   float &i() { return v[3]; }
+  vec2 rk() const { return vec2(v[0], v[1]); }
+  vec2 ji() const { return vec2(v[2], v[3]); }
+  vec3 rkj() const { return vec3(v[0], v[1], v[2]); }
+  vec3 kji() const { return vec3(v[1], v[2], v[3]); }
   // Internal Values
   float v[4];
 };

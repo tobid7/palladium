@@ -49,11 +49,11 @@ namespace LI {
 class Rect {
  public:
   Rect() = default;
-  Rect(vec4 t, vec4 b) {
+  Rect(const vec4& t, const vec4& b) {
     top = t;
     bot = b;
   }
-  Rect(vec2 tl, vec2 tr, vec2 bl, vec2 br) {
+  Rect(const vec2& tl, const vec2& tr, const vec2& bl, const vec2& br) {
     top = vec4(tl, tr);
     bot = vec4(bl, br);
   }
@@ -84,7 +84,7 @@ class Font : public SmartCtor<Font> {
       return *this;
     }
     vec4 uv() const { return m_uv; }
-    Codepoint& uv(vec4 v) {
+    Codepoint& uv(const vec4& v) {
       m_uv = v;
       return *this;
     }
@@ -94,7 +94,7 @@ class Font : public SmartCtor<Font> {
       return *this;
     }
     vec2 size() const { return m_size; }
-    Codepoint& size(vec2 v) {
+    Codepoint& size(const vec2& v) {
       m_size = v;
       return *this;
     }
@@ -134,7 +134,7 @@ class Font : public SmartCtor<Font> {
 class Vertex {
  public:
   Vertex() {}
-  Vertex(vec2 p, vec2 u, u32 c) {
+  Vertex(const vec2& p, const vec2& u, u32 c) {
     pos[0] = p[0];
     pos[1] = p[1];
     pos[2] = 0.f;
@@ -143,18 +143,18 @@ class Vertex {
   }
   ~Vertex() {}
 
-  Vertex& Pos(vec3 v) {
+  Vertex& Pos(const vec3& v) {
     pos = v;
     return *this;
   }
   // Lets support that as well
-  Vertex& Pos(vec2 v) {
+  Vertex& Pos(const vec2& v) {
     pos[0] = v[0];
     pos[1] = v[1];
     pos[2] = 0.f;
     return *this;
   }
-  Vertex& Uv(vec2 v) {
+  Vertex& Uv(const vec2& v) {
     uv = v;
     return *this;
   }
@@ -179,6 +179,15 @@ class Command : public SmartCtor<Command> {
   Command() {}
   ~Command() {}
 
+  Command(Command::Ref v) {
+    this->index = v->index;
+    this->index_buf = v->index_buf;
+    this->layer = v->layer;
+    this->mode = v->mode;
+    this->tex = v->tex;
+    this->vertex_buf = v->vertex_buf;
+  }
+
   Command& Layer(int v) {
     layer = v;
     return *this;
@@ -200,13 +209,17 @@ class Command : public SmartCtor<Command> {
 
   Texture::Ref Tex() const { return tex; }
 
-  Command& PushVertex(Vertex v) {
+  Command& PushVertex(const Vertex& v) {
     vertex_buf.push_back(v);
     return *this;
   }
 
   const std::vector<u16>& IndexList() const { return index_buf; }
   const std::vector<Vertex>& VertexList() const { return vertex_buf; }
+
+  /// ADVANCED ///
+  std::vector<u16>& IndexList() { return index_buf; }
+  std::vector<Vertex>& VertexList() { return vertex_buf; }
 
   Command& PushIndex(u16 v) {
     index_buf.push_back(vertex_buf.size() + v);
@@ -255,11 +268,74 @@ class TextBox {
   bool optional;
   std::string text;  // TextWrap
 };
+class StaticObject : public SmartCtor<StaticObject> {
+ public:
+  StaticObject() {}
+  ~StaticObject() {}
+
+  void PushCommand(Command::Ref v) { cmds.push_back(v); }
+
+  void ReCopy() {
+    cpy.clear();
+    for (auto it : cmds) {
+      cpy.push_back(Command::New(it));
+    }
+  }
+
+  void ReColorQuad(int idx, u32 col) {
+    if (idx > (int)cpy.size()) {
+      return;
+    }
+    for (auto& it : cpy[idx]->VertexList()) {
+      it.Color(col);
+    }
+  }
+
+  void MoveIt(vec2 off) {
+    for (auto& it : cpy) {
+      for (auto& jt : it->VertexList()) {
+        jt.pos += vec3(off, 0);
+      }
+    }
+  }
+
+  void ReColor(u32 col) {
+    for (auto& it : cpy) {
+      for (auto& jt : it->VertexList()) {
+        jt.Color(col);
+      }
+    }
+  }
+
+  void ReLayer(int base_layer) {
+    for (auto& it : cpy) {
+      it->Layer(it->Layer() + base_layer);
+    }
+  }
+
+  void ReIndex(int start) {
+    for (int i = 0; i < (int)cpy.size(); i++) {
+      cpy[i]->Index(start + i);
+    }
+  }
+
+  std::vector<Command::Ref>& List() {
+    if (cpy.size() != 0) {
+      return cpy;
+    }
+    return cmds;
+  }
+
+ private:
+  std::vector<Command::Ref> cpy;
+  std::vector<Command::Ref> cmds;
+};
 using RenderFlags = u32;
 enum RenderFlags_ {
   RenderFlags_None = 0,
   RenderFlags_TMS = 1 << 0,  ///< Text Map System
   RenderFlags_LRS = 1 << 1,  ///< Layer Render System
+  RenderFlags_AST = 1 << 2,  ///< Auto Static Text
   RenderFlags_Default = RenderFlags_TMS,
 };
 class Renderer : public SmartCtor<Renderer> {
@@ -291,6 +367,13 @@ class Renderer : public SmartCtor<Renderer> {
   void TextScale(float v) { text_size = v; }
   void DefaultTextScale() { text_size = default_text_size; }
   float TextScale() const { return text_size; }
+  void Layer(int v) { current_layer = v; }
+  int Layer() const { return current_layer; }
+  void Font(Font::Ref v) {
+    font = v;
+    font_update = true;
+  }
+  Font::Ref Font() const { return font; }
 
   void UseTex(Texture::Ref v = nullptr) {
     if (v == nullptr) {
@@ -305,42 +388,43 @@ class Renderer : public SmartCtor<Renderer> {
   /// @param size Size
   /// @param color Color
   /// @param uv UV Map
-  void DrawRect(vec2 pos, vec2 size, u32 color,
-                vec4 uv = vec4(0.f, 1.f, 1.f, 0.f));
+  void DrawRect(const vec2& pos, const vec2& size, u32 color,
+                const vec4& uv = vec4(0.f, 1.f, 1.f, 0.f));
   /// @brief Draw a Solid Rect (uses white tex)
   /// @note acts as a simplified Draw rect Wrapper
   /// @param pos Position
   /// @param size Size
   /// @param color Color
-  void DrawRectSolid(vec2 pos, vec2 size, u32 color);
+  void DrawRectSolid(const vec2& pos, const vec2& size, u32 color);
   /// @brief Render a Triangle
   /// @param a Position Alpha
   /// @param b Position Bravo
   /// @param c Position Delta
   /// @param color Color
   /// @note Defaults to Solif Color
-  void DrawTriangle(vec2 a, vec2 b, vec2 c, u32 color);
+  void DrawTriangle(const vec2& a, const vec2& b, const vec2& c, u32 color);
   /// @brief Draw a Circle (Supports Textures)
   /// @param center_pos Center Position
   /// @param r Radius
   /// @param color Color
   /// @param segments Segments to use
   /// @note Textures could look a bit janky due to uv mapping
-  void DrawCircle(vec2 center_pos, float r, u32 color, int segments);
+  void DrawCircle(const vec2& center_pos, float r, u32 color, int segments);
   /// @brief Draw a Line between to Positions
   /// @param a Position Alpha
   /// @param b Position Bravo
   /// @param color Color
   /// @param t Thickness
-  void DrawLine(vec2 a, vec2 b, u32 color, int t);
-  void DrawText(vec2 pos, u32 color, const std::string& text, u32 flags = 0,
-                vec2 ap = vec2());
+  void DrawLine(const vec2& a, const vec2& b, u32 color, int t);
+  void DrawText(const vec2& pos, u32 color, const std::string& text,
+                u32 flags = 0, const vec2& ap = vec2());
   /// @brief Draw a Texture as 2D Image
   /// @param pos Position
   /// @param tex Texture reference
   /// @param scale Scale (cause maybe wants to be resized)
   /// @note Acts as a Simplified wrapper to DrawRect
-  void DrawImage(vec2 pos, Texture::Ref tex, vec2 scale = vec2(1.f));
+  void DrawImage(const vec2& pos, Texture::Ref tex,
+                 const vec2& scale = vec2(1.f));
 
   /// Debug STUFF
   u32 Vertices() const { return vertices; }
@@ -349,22 +433,28 @@ class Renderer : public SmartCtor<Renderer> {
   u32 DrawCalls() const { return drawcalls; }
 
   /// TOOLS ///
-  void RotateCorner(vec2& v, float s, float c);
-  Rect CreateRect(vec2 pos, vec2 size, float angle);
-  Rect CreateLine(vec2 a, vec2 b, int t);
-  bool InBox(vec2 pos, vec2 size, vec4 rect);
-  bool InBox(vec2 alpha, vec2 bravo, vec2 charlie, vec4 rect);
-  void OptiCommandList(std::vector<Command::Ref>& list);
+  static void RotateCorner(vec2& v, float s, float c);
+  static Rect CreateRect(const vec2& pos, const vec2& size, float angle);
+  static Rect CreateLine(const vec2& a, const vec2& b, int t);
+  static bool InBox(const vec2& pos, const vec2& size, const vec4& rect);
+  static bool InBox(const vec2& pos, const vec4& rect);
+  static bool InBox(const vec2& alpha, const vec2& bravo, const vec2& charlie,
+                    const vec4& rect);
+  static void OptiCommandList(std::vector<Command::Ref>& list);
   /// @brief Returns Viewport with xy
   vec4 GetViewport();
   /// @brief Push a Self Created command
-  void PushCommand(Command::Ref cmd) { draw_list[bottom].push_back(cmd); }
+  void PushCommand(Command::Ref cmd) {
+    cmd->Index(cmd_idx++);  // Indexing
+    draw_list[bottom].push_back(cmd);
+  }
   /// @brief Automatically sets up a command
   void SetupCommand(Command::Ref cmd);
   /// @brief Creates a default Quad Render Command
-  void QuadCommand(Command::Ref cmd, const Rect& quad, vec4 uv, u32 col);
+  void QuadCommand(Command::Ref cmd, const Rect& quad, const vec4& uv, u32 col);
   /// @brief Create a Default Triangle
-  void TriangleCommand(Command::Ref cmd, vec2 a, vec2 b, vec2 c, u32 col);
+  void TriangleCommand(Command::Ref cmd, const vec2& a, const vec2& b,
+                       const vec2& c, u32 col);
   /// @brief Create List of a Text Commands
   /// @param cmds Link to a command List
   /// @param pos Position
@@ -373,8 +463,8 @@ class Renderer : public SmartCtor<Renderer> {
   /// @param flags Flags
   /// @param box (Size for wrapping / Offset for Centered Text)
   /// @note Funktion macht noch faxxen (Text nicht sichtbar)
-  void TextCommand(std::vector<Command::Ref>& cmds, vec2 pos, u32 color,
-                   const std::string& text, LITextFlags flags, vec2 box);
+  void TextCommand(std::vector<Command::Ref>& cmds, const vec2& pos, u32 color,
+                   const std::string& text, LITextFlags flags, const vec2& box);
   vec2 GetTextDimensions(const std::string& text);
 
  private:

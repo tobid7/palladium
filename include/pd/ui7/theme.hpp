@@ -25,14 +25,96 @@ SOFTWARE.
 
 #include <pd/common/common.hpp>
 
-using UI7Color = unsigned int;
+using UI7Color = u32;
 
 enum UI7Color_ {
   UI7Color_Background,
-
+  UI7Color_Button,
+  UI7Color_ButtonDead,
+  UI7Color_ButtonActive,
+  UI7Color_ButtonDisabled,
+  UI7Color_Text,
+  UI7Color_TextDead,
+  UI7Color_Header,
+  UI7Color_Selector,
+  UI7Color_Checkmark,
+  UI7Color_FrameBackground,
+  UI7Color_FragmeBackgroundHovered,
+  UI7Color_Progressbar,
+  UI7Color_ListEven,
+  UI7Color_ListOdd,
 };
 
 namespace PD {
+namespace UI7 {
+/// @brief Theme Class
+class Theme {
+ public:
+ public:
+  Theme() { Default(*this); }
+  ~Theme() {}
+
+  /// @brief Simple static Loader for the Default Theme
+  /// @param theme Theme Reference
+  static void Default(Theme& theme);
+
+  /// @brief Revert the last Color Change
+  Theme& Pop() {
+    theme[changes[changes.size() - 1].first] =
+        changes[changes.size() - 1].second;
+    changes.pop_back();
+    return *this;
+  }
+
+  /// @brief Revert the last color Change done for a specific color
+  /// @param c Color to revert change from
+  Theme& Pop(UI7Color c) {
+    for (size_t i = changes.size() - 1; i > 0; i--) {
+      if (changes[i].first == c) {
+        theme[c] = changes[i].second;
+        changes.erase(changes.begin() + i);
+        break;
+      }
+    }
+    return *this;
+  }
+
+  /// @brief Change a Color
+  /// @param tc Color Identifier
+  /// @param color Color to change to
+  Theme& Change(UI7Color tc, u32 color) {
+    if (theme.find(tc) == theme.end()) {
+      return *this;
+    }
+    changes.push_back(std::make_pair(tc, theme[tc]));
+    theme[tc] = color;
+    return *this;
+  }
+
+  /// @brief Get the Color of a Color ReferenceID
+  /// @param c ReferenceID
+  u32 Get(UI7Color c) const {
+    auto e = theme.find(c);
+    if (e == theme.end()) {
+      return 0x00000000;
+    }
+    return e->second;
+  }
+
+  /// @brief Operator wrapper for get
+  /// @param c Color ReferenceID
+  u32 operator[](UI7Color c) const { return Get(c); }
+
+  /// @brief Change but just sets [can implement completly new ids]
+  /// @param tc Color ID (Can be self creeated ones as well)
+  /// @param clr Color it should be set to
+  void Set(UI7Color tc, u32 clr) { theme[tc] = clr; }
+
+ private:
+  std::unordered_map<u32, u32> theme;
+  std::vector<std::pair<UI7Color, u32>> changes;
+};
+}  // namespace UI7
 /// Using UI7Color as a Class to be able to
 /// define it as struct as well as using it as enum
 class UI7Color {

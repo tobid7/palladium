@@ -25,7 +25,10 @@ SOFTWARE.
 
 #include <pd/common/common.hpp>
 #include <pd/common/timetrace.hpp>
+#include <pd/controls/hid.hpp>
 #include <pd/graphics/lithium.hpp>
+#include <pd/overlays/message_mgr.hpp>
+#include <pd/overlays/overlay_mgr.hpp>
 
 namespace PD {
 /// @brief Template Class for User Application
@@ -43,7 +46,7 @@ class App : public SmartCtor<App> {
   /// @param delta Deltatime
   /// @param time App RunTime
   /// @return false to exit the app
-  virtual bool MainLoop(u64 delta, float time) { return false; }
+  virtual bool MainLoop(float delta, float time) { return false; }
 
   /// @brief Function to run the App
   /// (int main() {
@@ -52,15 +55,19 @@ class App : public SmartCtor<App> {
   ///   return 0;
   /// })
   void Run();
-
   LI::Renderer::Ref Renderer() { return renderer; }
-
+  MessageMgr::Ref Messages() { return msg_mgr; }
+  OverlayMgr::Ref Overlays() { return overlay_mgr; }
+  Hid::Ref Input() { return input_mgr; }
   float GetFps() const { return fps; }
 
  private:
   void PreInit();
   void PostDeinit();
   LI::Renderer::Ref renderer;
+  MessageMgr::Ref msg_mgr;
+  OverlayMgr::Ref overlay_mgr;
+  Hid::Ref input_mgr;
   u64 last_time;
   float app_time;
   float fps;

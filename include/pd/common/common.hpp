@@ -29,6 +29,7 @@ SOFTWARE.
 #include <filesystem>  // Requires C++ 17 or later
 #include <format>      // Requires C++ 20 or later
 #include <fstream>
+#include <functional>
 #include <iostream>
 #include <map>
 #include <memory>

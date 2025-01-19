@@ -38,5 +38,6 @@ const std::string GetFileName(const std::string& path,
 const std::string PathRemoveExtension(const std::string& path);
 template <typename T>
 const std::string ToHex(const T& v);
+u32 FastHash(const std::string& s);
 }  // namespace Strings
 }  // namespace PD

@@ -25,13 +25,19 @@ SOFTWARE.
 
 #include <pd/ui7/drawlist.hpp>
 #include <pd/ui7/flags.hpp>
+#include <pd/ui7/id.hpp>
+#include <pd/ui7/menu.hpp>
 #include <pd/ui7/theme.hpp>
+#include <unordered_map>
 
 namespace PD {
-class UI7Context : SmartCtor<UI7Context> {
+namespace UI7 {
+class Context : public SmartCtor<Context> {
  public:
-  UI7Context() {}
-  ~UI7Context() {}
+  Context() {}
+  ~Context() {}
+
+  void Update(float delta);
 
  private:
   // Timing
@@ -41,13 +47,15 @@ class UI7Context : SmartCtor<UI7Context> {
   // Context
   bool in_menu;
   // Debug
-  bool debug;
+  bool debugging;
   // Menu Handlers
-
+  std::unordered_map<u32, Menu::Ref> menus;
+  Menu::Ref current;
   // Context DrawList
-  UI7DrawList::Ref debug;
-  UI7DrawList::Ref front;
-  UI7DrawList::Ref back;
+  DrawList::Ref debug;
+  DrawList::Ref front;
+  DrawList::Ref back;
   // Promt Handler
 };
+}  // namespace UI7
 }  // namespace PD

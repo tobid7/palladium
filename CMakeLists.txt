@@ -32,6 +32,8 @@ set(SRC_FILES
     source/common/sys.cpp
     source/common/lang.cpp
     source/common/error.cpp
+    # Controls
+    source/controls/hid.cpp
     # Maths
     source/maths/color.cpp
     source/maths/bit_util.cpp
@@ -40,6 +42,15 @@ set(SRC_FILES
     source/graphics/texture.cpp
     source/graphics/li7_shader.cpp
     source/graphics/lithium.cpp
+    # Overlays
+    source/overlays/message_mgr.cpp
+    source/overlays/overlay_mgr.cpp
+    source/overlays/keyboard.cpp
+    source/overlays/performance.cpp
+    # Tools
+    source/tools/gamepad_icons.cpp
+    # UI7
+    source/ui7/drawlist.cpp
     # External
     source/external/stb.cpp
 )
@@ -61,7 +72,7 @@ target_compile_definitions(${TARGET_NAME} PUBLIC
 )
 
 add_executable(test test/main.cpp)
-target_include_directories(test PUBLIC include)
+target_include_directories(test PUBLIC include test)
 target_link_directories(test PUBLIC ${CMAKE_BINARY_DIR})
 target_link_libraries(test PUBLIC palladium citro3d ctru m)
 # Generate 3DSX

@@ -1,5 +1,7 @@
 # Palladium
 
+**Framework / Engine to create Homebrew Apps / Games**
+
 ## Build types
 
 ```bash
