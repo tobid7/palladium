@@ -37,10 +37,11 @@ enum LITextFlags_ {
   LITextFlags_None = 0,
   LITextFlags_AlignRight = 1 << 0,
   LITextFlags_AlignMid = 1 << 1,
-  LITextFlags_Shaddow = 1 << 2,  // Draws the text twice
-  LITextFlags_Wrap = 1 << 3,     // May be runs better with TMS
-  LITextFlags_Short = 1 << 4,    // May be runs better with TMS
-  LITextFlags_Scroll = 1 << 5,   // Not implemented
+  LITextFlags_Shaddow = 1 << 2,   // Draws the text twice
+  LITextFlags_Wrap = 1 << 3,      // May be runs better with TMS
+  LITextFlags_Short = 1 << 4,     // May be runs better with TMS
+  LITextFlags_Scroll = 1 << 5,    // Not implemented
+  LITextFlags_RenderOOS = 1 << 6  // Render Out of Screen
 };
 
 namespace PD {
@@ -330,18 +331,52 @@ class StaticObject : public SmartCtor<StaticObject> {
   std::vector<Command::Ref> cpy;
   std::vector<Command::Ref> cmds;
 };
+
 using RenderFlags = u32;
 enum RenderFlags_ {
   RenderFlags_None = 0,
   RenderFlags_TMS = 1 << 0,  ///< Text Map System
   RenderFlags_LRS = 1 << 1,  ///< Layer Render System
   RenderFlags_AST = 1 << 2,  ///< Auto Static Text
-  RenderFlags_Default = RenderFlags_TMS,
+  RenderFlags_Default = RenderFlags_TMS | RenderFlags_LRS | RenderFlags_AST,
 };
 class Renderer : public SmartCtor<Renderer> {
  public:
   Renderer(RenderFlags flags = RenderFlags_Default);
   ~Renderer();
+
+  class StaticText : public SmartCtor<StaticText> {
+   public:
+    StaticText() {}
+    StaticText(Renderer* ren, const vec2& pos, u32 clr, const std::string& text,
+               LITextFlags flags = 0, const vec2& box = 0) {
+      Setup(ren, pos, clr, text, flags, box);
+    }
+    ~StaticText() {}
+
+    void Setup(Renderer* ren, const vec2& pos, u32 clr, const std::string& text,
+               LITextFlags flags = 0, const vec2& box = 0);
+
+    vec2 GetDim() const { return tdim; }
+    vec2 GetPos() const { return pos; }
+
+    void SetColor(u32 col);
+    void SetPos(const vec2& pos);
+
+    void SetUnused() { used = false; }
+    bool Used() const { return used; }
+
+    bool IsSetup() { return text != nullptr; }
+
+    void Draw();
+
+   private:
+    bool used;
+    Renderer* ren;
+    vec2 tdim;
+    vec2 pos;
+    StaticObject::Ref text;
+  };
 
   void Render();
 
@@ -431,6 +466,8 @@ class Renderer : public SmartCtor<Renderer> {
   u32 Indices() const { return indices; }
   u32 Commands() const { return commands; }
   u32 DrawCalls() const { return drawcalls; }
+  u32 AstUsage() const { return ast.size(); }
+  u32 TmsUsage() const { return tms.size(); }
 
   /// TOOLS ///
   static void RotateCorner(vec2& v, float s, float c);
@@ -488,6 +525,8 @@ class Renderer : public SmartCtor<Renderer> {
   RenderMode mode = RenderMode_RGBA;
   // Text Map System
   std::map<std::string, TextBox> tms;
+  // (Auto) Static Text
+  std::unordered_map<u32, StaticText::Ref> ast;
   /// Text Rendering ///
   const float default_font_h = 24.f;
   const float default_text_size = 0.7f;

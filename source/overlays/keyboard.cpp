@@ -245,12 +245,12 @@ int Keyboard::too = 0;
 
 void Keyboard::MoveSelector() {
   /// Move from Current position to New Position
-  selector.From(selector).To(layouts[0][raw_sel].pos).In(0.2f);
+  selector.From(selector).To(layouts[0][raw_sel].pos).In(0.1f);
   /// If Button Size Changed, animate to the new size
   if (cselszs != layouts[0][raw_sel].size) {
     cselszs = layouts[0][raw_sel].size;
     sel_szs.Swap();
-    sel_szs.To(cselszs).In(0.2);
+    sel_szs.To(cselszs).In(0.1);
   }
 }
 
@@ -290,51 +290,84 @@ void Keyboard::Movement(Hid::Ref inp) {
   } else {
     /// Go Up Movement
     if (inp->IsUp(inp->Up)) {
-      // beginning pos of the keyboard
-      vec2 sp = flymgr;
-      // Keys are offset by 22
-      sp.y() += 22;
-      // temp pos to save selector tween to
-      vec2 tp = selector;
-      // set its offset to startpos to
-      // create a box over all rows
-      tp.y() = sp.y();
-      // Get the selector tween size
-      vec2 tszs = sel_szs;
-      // Get the last keys pos and size
-      // to calculate the size of temp szs
-      auto const& lok = layouts[0][layouts[0].size() - 1];
-      tszs.y() = lok.pos.y() + lok.size.y();
-      // Backwards loop
-      for (int i = raw_sel; i >= 0; i--) {
-        if (LI::Renderer::InBox(
-                sp + layouts[0][i].pos - vec2(0, layouts[0][i].size.y()),
-                layouts[0][i].size, vec4(tp, tszs))) {
-          raw_sel = i;
-          break;
+      vec2 tpos = layouts[0][raw_sel].pos;
+      vec2 tsize = layouts[0][raw_sel].size;
+      float tcen = tpos.x() + (tsize.x() * 0.5);
+      int bidx = -1;
+      float min_diff = std::numeric_limits<float>::max();
+      float try_ = -1;
+
+      int start = raw_sel - 1;
+      if (tpos.y() == layouts[0][0].pos.y()) {
+        start = (int)layouts[0].size();
+      }
+
+      for (int i = start; i >= 0; i--) {
+        auto& tk = layouts[0][i];
+
+        if (tk.pos.y() != tpos.y()) {
+          if (try_ == -1) {
+            try_ = tk.pos.y();
+          }
+          if (tk.pos.y() != try_) {
+            break;
+          }
+
+          float tcenl = tk.pos.x() + (tk.size.x() * 0.5);
+          float diff = std::abs(tcen - tcenl);
+          if (diff < min_diff) {
+            min_diff = diff;
+            bidx = i;
+          }
         }
+      }
+
+      if (bidx != -1) {
+        raw_sel = bidx;
       }
       MoveSelector();
     }
+
     /// Go Down Movement
     if (inp->IsUp(inp->Down)) {
-      vec2 fly = flymgr;
-      vec2 sel = selector;
-      vec2 selszs = sel_szs;
-      vec4 box(fly + sel, selszs);
-      // clang-format off
-      int start = layouts[0][raw_sel].pos.y() ==
-                  layouts[0][layouts[0].size() - 1].pos.y() 
-                  ? 0 : raw_sel + 3;
-      // clang-format on
+      vec2 tpos = layouts[0][raw_sel].pos;
+      vec2 tsize = layouts[0][raw_sel].size;
+      float tcen = tpos.x() + (tsize.x() * 0.5);
+      int bidx = -1;
+      float min_diff = std::numeric_limits<float>::max();
+      float try_ = -1;
+
+      int start = raw_sel + 1;
+      if (tpos.y() == layouts[0][layouts[0].size() - 1].pos.y()) {
+        start = 0;
+      }
+
       for (int i = start; i < (int)layouts[0].size(); i++) {
-        if (LI::Renderer::InBox(fly + layouts[0][i].pos, sel_szs, box)) {
-          raw_sel = i;
-          break;
+        auto& tk = layouts[0][i];
+
+        if (tk.pos.y() != tpos.y()) {
+          if (try_ == -1) {
+            try_ = tk.pos.y();
+          }
+          if (tk.pos.y() != try_) {
+            break;
+          }
+
+          float tcenl = tk.pos.x() + (tk.size.x() * 0.5);
+          float diff = std::abs(tcen - tcenl);
+          if (diff < min_diff) {
+            min_diff = diff;
+            bidx = i;
+          }
         }
+      }
+
+      if (bidx != -1) {
+        raw_sel = bidx;
       }
       MoveSelector();
     }
+    /// Go right movement
     if (inp->IsUp(inp->Right)) {
       if ((raw_sel + 1 >= (int)layouts[0].size()) ||
           layouts[0][raw_sel].pos.y() != layouts[0][raw_sel + 1].pos.y()) {
@@ -353,6 +386,7 @@ void Keyboard::Movement(Hid::Ref inp) {
       }
       MoveSelector();
     }
+    // Go left Movement
     if (inp->IsUp(inp->Left)) {
       if (raw_sel - 1 < 0 ||
           layouts[0][raw_sel].pos.y() != layouts[0][raw_sel - 1].pos.y()) {
@@ -415,7 +449,7 @@ void Keyboard::RecolorBy(KeyOperation op, u32 color, int cm) {
   /// Not the fastest but the best for custom layouts
   for (auto& it : layouts[cm]) {
     if (it.op == op) {
-      keys[cm]->ReColorQuad(i, PD::Color(0xff222222));
+      keys[cm]->ReColorQuad(i, PD::Color(0xaa222222));
       break;
     }
     i++;
@@ -423,10 +457,10 @@ void Keyboard::RecolorBy(KeyOperation op, u32 color, int cm) {
 }
 void Keyboard::InputOpBind(Hid::Key k, KeyOperation op, Hid::Ref inp, int cm) {
   if (inp->IsUp(k)) {
-    RecolorBy(op, PD::Color(0xff222222), cm);
+    RecolorBy(op, PD::Color(0xaa222222), cm);
     DoOperation(op, "");
   } else if (inp->IsHeld(k)) {
-    RecolorBy(op, PD::Color(0xff333333), cm);
+    RecolorBy(op, PD::Color(0xaa333333), cm);
   }
 }
 
@@ -504,18 +538,18 @@ void Keyboard::Update(float delta, LI::Renderer::Ref ren, Hid::Ref inp) {
   keys[cm]->ReCopy();
   int ii = 0;
   for (auto& it : layouts[mode]) {
-    PD::Color bgc(0xff444444);
+    PD::Color bgc(0xaa444444);
     if (((ren->InBox(inp->TouchPosLast(), vec4(start + it.pos, it.size)) &&
           inp->IsHeld(inp->Touch)) ||
          (inp->IsHeld(inp->A) && ii == raw_sel)) &&
         flymgr.IsFinished()) {
-      bgc = PD::Color(0xff333333);
+      bgc = PD::Color(0xaa333333);
     }
     if (((ren->InBox(inp->TouchPosLast(), vec4(start + it.pos, it.size)) &&
           inp->IsUp(inp->Touch)) ||
          (inp->IsUp(inp->A) && ii == raw_sel)) &&
         flymgr.IsFinished()) {
-      bgc = PD::Color(0xff222222);
+      bgc = PD::Color(0xaa222222);
       DoOperation(it.op, it.k);
     }
     /// This is hardcoded shit guessing that the
@@ -536,7 +570,7 @@ void Keyboard::Update(float delta, LI::Renderer::Ref ren, Hid::Ref inp) {
   if (raw_sel != -1) {
     ren->Layer(l);
     ren->DrawRectSolid(start + selector - vec2(1), vec2(sel_szs) + vec2(2),
-                       0xffffffff);
+                       0xaaffffff);
     ren->Layer(l);
   }
   keys[cm]->ReLayer(l);

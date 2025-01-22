@@ -25,7 +25,7 @@ SOFTWARE.
 
 #include <pd/common/common.hpp>
 
-using UI7Color = u32;
+using UI7Color = PD::u32;
 
 enum UI7Color_ {
   UI7Color_Background,

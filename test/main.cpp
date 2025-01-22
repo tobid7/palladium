@@ -104,6 +104,7 @@ class Test : public PD::App {
   PD::Keyboard::State state;
   PD::UI7::Context::Ref ui7;
   PD::LI::Font::Ref font;
+  vec2 text_pos;
 };
 
 int main() {

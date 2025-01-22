@@ -243,6 +243,30 @@ Renderer::~Renderer() {
   C3D_Fini();
 }
 
+void Renderer::StaticText::Setup(Renderer* ren, const vec2& pos, u32 clr,
+                                 const std::string& text, LITextFlags flags,
+                                 const vec2& box) {
+  this->tdim = ren->GetTextDimensions(text);
+  this->pos = pos;
+  this->ren = ren;
+  this->text = StaticObject::New();
+  ren->TextCommand(this->text->List(), pos, clr, text, flags, box);
+  OptiCommandList(this->text->List());
+}
+
+void Renderer::StaticText::Draw() {
+  used = true;
+  for (auto& it : text->List()) {
+    ren->PushCommand(it);
+  }
+  text->ReCopy();
+}
+
+void Renderer::StaticText::SetColor(u32 col) { text->ReColor(col); }
+void Renderer::StaticText::SetPos(const vec2& pos) {
+  text->MoveIt(pos - this->pos);
+}
+
 bool Renderer::InBox(const vec2& pos, const vec2& szs, const vec4& rect) {
   return (pos[0] < rect[2] || pos[1] < rect[3] || pos[0] + szs[0] > rect[0] ||
           pos[1] + szs[1] > rect[1]);
@@ -363,7 +387,8 @@ void Renderer::TextCommand(std::vector<Command::Ref>& cmds, const vec2& pos,
     if (pos[1] + off[1] + lh < 0) {
       off[1] += lh;
       continue;
-    } else if (pos[1] + off[1] > GetViewport().w()) {
+    } else if (pos[1] + off[1] > GetViewport().w() &&
+               !(flags & LITextFlags_RenderOOS)) {
       // Break cause next lines would be out of screen
       break;
     }
@@ -524,9 +549,9 @@ void Renderer::RenderOn(bool bot) {
   commands = cmds.size();
   size_t index = 0;
 
-  // if (flags & RenderFlags_LRS) {
-  OptiCommandList(cmds);
-  //}
+  if (flags & RenderFlags_LRS) {
+    OptiCommandList(cmds);
+  }
 
   while (index < cmds.size()) {
     C3D_Tex* tex = cmds[index]->Tex()->GetTex();
@@ -605,6 +630,18 @@ void Renderer::Render() {
     }
     for (auto it : rem) tms.erase(it);
   }
+  if (flags & RenderFlags_AST) {
+    std::vector<u32> rem;
+    for (auto it : ast) {
+      if (!it.second->Used()) {
+        rem.push_back(it.first);
+      }
+      it.second->SetUnused();
+    }
+    for (auto& it : rem) {
+      ast.erase(it);
+    }
+  }
 }
 
 void Renderer::DrawRect(const vec2& pos, const vec2& size, u32 color,
@@ -677,6 +714,21 @@ void Renderer::DrawImage(const vec2& pos, Texture::Ref tex, const vec2& scale) {
 
 void Renderer::DrawText(const vec2& pos, u32 color, const std::string& text,
                         u32 flags, const vec2& ap) {
+  if (this->flags & RenderFlags_AST) {
+    u32 id = Strings::FastHash(text);
+    auto e = ast.find(id);
+    if (e == ast.end()) {
+      ast[id] = StaticText::New();
+      e = ast.find(id);
+    }
+    if (!e->second->IsSetup()) {
+      e->second->Setup(this, pos, color, text, flags, ap);
+    }
+    e->second->SetPos(pos);
+    e->second->SetColor(color);
+    e->second->Draw();
+    return;
+  }
   TextCommand(draw_list[bottom], pos, color, text, flags, ap);
 }
 

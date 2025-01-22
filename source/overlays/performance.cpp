@@ -12,7 +12,7 @@ void Performance::Update(float delta, LI::Renderer::Ref ren, Hid::Ref inp) {
   ren->OnScreen(Screen::Top);
   ren->TextScale(0.6);
   vec2 pos;
-  Line(pos, std::format("FPS {:.1f} FPS | {:.2f}ms", 1000.f / delta, delta),
+  Line(pos, std::format("FPS {:.1f} FPS / {:.2f}ms", 1000.f / delta, delta),
        ren);
   Line(pos, "Ren [AVG]: " + TSA("LI_RenderAll"), ren);
   Line(pos, "App [AVG]: " + TSA("App_MainLoop"), ren);
@@ -25,6 +25,8 @@ void Performance::Update(float delta, LI::Renderer::Ref ren, Hid::Ref inp) {
        "DC: [" + std::to_string(ren->DrawCalls()) + ", " +
            std::to_string(ren->Commands()) + "]",
        ren);
+  Line(pos, "AST: " + std::to_string(ren->AstUsage()), ren);
+  Line(pos, "TMS: " + std::to_string(ren->TmsUsage()), ren);
   ren->DefaultTextScale();
 }
 

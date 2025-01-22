@@ -51,6 +51,8 @@ set(SRC_FILES
     source/tools/gamepad_icons.cpp
     # UI7
     source/ui7/drawlist.cpp
+    source/ui7/theme.cpp
+    source/ui7/ui7.cpp
     # External
     source/external/stb.cpp
 )
