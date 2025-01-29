@@ -24,12 +24,14 @@ SOFTWARE.
 
 #include <3ds.h>
 #include <pd/external/stb_image.h>
+#include <tex3ds.h>
 
+#include <pd/common/error.hpp>
+#include <pd/common/io.hpp>
 #include <pd/common/timetrace.hpp>
 #include <pd/graphics/texture.hpp>
 #include <pd/maths/bit_util.hpp>
 #include <pd/maths/img_convert.hpp>
-#include <pd/common/error.hpp>
 
 namespace PD {
 GPU_TEXCOLOR GetTexFmt(Texture::Type type) {
@@ -54,36 +56,6 @@ void Texture::MakeTex(std::vector<u8>& buf, int w, int h, Texture::Type type,
                       Filter filter) {
   // Don't check here as check done before
   int bpp = GetBPP(type);
-  if (bpp == 4) {
-    // RGBA -> Abgr
-    for (int y = 0; y < h; y++) {
-      for (int x = 0; x < w; x++) {
-        int pos = (x + y * w) * bpp;
-        auto r = buf[pos + 0];
-        auto g = buf[pos + 1];
-        auto b = buf[pos + 2];
-        auto a = buf[pos + 3];
-        buf[pos + 0] = a;
-        buf[pos + 1] = b;
-        buf[pos + 2] = g;
-        buf[pos + 3] = r;
-      }
-    }
-  } else if (bpp == 3) {
-    // RGBA -> Abgr
-    for (int y = 0; y < h; y++) {
-      for (int x = 0; x < w; x++) {
-        int pos = (x + y * w) * bpp;
-        auto r = buf[pos + 0];
-        auto g = buf[pos + 1];
-        auto b = buf[pos + 2];
-        buf[pos + 0] = b;
-        buf[pos + 1] = g;
-        buf[pos + 2] = r;
-      }
-    }
-  }
-
   vec2 tex_size(w, h);
   // Pow2
   if (!PD::BitUtil::IsSingleBit(w)) {
@@ -95,10 +67,8 @@ void Texture::MakeTex(std::vector<u8>& buf, int w, int h, Texture::Type type,
 
   this->size.x() = (u16)w;
   this->size.y() = (u16)h;
-  this->uv.x() = 0.0f;
-  this->uv.y() = 1.0f;
-  this->uv.z() = ((float)w / (float)tex_size.x());
-  this->uv.w() = 1.0 - ((float)h / (float)tex_size.y());
+  this->uv = vec4(0.f, 1.f, ((float)w / (float)tex_size.x()),
+                  1.0 - ((float)h / (float)tex_size.y()));
 
   // Texture Setup
   auto fltr = (filter == NEAREST ? GPU_NEAREST : GPU_LINEAR);
@@ -109,7 +79,9 @@ void Texture::MakeTex(std::vector<u8>& buf, int w, int h, Texture::Type type,
 
   memset(tex->data, 0, tex->size);
 
-  if (bpp == 3 || bpp == 4) {
+  /// Probably Remove this if statement in future
+  /// This are the things confirmed as working
+  if (bpp == 3 || bpp == 4 || bpp == 1) {
     for (int x = 0; x < w; x++) {
       for (int y = 0; y < h; y++) {
         int dst_pos = ((((y >> 3) * ((int)tex_size.x() >> 3) + (x >> 3)) << 6) +
@@ -117,13 +89,13 @@ void Texture::MakeTex(std::vector<u8>& buf, int w, int h, Texture::Type type,
                         ((y & 2) << 2) | ((x & 4) << 2) | ((y & 4) << 3))) *
                       bpp;
         int src_pos = (y * w + x) * bpp;
-
-        memcpy(&((u8*)tex->data)[dst_pos], &buf[src_pos], bpp);
+        /// Best idea i had
+        for (int i = 0; i < bpp; i++) {
+          ((u8*)tex->data)[dst_pos + bpp - 1 - i] = buf[src_pos + i];
+        }
       }
     }
     C3D_TexFlush(tex);
-  } else if (bpp == 1) {
-    C3D_TexLoadImage(tex, buf.data(), GPU_TEXFACE_2D, 0);
   }
 
   tex->border = 0x00000000;
@@ -199,5 +171,24 @@ void Texture::LoadPixels(const std::vector<u8>& pixels, int w, int h, Type type,
   }
   std::vector<u8> cpy(pixels);
   MakeTex(cpy, w, h, type, filter);
+}
+
+void Texture::LoadT3X(const std::string& path) {
+  this->Delete();
+  auto file = IO::LoadFile2Mem(path);
+  if (file.size() == 0) {
+    Error("Unable to load file:\n" + path);
+  }
+  this->tex = new C3D_Tex;
+  auto t3x =
+      Tex3DS_TextureImport(file.data(), file.size(), this->tex, nullptr, false);
+  if (!t3x) {
+    Error("Unable to import:\n" + path);
+  }
+  auto st = Tex3DS_GetSubTexture(t3x, 0);
+  this->uv = vec4(st->left, st->top, st->right, st->bottom);
+  this->size[0] = st->width;
+  this->size[1] = st->height;
+  Tex3DS_TextureFree(t3x);
 }
 }  // namespace PD

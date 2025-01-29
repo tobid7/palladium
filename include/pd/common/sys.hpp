@@ -32,6 +32,7 @@ using TraceMap = std::map<std::string, TT::Res::Ref>;
 u64 GetTime();
 u64 GetNanoTime();
 TT::Res::Ref& GetTraceRef(const std::string& id);
+bool TraceExist(const std::string& id);
 TraceMap& GetTraceMap();
 }  // namespace Sys
 }  // namespace PD

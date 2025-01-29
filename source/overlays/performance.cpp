@@ -12,8 +12,7 @@ void Performance::Update(float delta, LI::Renderer::Ref ren, Hid::Ref inp) {
   ren->OnScreen(Screen::Top);
   ren->TextScale(0.6);
   vec2 pos;
-  Line(pos, std::format("FPS {:.1f} FPS / {:.2f}ms", 1000.f / delta, delta),
-       ren);
+  Line(pos, std::format("{:.1f} FPS / {:.2f}ms", 1000.f / delta, delta), ren);
   Line(pos, "Ren [AVG]: " + TSA("LI_RenderAll"), ren);
   Line(pos, "App [AVG]: " + TSA("App_MainLoop"), ren);
   Line(pos, "Ovl [AVG]: " + TSA("Ovl_Update"), ren);

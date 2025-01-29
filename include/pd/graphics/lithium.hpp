@@ -26,6 +26,7 @@ SOFTWARE.
 
 #include <pd/common/common.hpp>
 #include <pd/common/memory.hpp>
+#include <pd/graphics/rect.hpp>
 #include <pd/graphics/screen.hpp>
 #include <pd/graphics/texture.hpp>
 #include <pd/maths/vec.hpp>
@@ -46,32 +47,6 @@ enum LITextFlags_ {
 
 namespace PD {
 namespace LI {
-/// @brief Container that holds top and bottom corners of a quad
-class Rect {
- public:
-  Rect() = default;
-  Rect(const vec4& t, const vec4& b) {
-    top = t;
-    bot = b;
-  }
-  Rect(const vec2& tl, const vec2& tr, const vec2& bl, const vec2& br) {
-    top = vec4(tl, tr);
-    bot = vec4(bl, br);
-  }
-  ~Rect() = default;
-
-  vec4 Top() const { return top; }
-  vec4 Bot() const { return bot; }
-
-  vec2 TopLeft() const { return vec2(top[0], top[1]); }
-  vec2 TopRight() const { return vec2(top[2], top[3]); }
-  vec2 BotLeft() const { return vec2(bot[0], bot[1]); }
-  vec2 BotRight() const { return vec2(bot[2], bot[3]); }
-
- private:
-  vec4 top;
-  vec4 bot;
-};
 class Font : public SmartCtor<Font> {
  public:
   class Codepoint {
@@ -172,7 +147,7 @@ class Vertex {
 /// @brief Required to Set the TexENV
 enum RenderMode {
   RenderMode_RGBA,
-  RenderMode_SysFont,
+  RenderMode_Font,
 };
 /// @brief Reform the Drawcommand by generating the Vertexbuffer into it
 class Command : public SmartCtor<Command> {
@@ -362,6 +337,7 @@ class Renderer : public SmartCtor<Renderer> {
 
     void SetColor(u32 col);
     void SetPos(const vec2& pos);
+    void SetLayer(int l);
 
     void SetUnused() { used = false; }
     bool Used() const { return used; }
@@ -397,6 +373,10 @@ class Renderer : public SmartCtor<Renderer> {
     area_size = bottom ? bot->GetSize() : top->GetSize();
   }
 
+  Screen::Screen_ CurrentScreen() const {
+    return bottom ? Screen::Bottom : Screen::Top;
+  }
+
   void Rotation(float v) { rot = v; }
   float Rotation() const { return rot; }
   void TextScale(float v) { text_size = v; }
@@ -404,6 +384,7 @@ class Renderer : public SmartCtor<Renderer> {
   float TextScale() const { return text_size; }
   void Layer(int v) { current_layer = v; }
   int Layer() const { return current_layer; }
+  RenderFlags& GetFlags() { return flags; }
   void Font(Font::Ref v) {
     font = v;
     font_update = true;
@@ -424,7 +405,7 @@ class Renderer : public SmartCtor<Renderer> {
   /// @param color Color
   /// @param uv UV Map
   void DrawRect(const vec2& pos, const vec2& size, u32 color,
-                const vec4& uv = vec4(0.f, 1.f, 1.f, 0.f));
+                const Rect& uv = vec4(0.f, 1.f, 1.f, 0.f));
   /// @brief Draw a Solid Rect (uses white tex)
   /// @note acts as a simplified Draw rect Wrapper
   /// @param pos Position
@@ -488,7 +469,7 @@ class Renderer : public SmartCtor<Renderer> {
   /// @brief Automatically sets up a command
   void SetupCommand(Command::Ref cmd);
   /// @brief Creates a default Quad Render Command
-  void QuadCommand(Command::Ref cmd, const Rect& quad, const vec4& uv, u32 col);
+  void QuadCommand(Command::Ref cmd, const Rect& quad, const Rect& uv, u32 col);
   /// @brief Create a Default Triangle
   void TriangleCommand(Command::Ref cmd, const vec2& a, const vec2& b,
                        const vec2& c, u32 col);

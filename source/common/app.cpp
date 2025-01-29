@@ -28,6 +28,8 @@ SOFTWARE.
 #include <pd/common/sys.hpp>
 
 namespace PD {
+int App::too;
+
 void App::Run() {
   this->PreInit();
   this->Init();
@@ -45,7 +47,10 @@ void App::Run() {
     }
     PD::TT::End("App_MainLoop");
     PD::TT::Beg("Ovl_Update");
+    renderer->Layer(90);
     overlay_mgr->Update(dt);
+    /// Messages have their own special Layer
+    renderer->Layer(93);
     msg_mgr->Update(dt);
     PD::TT::End("Ovl_Update");
     renderer->Render();

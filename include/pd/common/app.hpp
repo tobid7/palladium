@@ -32,9 +32,14 @@ SOFTWARE.
 
 namespace PD {
 /// @brief Template Class for User Application
-class App : public SmartCtor<App> {
+class App {
  public:
-  App() = default;
+  App() {
+    if (too) {
+      Error("Only one App can be created at the same time!");
+    }
+    too++;
+  }
   ~App() = default;
 
   /// @brief Templete function where the user can Init his stuff
@@ -50,8 +55,8 @@ class App : public SmartCtor<App> {
 
   /// @brief Function to run the App
   /// (int main() {
-  ///   auto app = PD::New<UserApp>();
-  ///   app->Run();
+  ///   UserApp app;
+  ///   app.Run();
   ///   return 0;
   /// })
   void Run();
@@ -71,5 +76,8 @@ class App : public SmartCtor<App> {
   u64 last_time;
   float app_time;
   float fps;
+
+  /// The Only One
+  static int too;
 };
 }  // namespace PD

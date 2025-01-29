@@ -27,54 +27,82 @@ SOFTWARE.
 #include <pd.hpp>
 #include <pd/maths/tween.hpp>
 
-using vec2 = PD::vec2;
-using vec3 = PD::vec3;
-using vec4 = PD::vec4;
-
 class Test : public PD::App {
  public:
   Test() = default;
   ~Test() = default;
 
   void Init() override {
+    ren = Renderer();
+    inp = Input();
     test = PD::Texture::New("romfs:/icon.png");
-    Overlays()->Push(PD::New<PD::Performance>(dbg, dbg_screen));
+    // Performance Overlay freezes N3DS
+    // Overlays()->Push(PD::New<PD::Performance>(dbg, dbg_screen));
     font = PD::LI::Font::New();
-    // font->LoadSystemFont();
-    font->LoadTTF("romfs:/ComicNeue.ttf", 32);
-    Renderer()->Font(font);
-    ui7 = PD::UI7::Context::New();
+    // font->LoadTTF("romfs:/fonts/ComicNeue.ttf", 32);
+    font->LoadTTF("romfs:/fonts/JetBrainsMono-Medium.ttf", 32);
+    ren->Font(font);
+    ui7 = PD::UI7::Context::New(ren, inp);
   }
 
   bool MainLoop(float delta, float time) override {
     DrawFancyBG(time);
-    Renderer()->OnScreen(PD::Screen::Bottom);
-    Renderer()->DrawRectSolid(0, vec2(320, 240), PD::Color("#222222"));
-    Renderer()->UseTex(test);
-    Renderer()->Layer(Renderer()->Layer() + 1);
-    Renderer()->DrawImage(
-        Renderer()->GetViewport().zw() * 0.5 - test->GetSize() * 0.5, test);
-    Renderer()->DrawText(5, 0xffffffff, "Hello World!", LITextFlags_None);
-    if (Input()->IsDown(PD::Hid::Start)) {
+    ren->OnScreen(PD::Screen::Bottom);
+    // ren->DrawRectSolid(0, vec2(320, 240), PD::Color("#222222"));
+    // ren->Layer(ren->Layer() + 1);
+    // ren->DrawImage(ren->GetViewport().zw() * 0.5 - test->GetSize() * 0.5,
+    // test); ren->DrawText(5, 0xffffffff, "Hello World!", LITextFlags_None);
+    if (ui7->BeginMenu("Test",
+                       UI7MenuFlags_Scrolling | UI7MenuFlags_CenterTitle)) {
+      auto m = ui7->GetCurrentMenu();
+      m->SeparatorText("Menu Timings");
+      m->DebugLabels();
+      m->SeparatorText("Lithium Settings");
+      FlagBox(m, "LI AST", PD::LI::RenderFlags_AST);
+      FlagBox(m, "LI LRS", PD::LI::RenderFlags_LRS);
+      FlagBox(m, "LI TMS", PD::LI::RenderFlags_TMS);
+      m->SeparatorText("UI7 Tests");
+      m->Label("This seems to be a label");
+      m->Separator();
+      m->Button("Button?");
+      m->SeparatorText("SeparatorText");
+      m->Checkbox("Test", cbtest);
+      for (int i = 0; i < 10; i++) {
+        m->Label("Label: " + std::to_string(i));
+      }
+      ui7->EndMenu();
+    }
+    ui7->Update(delta);
+    if (inp->IsDown(PD::Hid::Start)) {
       return false;
     }
-    if (Input()->IsDown(Input()->A)) {
+    if (inp->IsDown(inp->A)) {
       Overlays()->Push(PD::New<PD::Performance>(dbg, dbg_screen));
       Messages()->Push("Test", "Oder SO");
-      // what.To(vec2(5, 200)).From(vec2(-100,
-      // 200)).In(0.5).As(what.EaseInQuad);
     }
-    if (Input()->IsUp(Input()->B)) {
+    if (inp->IsUp(inp->B)) {
       Overlays()->Push(PD::New<PD::Keyboard>(text, state));
-      // what.To(vec2(5, 180)).From(vec2(5, 200)).In(0.5).As(what.EaseOutQuad);
     }
     return true;
   }
 
   void Deinit() override {}
 
+  void FlagBox(PD::UI7::Menu::Ref m, const std::string& label,
+               PD::LI::RenderFlags flag) {
+    bool has_flag = ren->GetFlags() & flag;
+    m->Checkbox(label, has_flag);
+    if (has_flag != (ren->GetFlags() & flag)) {
+      if (has_flag) {
+        ren->GetFlags() |= flag;
+      } else {
+        ren->GetFlags() &= ~flag;
+      }
+    }
+  }
+
   void DrawFancyBG(float time) {
-    Renderer()->DrawRect(vec2(0, 0), vec2(400, 240), 0xff64c9fd);
+    ren->DrawRect(vec2(0, 0), vec2(400, 240), 0xff64c9fd);
     for (int i = 0; i < 44; i++) Append(i, vec2(0, 0), vec2(400, 240), time);
   }
 
@@ -90,7 +118,7 @@ class Test : public PD::App {
                        sin(offset + time) * 10 + 30;
     float color_effect = 1 - exp(-(index / 11) / 3.0f);
 
-    Renderer()->DrawTriangle(
+    ren->DrawTriangle(
         vec2(x_position, y_position), vec2(x_position + 300, y_position + (90)),
         vec2(x_position - 300, y_position + (90)),
         PD::Color(.94f - .17f * color_effect, .61f - .25f * color_effect,
@@ -98,8 +126,13 @@ class Test : public PD::App {
   }
 
  private:
+  /// Shorter Acess to Renderer / Input
+  PD::LI::Renderer::Ref ren;
+  PD::Hid::Ref inp;
+  /// Other Data
   PD::Texture::Ref test;
   bool dbg = false, dbg_screen = false;
+  bool cbtest = true;
   std::string text;
   PD::Keyboard::State state;
   PD::UI7::Context::Ref ui7;
@@ -108,7 +141,7 @@ class Test : public PD::App {
 };
 
 int main() {
-  auto app = PD::New<Test>();
-  app->Run();
+  Test app;
+  app.Run();
   return 0;
 }

@@ -104,8 +104,6 @@ void MessageMgr::Push(const std::string& title, const std::string& text) {
 }
 
 void MessageMgr::Update(float delta) {
-  // Go two layers up and Render on Top
-  ren->Layer(ren->Layer() + 2);
   ren->OnScreen(Screen::Top);
   for (size_t i = 0; i < msgs.size(); i++) {
     // Update the Animation Handlers and Move older

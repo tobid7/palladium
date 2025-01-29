@@ -32,6 +32,7 @@ SOFTWARE.
 #include <pd/common/timetrace.hpp>
 // Graphics
 #include <pd/graphics/lithium.hpp>
+#include <pd/graphics/spritesheet.hpp>
 #include <pd/graphics/texture.hpp>
 // Maths
 #include <pd/maths/bit_util.hpp>
@@ -45,5 +46,12 @@ SOFTWARE.
 #include <pd/overlays/performance.hpp>
 // UI7
 #include <pd/ui7/ui7.hpp>
+
+/// Setup these as non Namespaced access by default
+#ifndef PD_MATH_NAMESPACED
+using vec2 = PD::vec2;
+using vec3 = PD::vec3;
+using vec4 = PD::vec4;
+#endif
 
 // namespace Palladium = PD;

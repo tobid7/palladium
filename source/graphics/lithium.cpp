@@ -23,6 +23,7 @@ SOFTWARE.
 
 #include <pd/external/stb_truetype.h>
 
+#include <pd/common/io.hpp>
 #include <pd/common/strings.hpp>
 #include <pd/common/sys.hpp>
 #include <pd/graphics/li7_shader.hpp>
@@ -45,30 +46,43 @@ void Font::LoadTTF(const std::string& path, int height) {
   loader.read(reinterpret_cast<char*>(buffer), len);
   loader.close();
   stbtt_InitFont(&inf, buffer, 0);
-  std::vector<unsigned char> font_tex(quad * quad * 4);
+  std::vector<unsigned char> font_tex(quad * quad);
   float scale = stbtt_ScaleForPixelHeight(&inf, pixel_height);
 
   int ascent, descent, lineGap;
   stbtt_GetFontVMetrics(&inf, &ascent, &descent, &lineGap);
   int baseline = static_cast<int>(ascent * scale);
 
+  std::map<u32, int> buf_cache;
+
   auto tex = Texture::New();
   vec2 off;
-  for (int i = 0; i < 255; i++) {
-    Codepoint c;
+  for (u32 ii = 0x0000; ii < 0xFFFF; ii++) {
+    int i = stbtt_FindGlyphIndex(&inf, ii);
+    if (i == 0) {
+      continue;
+    }
     if (stbtt_IsGlyphEmpty(&inf, i)) {
-      c.cp(i);
-      c.tex(tex);
-      c.invalid(true);
-      cpmap[i] = c;
       continue;
     }
 
+    Codepoint c;
     int w = 0, h = 0, xo = 0, yo = 0;
     unsigned char* bitmap =
         stbtt_GetCodepointBitmap(&inf, scale, scale, i, &w, &h, &xo, &yo);
     int x0, y0, x1, y1;
     stbtt_GetCodepointBitmapBox(&inf, i, scale, scale, &x0, &y0, &x1, &y1);
+
+    u32 hashed_map = IO::HashMemory(std::vector<u8>(bitmap, bitmap + (w * h)));
+    if (buf_cache.find(hashed_map) != buf_cache.end()) {
+      c = GetCodepoint(buf_cache[hashed_map]);
+      c.cp(i);
+      cpmap[i] = c;
+      free(bitmap);
+      continue;
+    } else {
+      buf_cache[hashed_map] = i;
+    }
 
     if (off[0] + w > quad) {
       off[1] += pixel_height;
@@ -88,24 +102,25 @@ void Font::LoadTTF(const std::string& path, int height) {
 
     for (int y = 0; y < h; ++y) {
       for (int x = 0; x < w; ++x) {
-        int map_pos = ((off[1] + y) * quad + (off[0] + x)) * 4;
-
-        font_tex[map_pos + 0] = 255;
-        font_tex[map_pos + 1] = 255;
-        font_tex[map_pos + 2] = 255;
-        font_tex[map_pos + 3] = bitmap[x + y * w];
+        int map_pos = ((off[1] + y) * quad + (off[0] + x));
+        font_tex[map_pos] = bitmap[x + y * w];
       }
     }
+
+    free(bitmap);
+    cpmap[i] = c;
+
     // Small Patch to avoid some possible artifacts
     off[0] += w + 1;
     if (off[0] + w > quad) {
       off[1] += pixel_height;
+      if (off[1] + pixel_height > quad) {
+        break;
+      }
       off[0] = 0;
     }
-    free(bitmap);
-    cpmap[i] = c;
   }
-  tex->LoadPixels(font_tex, quad, quad, Texture::RGBA32, Texture::LINEAR);
+  tex->LoadPixels(font_tex, quad, quad, Texture::A8, Texture::LINEAR);
   textures.push_back(tex);
 }
 
@@ -143,6 +158,7 @@ void Font::LoadSystemFont() {
     tx->border = 0xffffffff;
     tx->lodParam = 0;
     stex->LoadExternal(tx, vec2(tx->width, tx->height), vec4(0, 1, 1, 0));
+    stex->AutoUnLoad(false);
     textures[i] = stex;
   }
   std::vector<unsigned int> charSet;
@@ -192,8 +208,10 @@ void Font::LoadSystemFont() {
     codepoint.uv(vec4(dat.texcoord.left, dat.texcoord.top, dat.texcoord.right,
                       dat.texcoord.bottom));
 
-    if (textures.at(dat.sheetIndex) != nullptr) {
+    if (dat.sheetIndex < (int)textures.size()) {
       codepoint.tex(textures[dat.sheetIndex]);
+    } else {
+      codepoint.invalid(true);
     }
     codepoint.size(vec2(dat.vtxcoord.right, dat.vtxcoord.bottom));
     codepoint.off(0);
@@ -250,7 +268,9 @@ void Renderer::StaticText::Setup(Renderer* ren, const vec2& pos, u32 clr,
   this->pos = pos;
   this->ren = ren;
   this->text = StaticObject::New();
-  ren->TextCommand(this->text->List(), pos, clr, text, flags, box);
+  /// Ensure that it also renders Out of Screen i guess
+  ren->TextCommand(this->text->List(), pos, clr, text,
+                   flags | LITextFlags_RenderOOS, box);
   OptiCommandList(this->text->List());
 }
 
@@ -266,6 +286,8 @@ void Renderer::StaticText::SetColor(u32 col) { text->ReColor(col); }
 void Renderer::StaticText::SetPos(const vec2& pos) {
   text->MoveIt(pos - this->pos);
 }
+
+void Renderer::StaticText::SetLayer(int layer) { text->ReLayer(layer); }
 
 bool Renderer::InBox(const vec2& pos, const vec2& szs, const vec4& rect) {
   return (pos[0] < rect[2] || pos[1] < rect[3] || pos[0] + szs[0] > rect[0] ||
@@ -341,18 +363,14 @@ void Renderer::SetupCommand(Command::Ref cmd) {
   cmd->Index(cmd_idx++).Layer(current_layer).Tex(current_tex);
 }
 
-void Renderer::QuadCommand(Command::Ref cmd, const Rect& quad, const vec4& uv,
+void Renderer::QuadCommand(Command::Ref cmd, const Rect& quad, const Rect& uv,
                            u32 col) {
   cmd->PushIndex(0).PushIndex(1).PushIndex(2);
   cmd->PushIndex(0).PushIndex(2).PushIndex(3);
-  cmd->PushVertex(
-      Vertex(vec2(quad.Bot().z(), quad.Bot().w()), vec2(uv.z(), uv.w()), col));
-  cmd->PushVertex(
-      Vertex(vec2(quad.Top().z(), quad.Top().w()), vec2(uv.z(), uv.y()), col));
-  cmd->PushVertex(
-      Vertex(vec2(quad.Top().x(), quad.Top().y()), vec2(uv.x(), uv.y()), col));
-  cmd->PushVertex(
-      Vertex(vec2(quad.Bot().x(), quad.Bot().y()), vec2(uv.x(), uv.w()), col));
+  cmd->PushVertex(Vertex(quad.BotRight(), uv.BotRight(), col));
+  cmd->PushVertex(Vertex(quad.TopRight(), uv.TopRight(), col));
+  cmd->PushVertex(Vertex(quad.TopLeft(), uv.TopLeft(), col));
+  cmd->PushVertex(Vertex(quad.BotLeft(), uv.BotLeft(), col));
 }
 
 void Renderer::TriangleCommand(Command::Ref cmd, const vec2& a, const vec2& b,
@@ -364,7 +382,6 @@ void Renderer::TriangleCommand(Command::Ref cmd, const vec2& a, const vec2& b,
   cmd->PushVertex(Vertex(c, vec2(1.f, 0.f), col));
 }
 
-/// TO BE REWRITTEN
 void Renderer::TextCommand(std::vector<Command::Ref>& cmds, const vec2& pos,
                            u32 color, const std::string& text,
                            LITextFlags flags, const vec2& box) {
@@ -375,6 +392,23 @@ void Renderer::TextCommand(std::vector<Command::Ref>& cmds, const vec2& pos,
   float cfs = (default_font_h * text_size) / (float)font->PixelHeight();
   float lh = (float)font->PixelHeight() * cfs;
   vec2 td;
+  vec2 rpos = pos;
+  vec2 rbox = box;
+  if (flags & (LITextFlags_AlignMid | LITextFlags_AlignRight)) {
+    td = GetTextDimensions(text);
+    if (rbox[0] == 0.f) {
+      rbox[0] = area_size.x();
+    }
+    if (rbox[1] == 0.f) {
+      rbox[1] = area_size.y();
+    }
+  }
+  if (flags & LITextFlags_AlignMid) {
+    rpos = rbox * 0.5 - td * 0.5 + pos;
+  }
+  if (flags & LITextFlags_AlignRight) {
+    rpos[0] = rbox[0] - td[0];
+  }
 
   std::vector<std::string> lines;
   std::istringstream iss(text);
@@ -384,10 +418,10 @@ void Renderer::TextCommand(std::vector<Command::Ref>& cmds, const vec2& pos,
   }
 
   for (auto& it : lines) {
-    if (pos[1] + off[1] + lh < 0) {
+    if (rpos[1] + off[1] + lh < 0) {
       off[1] += lh;
       continue;
-    } else if (pos[1] + off[1] > GetViewport().w() &&
+    } else if (rpos[1] + off[1] > GetViewport().w() &&
                !(flags & LITextFlags_RenderOOS)) {
       // Break cause next lines would be out of screen
       break;
@@ -396,9 +430,7 @@ void Renderer::TextCommand(std::vector<Command::Ref>& cmds, const vec2& pos,
     auto cmd = Command::New();
     current_tex = font->GetCodepoint(wline[0]).tex();
     SetupCommand(cmd);
-    if (font->SystemFont()) {
-      cmd->Rendermode(RenderMode_SysFont);
-    }
+    cmd->Rendermode(RenderMode_Font);
     for (auto& jt : wline) {
       auto cp = font->GetCodepoint(jt);
       if (cp.invalid() && jt != '\n' && jt != '\t') {
@@ -409,9 +441,7 @@ void Renderer::TextCommand(std::vector<Command::Ref>& cmds, const vec2& pos,
         cmd = Command::New();
         current_tex = cp.tex();
         SetupCommand(cmd);
-        if (font->SystemFont()) {
-          cmd->Rendermode(RenderMode_SysFont);
-        }
+        cmd->Rendermode(RenderMode_Font);
       }
       if (jt == '\t') {
         off[0] += 16 * cfs;
@@ -421,13 +451,13 @@ void Renderer::TextCommand(std::vector<Command::Ref>& cmds, const vec2& pos,
           if (flags & LITextFlags_Shaddow) {
             // Draw
             Rect rec = CreateRect(
-                pos + vec2(off[0] + 1, off[1] + (cp.off() * cfs)) + 1,
+                rpos + vec2(off[0] + 1, off[1] + (cp.off() * cfs)) + 1,
                 cp.size() * cfs, 0.f);
             QuadCommand(cmd, rec, cp.uv(), 0xff111111);
             current_layer++;
           }
           // Draw
-          Rect rec = CreateRect(pos + off + vec2(0, (cp.off() * cfs)),
+          Rect rec = CreateRect(rpos + off + vec2(0, (cp.off() * cfs)),
                                 cp.size() * cfs, 0.f);
           QuadCommand(cmd, rec, cp.uv(), color);
           current_layer = lr;
@@ -450,7 +480,6 @@ vec4 Renderer::GetViewport() {
   return vec4(0, 0, screen[0], screen[1]);
 }
 
-/// TO BE REWRITTEN
 vec2 Renderer::GetTextDimensions(const std::string& text) {
   if (!font) {
     // No font no size (oder so)
@@ -516,7 +545,8 @@ vec2 Renderer::GetTextDimensions(const std::string& text) {
 void Renderer::UpdateRenderMode(const RenderMode& mode) {
   C3D_TexEnv* env = C3D_GetTexEnv(0);
   switch (mode) {
-    case RenderMode_SysFont:
+    case RenderMode_Font:
+      /// Sets Only Alpha Using the Color and Replase RGB with vertex color
       C3D_TexEnvInit(env);
       C3D_TexEnvSrc(env, C3D_RGB, GPU_PRIMARY_COLOR);
       C3D_TexEnvFunc(env, C3D_RGB, GPU_REPLACE);
@@ -526,6 +556,7 @@ void Renderer::UpdateRenderMode(const RenderMode& mode) {
     // Fall trough instead of defining twice
     case RenderMode_RGBA:
     default:
+      /// Use Texture for RGBA and vertexcolor for visibility
       C3D_TexEnvInit(env);
       C3D_TexEnvSrc(env, C3D_Both, GPU_TEXTURE0);
       C3D_TexEnvFunc(env, C3D_Both, GPU_MODULATE);
@@ -536,23 +567,17 @@ void Renderer::UpdateRenderMode(const RenderMode& mode) {
 void Renderer::RenderOn(bool bot) {
   C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, uLoc_projection,
                    (bot ? &bot_proj : &top_proj));
-
   C3D_DepthTest(false, GPU_GREATER, GPU_WRITE_ALL);
-
   UpdateRenderMode(RenderMode_RGBA);
-
   int total_vertices = 0;
   int total_indices = 0;
   drawcalls = 0;
   auto& cmds = draw_list[bot];
-
   commands = cmds.size();
   size_t index = 0;
-
   if (flags & RenderFlags_LRS) {
     OptiCommandList(cmds);
   }
-
   while (index < cmds.size()) {
     C3D_Tex* tex = cmds[index]->Tex()->GetTex();
     auto mode = cmds[index]->Rendermode();
@@ -572,6 +597,7 @@ void Renderer::RenderOn(bool bot) {
       }
       index++;
     }
+
     C3D_TexBind(0, tex);
 
     auto bufInfo = C3D_GetBufInfo();
@@ -580,6 +606,7 @@ void Renderer::RenderOn(bool bot) {
 
     C3D_DrawElements(GPU_TRIANGLES, index_idx - start_idx, C3D_UNSIGNED_SHORT,
                      index_buf.data() + start_idx);
+
     drawcalls++;
     total_vertices += vertex_idx - start_vtx;
     total_indices += index_idx - start_idx;
@@ -629,6 +656,8 @@ void Renderer::Render() {
       if (Sys::GetTime() - it.second.TimeCreated() > 5) rem.push_back(it.first);
     }
     for (auto it : rem) tms.erase(it);
+  } else {
+    tms.clear();
   }
   if (flags & RenderFlags_AST) {
     std::vector<u32> rem;
@@ -641,11 +670,13 @@ void Renderer::Render() {
     for (auto& it : rem) {
       ast.erase(it);
     }
+  } else {
+    ast.clear();
   }
 }
 
 void Renderer::DrawRect(const vec2& pos, const vec2& size, u32 color,
-                        const vec4& uv) {
+                        const Rect& uv) {
   if (!InBox(pos, size, GetViewport())) {
     // Instand abort as it is out of screen
     return;
@@ -659,7 +690,7 @@ void Renderer::DrawRect(const vec2& pos, const vec2& size, u32 color,
 
 void Renderer::DrawRectSolid(const vec2& pos, const vec2& size, u32 color) {
   UseTex();
-  DrawRect(pos, size, color);
+  DrawRect(pos, size, color, vec4(0.f, 1.f, 1.f, 0.f));
 }
 
 void Renderer::DrawTriangle(const vec2& a, const vec2& b, const vec2& c,

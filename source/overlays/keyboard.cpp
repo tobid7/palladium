@@ -484,8 +484,6 @@ void Keyboard::Update(float delta, LI::Renderer::Ref ren, Hid::Ref inp) {
   /// Process Controller Movement
   Movement(inp);
 
-  /// Declare RenderLayer (10 above the latest)
-  ren->Layer(ren->Layer() + 10);
   /// Update animations
   flymgr.Update(delta);
   selector.Update(delta);

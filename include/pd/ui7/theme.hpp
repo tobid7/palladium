@@ -32,14 +32,14 @@ enum UI7Color_ {
   UI7Color_Button,
   UI7Color_ButtonDead,
   UI7Color_ButtonActive,
-  UI7Color_ButtonDisabled,
+  UI7Color_ButtonHovered,
   UI7Color_Text,
   UI7Color_TextDead,
   UI7Color_Header,
   UI7Color_Selector,
   UI7Color_Checkmark,
   UI7Color_FrameBackground,
-  UI7Color_FragmeBackgroundHovered,
+  UI7Color_FrameBackgroundHovered,
   UI7Color_Progressbar,
   UI7Color_ListEven,
   UI7Color_ListOdd,
@@ -115,20 +115,4 @@ class Theme {
   std::vector<std::pair<UI7Color, u32>> changes;
 };
 }  // namespace UI7
-/// Using UI7Color as a Class to be able to
-/// define it as struct as well as using it as enum
-class UI7Color {
- public:
-  UI7Color() {
-    /// No Color
-  }
-  UI7Color(unsigned int c) { color = c; }
-  UI7Color(UI7Color_ c) {}
-  ~UI7Color() {}
-
-  operator u32() const { return color; }
-
- private:
-  u32 color;
-};
 }  // namespace PD

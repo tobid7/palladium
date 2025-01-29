@@ -32,6 +32,7 @@ set(SRC_FILES
     source/common/sys.cpp
     source/common/lang.cpp
     source/common/error.cpp
+    source/common/io.cpp
     # Controls
     source/controls/hid.cpp
     # Maths
@@ -40,6 +41,7 @@ set(SRC_FILES
     source/maths/img_convert.cpp
     # Graphics
     source/graphics/texture.cpp
+    source/graphics/spritesheet.cpp
     source/graphics/li7_shader.cpp
     source/graphics/lithium.cpp
     # Overlays
@@ -51,6 +53,7 @@ set(SRC_FILES
     source/tools/gamepad_icons.cpp
     # UI7
     source/ui7/drawlist.cpp
+    source/ui7/menu.cpp
     source/ui7/theme.cpp
     source/ui7/ui7.cpp
     # External

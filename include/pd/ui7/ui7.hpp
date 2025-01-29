@@ -23,23 +23,45 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
+#include <pd/controls/hid.hpp>  //// WOW A NON UI/ Header
 #include <pd/ui7/drawlist.hpp>
 #include <pd/ui7/flags.hpp>
 #include <pd/ui7/id.hpp>
 #include <pd/ui7/menu.hpp>
 #include <pd/ui7/theme.hpp>
-#include <unordered_map>
 
 namespace PD {
 namespace UI7 {
 class Context : public SmartCtor<Context> {
  public:
-  Context() {}
+  Context(LI::Renderer::Ref ren, Hid::Ref hid) {
+    this->ren = ren;
+    this->inp = hid;
+    Theme::Default(theme);
+    back = DrawList::New(ren);
+    front = DrawList::New(ren);
+  }
   ~Context() {}
 
+  bool BeginMenu(const ID& id, UI7MenuFlags flags = 0);
+  Menu::Ref GetCurrentMenu();
+  void EndMenu();
+
+  /// Theme Management
+  Theme& GetTheme() { return theme; }
+
+  /// @brief Update Context (Render menus)
+  /// @param delta deltatime
   void Update(float delta);
 
+  /// Expose DrawLists
+  DrawList::Ref BackList() { return back; }
+  DrawList::Ref FrontList() { return front; }
+
  private:
+  // Linked Renderer / Hid
+  LI::Renderer::Ref ren;
+  Hid::Ref inp;
   // Timing
   float delta;
   float time;
@@ -50,11 +72,14 @@ class Context : public SmartCtor<Context> {
   bool debugging;
   // Menu Handlers
   std::unordered_map<u32, Menu::Ref> menus;
+  std::vector<u32> amenus;  // Active ones
   Menu::Ref current;
   // Context DrawList
   DrawList::Ref debug;
   DrawList::Ref front;
   DrawList::Ref back;
+  // Theme
+  Theme theme;
   // Promt Handler
 };
 }  // namespace UI7

@@ -44,5 +44,8 @@ TT::Res::Ref& GetTraceRef(const std::string& id) {
   }
   return pd_sys_tm[id];
 }
+bool TraceExist(const std::string& id) {
+  return pd_sys_tm.find(id) != pd_sys_tm.end();
+}
 TraceMap& GetTraceMap() { return pd_sys_tm; }
 }  // namespace PD::Sys

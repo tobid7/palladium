@@ -27,6 +27,7 @@ SOFTWARE.
 #include <citro3d.h>
 
 #include <pd/common/common.hpp>
+#include <pd/graphics/rect.hpp>
 #include <pd/maths/vec.hpp>
 
 namespace PD {
@@ -46,8 +47,12 @@ class Texture : public SmartCtor<Texture> {
   Texture() : uv(0.f, 1.f, 1.f, 0.f) {}
   /// @brief Load file Constructor
   /// @param path path to file
-  Texture(const std::string& path) : uv(0.f, 1.f, 1.f, 0.f) {
-    this->LoadFile(path);
+  Texture(const std::string& path, bool t3x = false) : uv(0.f, 1.f, 1.f, 0.f) {
+    if (t3x) {
+      this->LoadT3X(path);
+    } else {
+      this->LoadFile(path);
+    }
   }
   /// @brief Load Memory constructor
   /// @param data File Data reference
@@ -66,7 +71,11 @@ class Texture : public SmartCtor<Texture> {
     this->LoadPixels(data, w, h, type, filter);
   }
   /// @brief Deconstructor (aka auto delete)
-  ~Texture() { Delete(); }
+  ~Texture() {
+    if (autounload) {
+      Delete();
+    }
+  }
 
   /// @brief Deletes image (if not already unloaded)
   void Delete();
@@ -86,11 +95,17 @@ class Texture : public SmartCtor<Texture> {
   void LoadPixels(const std::vector<u8>& data, int w, int h, Type type = RGBA32,
                   Filter filter = NEAREST);
 
+  /// @brief Load a texture of a T3X File
+  /// @note This is used for single texture T3X
+  /// Not for SpriteSheets
+  /// @param path path to .t3x file
+  void LoadT3X(const std::string& path);
+
   /// @brief Input a Texture that you had set up on your own
   /// @param tex Texture reference (deletes itself)
   /// @param rszs The size of the source image
   /// @param uvs Your uv Setup
-  void LoadExternal(C3D_Tex* tex, vec2 rszs, vec4 uvs) {
+  void LoadExternal(C3D_Tex* tex, vec2 rszs, LI::Rect uvs) {
     this->Delete();
     this->tex = tex;
     this->size = rszs;
@@ -105,19 +120,23 @@ class Texture : public SmartCtor<Texture> {
   }
   vec2 GetSize() const { return size; }
   C3D_Tex* GetTex() const { return tex; };
-  vec4 GetUV() const { return uv; }
+  LI::Rect GetUV() const { return uv; }
   bool IsValid() const { return tex != 0; }
+
+  bool AutoUnLoad() const { return autounload; }
+  void AutoUnLoad(bool v) { autounload = v; }
 
   operator C3D_Tex*() const { return tex; }
   operator vec2() const { return size; }
-  operator vec4() const { return uv; }
+  operator LI::Rect() const { return uv; }
   operator bool() const { return tex != 0; }
 
  private:
   void MakeTex(std::vector<u8>& buf, int w, int h, Type type = RGBA32,
                Filter filter = NEAREST);
   vec2 size;
-  vec4 uv;
+  LI::Rect uv;
   C3D_Tex* tex = nullptr;
+  bool autounload = true;
 };
 }  // namespace PD
