@@ -31,23 +31,47 @@ class TimeStats : public SmartCtor<TimeStats> {
   TimeStats(int l) : len(l), val(l, 0) {}
   ~TimeStats() = default;
 
-  void Add(unsigned long long v) {
+  void Add(u64 v) {
     val[idx] = v;
     idx = next(idx);
     num_val = std::min(num_val + 1, len);
   }
 
-  unsigned long long GetAverage() {
+  u64 GetAverage() {
     if (!num_val) return 0.f;
-    unsigned long long res = 0;
+    u64 res = 0;
     for (int i = 0; i < num_val; i++) {
       res += val[smart_idx(i)];
     }
     return res / num_val;
   }
 
-  const std::vector<unsigned long long> &GetData() { return val; }
-  const unsigned long long &operator[](int i) { return val[smart_idx(i)]; }
+  u64 GetMin() {
+    if (!num_val) return 0.f;
+    u64 res = std::numeric_limits<u64>::max();
+    for (int i = 0; i < num_val; i++) {
+      res = std::min(val[smart_idx(i)], res);
+    }
+    return res;
+  }
+
+  u64 GetMax() {
+    if (!num_val) return 0.f;
+    u64 res = 0;
+    for (int i = 0; i < num_val; i++) {
+      res = std::max(val[smart_idx(i)], res);
+    }
+    return res;
+  }
+
+  void Clear() {
+    val.assign(len, 0);
+    idx = 0;
+    num_val = 0;
+  }
+
+  const std::vector<u64> &GetData() { return val; }
+  const u64 &operator[](int i) { return val[smart_idx(i)]; }
   const size_t GetLen() { return len; }
   const size_t GetNumValues() { return num_val; }
 
@@ -56,7 +80,7 @@ class TimeStats : public SmartCtor<TimeStats> {
   size_t smart_idx(size_t v) const { return (idx + len - num_val + v) % len; }
 
   int len = 0;
-  std::vector<unsigned long long> val;
+  std::vector<u64> val;
   int idx = 0;
   int num_val = 0;
 };
@@ -68,21 +92,21 @@ class Res : public SmartCtor<Res> {
 
   void SetID(const std::string &v) { id = v; }
   const std::string GetID() { return id; }
-  void SetStart(unsigned long long v) { start = v; }
-  unsigned long long GetStart() { return start; }
-  void SetEnd(unsigned long long v) {
+  void SetStart(u64 v) { start = v; }
+  u64 GetStart() { return start; }
+  void SetEnd(u64 v) {
     end = v;
     protocol->Add(GetLastDiff());
   }
-  unsigned long long GetEnd() { return end; }
+  u64 GetEnd() { return end; }
 
-  unsigned long long GetLastDiff() { return end - start; }
+  u64 GetLastDiff() { return end - start; }
   TimeStats::Ref GetProtocol() { return protocol; }
 
  private:
   std::string id;
-  unsigned long long start;
-  unsigned long long end;
+  u64 start;
+  u64 end;
   TimeStats::Ref protocol;
 };
 void Beg(const std::string &id);

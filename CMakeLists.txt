@@ -76,10 +76,15 @@ target_compile_definitions(${TARGET_NAME} PUBLIC
     -DBUILD_CTR=1
 )
 
-add_executable(test test/main.cpp)
-target_include_directories(test PUBLIC include test)
+add_executable(test test/app/main.cpp)
+target_include_directories(test PUBLIC include test/app)
 target_link_directories(test PUBLIC ${CMAKE_BINARY_DIR})
 target_link_libraries(test PUBLIC palladium citro3d ctru m)
+
+add_executable(testbench test/bench/main.cpp)
+target_include_directories(testbench PUBLIC include test/bench)
+target_link_directories(testbench PUBLIC ${CMAKE_BINARY_DIR})
+target_link_libraries(testbench PUBLIC palladium citro3d ctru m)
 # Generate 3DSX
 ctr_generate_smdh(
     ${CMAKE_BINARY_DIR}/test.smdh
@@ -91,6 +96,12 @@ ctr_generate_smdh(
 ctr_create_3dsx(
     test
     OUTPUT "${CMAKE_BINARY_DIR}/test.3dsx"
+    SMDH "${CMAKE_BINARY_DIR}/test.smdh"
+    ROMFS "${CMAKE_SOURCE_DIR}/test/romfs"
+)
+ctr_create_3dsx(
+    testbench
+    OUTPUT "${CMAKE_BINARY_DIR}/testbench.3dsx"
     SMDH "${CMAKE_BINARY_DIR}/test.smdh"
     ROMFS "${CMAKE_SOURCE_DIR}/test/romfs"
 )
