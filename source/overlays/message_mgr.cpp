@@ -104,7 +104,7 @@ void MessageMgr::Push(const std::string& title, const std::string& text) {
 }
 
 void MessageMgr::Update(float delta) {
-  ren->OnScreen(Screen::Top);
+  ren->OnScreen(ren->GetScreen(false));
   for (size_t i = 0; i < msgs.size(); i++) {
     // Update the Animation Handlers and Move older
     // Messages up if a new one got pushed

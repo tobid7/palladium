@@ -121,13 +121,6 @@ const std::string PathRemoveExtension(const std::string& path) {
   return path;
 }
 
-template <typename T>
-const std::string ToHex(const T& v) {
-  std::stringstream s;
-  s << "0x" << std::setfill('0') << std::setw(sizeof(v) * 2) << std::hex << v;
-  return s.str();
-}
-
 u32 FastHash(const std::string& s) {
   u32 hash = 5381;
   for (auto& it : s) {

@@ -33,7 +33,7 @@ namespace PD {
 class Screen : public SmartCtor<Screen> {
  public:
   enum Screen_ { Top, Bottom, TopRight };
-  Screen(Screen_ screen) {
+  Screen(Screen_ screen) : type(screen) {
     if (screen == Top) {
       target = C3D_RenderTargetCreate(240, 400, GPU_RB_RGBA8,
                                       GPU_RB_DEPTH24_STENCIL8);
@@ -60,10 +60,13 @@ class Screen : public SmartCtor<Screen> {
     return vec2(target->frameBuf.height, target->frameBuf.width);
   }
 
+  Screen_ ScreenType() const { return type; }
+
   C3D_RenderTarget* Get() const { return target; }
   operator C3D_RenderTarget*() const { return target; }
 
  private:
+  Screen_ type;
   const u32 DisplayTransferFlags =
       (GX_TRANSFER_FLIP_VERT(0) | GX_TRANSFER_OUT_TILED(0) |
        GX_TRANSFER_RAW_COPY(0) | GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGBA8) |

@@ -113,21 +113,13 @@ class Vertex {
   Vertex(const vec2& p, const vec2& u, u32 c) {
     pos[0] = p[0];
     pos[1] = p[1];
-    pos[2] = 0.f;
     uv = u;
     color = c;
   }
   ~Vertex() {}
 
-  Vertex& Pos(const vec3& v) {
-    pos = v;
-    return *this;
-  }
-  // Lets support that as well
   Vertex& Pos(const vec2& v) {
-    pos[0] = v[0];
-    pos[1] = v[1];
-    pos[2] = 0.f;
+    pos = v;
     return *this;
   }
   Vertex& Uv(const vec2& v) {
@@ -140,7 +132,7 @@ class Vertex {
   }
 
   // private:
-  vec3 pos;
+  vec2 pos;
   vec2 uv;
   u32 color;
 };
@@ -270,7 +262,7 @@ class StaticObject : public SmartCtor<StaticObject> {
   void MoveIt(vec2 off) {
     for (auto& it : cpy) {
       for (auto& jt : it->VertexList()) {
-        jt.pos += vec3(off, 0);
+        jt.pos += off;
       }
     }
   }
@@ -354,27 +346,24 @@ class Renderer : public SmartCtor<Renderer> {
     StaticObject::Ref text;
   };
 
-  void Render();
+  void PrepareRender();
+  void Render(Screen::Ref s);
+  void FinalizeRender();
 
-  void OnScreen(Screen::Screen_ screen) {
-    if (screen == Screen::Top) {
-      bottom = false;
-      area_size = top->GetSize();
-    } else if (screen == Screen::Bottom) {
-      bottom = true;
-      area_size = bot->GetSize();
-    } else {
+  void RegisterScreen(bool bottom, Screen::Ref s) { screens[bottom] = s; }
+  void OnScreen(Screen::Ref s) {
+    if (!s) {
       return;
     }
+    this->screen = s;
+    area_size = screen->GetSize();
   }
 
-  void OnScreen(bool bottom) {
-    bottom = bottom;
-    area_size = bottom ? bot->GetSize() : top->GetSize();
-  }
-
-  Screen::Screen_ CurrentScreen() const {
-    return bottom ? Screen::Bottom : Screen::Top;
+  Screen::Ref CurrentScreen() const { return screen; }
+  Screen::Ref GetScreen(bool bottom) {
+    auto res = screens[bottom];
+    Assert(res.get(), "Screen is not registered!");
+    return res;
   }
 
   void Rotation(float v) { rot = v; }
@@ -458,13 +447,17 @@ class Renderer : public SmartCtor<Renderer> {
   static bool InBox(const vec2& pos, const vec4& rect);
   static bool InBox(const vec2& alpha, const vec2& bravo, const vec2& charlie,
                     const vec4& rect);
+  /// @brief Get The Address of a Screen
+  /// @note IMPORTANT: THIS IS FOR 32Bit System
+  /// Should find a better way to do this for porting this lib
+  static u32 Screen32(Screen::Ref s) { return (u32)s.get(); }
   static void OptiCommandList(std::vector<Command::Ref>& list);
   /// @brief Returns Viewport with xy
   vec4 GetViewport();
   /// @brief Push a Self Created command
   void PushCommand(Command::Ref cmd) {
     cmd->Index(cmd_idx++);  // Indexing
-    draw_list[bottom].push_back(cmd);
+    draw_list[Screen32(screen)].push_back(cmd);
   }
   /// @brief Automatically sets up a command
   void SetupCommand(Command::Ref cmd);
@@ -487,17 +480,16 @@ class Renderer : public SmartCtor<Renderer> {
 
  private:
   /// Helper Funcitons ///
-  void RenderOn(bool bottom);
   void UpdateRenderMode(const RenderMode& mode);
 
-  /// @brief  Screens ///
-  Screen::Ref top;
-  Screen::Ref bot;
+  /// One Screen Only... ///
+  Screen::Ref screen;
+  /// Reference Screens ///
+  Screen::Ref screens[2];
 
   /// Context Related ///
   RenderFlags flags = RenderFlags_Default;
   vec2 area_size;
-  bool bottom = false;
   int current_layer = 0;
   Texture::Ref current_tex = nullptr;
   Texture::Ref white = nullptr;  // Single color
@@ -516,7 +508,7 @@ class Renderer : public SmartCtor<Renderer> {
   float rot = 0.f;
   /// Rendering ///
   // Use dual drawlist
-  std::vector<Command::Ref> draw_list[2];
+  std::unordered_map<u32, std::vector<Command::Ref>> draw_list;
   std::vector<Vertex, LinearAllocator<Vertex>> vertex_buf;
   std::vector<u16, LinearAllocator<u16>> index_buf;
   u32 vertex_idx = 0;

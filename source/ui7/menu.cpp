@@ -2,107 +2,57 @@
 #include <pd/common/timetrace.hpp>
 #include <pd/ui7/menu.hpp>
 
-//////////////////////////////
-//////// OBJECT SETUP ////////
-////// Setup Variables ///////
-///////// Move Cursor ////////
-//// Check Scrolling State ///
-/////// Handle Controls //////
-////////// Render ////////////
-//////////////////////////////
-
 namespace PD {
 namespace UI7 {
 void UI7::Menu::Label(const std::string& label) {
-  vec2 size = this->back->GetRenderer()->GetTextDimensions(label);
-  vec2 pos = Cursor();
-  CursorMove(size - vec2(0, 4));  // Fix to make gap not to large
-
-  if (HandleScrolling(pos, size)) {
-    return;
-  }
-
-  /// To Draw a Label above the head bar you should
-  /// use the m->GetFrontList() instead
-
-  main->AddText(pos, label, linked_theme->Get(UI7Color_Text), 0,
-                vec2(view_area.z(), 20));
+  Container::Ref r =
+      ObjectPush(PD::New<UI7::Label>(label, Cursor(), this->back->ren));
+  CursorMove(r->GetSize());
+  r->Init(main->ren, main, linked_theme);
+  r->HandleScrolling(scrolling_off, view_area);
 }
 
 bool UI7::Menu::Button(const std::string& label) {
   bool ret = false;
-  auto tszs = this->back->GetRenderer()->GetTextDimensions(label);
-  vec2 size = tszs + vec2(8, 4);
-  vec2 pos = Cursor();
-  UI7Color clr = UI7Color_Button;
-  CursorMove(size);
-  /////// SCROLLING HANDLER HERE ////////
-  if (HandleScrolling(pos, size)) {
-    return false;
+  u32 id = Strings::FastHash("btn" + label);
+  Container::Ref r = FindIDObj(id);
+  if (!r) {
+    r = ObjectPush(PD::New<UI7::Button>(label, Cursor(), this->back->ren));
+    r->SetID(id);
+    r->Init(main->ren, main, linked_theme);
+  } else {
+    ObjectPush(r);
+    r->SetPos(Cursor());
   }
-  /// CONTROLS ///
-  if (has_touch) {
-    if (inp->IsHeld(inp->Touch) &&
-        LI::Renderer::InBox(inp->TouchPos(), vec4(pos, size))) {
-      clr = UI7Color_ButtonHovered;
-    }
-    if (inp->IsUp(inp->Touch) &&
-        LI::Renderer::InBox(inp->TouchPosLast(), vec4(pos, size))) {
-      clr = UI7Color_ButtonActive;
-      ret = true;
-    }
+  CursorMove(r->GetSize());
+  r->HandleScrolling(scrolling_off, view_area);
+  if (!r->Skippable()) {
+    ret = std::static_pointer_cast<UI7::Button>(r)->IsPressed();
   }
-  /// Rendering ///
-  main->AddRectangle(pos, size, linked_theme->Get(clr));
-  main->AddText(pos + size * 0.5 - tszs * 0.5, label,
-                linked_theme->Get(UI7Color_Text));
   return ret;
 }
 
 void UI7::Menu::Checkbox(const std::string& label, bool& v) {
-  vec2 pos = Cursor();
-  vec2 tdim = front->ren->GetTextDimensions(label);
-  vec2 cbs(18);
-  vec2 size = cbs + vec2(tdim.x() + 5, 0);
-  CursorMove(size);
-
-  if (HandleScrolling(pos, size)) {
-    return;
+  u32 id = Strings::FastHash("cbx" + label);
+  Container::Ref r = FindIDObj(id);
+  if (!r) {
+    r = ObjectPush(PD::New<UI7::Checkbox>(label, Cursor(), v, this->back->ren));
+    r->SetID(id);
+    r->Init(main->ren, main, linked_theme);
+  } else {
+    ObjectPush(r);
+    r->SetPos(Cursor());
   }
-
-  UI7Color cbbg = UI7Color_FrameBackground;
-
-  if (has_touch) {
-    if (inp->IsHeld(inp->Touch) &&
-        LI::Renderer::InBox(inp->TouchPos(), vec4(pos, size))) {
-      cbbg = UI7Color_FrameBackgroundHovered;
-    }
-    if (inp->IsUp(inp->Touch) &&
-        LI::Renderer::InBox(inp->TouchPosLast(), vec4(pos, size))) {
-      cbbg = UI7Color_FrameBackgroundHovered;
-      v = !v;
-    }
-  }
-
-  main->AddRectangle(pos, cbs, linked_theme->Get(cbbg));
-  if (v) {
-    main->AddRectangle(pos + 2, cbs - 4, linked_theme->Get(UI7Color_Checkmark));
-  }
-  main->AddText(pos + vec2(cbs.x() + 5, cbs.y() * 0.5 - tdim.y() * 0.5), label,
-                linked_theme->Get(UI7Color_Text));
+  CursorMove(r->GetSize());
+  r->HandleScrolling(scrolling_off, view_area);
 }
 
 void UI7::Menu::Image(Texture::Ref img, vec2 size) {
-  /// Variable Setup Stage ///
-  size = size == 0.f ? img->GetSize() : size;
-  vec2 pos = Cursor();
-  CursorMove(size);
-  /// Scrolling Handler ///
-  if (HandleScrolling(pos, size)) {
-    return;
-  }
-  /// Rendering Stage ///
-  main->AddImage(pos, img, size);
+  Container::Ref r =
+      ObjectPush(PD::New<UI7::Image>(img, Cursor(), this->back->ren, size));
+  CursorMove(r->GetSize());
+  r->Init(main->ren, main, linked_theme);
+  r->HandleScrolling(scrolling_off, view_area);
 }
 
 void UI7::Menu::DebugLabels() {
@@ -131,12 +81,21 @@ void UI7::Menu::DebugLabels() {
 
 void UI7::Menu::Update(float delta) {
   TT::Scope st("MUPT_" + name);
-  this->back->BaseLayer(30);
+  for (auto& it : objects) {
+    if (it->GetID() != 0 && !FindIDObj(it->GetID())) {
+      idobjs.push_back(it);
+    }
+    if (!it->Skippable()) {
+      it->HandleInput(inp);
+      /// Unlock Input after to ensure nothing is checked twice
+      it->UnlockInput();
+      it->Draw();
+    }
+  }
   this->back->Process();
-  this->main->BaseLayer(40);
   this->main->Process();
-  this->front->BaseLayer(50);
   this->front->Process();
+  this->objects.clear();
 }
 
 void UI7::Menu::CursorMove(const vec2& size) {
@@ -154,13 +113,18 @@ void UI7::Menu::CursorMove(const vec2& size) {
 void UI7::Menu::PreHandler(UI7MenuFlags flags) {
   TT::Scope st("MPRE_" + name);
   TT::Beg("MUSR_" + name);
+  this->back->BaseLayer(30);
+  this->main->BaseLayer(40);
+  this->front->BaseLayer(50);
   Cursor(vec2(5, 5));
   this->flags = flags;
   this->scrolling[0] = flags & UI7MenuFlags_HzScrolling;
   this->scrolling[1] = flags & UI7MenuFlags_VtScrolling;
-  has_touch = main->GetRenderer()->CurrentScreen() == Screen::Bottom;
+  has_touch =
+      main->GetRenderer()->CurrentScreen()->ScreenType() == Screen::Bottom;
   if (!(flags & UI7MenuFlags_NoBackground)) {
-    back->AddRectangle(0, view_area.zw(), UI7Color_Background);
+    back->AddRectangle(0, view_area.zw(),
+                       linked_theme->Get(UI7Color_Background));
   }
   if (!(flags & UI7MenuFlags_NoTitlebar)) {
     tbh = front->GetRenderer()->TextScale() * 30.f;
@@ -326,6 +290,43 @@ bool UI7::Menu::HandleScrolling(vec2& pos, const vec2& size) {
     }
   }
   return false;
+}
+
+Container::Ref UI7::Menu::ObjectPush(Container::Ref obj) {
+  this->objects.push_back(obj);
+  return obj;
+}
+
+Container::Ref UI7::Menu::FindIDObj(u32 id) {
+  for (auto& it : idobjs) {
+    if (it->GetID() == id) {
+      return it;
+    }
+  }
+  return nullptr;
+}
+
+void UI7::Menu::Join() {
+  Assert(objects.size(), "Objects list is empty!");
+  join.push_back(objects.back().get());
+}
+
+void UI7::Menu::JoinOpHzCenter() {
+  this->Join();
+  float spos = join.front()->GetPos().x();
+  float szs = join.back()->GetPos().x() + join.back()->GetSize().x() - spos;
+  float off = (view_area.x() + view_area.z() * 0.5) - (spos + szs * 0.5);
+  for (auto it : join) {
+    it->SetPos(it->GetPos() + vec2(off, 0.f));
+  }
+  join.clear();
+}
+void UI7::Menu::AfterAlignCenter() {
+  Container* ref = objects.back().get();
+  vec2 p = ref->GetPos();
+  vec2 s = ref->GetSize();
+  float newx = (view_area.x() + view_area.z() * 0.5) - (p.x() + s.x() * 0.5);
+  ref->SetPos(vec2(newx, p.y()));
 }
 }  // namespace UI7
 }  // namespace PD

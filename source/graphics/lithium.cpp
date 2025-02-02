@@ -220,12 +220,6 @@ void Font::LoadSystemFont() {
 }
 
 Renderer::Renderer(RenderFlags flags) {
-  C3D_Init(C3D_DEFAULT_CMDBUF_SIZE);
-  top = Screen::New(Screen::Top);
-  bot = Screen::New(Screen::Bottom);
-  top->Clear();
-  bot->Clear();
-
   vertex_buf.resize(4 * 4096, Vertex());
   index_buf.resize(6 * 4096, 0);
 
@@ -237,7 +231,7 @@ Renderer::Renderer(RenderFlags flags) {
       shaderInstanceGetUniformLocation(shader.vertexShader, "projection");
 
   AttrInfo_Init(&attr);
-  AttrInfo_AddLoader(&attr, 0, GPU_FLOAT, 3);
+  AttrInfo_AddLoader(&attr, 0, GPU_FLOAT, 2);
   AttrInfo_AddLoader(&attr, 1, GPU_FLOAT, 2);
   AttrInfo_AddLoader(&attr, 2, GPU_UNSIGNED_BYTE, 4);
 
@@ -252,13 +246,10 @@ Renderer::Renderer(RenderFlags flags) {
   // Not Loading as Systemfont is freezing
   // font = Font::New();
   // font->LoadSystemFont();
-
-  area_size = top->GetSize();
 }
 Renderer::~Renderer() {
   shaderProgramFree(&shader);
   DVLB_Free(dvlb);
-  C3D_Fini();
 }
 
 void Renderer::StaticText::Setup(Renderer* ren, const vec2& pos, u32 clr,
@@ -475,10 +466,7 @@ void Renderer::TextCommand(std::vector<Command::Ref>& cmds, const vec2& pos,
   }
 }
 
-vec4 Renderer::GetViewport() {
-  auto screen = bottom ? bot->GetSize() : top->GetSize();
-  return vec4(0, 0, screen[0], screen[1]);
-}
+vec4 Renderer::GetViewport() { return vec4(vec2(), screen->GetSize()); }
 
 vec2 Renderer::GetTextDimensions(const std::string& text) {
   if (!font) {
@@ -564,16 +552,68 @@ void Renderer::UpdateRenderMode(const RenderMode& mode) {
   }
 }
 
-void Renderer::RenderOn(bool bot) {
+void Renderer::PrepareRender() {
+  if (font_update) {
+    tms.clear();
+    font_update = false;
+  }
+  C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
+  TT::Beg("LI_RenderAll");
+  vertex_idx = 0;
+  index_idx = 0;
+  vertices = 0;
+  indices = 0;
+  commands = 0;
+  drawcalls = 0;
+  C3D_BindProgram(&shader);
+  C3D_SetAttrInfo(&attr);
+}
+
+void Renderer::FinalizeRender() {
+  C3D_FrameEnd(0);
+  TT::End("LI_RenderAll");
+  current_layer = 0;
+  cmd_idx = 0;
+  rot = 0.f;
+  UseTex();
+  if (flags & RenderFlags_TMS) {
+    std::vector<std::string> rem;
+    for (auto& it : tms) {
+      if (Sys::GetTime() - it.second.TimeCreated() > 5) rem.push_back(it.first);
+    }
+    for (auto it : rem) tms.erase(it);
+  } else {
+    tms.clear();
+  }
+  if (flags & RenderFlags_AST) {
+    std::vector<u32> rem;
+    for (auto it : ast) {
+      if (!it.second->Used()) {
+        rem.push_back(it.first);
+      }
+      it.second->SetUnused();
+    }
+    for (auto& it : rem) {
+      ast.erase(it);
+    }
+  } else {
+    ast.clear();
+  }
+}
+
+void Renderer::Render(Screen::Ref s) {
+  Assert(s.get(), "Expected Screen Address but got nullptr!");
+  s->Clear();
+  s->Use();
+  bool bot = s->ScreenType() == Screen::Bottom;
   C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, uLoc_projection,
                    (bot ? &bot_proj : &top_proj));
   C3D_DepthTest(false, GPU_GREATER, GPU_WRITE_ALL);
   UpdateRenderMode(RenderMode_RGBA);
   int total_vertices = 0;
   int total_indices = 0;
-  drawcalls = 0;
-  auto& cmds = draw_list[bot];
-  commands = cmds.size();
+  auto& cmds = draw_list[Screen32(s)];
+  commands += cmds.size();
   size_t index = 0;
   if (flags & RenderFlags_LRS) {
     OptiCommandList(cmds);
@@ -613,66 +653,8 @@ void Renderer::RenderOn(bool bot) {
   }
   cmds.clear();
   C3D_DepthTest(true, GPU_GREATER, GPU_WRITE_ALL);
-  vertices = total_vertices;
-  indices = total_indices;
-}
-
-void Renderer::Render() {
-  if (font_update) {
-    tms.clear();
-    font_update = false;
-  }
-  C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
-  TT::Beg("LI_RenderAll");
-  top->Clear();
-  bot->Clear();
-  vertex_idx = 0;
-  index_idx = 0;
-  C3D_BindProgram(&shader);
-  C3D_SetAttrInfo(&attr);
-  top->Use();
-  RenderOn(false);
-  int dtc = commands;
-  int dtd = drawcalls;
-  int dtv = vertices;
-  int dti = indices;
-  bot->Use();
-  RenderOn(true);
-  TT::End("LI_RenderAll");
-  C3D_FrameEnd(0);
-  commands += dtc;
-  drawcalls += dtd;
-  vertices += dtv;
-  indices += dti;
-  current_layer = 0;
-  cmd_idx = 0;
-  area_size = top->GetSize();
-  bottom = false;
-  rot = 0.f;
-  UseTex();
-  if (flags & RenderFlags_TMS) {
-    std::vector<std::string> rem;
-    for (auto& it : tms) {
-      if (Sys::GetTime() - it.second.TimeCreated() > 5) rem.push_back(it.first);
-    }
-    for (auto it : rem) tms.erase(it);
-  } else {
-    tms.clear();
-  }
-  if (flags & RenderFlags_AST) {
-    std::vector<u32> rem;
-    for (auto it : ast) {
-      if (!it.second->Used()) {
-        rem.push_back(it.first);
-      }
-      it.second->SetUnused();
-    }
-    for (auto& it : rem) {
-      ast.erase(it);
-    }
-  } else {
-    ast.clear();
-  }
+  vertices += total_vertices;
+  indices += total_indices;
 }
 
 void Renderer::DrawRect(const vec2& pos, const vec2& size, u32 color,
@@ -685,7 +667,7 @@ void Renderer::DrawRect(const vec2& pos, const vec2& size, u32 color,
   auto cmd = Command::New();
   SetupCommand(cmd);
   QuadCommand(cmd, rec, uv, color);
-  draw_list[bottom].push_back(cmd);
+  draw_list[Screen32(screen)].push_back(cmd);
 }
 
 void Renderer::DrawRectSolid(const vec2& pos, const vec2& size, u32 color) {
@@ -702,7 +684,7 @@ void Renderer::DrawTriangle(const vec2& a, const vec2& b, const vec2& c,
   auto cmd = Command::New();
   SetupCommand(cmd);
   TriangleCommand(cmd, a, b, c, color);
-  draw_list[bottom].push_back(cmd);
+  draw_list[Screen32(screen)].push_back(cmd);
 }
 
 void Renderer::DrawCircle(const vec2& center_pos, float r, u32 color,
@@ -725,7 +707,7 @@ void Renderer::DrawCircle(const vec2& center_pos, float r, u32 color,
         vec2(x, y), vec2((std::cos(a) + 1.f) / 2.f, (std::sin(a) + 1.f) / 2.f),
         color));
   }
-  draw_list[bottom].push_back(cmd);
+  draw_list[Screen32(screen)].push_back(cmd);
 }
 
 void Renderer::DrawLine(const vec2& a, const vec2& b, u32 color, int t) {
@@ -735,7 +717,7 @@ void Renderer::DrawLine(const vec2& a, const vec2& b, u32 color, int t) {
   auto cmd = Command::New();
   SetupCommand(cmd);
   QuadCommand(cmd, line, vec4(0.f, 1.f, 1.f, 0.f), color);
-  draw_list[bottom].push_back(cmd);
+  draw_list[Screen32(screen)].push_back(cmd);
 }
 
 void Renderer::DrawImage(const vec2& pos, Texture::Ref tex, const vec2& scale) {
@@ -760,7 +742,7 @@ void Renderer::DrawText(const vec2& pos, u32 color, const std::string& text,
     e->second->Draw();
     return;
   }
-  TextCommand(draw_list[bottom], pos, color, text, flags, ap);
+  TextCommand(draw_list[Screen32(screen)], pos, color, text, flags, ap);
 }
 
 }  // namespace PD::LI

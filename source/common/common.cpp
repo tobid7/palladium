@@ -23,6 +23,7 @@ SOFTWARE.
  */
 
 #include <pd/common/common.hpp>
+#include <pd/common/strings.hpp>
 
 #ifndef PALLADIUM_VERSION
 #define PALLADIUM_VERSION "unknown"
@@ -30,3 +31,13 @@ SOFTWARE.
 #ifndef PALLADIUM_GIT_COMMIT
 #define PALLADIUM_GIT_COMMIT "unknown"
 #endif
+
+const std::string PD::LibInfo::CompiledWith() {
+  return Strings::GetCompilerVersion();
+}
+const std::string PD::LibInfo::CxxVersion() {
+  return "CPP: " + std::to_string(__cplusplus);
+}
+const std::string PD::LibInfo::BuildTime() { return __DATE__ " - " __TIME__; }
+const std::string PD::LibInfo::Version() { return PALLADIUM_VERSION; }
+const std::string PD::LibInfo::Commit() { return PALLADIUM_GIT_COMMIT; }

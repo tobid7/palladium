@@ -37,7 +37,30 @@ const std::string GetFileName(const std::string& path,
                               const std::string& saperators = "/\\");
 const std::string PathRemoveExtension(const std::string& path);
 template <typename T>
-const std::string ToHex(const T& v);
+inline const std::string ToHex(const T& v) {
+  std::stringstream s;
+  s << "0x" << std::setfill('0') << std::setw(sizeof(v) * 2) << std::hex << v;
+  return s.str();
+}
 u32 FastHash(const std::string& s);
+inline const std::string GetCompilerVersion() {
+  /// As the function looks like this Project is meant to
+  /// Be ported to other systems as well
+  std::stringstream res;
+#ifdef __GNUC__
+  res << "GCC: " << __GNUC__;
+  res << "." << __GNUC_MINOR__ << ".";
+  res << __GNUC_PATCHLEVEL__;
+#elif __clang__
+  res << "Clang: " << __clang_major__ << ".";
+  res << __clang_minor__ << ".";
+  res << __clang_patchlevel__;
+#elif _MSC_VER
+  res << "MSVC: " << _MSC_VER;
+#else
+  res << "Unknown Compiler";
+#endif
+  return res.str();
+}
 }  // namespace Strings
 }  // namespace PD

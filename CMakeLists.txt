@@ -10,8 +10,15 @@ if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
     endif()
 endif()
 
+execute_process(
+    COMMAND git rev-parse --short HEAD
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE GIT_SHORT_HASH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
 # Set Project
-project(palladium LANGUAGES C CXX VERSION 1.0.0)
+project(palladium LANGUAGES C CXX VERSION 0.1.8)
 
 # Enable Compile Command Export
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -27,6 +34,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_C_FLAGS} -fno-rtti -fno-exceptio
 set(SRC_FILES
     # Core (common)
     source/common/app.cpp
+    source/common/common.cpp
     source/common/strings.cpp
     source/common/timetrace.cpp
     source/common/sys.cpp
@@ -56,6 +64,11 @@ set(SRC_FILES
     source/ui7/menu.cpp
     source/ui7/theme.cpp
     source/ui7/ui7.cpp
+    source/ui7/container/container.cpp
+    source/ui7/container/button.cpp
+    source/ui7/container/checkbox.cpp
+    source/ui7/container/image.cpp
+    source/ui7/container/label.cpp
     # External
     source/external/stb.cpp
 )
@@ -72,7 +85,8 @@ target_include_directories(${TARGET_NAME} PUBLIC
 )
 target_compile_definitions(${TARGET_NAME} PUBLIC
     -D_GNU_SOURCE=1
-    -DVERSION="${PROJECT_VERSION}"
+    -DPALLADIUM_VERSION="${PROJECT_VERSION}"
+    -DPALLADIUM_GIT_COMMIT="${GIT_SHORT_HASH}"
     -DBUILD_CTR=1
 )
 

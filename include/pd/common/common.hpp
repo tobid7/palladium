@@ -69,4 +69,12 @@ using u64 = unsigned long long;
 using u32 = unsigned int;
 using u16 = unsigned short;
 using u8 = unsigned char;
+
+namespace LibInfo {
+const std::string CompiledWith();
+const std::string CxxVersion();
+const std::string BuildTime();
+const std::string Version();
+const std::string Commit();
+}  // namespace LibInfo
 }  // namespace PD

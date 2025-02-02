@@ -6,7 +6,7 @@ namespace UI7 {
 void Theme::Default(Theme& theme) {
   theme.Set(UI7Color_Text, Color("#FFFFFFFF"));
   theme.Set(UI7Color_TextDead, Color("#AAAAAAFF"));
-  theme.Set(UI7Color_Background, Color("#EEEEEEFF"));
+  theme.Set(UI7Color_Background, Color("#222222aa"));
   theme.Set(UI7Color_Button, Color("#111111FF"));
   theme.Set(UI7Color_ButtonDead, Color("#080808FF"));
   theme.Set(UI7Color_ButtonActive, Color("#2A2A2AFF"));

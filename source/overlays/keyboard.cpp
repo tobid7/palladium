@@ -497,11 +497,11 @@ void Keyboard::Update(float delta, LI::Renderer::Ref ren, Hid::Ref inp) {
       fade.a(fade.a() * flymgr.Progress());
     }
     if (flags & Flags_BlendTop) {
-      ren->OnScreen(Screen::Top);
+      ren->OnScreen(ren->GetScreen(false));
       ren->DrawRectSolid(0, vec2(400, 240), fade);
     }
     if (flags & Flags_BlendBottom) {
-      ren->OnScreen(Screen::Bottom);
+      ren->OnScreen(ren->GetScreen(true));
       ren->DrawRectSolid(0, vec2(320, 240), fade);
     }
   }

@@ -76,7 +76,7 @@ class TestBench : public PD::App {
 
   void Result(float delta) {
     UpdateLiTimes();
-    ren->OnScreen(PD::Screen::Top);
+    ren->OnScreen(Top);
     if (ui7->BeginMenu("TestBench")) {
       auto m = ui7->GetCurrentMenu();
       m->Label("Base Init: " + TTime("BaseInit"));
@@ -84,7 +84,7 @@ class TestBench : public PD::App {
                PD::Strings::FormatNanos(li_stats->GetAverage()));
       ui7->EndMenu();
     }
-    ren->OnScreen(PD::Screen::Bottom);
+    ren->OnScreen(Bottom);
     if (ui7->BeginMenu("Test Results", UI7MenuFlags_Scrolling)) {
       auto m = ui7->GetCurrentMenu();
       for (auto& it : results) {
@@ -116,7 +116,11 @@ class TestBench : public PD::App {
     DrawFancyBG(time);
     if (ui7->BeginMenu("Test2")) {
       auto m = ui7->GetCurrentMenu();
+      m->Label("Text1");
+      m->Label("Text2");
       m->Button("Test");
+      m->SameLine();
+      m->Button("Test2");
       m->Separator();
       m->Label("Line1");
       m->Label("Line2");

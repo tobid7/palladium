@@ -46,30 +46,44 @@ class Test : public PD::App {
   }
 
   bool MainLoop(float delta, float time) override {
+    ren->OnScreen(Top);
     DrawFancyBG(time);
-    ren->OnScreen(PD::Screen::Bottom);
-    // ren->DrawRectSolid(0, vec2(320, 240), PD::Color("#222222"));
-    // ren->Layer(ren->Layer() + 1);
-    // ren->DrawImage(ren->GetViewport().zw() * 0.5 - test->GetSize() * 0.5,
-    // test); ren->DrawText(5, 0xffffffff, "Hello World!", LITextFlags_None);
+    ren->OnScreen(Bottom);
     if (ui7->BeginMenu("Test",
                        UI7MenuFlags_Scrolling | UI7MenuFlags_CenterTitle)) {
       auto m = ui7->GetCurrentMenu();
       m->SeparatorText("Menu Timings");
       m->DebugLabels();
-      m->SeparatorText("Lithium Settings");
-      FlagBox(m, "LI AST", PD::LI::RenderFlags_AST);
-      FlagBox(m, "LI LRS", PD::LI::RenderFlags_LRS);
-      FlagBox(m, "LI TMS", PD::LI::RenderFlags_TMS);
+      m->SeparatorText("Palladium Info");
+      m->Label("Version: " + PD::LibInfo::Version() + " [" +
+               PD::LibInfo::Commit() + "]");
+      m->AfterAlignCenter();
+      m->Label("CompileInfo: " + PD::LibInfo::CompiledWith() + " - " +
+               PD::LibInfo::CxxVersion());
+      m->AfterAlignCenter();
+      m->Label("Build at " + PD::LibInfo::BuildTime());
+      m->AfterAlignCenter();
+      m->SeparatorText("Basic Info");
+      m->Label("sizeof(size_t): " + std::to_string(sizeof(size_t)) + " -> " +
+               std::to_string(sizeof(size_t) * 8) + "Bit");
+      m->AfterAlignCenter();
+      m->Label("__cplusplus=" + std::to_string(__cplusplus));
+      m->AfterAlignCenter();
+      m->Label(PD::Strings::GetCompilerVersion());
+      m->AfterAlignCenter();
+      m->Label("sizeof(LI::Vertex): " + std::to_string(sizeof(PD::LI::Vertex)));
+      m->AfterAlignCenter();
+      m->Label("sizeof(PD::u16): " + std::to_string(sizeof(PD::u16)));
+      m->AfterAlignCenter();
       m->SeparatorText("UI7 Tests");
       m->Label("This seems to be a label");
+      m->Image(test);
       m->Separator();
-      m->Button("Button?");
+      if (m->Button("Button?")) {
+        Messages()->Push("Button", "Pressed...");
+      }
       m->SeparatorText("SeparatorText");
       m->Checkbox("Test", cbtest);
-      for (int i = 0; i < 10; i++) {
-        m->Label("Label: " + std::to_string(i));
-      }
       ui7->EndMenu();
     }
     ui7->Update(delta);
@@ -87,43 +101,6 @@ class Test : public PD::App {
   }
 
   void Deinit() override {}
-
-  void FlagBox(PD::UI7::Menu::Ref m, const std::string& label,
-               PD::LI::RenderFlags flag) {
-    bool has_flag = ren->GetFlags() & flag;
-    m->Checkbox(label, has_flag);
-    if (has_flag != (ren->GetFlags() & flag)) {
-      if (has_flag) {
-        ren->GetFlags() |= flag;
-      } else {
-        ren->GetFlags() &= ~flag;
-      }
-    }
-  }
-
-  void DrawFancyBG(float time) {
-    ren->DrawRect(vec2(0, 0), vec2(400, 240), 0xff64c9fd);
-    for (int i = 0; i < 44; i++) Append(i, vec2(0, 0), vec2(400, 240), time);
-  }
-
-  float Offset(float x) {
-    float y = cos(x) * 42;
-    return y - floor(y);
-  }
-  void Append(int index, vec2 position, vec2 size, float time) {
-    float offset = Offset(index) * 62;
-    float x_position = position.x() + size.x() / 8 * ((index % 11) - 1) +
-                       cos(offset + time) * 10;
-    float y_position = position.y() + size.y() / 8 * (index / 11) + 40 +
-                       sin(offset + time) * 10 + 30;
-    float color_effect = 1 - exp(-(index / 11) / 3.0f);
-
-    ren->DrawTriangle(
-        vec2(x_position, y_position), vec2(x_position + 300, y_position + (90)),
-        vec2(x_position - 300, y_position + (90)),
-        PD::Color(.94f - .17f * color_effect, .61f - .25f * color_effect,
-                  .36f + .38f * color_effect));
-  }
 
  private:
   /// Shorter Acess to Renderer / Input

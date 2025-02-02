@@ -34,10 +34,10 @@ void DrawList::AddRectangle(vec2 pos, vec2 szs, const UI7Color& clr) {
   auto cmd = LI::Command::New();
   ren->UseTex();
   ren->SetupCommand(cmd);
-  cmd->Layer(layer);
+  cmd->Layer(base + layer);
   ren->QuadCommand(cmd, rect, vec4(0.f, 1.f, 1.f, 0.f), clr);
-  commands.push_back(
-      std::make_pair(ren->CurrentScreen() == Screen::Bottom, cmd));
+  commands.push_back(std::make_pair(
+      ren->CurrentScreen()->ScreenType() == Screen::Bottom, cmd));
 }
 
 void DrawList::AddTriangle(vec2 pos0, vec2 pos1, vec2 pos2,
@@ -48,10 +48,10 @@ void DrawList::AddTriangle(vec2 pos0, vec2 pos1, vec2 pos2,
   auto cmd = LI::Command::New();
   ren->UseTex();
   ren->SetupCommand(cmd);
-  cmd->Layer(layer);
+  cmd->Layer(base + layer);
   ren->TriangleCommand(cmd, pos0, pos1, pos2, clr);
-  commands.push_back(
-      std::make_pair(ren->CurrentScreen() == Screen::Bottom, cmd));
+  commands.push_back(std::make_pair(
+      ren->CurrentScreen()->ScreenType() == Screen::Bottom, cmd));
 }
 
 void DrawList::AddText(vec2 pos, const std::string& text, const UI7Color& clr,
@@ -63,11 +63,14 @@ void DrawList::AddText(vec2 pos, const std::string& text, const UI7Color& clr,
     e = static_text.find(id);
   }
   if (!e->second->IsSetup()) {
+    int l = ren->Layer();
+    ren->Layer(base);
     e->second->Setup(&(*ren), pos, clr, text, flags, box);
+    ren->Layer(l);
   }
   e->second->SetPos(pos);
   e->second->SetColor(clr);
-  e->second->SetLayer(base + layer);
+  e->second->SetLayer(layer);
   e->second->Draw();
 
   ////// STILL LEAVING THE OLD CODE BELOW AS IT IS MAYBE NEEDED //////
@@ -78,13 +81,14 @@ void DrawList::AddText(vec2 pos, const std::string& text, const UI7Color& clr,
   // Font uses multiple textures
   // Oh and Handle Layer management here as well
   //  int l = ren->Layer();
-  //  ren->Layer(layer);
+  //  ren->Layer(base + layer);
   //  std::vector<LI::Command::Ref> cmds;
   //  ren->TextCommand(cmds, pos, clr, text, flags, box);
   //  ren->Layer(l);
   //  for (auto c : cmds) {
   //    commands.push_back(
-  //        std::make_pair(ren->CurrentScreen() == Screen::Bottom, c));
+  //        std::make_pair(ren->CurrentScreen()->ScreenType() == Screen::Bottom,
+  //        c));
   //  }
 }
 
@@ -97,18 +101,17 @@ void DrawList::AddImage(vec2 pos, Texture::Ref img, vec2 size) {
   auto cmd = LI::Command::New();
   ren->UseTex(img);
   ren->SetupCommand(cmd);
-  cmd->Layer(layer);
+  cmd->Layer(base + layer);
   ren->QuadCommand(cmd, rect, img->GetUV(), 0xffffffff);
-  commands.push_back(
-      std::make_pair(ren->CurrentScreen() == Screen::Bottom, cmd));
+  commands.push_back(std::make_pair(
+      ren->CurrentScreen()->ScreenType() == Screen::Bottom, cmd));
 }
 
 void DrawList::Clear() { commands.clear(); }
 
 void DrawList::Process() {
   for (auto command : commands) {
-    command.second->Layer(command.second->Layer() + base);
-    ren->OnScreen(command.first ? Screen::Bottom : Screen::Top);
+    ren->OnScreen(ren->GetScreen(command.first));
     ren->PushCommand(command.second);
   }
   commands.clear();

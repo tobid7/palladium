@@ -12,13 +12,13 @@
 .out out_uv				texcoord0
 
 ; Inputs
-.alias in_xyz		v0
+.alias in_xy		v0
 .alias in_uvc 		v1
 .alias in_col	    v2
 
 .entry vmain
 .proc vmain
-	mov r0.xyz, in_xyz.xyz
+	mov r0.xy, in_xy.xy
 	mov r0.w, ones
 
 	dp4 out_position.x, projection[0], r0

@@ -66,6 +66,10 @@ class App {
   Hid::Ref Input() { return input_mgr; }
   float GetFps() const { return fps; }
 
+ protected:
+  Screen::Ref Top;
+  Screen::Ref Bottom;
+
  private:
   void PreInit();
   void PostDeinit();

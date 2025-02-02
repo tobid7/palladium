@@ -24,6 +24,7 @@ SOFTWARE.
  */
 
 #include <pd/controls/hid.hpp>
+#include <pd/ui7/containers.hpp>
 #include <pd/ui7/drawlist.hpp>
 #include <pd/ui7/flags.hpp>
 #include <pd/ui7/id.hpp>
@@ -56,6 +57,10 @@ class Menu : public SmartCtor<Menu> {
   void SameLine();
   void Separator();
   void SeparatorText(const std::string& label);
+  void Join();
+  /// @brief Horizontal Center Joined objects
+  void JoinOpHzCenter();
+  void AfterAlignCenter();
 
   /// API for Custom Objects
   bool HandleScrolling(vec2& pos, const vec2& size);
@@ -106,6 +111,10 @@ class Menu : public SmartCtor<Menu> {
   /// Internal Processing
   void Update(float delta);
 
+  /// Objects API
+  Container::Ref ObjectPush(Container::Ref obj);
+  Container::Ref FindIDObj(u32 id);
+
   /// This ability is crazy useful
   friend class Context;
 
@@ -126,6 +135,11 @@ class Menu : public SmartCtor<Menu> {
   bool has_touch;
 
   Menu::Ref submenu;
+
+  /// Objects API
+  std::vector<Container::Ref> objects;
+  std::vector<Container::Ref> idobjs;
+  std::vector<Container*> join;
 
   // DrawLists
   DrawList::Ref back;

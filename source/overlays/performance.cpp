@@ -9,7 +9,7 @@ void Performance::Update(float delta, LI::Renderer::Ref ren, Hid::Ref inp) {
   if (*skill) {
     Kill();
   }
-  ren->OnScreen(Screen::Top);
+  ren->OnScreen(ren->GetScreen(false));
   ren->TextScale(0.6);
   vec2 pos;
   Line(pos, std::format("{:.1f} FPS / {:.2f}ms", 1000.f / delta, delta), ren);

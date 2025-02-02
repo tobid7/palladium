@@ -53,7 +53,10 @@ void App::Run() {
     renderer->Layer(93);
     msg_mgr->Update(dt);
     PD::TT::End("Ovl_Update");
-    renderer->Render();
+    renderer->PrepareRender();
+    renderer->Render(Top);
+    renderer->Render(Bottom);
+    renderer->FinalizeRender();
   }
   this->Deinit();
   this->PostDeinit();
@@ -64,8 +67,14 @@ void App::PreInit() {
   gfxInitDefault();
   cfguInit();
   romfsInit();
+  C3D_Init(C3D_DEFAULT_CMDBUF_SIZE);
   input_mgr = Hid::New();
+  Top = Screen::New(Screen::Top);
+  Bottom = Screen::New(Screen::Bottom);
   renderer = LI::Renderer::New();
+  renderer->RegisterScreen(false, Top);
+  renderer->RegisterScreen(true, Bottom);
+  renderer->OnScreen(Top);
   msg_mgr = MessageMgr::New(renderer);
   overlay_mgr = OverlayMgr::New(renderer, input_mgr);
 }
@@ -75,6 +84,7 @@ void App::PostDeinit() {
   msg_mgr = nullptr;
   overlay_mgr = nullptr;
   input_mgr = nullptr;
+  C3D_Fini();
   gfxExit();
   cfguExit();
   romfsExit();
