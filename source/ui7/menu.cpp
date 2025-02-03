@@ -14,7 +14,7 @@ void UI7::Menu::Label(const std::string& label) {
 
 bool UI7::Menu::Button(const std::string& label) {
   bool ret = false;
-  u32 id = Strings::FastHash("btn" + label);
+  u32 id = Strings::FastHash("btn" + label + std::to_string(count_btn++));
   Container::Ref r = FindIDObj(id);
   if (!r) {
     r = ObjectPush(PD::New<UI7::Button>(label, Cursor(), this->back->ren));
@@ -33,7 +33,7 @@ bool UI7::Menu::Button(const std::string& label) {
 }
 
 void UI7::Menu::Checkbox(const std::string& label, bool& v) {
-  u32 id = Strings::FastHash("cbx" + label);
+  u32 id = Strings::FastHash("cbx" + label + std::to_string(count_cbx++));
   Container::Ref r = FindIDObj(id);
   if (!r) {
     r = ObjectPush(PD::New<UI7::Checkbox>(label, Cursor(), v, this->back->ren));
@@ -81,7 +81,9 @@ void UI7::Menu::DebugLabels() {
 
 void UI7::Menu::Update(float delta) {
   TT::Scope st("MUPT_" + name);
-  for (auto& it : objects) {
+  std::vector<int> tbr;
+  for (int i = 0; i < (int)objects.size(); i++) {
+    auto& it = objects[i];
     if (it->GetID() != 0 && !FindIDObj(it->GetID())) {
       idobjs.push_back(it);
     }
@@ -91,6 +93,14 @@ void UI7::Menu::Update(float delta) {
       it->UnlockInput();
       it->Draw();
     }
+  }
+  for (int i = 0; i < (int)idobjs.size(); i++) {
+    if (idobjs[i]->Removable()) {
+      tbr.push_back(i);
+    }
+  }
+  for (auto it : tbr) {
+    idobjs.erase(idobjs.begin() + it);
   }
   this->back->Process();
   this->main->Process();
@@ -116,6 +126,8 @@ void UI7::Menu::PreHandler(UI7MenuFlags flags) {
   this->back->BaseLayer(30);
   this->main->BaseLayer(40);
   this->front->BaseLayer(50);
+  count_btn = 0;
+  count_cbx = 0;
   Cursor(vec2(5, 5));
   this->flags = flags;
   this->scrolling[0] = flags & UI7MenuFlags_HzScrolling;

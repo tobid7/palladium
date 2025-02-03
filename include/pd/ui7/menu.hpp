@@ -140,6 +140,8 @@ class Menu : public SmartCtor<Menu> {
   std::vector<Container::Ref> objects;
   std::vector<Container::Ref> idobjs;
   std::vector<Container*> join;
+  int count_btn = 0;
+  int count_cbx = 0;
 
   // DrawLists
   DrawList::Ref back;

@@ -28,6 +28,7 @@ class Container : public SmartCtor<Container> {
   vec2 GetSize() { return size; }
 
   bool Skippable() const { return skippable; }
+  bool Removable() const { return rem; }
 
   void HandleScrolling(vec2 scrolling, vec4 viewport);
   virtual void HandleInput(Hid::Ref inp) {}
@@ -41,6 +42,8 @@ class Container : public SmartCtor<Container> {
  protected:
   /// used to skip Input/Render preocessing ot not
   bool skippable = false;
+  bool rem = false;
+  u64 last_use = 0;
   bool inp_done = false;
   Screen::Ref screen;
   vec2 pos;

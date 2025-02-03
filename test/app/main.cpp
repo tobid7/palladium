@@ -102,6 +102,30 @@ class Test : public PD::App {
 
   void Deinit() override {}
 
+  void DrawFancyBG(float time) {
+    ren->DrawRect(vec2(0, 0), vec2(400, 240), 0xff64c9fd);
+    for (int i = 0; i < 44; i++) Append(i, vec2(0, 0), vec2(400, 240), time);
+  }
+
+  float Offset(float x) {
+    float y = cos(x) * 42;
+    return y - floor(y);
+  }
+  void Append(int index, vec2 position, vec2 size, float time) {
+    float offset = Offset(index) * 62;
+    float x_position = position.x() + size.x() / 8 * ((index % 11) - 1) +
+                       cos(offset + time) * 10;
+    float y_position = position.y() + size.y() / 8 * (index / 11) + 40 +
+                       sin(offset + time) * 10 + 30;
+    float color_effect = 1 - exp(-(index / 11) / 3.0f);
+
+    ren->DrawTriangle(
+        vec2(x_position, y_position), vec2(x_position + 300, y_position + (90)),
+        vec2(x_position - 300, y_position + (90)),
+        PD::Color(.94f - .17f * color_effect, .61f - .25f * color_effect,
+                  .36f + .38f * color_effect));
+  }
+
  private:
   /// Shorter Acess to Renderer / Input
   PD::LI::Renderer::Ref ren;
