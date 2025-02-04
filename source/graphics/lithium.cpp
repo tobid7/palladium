@@ -1,6 +1,6 @@
 /*
 MIT License
-Copyright (c) 2024 René Amthor (tobid7)
+Copyright (c) 2024 - 2025 René Amthor (tobid7)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -727,6 +727,9 @@ void Renderer::DrawImage(const vec2& pos, Texture::Ref tex, const vec2& scale) {
 
 void Renderer::DrawText(const vec2& pos, u32 color, const std::string& text,
                         u32 flags, const vec2& ap) {
+  if (!font) {
+    return;
+  }
   if (this->flags & RenderFlags_AST) {
     u32 id = Strings::FastHash(text);
     auto e = ast.find(id);
@@ -734,8 +737,9 @@ void Renderer::DrawText(const vec2& pos, u32 color, const std::string& text,
       ast[id] = StaticText::New();
       e = ast.find(id);
     }
-    if (!e->second->IsSetup()) {
+    if (!e->second->IsSetup() || e->second->Font() != font) {
       e->second->Setup(this, pos, color, text, flags, ap);
+      e->second->Font(font);
     }
     e->second->SetPos(pos);
     e->second->SetColor(color);

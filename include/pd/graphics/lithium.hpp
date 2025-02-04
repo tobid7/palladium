@@ -3,7 +3,7 @@
 /*
 MIT License
 
-Copyright (c) 2024 tobid7
+Copyright (c) 2024 - 2025 tobid7
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -338,7 +338,11 @@ class Renderer : public SmartCtor<Renderer> {
 
     void Draw();
 
+    void Font(Font::Ref fnt) { font = fnt; }
+    Font::Ref Font() { return font; }
+
    private:
+    Font::Ref font;
     bool used;
     Renderer* ren;
     vec2 tdim;

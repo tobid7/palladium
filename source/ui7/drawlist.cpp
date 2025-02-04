@@ -1,6 +1,6 @@
 /*
 MIT License
-Copyright (c) 2024 René Amthor (tobid7)
+Copyright (c) 2024 - 2025 René Amthor (tobid7)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -56,16 +56,20 @@ void DrawList::AddTriangle(vec2 pos0, vec2 pos1, vec2 pos2,
 
 void DrawList::AddText(vec2 pos, const std::string& text, const UI7Color& clr,
                        LITextFlags flags, vec2 box) {
+  if (!ren->Font()) {
+    return;
+  }
   u32 id = Strings::FastHash(text);
   auto e = static_text.find(id);
   if (e == static_text.end()) {
     static_text[id] = LI::Renderer::StaticText::New();
     e = static_text.find(id);
   }
-  if (!e->second->IsSetup()) {
+  if (!e->second->IsSetup() || e->second->Font() != ren->Font()) {
     int l = ren->Layer();
     ren->Layer(base);
     e->second->Setup(&(*ren), pos, clr, text, flags, box);
+    e->second->Font(ren->Font());
     ren->Layer(l);
   }
   e->second->SetPos(pos);
