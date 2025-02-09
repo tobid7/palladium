@@ -40,13 +40,12 @@ bool UI7::Menu::Button(const std::string& label) {
   u32 id = Strings::FastHash("btn" + label + std::to_string(count_btn++));
   Container::Ref r = FindIDObj(id);
   if (!r) {
-    r = ObjectPush(PD::New<UI7::Button>(label, Cursor(), this->back->ren));
+    r = PD::New<UI7::Button>(label, Cursor(), this->back->ren);
     r->SetID(id);
     r->Init(main->ren, main, linked_theme);
-  } else {
-    ObjectPush(r);
-    r->SetPos(Cursor());
   }
+  ObjectPush(r);
+  r->SetPos(Cursor());
   CursorMove(r->GetSize());
   r->HandleScrolling(scrolling_off, view_area);
   if (!r->Skippable()) {
@@ -59,13 +58,12 @@ void UI7::Menu::Checkbox(const std::string& label, bool& v) {
   u32 id = Strings::FastHash("cbx" + label + std::to_string(count_cbx++));
   Container::Ref r = FindIDObj(id);
   if (!r) {
-    r = ObjectPush(PD::New<UI7::Checkbox>(label, Cursor(), v, this->back->ren));
+    r = PD::New<UI7::Checkbox>(label, Cursor(), v, this->back->ren);
     r->SetID(id);
     r->Init(main->ren, main, linked_theme);
-  } else {
-    ObjectPush(r);
-    r->SetPos(Cursor());
   }
+  ObjectPush(r);
+  r->SetPos(Cursor());
   CursorMove(r->GetSize());
   r->HandleScrolling(scrolling_off, view_area);
 }
@@ -104,6 +102,10 @@ void UI7::Menu::DebugLabels() {
 
 void UI7::Menu::Update(float delta) {
   TT::Scope st("MUPT_" + name);
+  scroll_anim.Update(delta);
+  if (!scroll_anim.IsFinished()) {
+    scrolling_off = scroll_anim;
+  }
   std::vector<int> tbr;
   for (int i = 0; i < (int)objects.size(); i++) {
     auto& it = objects[i];
@@ -146,12 +148,11 @@ void UI7::Menu::CursorMove(const vec2& size) {
 void UI7::Menu::PreHandler(UI7MenuFlags flags) {
   TT::Scope st("MPRE_" + name);
   TT::Beg("MUSR_" + name);
-  this->back->BaseLayer(30);
-  this->main->BaseLayer(40);
-  this->front->BaseLayer(50);
   count_btn = 0;
   count_cbx = 0;
-  Cursor(vec2(5, 5));
+  tbh = 0.f;
+  CursorInit();
+  main_area = view_area;
   this->flags = flags;
   this->scrolling[0] = flags & UI7MenuFlags_HzScrolling;
   this->scrolling[1] = flags & UI7MenuFlags_VtScrolling;
@@ -173,7 +174,8 @@ void UI7::Menu::PreHandler(UI7MenuFlags flags) {
     }
     front->AddText(tpos, this->name, linked_theme->Get(UI7Color_Text), tflags,
                    vec2(view_area.z(), tbh));
-    Cursor(vec2(5, tbh + 5));
+    main_area[1] = tbh;
+    CursorInit();
   }
 }
 
@@ -229,8 +231,7 @@ void UI7::Menu::PostHandler() {
           mouse = vec2();
         }
         if (inp->IsHeld(inp->Touch)) {
-          if (!front->ren->InBox(tpos, vec4(view_area[2] - 13, tbh + 5, 8,
-                                            view_area[3] - tbh - 10))) {
+          if (front->ren->InBox(tpos, main_area)) {
             if (scrolling_off[1] < max[1] - view_area[3] + 40 &&
                 scrolling_off[1] > -40) {
               /// Cursor Mod

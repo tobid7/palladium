@@ -34,6 +34,27 @@ namespace PD {
 /// @brief Template Class for User Application
 class App {
  public:
+  using AppFlags = u32;
+  enum AppFlags_ {
+    AppFlags_None = 0,
+    AppFLags_UserLoop = 1 << 0,
+    AppFlags_HandleOverlays = 1 << 1,
+    AppFlags_HandleMessageMgr = 1 << 2,
+    AppFlags_HandleRendering = 1 << 3,
+    AppFlags_Default = AppFlags_HandleMessageMgr | AppFlags_HandleOverlays |
+                       AppFlags_HandleRendering | AppFLags_UserLoop,
+  };
+  using AppInitFlags = u32;
+  enum AppInitFlags_ {
+    AppInitFlags_None = 0,
+    AppInitFlags_MountRomfs = 1 << 0,
+    AppInitFlags_InitGraphics = 1 << 1,
+    AppInitFlags_New3dsMode = 1 << 2,
+    AppInitFlags_InitGraphicsNoC3D = 1 << 3,
+    AppInitFlags_InitLithium = 1 << 4,
+    AppInitFlags_Default = AppInitFlags_MountRomfs | AppInitFlags_InitGraphics |
+                           AppInitFlags_New3dsMode | AppInitFlags_InitLithium,
+  };
   App() {
     if (too) {
       Error("Only one App can be created at the same time!");
@@ -66,11 +87,19 @@ class App {
   Hid::Ref Input() { return input_mgr; }
   float GetFps() const { return fps; }
 
+  void FeatureEnable(AppFlags flags) { runtimeflags |= flags; }
+  void FeatureDisable(AppFlags flags) { runtimeflags &= ~flags; }
+  AppFlags& GetFeatureSet() { return runtimeflags; }
+
  protected:
   Screen::Ref Top;
   Screen::Ref Bottom;
+  AppInitFlags InitFlags = AppInitFlags_Default;
 
  private:
+  AppFlags runtimeflags = AppFlags_Default;
+  /// @brief Safe Copy to prevent from editing befor Deinit
+  AppInitFlags SafeInitFlags = AppInitFlags_Default;
   void PreInit();
   void PostDeinit();
   LI::Renderer::Ref renderer;

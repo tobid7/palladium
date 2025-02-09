@@ -24,6 +24,7 @@ SOFTWARE.
  */
 
 #include <pd/controls/hid.hpp>
+#include <pd/maths/tween.hpp>
 #include <pd/ui7/containers.hpp>
 #include <pd/ui7/drawlist.hpp>
 #include <pd/ui7/flags.hpp>
@@ -73,6 +74,31 @@ class Menu : public SmartCtor<Menu> {
     cursor = bcursor;
     bcursor = vec2();
   }
+  bool HasVerticalScrollbar() { return scrollbar[1]; }
+  bool HasHorizontalScrollbar() { return scrollbar[0]; }
+  float TitleBarHeight() { return tbh; }
+  /// @brief Set a Custom Titlebar heigt
+  /// @note Could destroy some basic functionality
+  void TitleBarHeight(float v) { tbh = v; }
+  /// @brief Init the Cursor
+  /// @note Useful when using with a Custom TitlebarHeight
+  void CursorInit() { Cursor(vec2(5, tbh + 5)); }
+  void CursorMove(const vec2& szs);
+
+  vec4 ViewArea() const { return view_area; }
+  vec4 MainArea() const { return main_area; }
+  void MainArea(const vec4& v) { main_area = v; }
+  vec2 ScrollOffset() const { return scrolling_off; }
+  void ScrollTo(vec2 pos) {
+    scroll_anim.From(scrolling_off)
+        .To(pos)
+        .In(1.f)
+        .As(scroll_anim.EaseInOutSine);
+  }
+
+  /// Objects API
+  Container::Ref ObjectPush(Container::Ref obj);
+  Container::Ref FindIDObj(u32 id);
 
   /// Draw Lists
   DrawList::Ref BackList() { return back; }
@@ -94,26 +120,16 @@ class Menu : public SmartCtor<Menu> {
   void PreHandler(UI7MenuFlags flags);
   void PostHandler();
   /// Basic Settings
-  vec2 BackupCursor() const { return bcursor; }
   void BackupCursor(const vec2& v) { bcursor = v; }
   vec2 SameLineCursor() const { return slcursor; }
   void SameLineCursor(const vec2& v) { slcursor = v; }
-  vec4 ViewArea() const { return view_area; }
   void ViewArea(const vec4& v) { view_area = v; }
-  vec2 ScrollOffset() const { return scrolling_off; }
   void ScrollOffset(const vec2& v) { scrolling_off = v; }
   vec2 ScrollMod() const { return scroll_mod; }
   void ScrollMod(const vec2& v) { scroll_mod = v; }
 
-  /// Advanced
-  void CursorMove(const vec2& szs);
-
   /// Internal Processing
   void Update(float delta);
-
-  /// Objects API
-  Container::Ref ObjectPush(Container::Ref obj);
-  Container::Ref FindIDObj(u32 id);
 
   /// This ability is crazy useful
   friend class Context;
@@ -126,6 +142,7 @@ class Menu : public SmartCtor<Menu> {
   vec2 bcursor;
   vec2 slcursor;
   vec4 view_area;
+  vec4 main_area;
   vec2 scrolling_off;
   bool scrolling[2];
   vec2 scroll_mod;
@@ -158,6 +175,9 @@ class Menu : public SmartCtor<Menu> {
 
   // Input Reference
   Hid::Ref inp;
+
+  // Animations System
+  Tween<vec2> scroll_anim;
 };
 }  // namespace UI7
 }  // namespace PD

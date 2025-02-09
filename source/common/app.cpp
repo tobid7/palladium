@@ -41,42 +41,65 @@ void App::Run() {
     app_time += dt / 1000.f;
     last_time = current;
     fps = 1000.f / dt;
-    PD::TT::Beg("App_MainLoop");
-    if (!this->MainLoop(dt, app_time)) {
-      break;
+    if (runtimeflags & AppFLags_UserLoop) {
+      PD::TT::Beg("App_MainLoop");
+      if (!this->MainLoop(dt, app_time)) {
+        break;
+      }
+      PD::TT::End("App_MainLoop");
     }
-    PD::TT::End("App_MainLoop");
     PD::TT::Beg("Ovl_Update");
-    renderer->Layer(90);
-    overlay_mgr->Update(dt);
-    /// Messages have their own special Layer
-    renderer->Layer(93);
-    msg_mgr->Update(dt);
+    if (runtimeflags & AppFlags_HandleOverlays &&
+        SafeInitFlags & AppInitFlags_InitLithium) {
+      renderer->Layer(90);
+      overlay_mgr->Update(dt);
+    }
+    if (runtimeflags & AppFlags_HandleMessageMgr &&
+        SafeInitFlags & AppInitFlags_InitLithium) {
+      /// Messages have their own special Layer
+      renderer->Layer(93);
+      msg_mgr->Update(dt);
+    }
     PD::TT::End("Ovl_Update");
-    renderer->PrepareRender();
-    renderer->Render(Top);
-    renderer->Render(Bottom);
-    renderer->FinalizeRender();
+    if (runtimeflags & AppFlags_HandleRendering &&
+        SafeInitFlags & AppInitFlags_InitLithium) {
+      renderer->PrepareRender();
+      renderer->Render(Top);
+      renderer->Render(Bottom);
+      renderer->FinalizeRender();
+    }
   }
   this->Deinit();
   this->PostDeinit();
 }
 
 void App::PreInit() {
-  osSetSpeedupEnable(true);
-  gfxInitDefault();
+  /// Create a Copy that won't get edit
+  SafeInitFlags = InitFlags;
+  osSetSpeedupEnable(InitFlags & AppInitFlags_New3dsMode);
+  if (InitFlags & AppInitFlags_InitGraphics) {
+    gfxInitDefault();
+    if (!(InitFlags & AppInitFlags_InitGraphicsNoC3D)) {
+      C3D_Init(C3D_DEFAULT_CMDBUF_SIZE);
+    }
+  }
   cfguInit();
-  romfsInit();
-  C3D_Init(C3D_DEFAULT_CMDBUF_SIZE);
+  if (InitFlags & AppInitFlags_MountRomfs) {
+    romfsInit();
+  }
   input_mgr = Hid::New();
-  Top = Screen::New(Screen::Top);
-  Bottom = Screen::New(Screen::Bottom);
-  renderer = LI::Renderer::New();
-  renderer->RegisterScreen(false, Top);
-  renderer->RegisterScreen(true, Bottom);
-  renderer->OnScreen(Top);
-  msg_mgr = MessageMgr::New(renderer);
-  overlay_mgr = OverlayMgr::New(renderer, input_mgr);
+  if (InitFlags & AppInitFlags_InitLithium) {
+    Assert(!(InitFlags & AppInitFlags_InitGraphicsNoC3D),
+           "InitGraphicsNoC3D is not compatible with InitLithium!");
+    Top = Screen::New(Screen::Top);
+    Bottom = Screen::New(Screen::Bottom);
+    renderer = LI::Renderer::New();
+    renderer->RegisterScreen(false, Top);
+    renderer->RegisterScreen(true, Bottom);
+    renderer->OnScreen(Top);
+    msg_mgr = MessageMgr::New(renderer);
+    overlay_mgr = OverlayMgr::New(renderer, input_mgr);
+  }
 }
 
 void App::PostDeinit() {
@@ -84,9 +107,15 @@ void App::PostDeinit() {
   msg_mgr = nullptr;
   overlay_mgr = nullptr;
   input_mgr = nullptr;
-  C3D_Fini();
-  gfxExit();
+  if (SafeInitFlags & AppInitFlags_InitGraphics) {
+    if (!(SafeInitFlags & AppInitFlags_InitGraphicsNoC3D)) {
+      C3D_Fini();
+    }
+    gfxExit();
+  }
   cfguExit();
-  romfsExit();
+  if (SafeInitFlags & AppInitFlags_MountRomfs) {
+    romfsExit();
+  }
 }
 }  // namespace PD

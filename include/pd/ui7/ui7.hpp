@@ -58,7 +58,12 @@ class Context : public SmartCtor<Context> {
   DrawList::Ref BackList() { return back; }
   DrawList::Ref FrontList() { return front; }
 
+  void RootLayer(int l) { root_layer = l; }
+  int RootLayer() const { return root_layer; }
+
  private:
+  // Used in Overlays
+  int root_layer = 0;
   // Linked Renderer / Hid
   LI::Renderer::Ref ren;
   Hid::Ref inp;

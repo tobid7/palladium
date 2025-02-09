@@ -18,7 +18,7 @@ execute_process(
 )
 
 # Set Project
-project(palladium LANGUAGES C CXX VERSION 0.1.8)
+project(palladium LANGUAGES C CXX VERSION 0.1.9)
 
 # Enable Compile Command Export
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -28,7 +28,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
 # Set Special C and CXX flags
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wno-psabi -O3")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wno-psabi -O2")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_C_FLAGS} -fno-rtti -fno-exceptions")
 
 set(SRC_FILES
@@ -57,6 +57,7 @@ set(SRC_FILES
     source/overlays/overlay_mgr.cpp
     source/overlays/keyboard.cpp
     source/overlays/performance.cpp
+    source/overlays/settings.cpp
     # Tools
     source/tools/gamepad_icons.cpp
     # UI7

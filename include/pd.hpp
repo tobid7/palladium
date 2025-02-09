@@ -44,6 +44,7 @@ SOFTWARE.
 #include <pd/overlays/message_mgr.hpp>
 #include <pd/overlays/overlay_mgr.hpp>
 #include <pd/overlays/performance.hpp>
+#include <pd/overlays/settings.hpp>
 // UI7
 #include <pd/ui7/ui7.hpp>
 

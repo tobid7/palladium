@@ -37,12 +37,15 @@ bool UI7::Context::BeginMenu(const ID& id, UI7MenuFlags flags) {
   this->current = menu->second;
   if (!this->current->BackList()) {
     this->current->BackList(DrawList::New(ren));
+    this->current->BackList()->BaseLayer(root_layer + 30);
   }
   if (!this->current->MainList()) {
     this->current->MainList(DrawList::New(ren));
+    this->current->MainList()->BaseLayer(root_layer + 40);
   }
   if (!this->current->FrontList()) {
     this->current->FrontList(DrawList::New(ren));
+    this->current->FrontList()->BaseLayer(root_layer + 50);
   }
   this->current->ViewArea(this->ren->GetViewport());
   this->current->PreHandler(flags);
@@ -63,12 +66,12 @@ void UI7::Context::EndMenu() {
 void UI7::Context::Update(float delta) {
   TT::Scope st("UI7_Update");
   Assert(current == nullptr, "Still in a Menu!");
-  this->back->BaseLayer(10);
+  this->back->BaseLayer(root_layer + 10);
   this->back->Process();
   for (auto it : amenus) {
     menus[it]->Update(delta);
   }
-  this->front->BaseLayer(60);
+  this->front->BaseLayer(root_layer + 60);
   this->front->Process();
   this->amenus.clear();
 }

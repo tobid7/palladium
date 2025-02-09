@@ -29,7 +29,12 @@ SOFTWARE.
 
 class Test : public PD::App {
  public:
-  Test() = default;
+  Test() {
+    /*
+    Here can be things modified befor Init anything
+    cause This place gets called befor Internal Init
+    */
+  }
   ~Test() = default;
 
   void Init() override {
@@ -81,6 +86,11 @@ class Test : public PD::App {
       m->Separator();
       if (m->Button("Button?")) {
         Messages()->Push("Button", "Pressed...");
+      }
+      m->SameLine();
+      if (m->Button("Palladium")) {
+        this->FeatureDisable(AppFLags_UserLoop);
+        Overlays()->Push(PD::New<PD::SettingsMenu>(this));
       }
       m->SeparatorText("SeparatorText");
       m->Checkbox("Test", cbtest);
