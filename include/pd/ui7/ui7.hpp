@@ -45,6 +45,7 @@ class Context : public SmartCtor<Context> {
 
   bool BeginMenu(const ID& id, UI7MenuFlags flags = 0);
   Menu::Ref GetCurrentMenu();
+  Menu::Ref FindMenu(const ID& id);
   void EndMenu();
 
   /// Theme Management

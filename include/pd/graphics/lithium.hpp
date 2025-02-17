@@ -481,6 +481,8 @@ class Renderer : public SmartCtor<Renderer> {
   void TextCommand(std::vector<Command::Ref>& cmds, const vec2& pos, u32 color,
                    const std::string& text, LITextFlags flags, const vec2& box);
   vec2 GetTextDimensions(const std::string& text);
+  std::string ShortText(const std::string& text, int maxlen, vec2& newsize);
+  std::string WrapText(const std::string& text, int maxlen, vec2& newsize);
 
  private:
   /// Helper Funcitons ///

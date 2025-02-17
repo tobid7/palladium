@@ -68,6 +68,7 @@ void DrawList::AddText(vec2 pos, const std::string& text, const UI7Color& clr,
   if (!e->second->IsSetup() || e->second->Font() != ren->Font()) {
     int l = ren->Layer();
     ren->Layer(base);
+    /// Probably a simple ren.get() would handle the job too
     e->second->Setup(&(*ren), pos, clr, text, flags, box);
     e->second->Font(ren->Font());
     ren->Layer(l);

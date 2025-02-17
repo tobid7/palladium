@@ -32,9 +32,7 @@ void Container::HandleScrolling(vec2 scrolling, vec4 viewport) {
   }
   last_use = Sys::GetTime();
   pos -= vec2(0, scrolling.y());
-  if (!LI::Renderer::InBox(pos, size, viewport)) {
-    skippable = true;
-  }
+  skippable = !LI::Renderer::InBox(pos, size, viewport);
 }
 }  // namespace UI7
 }  // namespace PD

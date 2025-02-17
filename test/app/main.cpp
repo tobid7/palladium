@@ -60,26 +60,20 @@ class Test : public PD::App {
       m->SeparatorText("Menu Timings");
       m->DebugLabels();
       m->SeparatorText("Palladium Info");
+      m->PushAlignment(UI7Align_Center);
       m->Label("Version: " + PD::LibInfo::Version() + " [" +
                PD::LibInfo::Commit() + "]");
-      m->AfterAlignCenter();
       m->Label("CompileInfo: " + PD::LibInfo::CompiledWith() + " - " +
                PD::LibInfo::CxxVersion());
-      m->AfterAlignCenter();
       m->Label("Build at " + PD::LibInfo::BuildTime());
-      m->AfterAlignCenter();
       m->SeparatorText("Basic Info");
       m->Label("sizeof(size_t): " + std::to_string(sizeof(size_t)) + " -> " +
                std::to_string(sizeof(size_t) * 8) + "Bit");
-      m->AfterAlignCenter();
       m->Label("__cplusplus=" + std::to_string(__cplusplus));
-      m->AfterAlignCenter();
       m->Label(PD::Strings::GetCompilerVersion());
-      m->AfterAlignCenter();
       m->Label("sizeof(LI::Vertex): " + std::to_string(sizeof(PD::LI::Vertex)));
-      m->AfterAlignCenter();
       m->Label("sizeof(PD::u16): " + std::to_string(sizeof(PD::u16)));
-      m->AfterAlignCenter();
+      m->PopAlignment();
       m->SeparatorText("UI7 Tests");
       m->Label("This seems to be a label");
       m->Image(test);

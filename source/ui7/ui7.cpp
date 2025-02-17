@@ -58,6 +58,14 @@ UI7::Menu::Ref UI7::Context::GetCurrentMenu() {
   return current;
 }
 
+UI7::Menu::Ref UI7::Context::FindMenu(const ID& id) {
+  auto e = this->menus.find(id);
+  if (e != this->menus.end()) {
+    return e->second;
+  }
+  return nullptr;
+}
+
 void UI7::Context::EndMenu() {
   this->current->PostHandler();
   this->current = nullptr;

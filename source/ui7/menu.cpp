@@ -30,6 +30,7 @@ namespace UI7 {
 void UI7::Menu::Label(const std::string& label) {
   Container::Ref r =
       ObjectPush(PD::New<UI7::Label>(label, Cursor(), this->back->ren));
+  r->SetPos(AlignPos(r->GetPos(), r->GetSize(), view_area, GetAlignment()));
   CursorMove(r->GetSize());
   r->Init(main->ren, main, linked_theme);
   r->HandleScrolling(scrolling_off, view_area);
@@ -45,7 +46,7 @@ bool UI7::Menu::Button(const std::string& label) {
     r->Init(main->ren, main, linked_theme);
   }
   ObjectPush(r);
-  r->SetPos(Cursor());
+  r->SetPos(AlignPos(Cursor(), r->GetSize(), view_area, GetAlignment()));
   CursorMove(r->GetSize());
   r->HandleScrolling(scrolling_off, view_area);
   if (!r->Skippable()) {
@@ -63,7 +64,7 @@ void UI7::Menu::Checkbox(const std::string& label, bool& v) {
     r->Init(main->ren, main, linked_theme);
   }
   ObjectPush(r);
-  r->SetPos(Cursor());
+  r->SetPos(AlignPos(Cursor(), r->GetSize(), view_area, GetAlignment()));
   CursorMove(r->GetSize());
   r->HandleScrolling(scrolling_off, view_area);
 }
@@ -71,6 +72,7 @@ void UI7::Menu::Checkbox(const std::string& label, bool& v) {
 void UI7::Menu::Image(Texture::Ref img, vec2 size) {
   Container::Ref r =
       ObjectPush(PD::New<UI7::Image>(img, Cursor(), this->back->ren, size));
+  r->SetPos(AlignPos(r->GetPos(), r->GetSize(), view_area, GetAlignment()));
   CursorMove(r->GetSize());
   r->Init(main->ren, main, linked_theme);
   r->HandleScrolling(scrolling_off, view_area);
@@ -113,7 +115,9 @@ void UI7::Menu::Update(float delta) {
       idobjs.push_back(it);
     }
     if (!it->Skippable()) {
-      it->HandleInput(inp);
+      if (scroll_mod[1] == 0.f) {
+        it->HandleInput(inp);
+      }
       /// Unlock Input after to ensure nothing is checked twice
       it->UnlockInput();
       it->Draw();
@@ -262,6 +266,20 @@ void UI7::Menu::PostHandler() {
         }
       }
 
+      /// Slider Dragging????
+      /// Probably need a new API for this
+      auto tp = inp->TouchPos();
+      if (inp->IsHeld(inp->Touch) &&
+          LI::Renderer::InBox(tp, vec4(screen_w - 12, tsp, 8, szs))) {
+        float drag_center = vslider_h / 2.0f;
+        float drag_pos =
+            std::clamp(static_cast<float>((tp[1] - tsp - drag_center) /
+                                          (szs - vslider_h - 4)),
+                       0.0f, 1.0f);
+
+        scrolling_off[1] = drag_pos * (max[1] - 240.f);
+      }
+
       int srpos =
           tsp + std::clamp(float(szs - vslider_h - 4) *
                                (scrolling_off[1] / (max[1] - view_area[3])),
@@ -318,10 +336,8 @@ void UI7::Menu::SeparatorText(const std::string& label) {
 
 bool UI7::Menu::HandleScrolling(vec2& pos, const vec2& size) {
   if (scrolling[1]) {
-    vec2 p = pos;
     pos -= vec2(0, scrolling_off.y());
-    if (pos.y() > view_area.w() ||
-        (pos.y() + size.y() < tbh - 5 && p.y() > tbh)) {
+    if (pos.y() > view_area.w() || (pos.y() + size.y() < view_area.y())) {
       return true;
     }
   }
@@ -347,22 +363,50 @@ void UI7::Menu::Join() {
   join.push_back(objects.back().get());
 }
 
-void UI7::Menu::JoinOpHzCenter() {
+void UI7::Menu::JoinAlign(UI7Align a) {
+  if (a == 0) {
+    a = UI7Align_Default;
+  }
   this->Join();
-  float spos = join.front()->GetPos().x();
-  float szs = join.back()->GetPos().x() + join.back()->GetSize().x() - spos;
-  float off = (view_area.x() + view_area.z() * 0.5) - (spos + szs * 0.5);
+
+  vec2 spos = join.front()->GetPos();
+  vec2 szs = join.back()->GetPos() + join.back()->GetSize() - spos;
+  vec2 off;
+  if (a & UI7Align_Center) {
+    off[0] = (view_area[0] + view_area[2] * 0.5) - (spos[0] + szs[0] * 0.5);
+  }
+  if (a & UI7Align_Mid) {
+    off[1] = (view_area[1] + view_area[3] * 0.5) - (spos[1] + szs[1] * 0.5);
+  }
   for (auto it : join) {
-    it->SetPos(it->GetPos() + vec2(off, 0.f));
+    it->SetPos(it->GetPos() + off);
   }
   join.clear();
 }
-void UI7::Menu::AfterAlignCenter() {
+
+vec2 UI7::Menu::AlignPos(vec2 pos, vec2 size, vec4 view, UI7Align a) {
+  vec2 np = pos;
+  if (a & UI7Align_Center) {
+    np[0] = (view[0] + view[2] * 0.5) - (pos[0] + size[0] * 0.5);
+  }
+  if (a & UI7Align_Mid) {
+    np[1] = (view[1] + view[3] * 0.5) - (pos[1] + size[1] * 0.5);
+  }
+  return np;
+}
+
+void UI7::Menu::AfterAlign(UI7Align a) {
   Container* ref = objects.back().get();
   vec2 p = ref->GetPos();
   vec2 s = ref->GetSize();
-  float newx = (view_area.x() + view_area.z() * 0.5) - (p.x() + s.x() * 0.5);
-  ref->SetPos(vec2(newx, p.y()));
+  vec2 np = p;
+  if (a & UI7Align_Center) {
+    np[0] = (view_area[0] + view_area[2] * 0.5) - (p[0] + s[0] * 0.5);
+  }
+  if (a & UI7Align_Mid) {
+    np[1] = (view_area[1] + view_area[3] * 0.5) - (p[1] + s[1] * 0.5);
+  }
+  ref->SetPos(np);
 }
 }  // namespace UI7
 }  // namespace PD

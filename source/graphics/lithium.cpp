@@ -281,8 +281,8 @@ void Renderer::StaticText::SetPos(const vec2& pos) {
 void Renderer::StaticText::SetLayer(int layer) { text->ReLayer(layer); }
 
 bool Renderer::InBox(const vec2& pos, const vec2& szs, const vec4& rect) {
-  return (pos[0] < rect[2] || pos[1] < rect[3] || pos[0] + szs[0] > rect[0] ||
-          pos[1] + szs[1] > rect[1]);
+  return (pos[0] + szs[0] >= rect[0] && pos[1] + szs[1] >= rect[1] &&
+          pos[0] <= rect[2] && pos[1] <= rect[3]);
 }
 
 bool Renderer::InBox(const vec2& pos, const vec4& rect) {
@@ -398,7 +398,7 @@ void Renderer::TextCommand(std::vector<Command::Ref>& cmds, const vec2& pos,
     rpos = rbox * 0.5 - td * 0.5 + pos;
   }
   if (flags & LITextFlags_AlignRight) {
-    rpos[0] = rbox[0] - td[0];
+    rpos[0] = rpos[0] - td[0];
   }
 
   std::vector<std::string> lines;
@@ -409,7 +409,13 @@ void Renderer::TextCommand(std::vector<Command::Ref>& cmds, const vec2& pos,
   }
 
   for (auto& it : lines) {
-    if (rpos[1] + off[1] + lh < 0) {
+    if (flags & LITextFlags_Short) {
+      vec2 tmp_dim;
+      it = ShortText(it, box.x() - pos.x(), tmp_dim);
+    }
+    /// Well support OOS Rendering here as well
+    /// Fixes UI7 Scroll back up bug
+    if (rpos[1] + off[1] + lh < 0 && !(flags & LITextFlags_RenderOOS)) {
       off[1] += lh;
       continue;
     } else if (rpos[1] + off[1] > GetViewport().w() &&
@@ -467,6 +473,58 @@ void Renderer::TextCommand(std::vector<Command::Ref>& cmds, const vec2& pos,
 }
 
 vec4 Renderer::GetViewport() { return vec4(vec2(), screen->GetSize()); }
+
+std::string Renderer::ShortText(const std::string& text, int maxlen,
+                                vec2& newsize) {
+  vec2 cdim;
+  if (flags & RenderFlags_TMS) {
+    auto e = tms.find(text);
+    if (e != tms.end()) {
+      e->second.TimeCreated(Sys::GetTime());
+      if (e->second.Optional()) {
+        return e->second.Text();
+      }
+      cdim = e->second.Size();
+    }
+  }
+  cdim = this->GetTextDimensions(text);
+  if (cdim[0] < (float)maxlen) {
+    return text;
+  }
+  std::string ext;
+  /// Forgot why i called this var ending cause
+  /// Its more a placeholder for removed content
+  std::string ending = "...";
+  std::string cpy = text;
+  std::string res;
+  size_t extension = text.find_last_of('.');
+  if (extension != text.npos) {
+    ext = text.substr(extension);
+    cpy = text.substr(0, extension);
+    maxlen -= GetTextDimensions(ext).x();
+  }
+  maxlen -= GetTextDimensions(ending).x();
+  for (auto& it : cpy) {
+    if (GetTextDimensions(res).x() > (float)maxlen) {
+      res += ending;
+      res += ext;
+      newsize = GetTextDimensions(res);
+      if (flags & RenderFlags_TMS) {
+        auto& tmp = tms[text];
+        tmp.Text(res);
+        tmp.Size(newsize);
+        tmp.TimeCreated(Sys::GetTime());
+        tmp.Optional(true);
+      }
+      break;
+    }
+    res += it;
+  }
+  return res;
+}
+
+std::string Renderer::WrapText(const std::string& text, int maxlen,
+                               vec2& newsize) {}
 
 vec2 Renderer::GetTextDimensions(const std::string& text) {
   if (!font) {

@@ -59,9 +59,12 @@ class Menu : public SmartCtor<Menu> {
   void Separator();
   void SeparatorText(const std::string& label);
   void Join();
-  /// @brief Horizontal Center Joined objects
-  void JoinOpHzCenter();
-  void AfterAlignCenter();
+  void JoinAlign(UI7Align a);
+  void AfterAlign(UI7Align a);
+  void NextAlign(UI7Align a) { tmpalign = a; }
+  void PushAlignment(UI7Align a) { alignment = a; }
+  void PopAlignment() { alignment = UI7Align_Default; }
+  static vec2 AlignPos(vec2 pos, vec2 size, vec4 view, UI7Align a);
 
   /// API for Custom Objects
   bool HandleScrolling(vec2& pos, const vec2& size);
@@ -89,12 +92,15 @@ class Menu : public SmartCtor<Menu> {
   vec4 MainArea() const { return main_area; }
   void MainArea(const vec4& v) { main_area = v; }
   vec2 ScrollOffset() const { return scrolling_off; }
+  void ScrollOffset(const vec2& v) { scrolling_off = v; }
+  vec2 ScrollMod() const { return scroll_mod; }
   void ScrollTo(vec2 pos) {
     scroll_anim.From(scrolling_off)
         .To(pos)
         .In(1.f)
         .As(scroll_anim.EaseInOutSine);
   }
+  bool IsAnimatedScroll() { return !scroll_anim.IsFinished(); }
 
   /// Objects API
   Container::Ref ObjectPush(Container::Ref obj);
@@ -124,9 +130,16 @@ class Menu : public SmartCtor<Menu> {
   vec2 SameLineCursor() const { return slcursor; }
   void SameLineCursor(const vec2& v) { slcursor = v; }
   void ViewArea(const vec4& v) { view_area = v; }
-  void ScrollOffset(const vec2& v) { scrolling_off = v; }
-  vec2 ScrollMod() const { return scroll_mod; }
   void ScrollMod(const vec2& v) { scroll_mod = v; }
+
+  UI7Align GetAlignment() {
+    if (tmpalign) {
+      auto t = tmpalign;
+      tmpalign = 0;
+      return t;
+    }
+    return alignment;
+  }
 
   /// Internal Processing
   void Update(float delta);
@@ -135,6 +148,8 @@ class Menu : public SmartCtor<Menu> {
   friend class Context;
 
   /// Data
+  UI7Align alignment = UI7Align_Default;
+  UI7Align tmpalign = 0;
   UI7MenuFlags flags = 0;
   u32 id;
   std::string name;

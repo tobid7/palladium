@@ -64,6 +64,7 @@ class Keyboard : public Overlay {
     Flags_BlendTop = 1 << 0,
     Flags_BlendBottom = 1 << 1,
     Flags_LockControls = 1 << 2,
+    Flags_Transparency = 1 << 3,
     Flags_Default = Flags_BlendBottom | Flags_BlendTop | Flags_LockControls,
   };
   Keyboard(std::string& text, State& state, const std::string& hint = "",

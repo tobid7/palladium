@@ -24,6 +24,7 @@ SOFTWARE.
  */
 
 using UI7MenuFlags = unsigned int;
+using UI7Align = unsigned int;
 
 enum UI7MenuFlags_ {
   UI7MenuFlags_None = 0,
@@ -33,4 +34,15 @@ enum UI7MenuFlags_ {
   UI7MenuFlags_VtScrolling = 1 << 3,
   UI7MenuFlags_NoBackground = 1 << 4,
   UI7MenuFlags_Scrolling = UI7MenuFlags_HzScrolling | UI7MenuFlags_VtScrolling,
+};
+
+/// @brief Probably need to update this
+enum UI7Align_ {
+  UI7Align_Left = 1 << 0,
+  UI7Align_Center = 1 << 1,
+  UI7Align_Right = 1 << 2,
+  UI7Align_Top = 1 << 3,
+  UI7Align_Mid = 1 << 4,
+  UI7Align_Bottom = 1 << 5,
+  UI7Align_Default = UI7Align_Left | UI7Align_Top,
 };

@@ -47,6 +47,7 @@ set(SRC_FILES
     source/maths/color.cpp
     source/maths/bit_util.cpp
     source/maths/img_convert.cpp
+    source/maths/img_blur.cpp
     # Graphics
     source/graphics/texture.cpp
     source/graphics/spritesheet.cpp

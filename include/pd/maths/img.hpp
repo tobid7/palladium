@@ -1,6 +1,9 @@
+#pragma once
+
 /*
 MIT License
-Copyright (c) 2024 - 2025 René Amthor (tobid7)
+
+Copyright (c) 2024 - 2025 tobid7
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,35 +24,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/maths/img.hpp>
-#include <pd/maths/img_convert.hpp>
+#include <pd/common/common.hpp>
+#include <pd/maths/vec.hpp>
 
-namespace PD::ImgConvert {
-void RGB24toRGBA32(std::vector<u8> &out, const std::vector<u8> &in,
-                   const int &w, const int &h) {
-  // Converts RGB24 to RGBA32
-  for (int y = 0; y < h; y++) {
-    for (int x = 0; x < w; x++) {
-      int src = (y * w + x) * 3;
-      int dst = (y * w + x) * 4;
-      out[dst + 0] = in[src + 0];
-      out[dst + 1] = in[src + 1];
-      out[dst + 2] = in[src + 2];
-      out[dst + 3] = 255;
-    }
-  }
+namespace PD {
+namespace Img {
+inline int Index3dsTex(int x, int y, int width) {
+  return ((((y >> 3) * (width >> 3) + (x >> 3)) << 6) +
+          ((x & 1) | ((y & 1) << 1) | ((x & 2) << 1) | ((y & 2) << 2) |
+           ((x & 4) << 2) | ((y & 4) << 3)));
 }
-void Reverse32(std::vector<u8> &buf, const int &w, const int &h) {
-  for (int x = 0; x < w; x++) {
-    for (int y = 0; y < h; y++) {
-      int i = Img::IndexDefault(x, y, w);
-      u8 t0 = buf[i + 0];
-      u8 t1 = buf[i + 1];
-      buf[i + 0] = buf[i + 3];
-      buf[i + 1] = buf[i + 2];
-      buf[i + 3] = t0;
-      buf[i + 2] = t1;
-    }
-  }
-}
-}  // namespace PD::ImgConvert
+inline int IndexDefault(int x, int y, int width) { return y * width + x; }
+}  // namespace Img
+}  // namespace PD

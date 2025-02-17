@@ -531,8 +531,10 @@ void Keyboard::Update(float delta, LI::Renderer::Ref ren, Hid::Ref inp) {
   /// Get the current start possition
   vec2 start = flymgr;
   // Draw head and Keyboard background
+  ren->DrawRectSolid(
+      vec2(0, start.y()), vec2(320, 125),
+      PD::Color("#222222ff").a((flags & Flags_Transparency) ? 0xaa : 0xff));
   ren->DrawRectSolid(vec2(0, start.y()), vec2(320, 17), 0xaa000000);
-  ren->DrawRectSolid(vec2(0, start.y()), vec2(320, 125), 0xaa222222);
   /// Grab the base layer and go one up for texts
   int l = ren->Layer();
   ren->Layer(l + 2);

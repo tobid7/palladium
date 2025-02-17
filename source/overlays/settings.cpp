@@ -16,13 +16,13 @@ void SettingsMenu::Update(float delta, LI::Renderer::Ref ren, Hid::Ref inp) {
     auto m = ctx->GetCurrentMenu();
     m->SeparatorText("Library Info");
     m->Label(LibInfo::CompiledWith());
-    m->AfterAlignCenter();
+    m->AfterAlign(UI7Align_Center);
     m->Label(LibInfo::CxxVersion());
-    m->AfterAlignCenter();
+    m->AfterAlign(UI7Align_Center);
     m->Label("Version: " + LibInfo::Version() + "[" + LibInfo::Commit() + "]");
-    m->AfterAlignCenter();
+    m->AfterAlign(UI7Align_Center);
     m->Label("Build Time: " + LibInfo::BuildTime());
-    m->AfterAlignCenter();
+    m->AfterAlign(UI7Align_Center);
     ctx->EndMenu();
   }
   ren->OnScreen(ren->GetScreen(true));

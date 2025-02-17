@@ -25,15 +25,30 @@ SOFTWARE.
  */
 
 #include <pd/common/common.hpp>
+#include <pd/maths/img.hpp>
+#include <pd/maths/vec.hpp>
 
 namespace PD {
-namespace ImgConvert {
-void RGB24toRGBA32(std::vector<u8> &out, const std::vector<u8> &in,
-                   const int &w, const int &h);
-/// @brief Reverse 32 (RGBA -> ABGR || ABGR -> RGBA)
-/// @param buf Buffer to convert
-/// @param w width
-/// @param h height
-void Reverse32(std::vector<u8> &buf, const int &w, const int &h);
-}  // namespace ImgConvert
+namespace ImgBlur {
+std::vector<float> GaussianKernel(int radius, float si);
+/// @brief Gaussian Blur for basic Image Buffer
+/// @param buf Image Buffer (unsigned char)
+/// @param w // width of the image
+/// @param h // width of the image
+/// @param radius // Blur radius
+/// @param si // Blur sigma
+/// @param idxfn // Indexing function (if buffer is 3ds tiled)
+void GaussianBlur(std::vector<u8> &buf, int w, int h, float radius, float si,
+                  std::function<int(int, int, int)> idxfn = Img::IndexDefault);
+/// @brief Advanced func to access memory directly
+/// @param buf Referenvce to the buffer
+/// @param w // width of the image
+/// @param h // width of the image
+/// @param bpp Bytes per Pixels (RGB[A], RGB565, etc)
+/// @param radius // Blur radius
+/// @param si // Blur sigma
+/// @param idxfn // Indexing function (if buffer is 3ds tiled)
+void GaussianBlur(void *buf, int w, int h, int bpp, float radius, float si,
+                  std::function<int(int, int, int)> idxfn = Img::IndexDefault);
+}  // namespace ImgBlur
 }  // namespace PD

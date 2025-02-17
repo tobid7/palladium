@@ -31,7 +31,7 @@ SOFTWARE.
 #include <pd/graphics/texture.hpp>
 
 namespace PD {
-class SpriteSheet {
+class SpriteSheet : public SmartCtor<SpriteSheet> {
  public:
   SpriteSheet() {}
   SpriteSheet(const std::string& path) { this->LoadFile(path); }

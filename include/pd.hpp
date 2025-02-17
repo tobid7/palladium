@@ -37,6 +37,7 @@ SOFTWARE.
 // Maths
 #include <pd/maths/bit_util.hpp>
 #include <pd/maths/color.hpp>
+#include <pd/maths/img_blur.hpp>
 #include <pd/maths/img_convert.hpp>
 #include <pd/maths/vec.hpp>
 // Overlays
