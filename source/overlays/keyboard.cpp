@@ -24,7 +24,7 @@ SOFTWARE.
 #include <pd/external/json.hpp>
 #include <pd/maths/color.hpp>
 #include <pd/overlays/keyboard.hpp>
-#include <pd/tools/gamepad_icons.hpp>
+#include <pd/lib3ds/gamepad_icons.hpp>
 
 namespace PD {
 struct Key {

@@ -21,8 +21,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/common/strings.hpp>
-#include <pd/common/sys.hpp>
+#include <pd/core/strings.hpp>
+#include <pd/core/sys.hpp>
 #include <pd/overlays/performance.hpp>
 
 namespace PD {

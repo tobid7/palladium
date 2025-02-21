@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/graphics/lithium.hpp>
+#include <pd/lithium/renderer.hpp>
 #include <pd/maths/color.hpp>
 #include <pd/maths/tween.hpp>
 

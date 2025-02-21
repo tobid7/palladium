@@ -86,9 +86,9 @@ for object in shaders:
     name = Path(Path(object).stem).stem
     bp = os.path.dirname(object)
     build_shader(object)
-    file2array(bp + '/' + name + '.shbin', 'pd/graphics/')
-    install_code(name + '.cpp', 'source/graphics/')
-    install_code(name + '.hpp', 'include/pd/graphics/')
+    file2array(bp + '/' + name + '.shbin', 'pd/lithium/')
+    install_code(name + '.cpp', 'source/lithium/')
+    install_code(name + '.hpp', 'include/pd/lithium/')
 
 cleanup()
 print("Done")

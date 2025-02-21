@@ -23,8 +23,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/common/common.hpp>
-#include <pd/graphics/lithium.hpp>
+#include <pd/core/common.hpp>
+#include <pd/lithium/renderer.hpp>
 #include <pd/ui7/theme.hpp>
 
 namespace PD {
@@ -61,7 +61,7 @@ class DrawList : public SmartCtor<DrawList> {
   int layer;
   int base;
   LI::Renderer::Ref ren;
-  std::unordered_map<u32, LI::Renderer::StaticText::Ref> static_text;
+  std::unordered_map<u32, LI::StaticText::Ref> static_text;
   std::vector<std::pair<bool, LI::Command::Ref>> commands;
 };
 }  // namespace UI7

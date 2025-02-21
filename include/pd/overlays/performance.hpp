@@ -23,8 +23,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
+#include <pd/drivers/hid.hpp>
 #include <pd/overlays/overlay.hpp>
-#include <pd/controls/hid.hpp>
 
 namespace PD {
 class Performance : public Overlay {

@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/controls/hid.hpp>
+#include <pd/drivers/hid.hpp>
 #include <pd/maths/tween.hpp>
 #include <pd/ui7/containers.hpp>
 #include <pd/ui7/drawlist.hpp>

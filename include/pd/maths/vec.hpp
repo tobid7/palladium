@@ -29,7 +29,7 @@ SOFTWARE.
  * and easy to use like in glsl or glm
  */
 
-#include <pd/common/common.hpp>
+#include <pd/core/common.hpp>
 
 namespace PD {
 struct vec2 {

@@ -84,7 +84,7 @@ class Test : public PD::App {
       m->SameLine();
       if (m->Button("Palladium")) {
         this->FeatureDisable(AppFLags_UserLoop);
-        Overlays()->Push(PD::New<PD::SettingsMenu>(this));
+        Overlays()->Push(PD::New<PD::SettingsMenu>());
       }
       m->SeparatorText("SeparatorText");
       m->Checkbox("Test", cbtest);

@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/common/strings.hpp>
+#include <pd/core/strings.hpp>
 #include <pd/ui7/drawlist.hpp>
 
 namespace PD {
@@ -62,7 +62,7 @@ void DrawList::AddText(vec2 pos, const std::string& text, const UI7Color& clr,
   u32 id = Strings::FastHash(text);
   auto e = static_text.find(id);
   if (e == static_text.end()) {
-    static_text[id] = LI::Renderer::StaticText::New();
+    static_text[id] = LI::StaticText::New();
     e = static_text.find(id);
   }
   if (!e->second->IsSetup() || e->second->Font() != ren->Font()) {

@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/common/common.hpp>
+#include <pd/core/common.hpp>
 
 namespace PD {
 /// @brief Color class (Supports hex, rgb(a)8, u32 input)

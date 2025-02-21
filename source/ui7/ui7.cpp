@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/common/timetrace.hpp>
+#include <pd/core/timetrace.hpp>
 #include <pd/ui7/ui7.hpp>
 
 namespace PD {

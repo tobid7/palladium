@@ -23,9 +23,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/common/common.hpp>
-#include <pd/common/strings.hpp>
-#include <pd/controls/hid.hpp>
+#include <pd/core/common.hpp>
+#include <pd/core/strings.hpp>
+#include <pd/drivers/hid.hpp>
 #include <pd/maths/vec.hpp>
 #include <pd/ui7/drawlist.hpp>
 
