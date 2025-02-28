@@ -1,3 +1,5 @@
+#pragma once
+
 /*
 MIT License
 Copyright (c) 2024 - 2025 René Amthor (tobid7)
@@ -21,15 +23,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/ui7/container/image.hpp>
+#include <pd/core/common.hpp>
 
 namespace PD {
-namespace UI7 {
-void Image::Draw() {
-  Assert(ren.get() && list.get(), "Did you run Container::Init correctly?");
-  Assert(img.get(), "Image is nullptr!");
-  ren->OnScreen(screen);
-  list->AddImage(pos, img);
-}
-}  // namespace UI7
+namespace HwInfo {
+void Init();
+void Deinit();
+bool IsCharging();
+int GetBatteryPercentage();
+int GetWifiLevel();
+}  // namespace HwInfo
 }  // namespace PD

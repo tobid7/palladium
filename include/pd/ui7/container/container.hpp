@@ -38,9 +38,9 @@ class Container : public SmartCtor<Container> {
   Container(const vec4& box) : pos(box.xy()), size(box.zw()) {}
   ~Container() {}
 
-  void Init(LI::Renderer::Ref r, UI7::DrawList::Ref l, UI7::Theme* lt) {
+  void Init(LI::Renderer::Ref r, UI7::DrawList::Ref l, UI7::Theme::Ref lt) {
     list = l;
-    linked_theme = lt;
+    theme = lt;
     ren = r;
   }
 
@@ -49,6 +49,9 @@ class Container : public SmartCtor<Container> {
 
   vec2 GetPos() { return pos; }
   vec2 GetSize() { return size; }
+
+  void SetParent(Container::Ref v) { parent = v; }
+  Container::Ref GetParent() { return parent; }
 
   bool Skippable() const { return skippable; }
   bool Removable() const { return rem; }
@@ -72,8 +75,9 @@ class Container : public SmartCtor<Container> {
   vec2 pos;
   vec2 size;
   UI7::DrawList::Ref list;
-  UI7::Theme* linked_theme;
+  UI7::Theme::Ref theme;
   LI::Renderer::Ref ren;
+  Container::Ref parent;
   u32 id = 0;
 };
 }  // namespace UI7

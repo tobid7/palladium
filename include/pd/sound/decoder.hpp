@@ -1,3 +1,5 @@
+#pragma once
+
 /*
 MIT License
 Copyright (c) 2024 - 2025 René Amthor (tobid7)
@@ -21,15 +23,22 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/ui7/container/image.hpp>
+#include <pd/core/common.hpp>
 
 namespace PD {
-namespace UI7 {
-void Image::Draw() {
-  Assert(ren.get() && list.get(), "Did you run Container::Init correctly?");
-  Assert(img.get(), "Image is nullptr!");
-  ren->OnScreen(screen);
-  list->AddImage(pos, img);
-}
-}  // namespace UI7
+namespace Music {
+class Decoder : public SmartCtor<Decoder> {
+ public:
+  Decoder() {}
+  virtual ~Decoder() {}
+
+  virtual int Init(const std::string& path) = 0;
+  virtual void Deinit() = 0;
+  virtual u32 GetSampleRate() = 0;
+  virtual u8 GetChannels() = 0;
+  virtual size_t GetBufSize() = 0;
+  virtual u64 Decode(u16* buf_address) = 0;
+  virtual size_t GetFileSamples() = 0;
+};
+}  // namespace Music
 }  // namespace PD

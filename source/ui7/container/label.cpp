@@ -26,10 +26,10 @@ SOFTWARE.
 namespace PD {
 namespace UI7 {
 void Label::Draw() {
-  Assert(ren.get() && list.get() && linked_theme,
+  Assert(ren.get() && list.get() && theme,
          "Did you run Container::Init correctly?");
   ren->OnScreen(screen);
-  list->AddText(pos, label, linked_theme->Get(UI7Color_Text));
+  list->AddText(pos, label, theme->Get(UI7Color_Text));
 }
 }  // namespace UI7
 }  // namespace PD

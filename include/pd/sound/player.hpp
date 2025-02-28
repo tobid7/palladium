@@ -1,3 +1,5 @@
+#pragma once
+
 /*
 MIT License
 Copyright (c) 2024 - 2025 René Amthor (tobid7)
@@ -21,15 +23,30 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/ui7/container/image.hpp>
+#include <pd/lib3ds/memory.hpp>
+#include <pd/sound/decoder.hpp>
+#include <pd/sound/metadata.hpp>
 
 namespace PD {
-namespace UI7 {
-void Image::Draw() {
-  Assert(ren.get() && list.get(), "Did you run Container::Init correctly?");
-  Assert(img.get(), "Image is nullptr!");
-  ren->OnScreen(screen);
-  list->AddImage(pos, img);
-}
-}  // namespace UI7
+namespace Music {
+class Player : public SmartCtor<Player> {
+ public:
+  Player() {}
+  ~Player() {}
+
+ private:
+  MetaData meta;
+  size_t samples_total = 0;
+  size_t samples_played = 0;
+  size_t samples_per_sec = 0;
+  std::string file;
+  std::vector<signed short, LinearAllocator<signed short>> buffers[2];
+  ndspWaveBuf wave_buf[2] = {0};
+  bool last_buf = false;
+  int ret = -1;
+  bool done = false;
+  bool playing = false;
+  bool stop = false;
+};
+}  // namespace Music
 }  // namespace PD

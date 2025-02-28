@@ -21,15 +21,30 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/ui7/container/image.hpp>
+#include <3ds.h>
+
+#include <pd/lib3ds/hwinfo.hpp>
 
 namespace PD {
-namespace UI7 {
-void Image::Draw() {
-  Assert(ren.get() && list.get(), "Did you run Container::Init correctly?");
-  Assert(img.get(), "Image is nullptr!");
-  ren->OnScreen(screen);
-  list->AddImage(pos, img);
+namespace HwInfo {
+void Init() {
+  mcuHwcInit();
+  ptmuInit();
 }
-}  // namespace UI7
+void Deinit() {
+  mcuHwcExit();
+  ptmuExit();
+}
+bool IsCharging() {
+  u8 v = 0;
+  PTMU_GetBatteryChargeState(&v);
+  return v == 1;
+}
+int GetBatteryPercentage() {
+  u8 lvl = 0;
+  MCUHWC_GetBatteryLevel(&lvl);
+  return lvl;
+}
+int GetWifiLevel() { return osGetWifiStrength(); }
+}  // namespace HwInfo
 }  // namespace PD

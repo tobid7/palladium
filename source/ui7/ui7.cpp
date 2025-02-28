@@ -31,7 +31,7 @@ bool UI7::Context::BeginMenu(const ID& id, UI7MenuFlags flags) {
          "Menu Name Already used or\nContext::Update not called!");
   auto menu = this->menus.find(id);
   if (menu == this->menus.end()) {
-    this->menus[id] = Menu::New(id, &theme, inp);
+    this->menus[id] = Menu::New(id, theme, inp);
     menu = this->menus.find(id);
   }
   this->current = menu->second;

@@ -24,6 +24,7 @@ SOFTWARE.
  */
 
 #include <pd/core/common.hpp>
+#include <pd/core/timer.hpp>
 #include <pd/core/timetrace.hpp>
 #include <pd/lib3ds/drv_hid.hpp>
 #include <pd/lithium/renderer.hpp>
@@ -46,15 +47,16 @@ class App {
   };
   using AppInitFlags = u32;
   enum AppInitFlags_ {
-    AppInitFlags_None = 0,
-    AppInitFlags_MountRomfs = 1 << 0,
-    AppInitFlags_InitGraphics = 1 << 1,
-    AppInitFlags_New3dsMode = 1 << 2,
-    AppInitFlags_InitGraphicsNoC3D = 1 << 3,
-    AppInitFlags_InitLithium = 1 << 4,
+    AppInitFlags_None = 0,  /// Do nothing (probably a useles ability)
+    AppInitFlags_MountRomfs = 1 << 0,    /// Mount Romfs on PreInit
+    AppInitFlags_InitGraphics = 1 << 1,  /// Default Init Graphics for GPU use
+    AppInitFlags_New3dsMode = 1 << 2,    /// Enable New3DS Speedup
+    AppInitFlags_InitGraphicsNoC3D = 1 << 3,  /// Init GFX for Buf Modification
+    AppInitFlags_InitLithium = 1 << 4,        /// Init 2D Rendering Engine
     /// I dont have a name for this one yet
     /// It Inits Internal Directory structure
     AppInitFlags_UnnamedOption1 = 1 << 5,
+    AppInitFlags_InitHwInfo = 1 << 6,  /// Init HwInfo from lib3ds
     AppInitFlags_Default = AppInitFlags_MountRomfs | AppInitFlags_InitGraphics |
                            AppInitFlags_New3dsMode | AppInitFlags_InitLithium,
   };
@@ -95,6 +97,8 @@ class App {
   void FeatureDisable(AppFlags flags) { runtimeflags &= ~flags; }
   AppFlags& GetFeatureSet() { return runtimeflags; }
 
+  std::string GetDataDirectory();
+
  protected:
   Screen::Ref Top;
   Screen::Ref Bottom;
@@ -110,8 +114,8 @@ class App {
   MessageMgr::Ref msg_mgr;
   OverlayMgr::Ref overlay_mgr;
   Hid::Ref input_mgr;
+  Timer::Ref app_time;
   u64 last_time;
-  float app_time;
   float fps;
 
   std::string name;

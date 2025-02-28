@@ -21,15 +21,59 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/ui7/container/image.hpp>
+#include <3ds.h>
+
+#include <pd/lib3ds/os.hpp>
 
 namespace PD {
-namespace UI7 {
-void Image::Draw() {
-  Assert(ren.get() && list.get(), "Did you run Container::Init correctly?");
-  Assert(img.get(), "Image is nullptr!");
-  ren->OnScreen(screen);
-  list->AddImage(pos, img);
+namespace Ctr {
+std::string GetSystemLanguage() {
+  u8 language = 0;
+  Result res = CFGU_GetSystemLanguage(&language);
+  if (R_FAILED(res)) {
+    return "en";
+  }
+  switch (language) {
+    case 0:
+      return "jp";  // Japanese
+      break;
+    case 1:
+      return "en";  // English
+      break;
+    case 2:
+      return "fr";  // French
+      break;
+    case 3:
+      return "de";  // German
+      break;
+    case 4:
+      return "it";  // Italian
+      break;
+    case 5:
+      return "es";  // Spanish
+      break;
+    case 6:
+      return "zh-CN";  // Chinese (Simplified)
+      break;
+    case 7:
+      return "ko";  // Korean
+      break;
+    case 8:
+      return "nl";  // Dutch
+      break;
+    case 9:
+      return "pt";  // Portuguese
+      break;
+    case 10:
+      return "ru";  // Russian
+      break;
+    case 11:
+      return "zh-TW";  // Chinese (Traditional)
+      break;
+    default:
+      return "en";  // Fall back to English if missing
+      break;
+  }
 }
-}  // namespace UI7
+}  // namespace Ctr
 }  // namespace PD

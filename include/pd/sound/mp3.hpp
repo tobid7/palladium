@@ -1,3 +1,5 @@
+#pragma once
+
 /*
 MIT License
 Copyright (c) 2024 - 2025 René Amthor (tobid7)
@@ -21,15 +23,30 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/ui7/container/image.hpp>
+#include <mpg123.h>
+
+#include <pd/sound/decoder.hpp>
 
 namespace PD {
-namespace UI7 {
-void Image::Draw() {
-  Assert(ren.get() && list.get(), "Did you run Container::Init correctly?");
-  Assert(img.get(), "Image is nullptr!");
-  ren->OnScreen(screen);
-  list->AddImage(pos, img);
-}
-}  // namespace UI7
+namespace Music {
+class Mp3Decoder : public Decoder {
+ public:
+  Mp3Decoder() {}
+  ~Mp3Decoder() {}
+
+  int Init(const std::string& path) override;
+  void Deinit() override;
+  u32 GetSampleRate() override;
+  u8 GetChannels() override;
+  size_t GetBufSize() override;
+  u64 Decode(u16* buf_address) override;
+  size_t GetFileSamples() override;
+
+ private:
+  mpg123_handle* handle = nullptr;
+  size_t buf_size = 0;
+  u32 rate = 0;
+  u8 channels = 0;
+};
+}  // namespace Music
 }  // namespace PD

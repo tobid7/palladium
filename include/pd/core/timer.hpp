@@ -27,18 +27,21 @@ SOFTWARE.
 #include <pd/core/sys.hpp>
 
 namespace PD {
-class Timer {
+class Timer : public SmartCtor<Timer> {
  public:
-  Timer() {}
+  Timer(bool auto_start = true);
   ~Timer() {}
-  void Start() {}
-  void Pause() {}
-  void Update() {}
-  void Reset() { start_ = Sys::GetTime(); }
-  u64 Get() {}
+  void Rseume();
+  void Pause();
+  void Update();
+  void Reset();
+  bool IsRunning() const;
+  u64 Get();
+  double GetSeconds();
 
  private:
-  u64 start_;
-  u64 now_;
+  u64 start;
+  u64 now;
+  bool is_running = false;
 };
 }  // namespace PD

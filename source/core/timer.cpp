@@ -1,6 +1,7 @@
 /*
 MIT License
-Copyright (c) 2024 - 2025 René Amthor (tobid7)
+
+Copyright (c) 2024 - 2025 tobid7
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,15 +22,28 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/ui7/container/image.hpp>
+#include <pd/core/timer.hpp>
 
 namespace PD {
-namespace UI7 {
-void Image::Draw() {
-  Assert(ren.get() && list.get(), "Did you run Container::Init correctly?");
-  Assert(img.get(), "Image is nullptr!");
-  ren->OnScreen(screen);
-  list->AddImage(pos, img);
+Timer::Timer(bool autostart) {
+  is_running = autostart;
+  Reset();
 }
-}  // namespace UI7
+
+void Timer::Reset() {
+  start = Sys::GetTime();
+  now = start;
+}
+
+void Timer::Update() {
+  if (is_running) {
+    now = Sys::GetTime();
+  }
+}
+
+void Timer::Pause() { is_running = false; }
+void Timer::Rseume() { is_running = true; }
+bool Timer::IsRunning() const { return is_running; }
+u64 Timer::Get() { return now - start; }
+double Timer::GetSeconds() { return double(Get()) / 1000.0; }
 }  // namespace PD

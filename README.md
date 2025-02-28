@@ -2,14 +2,6 @@
 
 **Framework / Engine to create Homebrew Apps / Games**
 
-## Build types
-
-```bash
-PD_EXTENDED_DEBUG=0 # Include things like ResultDecoder and Check for Memory usage
-PD_DEBUG=0          # not yet
-PD_NO_SAFE_CODE=0   # Remove All not important safetey checks
-```
-
 ## Building
 
 Install Dependencies:
@@ -23,8 +15,6 @@ Building:
 
 If you want to have the lib in a projects `libs` dir or so you can simply add `-DCMAKE_INSTALL_PREFIX=./res` to the cmake command and copy the dirs from res to you libs folder
 
-For Debug build the Cmake Script generates a `libpalladiumd.a`
-
 ```bash
 mkdir -p build
 cd build
@@ -32,6 +22,22 @@ cmake .. -DCMAKE_BUILD_TYPE=Release # Make sure to build in Release Mode (exept 
 make
 make install
 ```
+
+## Libraries
+
+| Name | Last Updated | Platform | Depends |
+|---|---|---|---|
+| pd-core | 0.2.2 | multi | none |
+| pd-maths | 0.2.0 | multi | pd-core |
+| pd-external | 0.1.0 | multi | none |
+| pd-drivers | 0.2.1 | multi | pd-core, pd-maths |
+| pd-lib3ds | 0.2.2 | 3ds | pd-core, pd-maths, pd-drivers |
+| pd-net | 0.2.2 | 3ds | pd-core, pd-lib3ds |
+| pd-lithium | 0.2.1 | 3ds | pd-core, pd-maths pd-lib3ds, citro3d |
+| pd-sound | 0.2.2 | 3ds | pd-core, mpg123 |
+| pd-overlays | 0.2.1 | 3ds | pd-core, pd-maths, pd-lib3ds, pd-lithium, pd-ui7 |
+| pd-ui7 | 0.2.2 | 3ds | pd-core, pd-maths, pd-lib3ds, pd-lithium |
+| pd-app | 0.2.2 | 3ds | pd-core, pd-maths, pd-lib3ds, pd-lithium |
 
 ## Credits
 | Icon | Username | Description |

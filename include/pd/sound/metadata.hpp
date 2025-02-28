@@ -1,3 +1,5 @@
+#pragma once
+
 /*
 MIT License
 Copyright (c) 2024 - 2025 René Amthor (tobid7)
@@ -21,15 +23,40 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/ui7/container/image.hpp>
+#include <pd/core/common.hpp>
 
 namespace PD {
-namespace UI7 {
-void Image::Draw() {
-  Assert(ren.get() && list.get(), "Did you run Container::Init correctly?");
-  Assert(img.get(), "Image is nullptr!");
-  ren->OnScreen(screen);
-  list->AddImage(pos, img);
-}
-}  // namespace UI7
+namespace Music {
+class MetaData {
+ public:
+  MetaData() {}
+  ~MetaData() {}
+
+  std::string Name() const { return name; }
+  std::string Album() const { return album; }
+  std::string Year() const { return year; }
+  std::string Title() const { return title; }
+  std::string Artist() const { return artist; }
+  std::string Mdt() const { return mdt; }
+  std::string Path() const { return path; }
+
+  void Name(const std::string &v) { name = v; }
+  void Album(const std::string &v) { album = v; }
+  void Year(const std::string &v) { year = v; }
+  void Title(const std::string &v) { title = v; }
+  void Artist(const std::string &v) { artist = v; }
+  void Mdt(const std::string &v) { mdt = v; }
+  void Path(const std::string &v) { path = v; }
+
+ private:
+  const std::string unk = "Unknown";
+  std::string title = unk;
+  std::string album = unk;
+  std::string year = unk;
+  std::string name = unk;
+  std::string path = unk;
+  std::string artist = unk;
+  std::string mdt = unk;
+};
+}  // namespace Music
 }  // namespace PD

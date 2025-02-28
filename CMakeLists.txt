@@ -36,13 +36,13 @@ endif()
 
 execute_process(
     COMMAND git rev-parse --short HEAD
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     OUTPUT_VARIABLE GIT_SHORT_HASH
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
 # Set Project
-project(palladium LANGUAGES C CXX VERSION 0.2.1)
+project(palladium LANGUAGES C CXX VERSION 0.2.2)
 
 option(PD_BUILD_TESTS "Sets if TestApp and TestBench get build" OFF)
 
@@ -62,6 +62,7 @@ source/core/common.cpp
 source/core/io.cpp
 source/core/strings.cpp
 source/core/sys.cpp
+source/core/timer.cpp
 source/core/timetrace.cpp)
 
 add_pd_lib(pd-core SRC_FILES ${CORE_SRC})
@@ -85,7 +86,9 @@ add_pd_lib(pd-drivers SRC_FILES ${DRVS_SRC} DEPENDS pd-maths)
 set(L3DS_SRC
 source/lib3ds/gamepad_icons.cpp
 source/lib3ds/result_decoder.cpp
-source/lib3ds/drv_hid.cpp)
+source/lib3ds/drv_hid.cpp
+source/lib3ds/hwinfo.cpp
+source/lib3ds/os.cpp)
 
 add_pd_lib(pd-lib3ds SRC_FILES ${L3DS_SRC} DEPENDS pd-drivers)
 
@@ -98,6 +101,11 @@ source/lithium/objects.cpp
 source/lithium/renderer.cpp)
 
 add_pd_lib(pd-lithium SRC_FILES ${LI_SRC} DEPENDS pd-maths pd-external citro3d)
+
+set(SOUND_SRC
+source/sound/mp3.cpp)
+
+add_pd_lib(pd-sound SRC_FILES ${SOUND_SRC} DEPENDS pd-core mpg123)
 
 set(OVL_SRC
 source/overlays/keyboard.cpp
@@ -130,27 +138,24 @@ add_pd_lib(pd-ui7 SRC_FILES ${UI7_SRC} DEPENDS pd-drivers pd-lithium)
 
 add_library(palladium INTERFACE)
 target_link_libraries(palladium INTERFACE
-    pd-core
-    pd-maths
-    pd-external
-    pd-drivers
-    pd-lib3ds
-    pd-lithium
-    pd-overlays
-    pd-app
-    pd-ui7
+pd-core pd-maths pd-external pd-drivers pd-lib3ds
+pd-lithium pd-overlays pd-app pd-ui7
 )
 
 add_dependencies(palladium
-    pd-core
-    pd-maths
-    pd-external
-    pd-drivers
-    pd-lib3ds
-    pd-lithium
-    pd-overlays
-    pd-app
-    pd-ui7
+pd-core pd-maths pd-external pd-drivers
+pd-lib3ds pd-lithium pd-overlays pd-app pd-ui7
+)
+
+add_library(palladium-lite INTERFACE)
+target_link_libraries(palladium-lite INTERFACE
+pd-core pd-maths pd-external pd-drivers pd-lib3ds
+pd-lithium
+)
+
+add_dependencies(palladium-lite
+pd-core pd-maths pd-external pd-drivers
+pd-lib3ds pd-lithium
 )
 
 if(PD_BUILD_TESTS)

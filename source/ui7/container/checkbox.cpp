@@ -47,15 +47,15 @@ void Checkbox::HandleInput(Hid::Ref inp) {
   inp_done = true;
 }
 void Checkbox::Draw() {
-  Assert(ren.get() && list.get() && linked_theme,
+  Assert(ren.get() && list.get() && theme,
          "Did you run Container::Init correctly?");
   ren->OnScreen(screen);
-  list->AddRectangle(pos, cbs, linked_theme->Get(color));
+  list->AddRectangle(pos, cbs, theme->Get(color));
   if (usr_ref) {
-    list->AddRectangle(pos + 2, cbs - 4, linked_theme->Get(UI7Color_Checkmark));
+    list->AddRectangle(pos + 2, cbs - 4, theme->Get(UI7Color_Checkmark));
   }
   list->AddText(pos + vec2(cbs.x() + 5, cbs.y() * 0.5 - tdim.y() * 0.5), label,
-                linked_theme->Get(UI7Color_Text));
+                theme->Get(UI7Color_Text));
 }
 }  // namespace UI7
 }  // namespace PD

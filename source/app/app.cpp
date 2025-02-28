@@ -26,6 +26,7 @@ SOFTWARE.
 
 #include <pd/app/app.hpp>
 #include <pd/core/sys.hpp>
+#include <pd/lib3ds/hwinfo.hpp>
 
 namespace PD {
 int App::too;
@@ -33,17 +34,17 @@ int App::too;
 void App::Run() {
   this->PreInit();
   this->Init();
-  last_time = Sys::GetTime();
+  last_time = Sys::GetNanoTime();
   while (aptMainLoop()) {
     input_mgr->Update();
     u64 current = Sys::GetNanoTime();
     float dt = static_cast<float>(current - last_time) / 1000000.f;
-    app_time += dt / 1000.f;
+    app_time->Update();
     last_time = current;
     fps = 1000.f / dt;
     if (runtimeflags & AppFLags_UserLoop) {
       PD::TT::Beg("App_MainLoop");
-      if (!this->MainLoop(dt, app_time)) {
+      if (!this->MainLoop(dt, app_time->GetSeconds())) {
         break;
       }
       PD::TT::End("App_MainLoop");
@@ -73,6 +74,12 @@ void App::Run() {
   this->PostDeinit();
 }
 
+std::string App::GetDataDirectory() {
+  Assert(SafeInitFlags & AppInitFlags_UnnamedOption1,
+         "Data Dir is not enabled!");
+  return "sdmc:/palladium/apps/" + name;
+}
+
 void App::PreInit() {
   /// Create a Copy that won't get edit
   SafeInitFlags = InitFlags;
@@ -86,6 +93,9 @@ void App::PreInit() {
   cfguInit();
   if (InitFlags & AppInitFlags_MountRomfs) {
     romfsInit();
+  }
+  if (InitFlags & AppInitFlags_InitHwInfo) {
+    PD::HwInfo::Init();
   }
   if (InitFlags & AppInitFlags_UnnamedOption1) {
     std::filesystem::create_directories("sdmc:/palladium/apps/" + name);
@@ -103,6 +113,7 @@ void App::PreInit() {
     msg_mgr = MessageMgr::New(renderer);
     overlay_mgr = OverlayMgr::New(renderer, input_mgr);
   }
+  app_time = Timer::New();
 }
 
 void App::PostDeinit() {
@@ -115,6 +126,9 @@ void App::PostDeinit() {
       C3D_Fini();
     }
     gfxExit();
+  }
+  if (SafeInitFlags & AppInitFlags_InitHwInfo) {
+    PD::HwInfo::Deinit();
   }
   cfguExit();
   if (SafeInitFlags & AppInitFlags_MountRomfs) {

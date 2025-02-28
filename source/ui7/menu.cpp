@@ -32,7 +32,7 @@ void UI7::Menu::Label(const std::string& label) {
       ObjectPush(PD::New<UI7::Label>(label, Cursor(), this->back->ren));
   r->SetPos(AlignPos(r->GetPos(), r->GetSize(), view_area, GetAlignment()));
   CursorMove(r->GetSize());
-  r->Init(main->ren, main, linked_theme);
+  r->Init(main->ren, main, theme);
   r->HandleScrolling(scrolling_off, view_area);
 }
 
@@ -43,7 +43,7 @@ bool UI7::Menu::Button(const std::string& label) {
   if (!r) {
     r = PD::New<UI7::Button>(label, Cursor(), this->back->ren);
     r->SetID(id);
-    r->Init(main->ren, main, linked_theme);
+    r->Init(main->ren, main, theme);
   }
   ObjectPush(r);
   r->SetPos(AlignPos(Cursor(), r->GetSize(), view_area, GetAlignment()));
@@ -61,7 +61,7 @@ void UI7::Menu::Checkbox(const std::string& label, bool& v) {
   if (!r) {
     r = PD::New<UI7::Checkbox>(label, Cursor(), v, this->back->ren);
     r->SetID(id);
-    r->Init(main->ren, main, linked_theme);
+    r->Init(main->ren, main, theme);
   }
   ObjectPush(r);
   r->SetPos(AlignPos(Cursor(), r->GetSize(), view_area, GetAlignment()));
@@ -74,7 +74,7 @@ void UI7::Menu::Image(Texture::Ref img, vec2 size) {
       ObjectPush(PD::New<UI7::Image>(img, Cursor(), this->back->ren, size));
   r->SetPos(AlignPos(r->GetPos(), r->GetSize(), view_area, GetAlignment()));
   CursorMove(r->GetSize());
-  r->Init(main->ren, main, linked_theme);
+  r->Init(main->ren, main, theme);
   r->HandleScrolling(scrolling_off, view_area);
 }
 
@@ -163,20 +163,19 @@ void UI7::Menu::PreHandler(UI7MenuFlags flags) {
   has_touch =
       main->GetRenderer()->CurrentScreen()->ScreenType() == Screen::Bottom;
   if (!(flags & UI7MenuFlags_NoBackground)) {
-    back->AddRectangle(0, view_area.zw(),
-                       linked_theme->Get(UI7Color_Background));
+    back->AddRectangle(0, view_area.zw(), theme->Get(UI7Color_Background));
   }
   if (!(flags & UI7MenuFlags_NoTitlebar)) {
     tbh = front->GetRenderer()->TextScale() * 30.f;
     front->AddRectangle(0, vec2(view_area.z(), tbh),
-                        linked_theme->Get(UI7Color_Header));
+                        theme->Get(UI7Color_Header));
     vec2 tpos(5, tbh * 0.5 - front->ren->GetTextDimensions(name).y() * 0.5);
     LITextFlags tflags = LITextFlags_None;
     if (flags & UI7MenuFlags_CenterTitle) {
       tpos = 0;
       tflags = LITextFlags_AlignMid;
     }
-    front->AddText(tpos, this->name, linked_theme->Get(UI7Color_Text), tflags,
+    front->AddText(tpos, this->name, theme->Get(UI7Color_Text), tflags,
                    vec2(view_area.z(), tbh));
     main_area[1] = tbh;
     CursorInit();
@@ -287,12 +286,12 @@ void UI7::Menu::PostHandler() {
 
       /// Rendering Stage
       front->AddRectangle(vec2(screen_w - 12, tsp), vec2(slider_w * 2, szs),
-                          linked_theme->Get(UI7Color_FrameBackground));
+                          theme->Get(UI7Color_FrameBackground));
       front->AddRectangle(vec2(screen_w - 10, tsp + 2), vec2(slider_w, szs - 4),
-                          linked_theme->Get(UI7Color_FrameBackgroundHovered));
+                          theme->Get(UI7Color_FrameBackgroundHovered));
       front->AddRectangle(vec2(screen_w - 10, srpos + 2),
                           vec2(slider_w, vslider_h),
-                          linked_theme->Get(UI7Color_Button));
+                          theme->Get(UI7Color_Button));
     }
   }
   TT::End("MUSR_" + name);
@@ -310,7 +309,7 @@ void UI7::Menu::Separator() {
   if (HandleScrolling(pos, size)) {
     return;
   }
-  main->AddRectangle(pos, size, linked_theme->Get(UI7Color_TextDead));
+  main->AddRectangle(pos, size, theme->Get(UI7Color_TextDead));
 }
 
 void UI7::Menu::SeparatorText(const std::string& label) {
@@ -326,11 +325,11 @@ void UI7::Menu::SeparatorText(const std::string& label) {
   vec2 lpos = pos + vec2((view_area.z() - 10) * 0.5 - tdim.x() * 0.5, 0);
   main->AddRectangle(pos + vec2(0, tdim.y() * 0.5),
                      vec2(lpos.x() - pos.x() - 5, size.y()),
-                     linked_theme->Get(UI7Color_TextDead));
+                     theme->Get(UI7Color_TextDead));
   main->AddRectangle(pos + vec2(lpos.x() + tdim.x(), tdim.y() * 0.5),
                      vec2(size.x() - (lpos.x() + tdim.x()), size.y()),
-                     linked_theme->Get(UI7Color_TextDead));
-  main->AddText(lpos, label, linked_theme->Get(UI7Color_Text), 0,
+                     theme->Get(UI7Color_TextDead));
+  main->AddText(lpos, label, theme->Get(UI7Color_Text), 0,
                 vec2(view_area.z(), 20));
 }
 
@@ -346,6 +345,7 @@ bool UI7::Menu::HandleScrolling(vec2& pos, const vec2& size) {
 
 Container::Ref UI7::Menu::ObjectPush(Container::Ref obj) {
   this->objects.push_back(obj);
+  obj->SetParent(this->tmp_parent);
   return obj;
 }
 
@@ -371,6 +371,10 @@ void UI7::Menu::JoinAlign(UI7Align a) {
 
   vec2 spos = join.front()->GetPos();
   vec2 szs = join.back()->GetPos() + join.back()->GetSize() - spos;
+  for (auto it : join) {
+    szs.x() =
+        std::max(szs.x(), it->GetPos().x() + it->GetSize().x() - spos.x());
+  }
   vec2 off;
   if (a & UI7Align_Center) {
     off[0] = (view_area[0] + view_area[2] * 0.5) - (spos[0] + szs[0] * 0.5);

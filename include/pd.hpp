@@ -29,6 +29,7 @@ SOFTWARE.
 #include <pd/core/io.hpp>
 #include <pd/core/strings.hpp>
 #include <pd/core/sys.hpp>
+#include <pd/core/timer.hpp>
 #include <pd/core/timetrace.hpp>
 // Graphics
 #include <pd/lithium/renderer.hpp>
@@ -49,12 +50,15 @@ SOFTWARE.
 #include <pd/overlays/settings.hpp>
 // UI7
 #include <pd/ui7/ui7.hpp>
-
+// Lib3ds
+#include <pd/lib3ds/hwinfo.hpp>
+#include <pd/lib3ds/memory.hpp>
+#include <pd/lib3ds/os.hpp>
+#include <pd/lib3ds/result_decoder.hpp>
 // App
 #include <pd/app/app.hpp>
 #include <pd/app/error.hpp>
 #include <pd/app/lang.hpp>
-#include <pd/app/timer.hpp>
 
 /// Setup these as non Namespaced access by default
 #ifndef PD_MATH_NAMESPACED

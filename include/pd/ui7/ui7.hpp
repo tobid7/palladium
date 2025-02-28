@@ -37,7 +37,7 @@ class Context : public SmartCtor<Context> {
   Context(LI::Renderer::Ref ren, Hid::Ref hid) {
     this->ren = ren;
     this->inp = hid;
-    Theme::Default(theme);
+    theme = Theme::New();
     back = DrawList::New(ren);
     front = DrawList::New(ren);
   }
@@ -48,8 +48,14 @@ class Context : public SmartCtor<Context> {
   Menu::Ref FindMenu(const ID& id);
   void EndMenu();
 
-  /// Theme Management
-  Theme& GetTheme() { return theme; }
+  /// @brief Get Theme reference
+  /// @return Reference to the base Theme of the context
+  Theme::Ref GetTheme() { return theme; }
+  /// @brief Directly return a Color by using the
+  /// ctx->ThemeColor(UI7Color_Text) for example
+  /// @param clr The Input UI7 Color
+  /// @return The 32bit color value
+  u32 ThemeColor(UI7Color clr) const { return theme->Get(clr); }
 
   /// @brief Update Context (Render menus)
   /// @param delta deltatime
@@ -85,7 +91,7 @@ class Context : public SmartCtor<Context> {
   DrawList::Ref front;
   DrawList::Ref back;
   // Theme
-  Theme theme;
+  Theme::Ref theme;
   // Promt Handler
 };
 }  // namespace UI7

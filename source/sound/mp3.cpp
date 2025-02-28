@@ -21,39 +21,52 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/ui7/container/button.hpp>
+#include <pd/sound/mp3.hpp>
 
 namespace PD {
-namespace UI7 {
-void Button::HandleInput(Hid::Ref inp) {
-  /// Ensure to only check input once
-  if (inp_done) {
-    return;
+namespace Music {
+int Mp3Decoder::Init(const std::string& path) {
+  int ret = 0;
+  int encoding = 0;
+  if ((ret = mpg123_init() != MPG123_OK)) {
+    return ret;
   }
-  /// Ensure it gets sed to false and stays if not pressed
-  pressed = false;
-  color = UI7Color_Button;
-  Assert(screen.get(), "Screen is not set up!");
-  if (screen->ScreenType() == Screen::Bottom) {
-    if (inp->IsHeld(inp->Touch) &&
-        LI::Renderer::InBox(inp->TouchPos(), vec4(pos, size))) {
-      color = UI7Color_ButtonHovered;
-    }
-    if (inp->IsUp(inp->Touch) &&
-        LI::Renderer::InBox(inp->TouchPosLast(), vec4(pos, size))) {
-      color = UI7Color_ButtonActive;
-      pressed = true;
-    }
+  if ((handle = mpg123_new(nullptr, &ret)) == nullptr) {
+    return ret;
   }
-  inp_done = true;
+  int cnls = 0;
+  long _rate = 0;
+  if (mpg123_open(handle, path.c_str()) != MPG123_OK ||
+      mpg123_getformat(handle, &_rate, &cnls, &encoding)) {
+    return ret;
+  }
+  rate = _rate;
+  channels = cnls;
+  mpg123_format_none(handle);
+  mpg123_format(handle, rate, channels, encoding);
+  buf_size = mpg123_outblock(handle) * 16;
+  return ret;
 }
-void Button::Draw() {
-  Assert(ren.get() && list.get() && theme,
-         "Did you run Container::Init correctly?");
-  ren->OnScreen(screen);
-  list->AddRectangle(pos, size, theme->Get(color));
-  list->AddText(pos + size * 0.5 - tdim * 0.5, label,
-                theme->Get(UI7Color_Text));
+
+void Mp3Decoder::Deinit() {
+  mpg123_close(handle);
+  mpg123_delete(handle);
+  mpg123_exit();
 }
-}  // namespace UI7
+
+u32 Mp3Decoder::GetSampleRate() { return rate; }
+u8 Mp3Decoder::GetChannels() { return channels; }
+u64 Mp3Decoder::Decode(u16* buf_address) {
+  size_t done = 0;
+  mpg123_read(handle, buf_address, buf_size, &done);
+  return done / sizeof(u16);
+}
+size_t Mp3Decoder::GetFileSamples() {
+  off_t len = mpg123_length(handle);
+  if (len != MPG123_ERR) {
+    return len * size_t(channels);
+  }
+  return -1;  // NotExist
+}
+}  // namespace Music
 }  // namespace PD

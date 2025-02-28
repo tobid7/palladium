@@ -48,7 +48,7 @@ enum UI7Color_ {
 namespace PD {
 namespace UI7 {
 /// @brief Theme Class
-class Theme {
+class Theme : public SmartCtor<Theme> {
  public:
  public:
   Theme() { Default(*this); }
