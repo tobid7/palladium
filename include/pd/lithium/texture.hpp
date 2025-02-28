@@ -28,7 +28,7 @@ SOFTWARE.
 
 #include <pd/core/common.hpp>
 #include <pd/lithium/rect.hpp>
-#include <pd/maths/vec.hpp>
+#include <pd/core/vec.hpp>
 
 namespace PD {
 class Texture : public SmartCtor<Texture> {

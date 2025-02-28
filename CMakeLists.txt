@@ -42,7 +42,7 @@ execute_process(
 )
 
 # Set Project
-project(palladium LANGUAGES C CXX VERSION 0.2.2)
+project(palladium LANGUAGES C CXX VERSION 0.2.3)
 
 option(PD_BUILD_TESTS "Sets if TestApp and TestBench get build" OFF)
 
@@ -57,32 +57,31 @@ set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wno-psabi -O2")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_C_FLAGS} -fno-rtti -fno-exceptions")
 
+## Core Source Code
 set(CORE_SRC
 source/core/common.cpp
+source/core/bit_util.cpp
+source/core/color.cpp
 source/core/io.cpp
 source/core/strings.cpp
 source/core/sys.cpp
 source/core/timer.cpp
 source/core/timetrace.cpp)
 
-add_pd_lib(pd-core SRC_FILES ${CORE_SRC})
+## Image Source Code
+set(IMAGE_SRC
+source/image/img_blur.cpp
+source/image/img_convert.cpp)
 
-set(MATHS_SRC
-source/maths/bit_util.cpp
-source/maths/color.cpp
-source/maths/img_blur.cpp
-source/maths/img_convert.cpp)
-add_pd_lib(pd-maths SRC_FILES ${MATHS_SRC} DEPENDS pd-core)
-
+## External Source Code
 set(EXTERNAL_SRC
 source/external/stb.cpp)
-add_pd_lib(pd-external SRC_FILES ${EXTERNAL_SRC})
 
+## Drivers Source Code
 set(DRVS_SRC
 source/drivers/hid.cpp)
 
-add_pd_lib(pd-drivers SRC_FILES ${DRVS_SRC} DEPENDS pd-maths)
-
+## Lib3ds Source Code
 set(L3DS_SRC
 source/lib3ds/gamepad_icons.cpp
 source/lib3ds/result_decoder.cpp
@@ -90,8 +89,7 @@ source/lib3ds/drv_hid.cpp
 source/lib3ds/hwinfo.cpp
 source/lib3ds/os.cpp)
 
-add_pd_lib(pd-lib3ds SRC_FILES ${L3DS_SRC} DEPENDS pd-drivers)
-
+## Lithium Source Code
 set(LI_SRC
 source/lithium/li7_shader.cpp
 source/lithium/spritesheet.cpp
@@ -100,13 +98,11 @@ source/lithium/font.cpp
 source/lithium/objects.cpp
 source/lithium/renderer.cpp)
 
-add_pd_lib(pd-lithium SRC_FILES ${LI_SRC} DEPENDS pd-maths pd-external citro3d)
-
+## Sounbd Source Code
 set(SOUND_SRC
 source/sound/mp3.cpp)
 
-add_pd_lib(pd-sound SRC_FILES ${SOUND_SRC} DEPENDS pd-core mpg123)
-
+## Overlay source Code
 set(OVL_SRC
 source/overlays/keyboard.cpp
 source/overlays/message_mgr.cpp
@@ -114,15 +110,13 @@ source/overlays/overlay_mgr.cpp
 source/overlays/performance.cpp
 source/overlays/settings.cpp)
 
-add_pd_lib(pd-overlays SRC_FILES ${OVL_SRC} DEPENDS pd-lithium)
-
+## App Source Code
 set(APP_SRC
 source/app/app.cpp
 source/app/lang.cpp
 source/app/error.cpp)
 
-add_pd_lib(pd-app SRC_FILES ${APP_SRC} DEPENDS pd-overlays pd-drivers pd-lib3ds)
-
+## UI7 Source Code
 set(UI7_SRC
 source/ui7/drawlist.cpp
 source/ui7/menu.cpp
@@ -134,27 +128,37 @@ source/ui7/container/checkbox.cpp
 source/ui7/container/image.cpp
 source/ui7/container/label.cpp)
 
+#### Creating the Libraries (if activated) ####
+add_pd_lib(pd-core SRC_FILES ${CORE_SRC})
+add_pd_lib(pd-image SRC_FILES ${IMAGE_SRC} DEPENDS pd-core)
+add_pd_lib(pd-external SRC_FILES ${EXTERNAL_SRC})
+add_pd_lib(pd-drivers SRC_FILES ${DRVS_SRC} DEPENDS pd-core)
+add_pd_lib(pd-lib3ds SRC_FILES ${L3DS_SRC} DEPENDS pd-drivers)
+add_pd_lib(pd-lithium SRC_FILES ${LI_SRC} DEPENDS pd-core pd-image pd-external citro3d)
+add_pd_lib(pd-sound SRC_FILES ${SOUND_SRC} DEPENDS pd-core mpg123)
+add_pd_lib(pd-overlays SRC_FILES ${OVL_SRC} DEPENDS pd-lithium)
+add_pd_lib(pd-app SRC_FILES ${APP_SRC} DEPENDS pd-overlays pd-drivers pd-lib3ds)
 add_pd_lib(pd-ui7 SRC_FILES ${UI7_SRC} DEPENDS pd-drivers pd-lithium)
 
 add_library(palladium INTERFACE)
 target_link_libraries(palladium INTERFACE
-pd-core pd-maths pd-external pd-drivers pd-lib3ds
+pd-core pd-image pd-external pd-drivers pd-lib3ds
 pd-lithium pd-overlays pd-app pd-ui7
 )
 
 add_dependencies(palladium
-pd-core pd-maths pd-external pd-drivers
+pd-core pd-image pd-external pd-drivers
 pd-lib3ds pd-lithium pd-overlays pd-app pd-ui7
 )
 
 add_library(palladium-lite INTERFACE)
 target_link_libraries(palladium-lite INTERFACE
-pd-core pd-maths pd-external pd-drivers pd-lib3ds
+pd-core pd-image pd-external pd-drivers pd-lib3ds
 pd-lithium
 )
 
 add_dependencies(palladium-lite
-pd-core pd-maths pd-external pd-drivers
+pd-core pd-image pd-external pd-drivers
 pd-lib3ds pd-lithium
 )
 

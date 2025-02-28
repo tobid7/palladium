@@ -25,21 +25,21 @@ SOFTWARE.
  */
 
 // Core
+#include <pd/core/bit_util.hpp>
+#include <pd/core/color.hpp>
 #include <pd/core/common.hpp>
 #include <pd/core/io.hpp>
 #include <pd/core/strings.hpp>
 #include <pd/core/sys.hpp>
 #include <pd/core/timer.hpp>
 #include <pd/core/timetrace.hpp>
+#include <pd/core/vec.hpp>
 // Graphics
 #include <pd/lithium/renderer.hpp>
 #include <pd/lithium/spritesheet.hpp>
-// Maths
-#include <pd/maths/bit_util.hpp>
-#include <pd/maths/color.hpp>
-#include <pd/maths/img_blur.hpp>
-#include <pd/maths/img_convert.hpp>
-#include <pd/maths/vec.hpp>
+// Image
+#include <pd/image/img_blur.hpp>
+#include <pd/image/img_convert.hpp>
 // Drivers
 #include <pd/drivers/hid.hpp>
 // Overlays

@@ -26,7 +26,7 @@ SOFTWARE.
 #include <pd/core/common.hpp>
 #include <pd/core/strings.hpp>
 #include <pd/drivers/hid.hpp>
-#include <pd/maths/vec.hpp>
+#include <pd/core/vec.hpp>
 #include <pd/ui7/drawlist.hpp>
 
 namespace PD {

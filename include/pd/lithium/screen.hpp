@@ -27,7 +27,7 @@ SOFTWARE.
 #include <citro3d.h>
 
 #include <pd/core/common.hpp>
-#include <pd/maths/vec.hpp>
+#include <pd/core/vec.hpp>
 
 namespace PD {
 class Screen : public SmartCtor<Screen> {

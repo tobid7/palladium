@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/maths/vec.hpp>
+#include <pd/core/vec.hpp>
 
 namespace PD {
 template <typename T>

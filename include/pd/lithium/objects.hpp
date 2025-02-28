@@ -30,7 +30,7 @@ SOFTWARE.
 #include <pd/lithium/font.hpp>
 #include <pd/lithium/texture.hpp>
 #include <pd/lithium/vertex.hpp>
-#include <pd/maths/vec.hpp>
+#include <pd/core/vec.hpp>
 
 namespace PD {
 namespace LI {

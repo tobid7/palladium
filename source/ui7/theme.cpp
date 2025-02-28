@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/maths/color.hpp>
+#include <pd/core/color.hpp>
 #include <pd/ui7/theme.hpp>
 
 namespace PD {

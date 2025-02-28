@@ -30,8 +30,8 @@ SOFTWARE.
 #include <pd/core/io.hpp>
 #include <pd/core/timetrace.hpp>
 #include <pd/lithium/texture.hpp>
-#include <pd/maths/bit_util.hpp>
-#include <pd/maths/img_convert.hpp>
+#include <pd/core/bit_util.hpp>
+#include <pd/image/img_convert.hpp>
 
 namespace PD {
 GPU_TEXCOLOR GetTexFmt(Texture::Type type) {

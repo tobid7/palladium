@@ -25,7 +25,6 @@ SOFTWARE.
 
 #include <ctime>
 #include <pd.hpp>
-#include <pd/maths/tween.hpp>
 
 class Test : public PD::App {
  public:

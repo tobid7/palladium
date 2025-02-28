@@ -24,7 +24,7 @@ SOFTWARE.
  */
 
 #include <pd/drivers/hid.hpp>
-#include <pd/maths/tween.hpp>
+#include <pd/core/tween.hpp>
 #include <pd/overlays/overlay.hpp>
 
 namespace PD {

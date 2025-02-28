@@ -24,8 +24,8 @@ SOFTWARE.
  */
 
 #include <pd/lithium/renderer.hpp>
-#include <pd/maths/color.hpp>
-#include <pd/maths/tween.hpp>
+#include <pd/core/color.hpp>
+#include <pd/core/tween.hpp>
 
 namespace PD {
 class MessageMgr : public PD::SmartCtor<MessageMgr> {

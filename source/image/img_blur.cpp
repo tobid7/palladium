@@ -24,8 +24,8 @@ SOFTWARE.
 
 #include <cstring>
 #include <memory>
-#include <pd/maths/img_blur.hpp>
-#include <pd/maths/img_convert.hpp>
+#include <pd/image/img_blur.hpp>
+#include <pd/image/img_convert.hpp>
 
 namespace PD {
 namespace ImgBlur {

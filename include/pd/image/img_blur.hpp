@@ -25,8 +25,7 @@ SOFTWARE.
  */
 
 #include <pd/core/common.hpp>
-#include <pd/maths/img.hpp>
-#include <pd/maths/vec.hpp>
+#include <pd/core/vec.hpp>
 
 namespace PD {
 namespace ImgBlur {
@@ -38,8 +37,11 @@ std::vector<float> GaussianKernel(int radius, float si);
 /// @param radius // Blur radius
 /// @param si // Blur sigma
 /// @param idxfn // Indexing function (if buffer is 3ds tiled)
-void GaussianBlur(std::vector<u8> &buf, int w, int h, float radius, float si,
-                  std::function<int(int, int, int)> idxfn = Img::IndexDefault);
+void GaussianBlur(
+    std::vector<u8> &buf, int w, int h, float radius, float si,
+    std::function<int(int, int, int)> idxfn = [](int x, int y, int w) -> int {
+      return y * w + x;
+    });
 /// @brief Advanced func to access memory directly
 /// @param buf Referenvce to the buffer
 /// @param w // width of the image
@@ -48,7 +50,10 @@ void GaussianBlur(std::vector<u8> &buf, int w, int h, float radius, float si,
 /// @param radius // Blur radius
 /// @param si // Blur sigma
 /// @param idxfn // Indexing function (if buffer is 3ds tiled)
-void GaussianBlur(void *buf, int w, int h, int bpp, float radius, float si,
-                  std::function<int(int, int, int)> idxfn = Img::IndexDefault);
+void GaussianBlur(
+    void *buf, int w, int h, int bpp, float radius, float si,
+    std::function<int(int, int, int)> idxfn = [](int x, int y, int w) -> int {
+      return y * w + x;
+    });
 }  // namespace ImgBlur
 }  // namespace PD

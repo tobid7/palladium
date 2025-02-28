@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/maths/color.hpp>
+#include <pd/core/color.hpp>
 
 namespace PD {
 // The Solution of the biggest performance issue
