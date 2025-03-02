@@ -160,13 +160,12 @@ void UI7::Menu::PreHandler(UI7MenuFlags flags) {
   this->flags = flags;
   this->scrolling[0] = flags & UI7MenuFlags_HzScrolling;
   this->scrolling[1] = flags & UI7MenuFlags_VtScrolling;
-  has_touch =
-      main->GetRenderer()->CurrentScreen()->ScreenType() == Screen::Bottom;
+  has_touch = main->ren->CurrentScreen()->ScreenType() == Screen::Bottom;
   if (!(flags & UI7MenuFlags_NoBackground)) {
     back->AddRectangle(0, view_area.zw(), theme->Get(UI7Color_Background));
   }
   if (!(flags & UI7MenuFlags_NoTitlebar)) {
-    tbh = front->GetRenderer()->TextScale() * 30.f;
+    tbh = front->ren->TextScale() * 30.f;
     front->AddRectangle(0, vec2(view_area.z(), tbh),
                         theme->Get(UI7Color_Header));
     vec2 tpos(5, tbh * 0.5 - front->ren->GetTextDimensions(name).y() * 0.5);
@@ -314,7 +313,7 @@ void UI7::Menu::Separator() {
 
 void UI7::Menu::SeparatorText(const std::string& label) {
   vec2 size = vec2(view_area.z() - (scrollbar[1] ? 24 : 10), 1);
-  vec2 tdim = this->back->GetRenderer()->GetTextDimensions(label);
+  vec2 tdim = this->back->ren->GetTextDimensions(label);
   vec2 pos = Cursor();
   CursorMove(vec2(size.x(), tdim.y() - 4));  // Fix to make gap not to large
 
@@ -411,6 +410,13 @@ void UI7::Menu::AfterAlign(UI7Align a) {
     np[1] = (view_area[1] + view_area[3] * 0.5) - (p[1] + s[1] * 0.5);
   }
   ref->SetPos(np);
+}
+
+void UI7::Menu::CreateParent() {
+  Assert(!tmp_parent, "There is already an existing Parent container!");
+  tmp_parent = Container::New();
+  tmp_parent->SetPos(0);
+  tmp_parent->SetSize(0);
 }
 }  // namespace UI7
 }  // namespace PD

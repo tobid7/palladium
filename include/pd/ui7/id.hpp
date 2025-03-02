@@ -28,25 +28,39 @@ SOFTWARE.
 
 namespace PD {
 namespace UI7 {
+/**
+ * ID Class (Generating an ID by String)
+ */
 class ID {
  public:
+  /**
+   * Constructor to Generate ID by input string
+   * @param text Input String
+   */
   ID(const std::string& text) {
     id = PD::Strings::FastHash(text);
     name = text;
   }
+  /**
+   * Constructor used for const char* which is automatically
+   * used when directly placing a string istead of using ID("")
+   * @param text Input String
+   */
   ID(const char* text) {
     id = PD::Strings::FastHash(text);
     name = text;
   }
-  ~ID() {}
+  ~ID() = default;
 
+  /** Get The ID Initial Name */
   std::string GetName() const { return name; }
 
+  /** Return the ID when casting to u32 */
   operator u32() const { return id; }
 
  private:
-  u32 id;
-  std::string name;
+  u32 id;            ///< Hash of the name
+  std::string name;  ///< Name
 };
 }  // namespace UI7
 }  // namespace PD

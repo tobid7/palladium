@@ -1,0 +1,22 @@
+<div class="md-copyright">
+  {% if config.copyright %}
+  <div class="md-copyright__highlight">
+    {{ config.copyright }}
+  </div>
+  {% endif %}
+  {% if not config.extra.generator == false %}
+  &copy; 2024 -
+  <script>document.write(new Date().getFullYear());</script>
+  <a href="https://github.com/tobid7">
+    tobid7
+  </a>
+  - Kassel, Germany | Made with
+  <a href="https://doxide.org" target="_blank" rel="noopener">
+    Doxide
+  </a>
+  and
+  <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+    Material for MkDocs
+  </a>
+  {% endif %}
+</div>

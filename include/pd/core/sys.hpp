@@ -27,12 +27,40 @@ SOFTWARE.
 #include <pd/core/timetrace.hpp>
 
 namespace PD {
+/**
+ * Namespace containing functions for get Millis and Get Nanos
+ */
 namespace Sys {
+/**
+ * alias for the TimeTrace Traces Map
+ */
 using TraceMap = std::map<std::string, TT::Res::Ref>;
+/**
+ * Get Current Time in Milliseconds
+ * @return 64Bit value of millis
+ */
 u64 GetTime();
+/**
+ * Get Current Time in Nanoseconds
+ * @return 64Bit value of nanos
+ */
 u64 GetNanoTime();
+/**
+ * Get a TimeTrace Reference by its string ID
+ * @param id trace name
+ * @return Trace reference or nullptr if not found
+ */
 TT::Res::Ref& GetTraceRef(const std::string& id);
+/**
+ * Check if a Trace with the name exists
+ * @param id tracename to search
+ * @return true if exist
+ */
 bool TraceExist(const std::string& id);
+/**
+ * Get TraceMap Reference
+ * @return edidable Reference to the TraceMap
+ */
 TraceMap& GetTraceMap();
 }  // namespace Sys
 }  // namespace PD

@@ -26,11 +26,32 @@ SOFTWARE.
 #include <pd/core/common.hpp>
 
 namespace PD {
+/**
+ * static Namespace containing Access to some 3ds Hardware Info
+ */
 namespace HwInfo {
+/**
+ * Init connecttion to required sys modules
+ */
 void Init();
+/**
+ * Deinit connection to sys modules
+ */
 void Deinit();
+/**
+ * Check if the Console is Charging
+ * @return true if the console is charging
+ */
 bool IsCharging();
+/**
+ * Get the Current Battery Percentage
+ * @return Battery Percentage (from 0 to 100)
+ */
 int GetBatteryPercentage();
+/**
+ * Get Current Wifi Level
+ * @return wifi level (0 to 4)
+ */
 int GetWifiLevel();
 }  // namespace HwInfo
 }  // namespace PD

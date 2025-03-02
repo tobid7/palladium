@@ -26,6 +26,15 @@ SOFTWARE.
 #include <pd/core/common.hpp>
 
 namespace PD {
+/**
+ * Function to Throw an Error Screen
+ * @param error Error Message to Display
+ */
 void Error(const std::string& error);
+/**
+ * Custom Assert Function that Shows an Error Screen if it fails
+ * @param v The bool var to check `(Throws error if it is false)`
+ * @param msg The Message that Should be displayed if the Assert fails
+ */
 void Assert(bool v, const std::string& msg);
 }  // namespace PD

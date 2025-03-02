@@ -26,11 +26,20 @@ SOFTWARE.
 #include <pd/drivers/hid.hpp>
 
 namespace PD {
+/**
+ * Nintendo 3DS Input Driver
+ */
 class CtrHid : public Hid {
  public:
+  /**
+   * Constructor to setup Key binds
+   */
   CtrHid();
-  ~CtrHid() {}
+  ~CtrHid() = default;
 
+  /**
+   * Overrideing the Update Function for Input Checking etc
+   */
   void Update() override;
 };
 }  // namespace PD

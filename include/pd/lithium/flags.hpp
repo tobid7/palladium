@@ -26,35 +26,40 @@ SOFTWARE.
 
 #include <pd/core/common.hpp>
 
+/** Alias for Lithium Text Flags */
 using LITextFlags = PD::u32;
 
+/** LITextFlags */
 enum LITextFlags_ {
-  LITextFlags_None = 0,
-  LITextFlags_AlignRight = 1 << 0,
-  LITextFlags_AlignMid = 1 << 1,
-  LITextFlags_Shaddow = 1 << 2,   // Draws the text twice
-  LITextFlags_Wrap = 1 << 3,      // May be runs better with TMS
-  LITextFlags_Short = 1 << 4,     // May be runs better with TMS
-  LITextFlags_Scroll = 1 << 5,    // Not implemented
-  LITextFlags_RenderOOS = 1 << 6  // Render Out of Screen
+  LITextFlags_None = 0,             ///< Do nothing
+  LITextFlags_AlignRight = 1 << 0,  ///< Align Right of position
+  LITextFlags_AlignMid = 1 << 1,    ///< Align in the middle of pos and box
+  LITextFlags_Shaddow = 1 << 2,     ///< Draws the text twice to create shaddow
+  LITextFlags_Wrap = 1 << 3,        ///< Wrap Text: May be runs better with TMS
+  LITextFlags_Short = 1 << 4,       ///< Short Text: May be runs better with TMS
+  LITextFlags_Scroll = 1 << 5,      ///< Not implemented [scoll text if to long]
+  LITextFlags_RenderOOS = 1 << 6    ///< Render Out of Screen
 };
 
+/** Aliad for Lithium Render Flags */
 using LIRenderFlags = PD::u32;
+/** LIRenderFlags */
 enum LIRenderFlags_ {
-  LIRenderFlags_None = 0,
+  LIRenderFlags_None = 0,      ///< Nothing
   LIRenderFlags_TMS = 1 << 0,  ///< Text Map System
   LIRenderFlags_LRS = 1 << 1,  ///< Layer Render System
   LIRenderFlags_AST = 1 << 2,  ///< Auto Static Text
+  /** Default Enables all of them */
   LIRenderFlags_Default =
       LIRenderFlags_TMS | LIRenderFlags_LRS | LIRenderFlags_AST,
 };
 
 namespace PD {
 namespace LI {
-/// @brief Required to Set the TexENV
+/** RenderMode [Required to modify TexENV] */
 enum RenderMode {
-  RenderMode_RGBA,
-  RenderMode_Font,
+  RenderMode_RGBA,  ///< RGBA [for textures or solid colors]
+  RenderMode_Font,  ///< A8 [for textures only crated by 1 color channel]
 };
 }  // namespace LI
 }  // namespace PD

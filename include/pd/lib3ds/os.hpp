@@ -26,7 +26,15 @@ SOFTWARE.
 #include <pd/core/common.hpp>
 
 namespace PD {
+/**
+ * Namespace to Everything that has to
+ * do with the 3ds (very empty currently)
+ */
 namespace Ctr {
+/**
+ * Get the System Language key (for lang system)
+ * @return language key
+ */
 std::string GetSystemLanguage();
 }  // namespace Ctr
 }  // namespace PD

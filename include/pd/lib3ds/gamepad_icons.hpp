@@ -27,7 +27,14 @@ SOFTWARE.
 #include <pd/drivers/hid.hpp>
 
 namespace PD {
+/**
+ * Simple Table Containing the codepoint references
+ * for the Controller Icons on the 3ds
+ */
 namespace GamePadIcons {
+/**
+ * Icon ID
+ */
 enum ID {
   A,
   B,
@@ -50,7 +57,17 @@ enum ID {
   DpadHorizontal,
   DpadVertical,
 };
+/**
+ * Get Icon by ID
+ * @param id ID to Get
+ * @return codepoint
+ */
 std::string GetIcon(ID id);
+/**
+ * Get Icon By Input Driver Key
+ * @param key Key to find
+ * @return codepoint
+ */
 std::string GetIcon(Hid::Key key);
 }  // namespace GamePadIcons
 }  // namespace PD

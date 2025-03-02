@@ -26,24 +26,35 @@ SOFTWARE.
 #include <pd/core/vec.hpp>
 
 namespace PD {
+/**
+ * D7 Tween Engine (or something like that)
+ * @tparam T Any Numeric value
+ */
 template <typename T>
 class Tween {
  public:
+  /**
+   * Effects Table
+   */
   enum Effect {
-    Linear,
-    EaseInQuad,
-    EaseOutQuad,
-    EaseInOutQuad,
-    EaseInCubic,
-    EaseOutCubic,
-    EaseInOutCubic,
-    EaseInSine,
-    EaseOutSine,
-    EaseInOutSine,
+    Linear,          ///< Linear Movement [works]
+    EaseInQuad,      ///< EaseInQuad Movement [works]
+    EaseOutQuad,     ///< EaseOutQuad Movement [works]
+    EaseInOutQuad,   ///< EaseInOutQuad Movement [works]
+    EaseInCubic,     ///< EaseInCubic Movement [not tested]
+    EaseOutCubic,    ///< EaseOutCubic Movement [not tested]
+    EaseInOutCubic,  ///< EaseInOutCubic Movement [disabled]
+    EaseInSine,      ///< EaseInSine Movement [works]
+    EaseOutSine,     ///< EaseOutSine Movement [works]
+    EaseInOutSine,   ///< EaseInOutSine Movement [not tested]
   };
-  Tween() {}
-  ~Tween() {}
+  Tween() = default;
+  ~Tween() = default;
 
+  /**
+   * Update Tween
+   * @param delta deltatime
+   */
   void Update(float delta) {
     time += delta / 1000.f;
     if (time > tend) {
@@ -52,44 +63,82 @@ class Tween {
     }
   }
 
+  /**
+   * Check if Tween is finished
+   * @return true if finished
+   */
   bool IsFinished() const { return finished; }
 
+  /**
+   * Force finish the animation
+   * @return Class reference
+   */
   Tween& Finish() {
     time = tend;
     finished = true;
     return *this;
   }
 
+  /**
+   * Set Start Value
+   * @tparam T datatype of the Tween
+   * @param start Start Value
+   * @return class Reference
+   */
   Tween& From(const T& start) {
     Reset();
     this->start = start;
     return *this;
   }
+  /**
+   * Set End Value
+   * @tparam T datatype of the Tween
+   * @param end End Value
+   * @return class Reference
+   */
   Tween& To(const T& end) {
     Reset();
     this->end = end;
     return *this;
   }
+  /**
+   * Set the Duration (in seconds)
+   * @param seconds Duration
+   * @return class Reference
+   */
   Tween& In(float seconds) {
     Reset();
     tend = seconds;
     return *this;
   }
+  /**
+   * Set Effect of the Tween
+   * @param e Effect
+   * @return class Reference
+   */
   Tween& As(const Effect& e) {
     effect = e;
     return *this;
   }
+  /**
+   * Reset to time 0
+   * @return class Reference
+   */
   Tween& Reset() {
     finished = false;
     time = 0.f;
     return *this;
   }
-  /// @brief Probably usefull for fading colors by animation
-  /// Used to create this caus dont wanted to create a
-  /// fade effect fpr keyboard without having to Tween functions
-  /// @return
+  /**
+   * Get the Prograss in percent (0.0 to 1.0) of the tween
+   * @return progress value
+   */
   float Progress() const { return time / tend; }
 
+  /**
+   * Swap Start and end Position of the Tween
+   * @return class reference
+   */
   Tween& Swap() {
     T temp = start;
     start = end;
@@ -97,6 +146,10 @@ class Tween {
     return *this;
   }
 
+  /**
+   * Operator that returns the current value calculated
+   * by time and effect
+   */
   operator T() {
     float t = 0.f;
     switch (effect) {
@@ -147,15 +200,23 @@ class Tween {
   }
 
  private:
+  /** Animation Effect */
   Effect effect;
+  /** Time */
   float time = 0.f;
-  // Defaulting to one to prevent div zero
-  // without a safetey check
-  // not implementing one cause if the user is
-  // Writing a In(0.f) its their fault
+  /**
+   * End time
+   * Defaulting to one to prevent div zero
+   * without a safetey check
+   * not implementing one cause if the user is
+   * Writing a In(0.f) its their fault
+   */
   float tend = 1.f;
+  /** Start value */
   T start;
+  /** end value */
   T end;
+  /** is finished value */
   bool finished = false;
 };
 }  // namespace PD

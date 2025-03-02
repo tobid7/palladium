@@ -31,6 +31,9 @@ SOFTWARE.
 #ifndef PALLADIUM_GIT_COMMIT
 #define PALLADIUM_GIT_COMMIT "unknown"
 #endif
+#ifndef PALLADIUM_GIT_BRANCH
+#define PALLADIUM_GIT_BRANCH "unknown"
+#endif
 
 const std::string PD::LibInfo::CompiledWith() {
   return Strings::GetCompilerVersion();
@@ -41,3 +44,4 @@ const std::string PD::LibInfo::CxxVersion() {
 const std::string PD::LibInfo::BuildTime() { return __DATE__ " - " __TIME__; }
 const std::string PD::LibInfo::Version() { return PALLADIUM_VERSION; }
 const std::string PD::LibInfo::Commit() { return PALLADIUM_GIT_COMMIT; }
+const std::string PD::LibInfo::Branch() { return PALLADIUM_GIT_BRANCH; }

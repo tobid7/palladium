@@ -27,8 +27,18 @@ SOFTWARE.
 
 namespace PD {
 namespace UI7 {
+/**
+ * Image Object
+ */
 class Image : public Container {
  public:
+  /**
+   * Constructor for the Image Object
+   * @param img Image Texture Reference
+   * @param pos Base Position
+   * @param lr Renderer Reference [to determinate screen]
+   * @param size Custom Size of the Image
+   */
   Image(Texture::Ref img, vec2 pos, LI::Renderer::Ref lr, vec2 size = 0.f) {
     this->screen = lr->CurrentScreen();
     this->img = img;
@@ -39,12 +49,16 @@ class Image : public Container {
       this->SetSize(img->GetSize());
     }
   }
-  ~Image() {}
+  ~Image() = default;
 
+  /**
+   * Override for the Rendering Handler
+   * @note This function is usally called by Menu::Update
+   * */
   void Draw() override;
 
  private:
-  Texture::Ref img;
+  Texture::Ref img;  ///< Texture reference to the Image
 };
 }  // namespace UI7
 }  // namespace PD

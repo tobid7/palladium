@@ -26,10 +26,21 @@ SOFTWARE.
 
 #include <3ds.h>
 
-#include <pd/core/common.hpp>
 #include <pd/app/error.hpp>
+#include <pd/core/common.hpp>
 
 namespace PD {
+/**
+ * Custom C++ Allocator for 3DS linear Memory
+ * Used for Everything that has to do with Rendering or sound
+ * Dont going into that much detail here
+ *
+ * Example:
+ * ```cpp
+ * // Index Buffer for Rendering using Linear Allocator
+ * std::vector<u16, PD::LinearAllocator<u16>> index_buf;
+ * ```
+ */
 template <typename T>
 class LinearAllocator : public std::allocator<T> {
  public:

@@ -23,11 +23,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-/**
- * Why Creating this:
- * Cause using makes coding much better structured
- * and easy to use like in glsl or glm
- */
+// Why Creating this:
+// Cause using makes coding much better structured
+// and easy to use like in glsl or glm
 
 #include <pd/core/common.hpp>
 

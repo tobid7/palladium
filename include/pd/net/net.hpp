@@ -31,16 +31,16 @@ class DownloadManager : public SmartCtor<DownloadManager> {
  public:
   using Error = u64;
   enum Error_ {
-    Error_None,        // Function Executed Successfully
-    Error_Memory,      // Memory  Allocation Error
-    Error_Write,       // Unable to Write File
-    Error_StatusCode,  // Error with Status Code
-    Error_Git,         // Git Error
-    Error_CtrStatus,   // 3ds Result Code
-    Error_Curl,        // Curl Error
-    Error_Busy,        // Another Download Taskl is already running
-    Error_Invalid,     // Invalid Json struct
-    Error_NoWifi,      // Console not connected to wifi
+    Error_None,        ///< Function Executed Successfully
+    Error_Memory,      ///< Memory  Allocation Error
+    Error_Write,       ///< Unable to Write File
+    Error_StatusCode,  ///< Error with Status Code
+    Error_Git,         ///< Git Error
+    Error_CtrStatus,   ///< 3ds Result Code
+    Error_Curl,        ///< Curl Error
+    Error_Busy,        ///< Another Download Taskl is already running
+    Error_Invalid,     ///< Invalid Json struct
+    Error_NoWifi,      ///< Console not connected to wifi
   };
   DownloadManager() {}
   ~DownloadManager() {}

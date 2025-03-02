@@ -36,11 +36,11 @@ void Button::HandleInput(Hid::Ref inp) {
   Assert(screen.get(), "Screen is not set up!");
   if (screen->ScreenType() == Screen::Bottom) {
     if (inp->IsHeld(inp->Touch) &&
-        LI::Renderer::InBox(inp->TouchPos(), vec4(pos, size))) {
+        LI::Renderer::InBox(inp->TouchPos(), vec4(FinalPos(), size))) {
       color = UI7Color_ButtonHovered;
     }
     if (inp->IsUp(inp->Touch) &&
-        LI::Renderer::InBox(inp->TouchPosLast(), vec4(pos, size))) {
+        LI::Renderer::InBox(inp->TouchPosLast(), vec4(FinalPos(), size))) {
       color = UI7Color_ButtonActive;
       pressed = true;
     }
@@ -51,8 +51,8 @@ void Button::Draw() {
   Assert(ren.get() && list.get() && theme,
          "Did you run Container::Init correctly?");
   ren->OnScreen(screen);
-  list->AddRectangle(pos, size, theme->Get(color));
-  list->AddText(pos + size * 0.5 - tdim * 0.5, label,
+  list->AddRectangle(FinalPos(), size, theme->Get(color));
+  list->AddText(FinalPos() + size * 0.5 - tdim * 0.5, label,
                 theme->Get(UI7Color_Text));
 }
 }  // namespace UI7

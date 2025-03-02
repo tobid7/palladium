@@ -27,26 +27,33 @@ SOFTWARE.
 #include <citro3d.h>
 
 #include <pd/core/common.hpp>
-#include <pd/lithium/rect.hpp>
 #include <pd/core/vec.hpp>
+#include <pd/lithium/rect.hpp>
 
 namespace PD {
+/**
+ * Lithium Texture Loader / DataHolder
+ */
 class Texture : public SmartCtor<Texture> {
  public:
+  /** Texture Type */
   enum Type {
-    RGBA32,
-    RGB24,
-    A8,
+    RGBA32,  ///< RGBA 32
+    RGB24,   ///< RGB24
+    A8,      ///< A8
   };
-
+  /** Texture Filters */
   enum Filter {
-    NEAREST,
-    LINEAR,
+    NEAREST,  ///< Nearest
+    LINEAR,   ///< Linear
   };
-  /// @brief Default constructor
+  /** Default constructor */
   Texture() : uv(0.f, 1.f, 1.f, 0.f) {}
-  /// @brief Load file Constructor
-  /// @param path path to file
+  /**
+   * Load file Constructor
+   * @param path path to file
+   * @param t3x set true if file is a t3x file
+   */
   Texture(const std::string& path, bool t3x = false) : uv(0.f, 1.f, 1.f, 0.f) {
     if (t3x) {
       this->LoadT3X(path);
@@ -54,23 +61,27 @@ class Texture : public SmartCtor<Texture> {
       this->LoadFile(path);
     }
   }
-  /// @brief Load Memory constructor
-  /// @param data File Data reference
+  /**
+   * Load Memory constructor
+   * @param data File Data reference
+   */
   Texture(const std::vector<u8>& data) : uv(0.f, 1.f, 1.f, 0.f) {
     this->LoadMemory(data);
   }
-  /// @brief Load Pixels constructor
-  /// @param data Pixel Buffer reference
-  /// @param w width
-  /// @param h height
-  /// @param type Buffer Type
-  /// @param filter Filter
+  /**
+   * Load Pixels constructor
+   * @param data Pixel Buffer reference
+   * @param w width
+   * @param h height
+   * @param type Buffer Type [Default RGBA32]
+   * @param filter Filter [DEFAULT NEAREST]
+   */
   Texture(const std::vector<u8>& data, int w, int h, Type type = RGBA32,
           Filter filter = NEAREST)
       : uv(0.f, 1.f, 1.f, 0.f) {
     this->LoadPixels(data, w, h, type, filter);
   }
-  /// @brief Deconstructor (aka auto delete)
+  /** Deconstructor (aka auto delete) */
   ~Texture() {
     if (autounload) {
       Delete();
@@ -119,7 +130,7 @@ class Texture : public SmartCtor<Texture> {
     return vec2(tex->width, tex->height);
   }
   vec2 GetSize() const { return size; }
-  C3D_Tex* GetTex() const { return tex; };
+  C3D_Tex* GetTex() const { return tex; }
   LI::Rect GetUV() const { return uv; }
   bool IsValid() const { return tex != 0; }
 

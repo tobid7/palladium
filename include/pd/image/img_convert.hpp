@@ -27,13 +27,26 @@ SOFTWARE.
 #include <pd/core/common.hpp>
 
 namespace PD {
+/**
+ * Namespace containing function to convert images
+ */
 namespace ImgConvert {
+/**
+ * Convert RGB24 to RGBA32 by adding a 4th alpha value set to 255
+ * to every pixel
+ * @param out Result List
+ * @param in Input Buffer List (rgb24)
+ * @param w width of the image
+ * @param h height of the image
+ */
 void RGB24toRGBA32(std::vector<u8> &out, const std::vector<u8> &in,
                    const int &w, const int &h);
-/// @brief Reverse 32 (RGBA -> ABGR || ABGR -> RGBA)
-/// @param buf Buffer to convert
-/// @param w width
-/// @param h height
+/**
+ * Reverse 32 (RGBA -> ABGR || ABGR -> RGBA)
+ * @param buf Buffer to convert
+ * @param w width
+ * @param h height
+ */
 void Reverse32(std::vector<u8> &buf, const int &w, const int &h);
 }  // namespace ImgConvert
 }  // namespace PD

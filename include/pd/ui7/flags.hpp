@@ -23,26 +23,31 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
+/** 32Bit Value to Stpre Menu Flags */
 using UI7MenuFlags = unsigned int;
+/** 32Bit Value to store Alignment Flags */
 using UI7Align = unsigned int;
 
+/** Menu Flags */
 enum UI7MenuFlags_ {
-  UI7MenuFlags_None = 0,
-  UI7MenuFlags_NoTitlebar = 1 << 0,
-  UI7MenuFlags_CenterTitle = 1 << 1,
-  UI7MenuFlags_HzScrolling = 1 << 2,
-  UI7MenuFlags_VtScrolling = 1 << 3,
-  UI7MenuFlags_NoBackground = 1 << 4,
+  UI7MenuFlags_None = 0,               ///< No Flags (Default)
+  UI7MenuFlags_NoTitlebar = 1 << 0,    ///< Dont Show Titlebar
+  UI7MenuFlags_CenterTitle = 1 << 1,   ///< Center the Menu Title in Titlebar
+  UI7MenuFlags_HzScrolling = 1 << 2,   ///< Enable Horizontal Scrolling
+  UI7MenuFlags_VtScrolling = 1 << 3,   ///< Enable Vertical Scrolling
+  UI7MenuFlags_NoBackground = 1 << 4,  ///< Dont Render Menu Background
+  // Enable Horizontal and Vertical Scrolling
   UI7MenuFlags_Scrolling = UI7MenuFlags_HzScrolling | UI7MenuFlags_VtScrolling,
 };
 
-/// @brief Probably need to update this
+/** Probably need to update this */
 enum UI7Align_ {
-  UI7Align_Left = 1 << 0,
-  UI7Align_Center = 1 << 1,
-  UI7Align_Right = 1 << 2,
-  UI7Align_Top = 1 << 3,
-  UI7Align_Mid = 1 << 4,
-  UI7Align_Bottom = 1 << 5,
+  UI7Align_Left = 1 << 0,    ///< [Hz Op] Align Left (Default)
+  UI7Align_Center = 1 << 1,  ///< [Hz Op] Align Center
+  UI7Align_Right = 1 << 2,   ///< [Hz Op] Align Right
+  UI7Align_Top = 1 << 3,     ///< [Vt Op] Align Top (Default)
+  UI7Align_Mid = 1 << 4,     ///< [Vt Op] Align Mid
+  UI7Align_Bottom = 1 << 5,  ///< [Vt Op] Align Bottom
+  // Default Horizontal and Vertical Alignment
   UI7Align_Default = UI7Align_Left | UI7Align_Top,
 };

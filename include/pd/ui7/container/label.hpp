@@ -27,8 +27,17 @@ SOFTWARE.
 
 namespace PD {
 namespace UI7 {
+/**
+ * Label [Text] Object
+ */
 class Label : public Container {
  public:
+  /**
+   * Constructor for Label Object
+   * @param label Label [Text] to Draw
+   * @param pos Base Position
+   * @param lr Renderer Reference
+   */
   Label(const std::string& label, vec2 pos, LI::Renderer::Ref lr) {
     this->screen = lr->CurrentScreen();
     this->label = label;
@@ -37,14 +46,18 @@ class Label : public Container {
     color = UI7Color_Text;
     this->SetSize(tdim);
   }
-  ~Label() {}
+  ~Label() = default;
 
+  /**
+   * Override for the Rendering Handler
+   * @note This function is usally called by Menu::Update
+   * */
   void Draw() override;
 
  private:
-  vec2 tdim;
-  UI7Color color;
-  std::string label;
+  vec2 tdim;          ///< Text Size
+  UI7Color color;     ///< Color
+  std::string label;  ///< Text to Render
 };
 }  // namespace UI7
 }  // namespace PD

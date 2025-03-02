@@ -26,23 +26,81 @@ SOFTWARE.
 #include <pd/core/common.hpp>
 
 namespace PD {
+/**
+ * Set of String Utillity Functions
+ */
 namespace Strings {
+/**
+ * Check if a String ends with a specific extension
+ * @param str Input string
+ * @param exts List of Extensions to check for
+ * @return true if one of the extensions is found in the String
+ */
 bool StringEndsWith(const std::string& str,
                     const std::vector<std::string>& exts);
+/**
+ * Function to Create a wstring of a string
+ * @param s Input String to Convert
+ * @return Result wstring
+ * @note Currently using std::filesystem::path for this as wstring_convert
+ * got removed in c++ 20
+ */
 std::wstring MakeWstring(const std::string& s);
+/**
+ * Generate a Formatted String by an Nanoseconds Input
+ * @param nanos Nanoseconds Input
+ * @return Result String
+ */
 const std::string FormatNanos(unsigned long long nanos);
+/**
+ * Generate a Formatted String by an Milliseconds Input
+ * @param millis Milliseconds Input
+ * @return Result String
+ */
 const std::string FormatMillis(unsigned long long millis);
+/**
+ * Create a formatted String by an input bytes value
+ * @param bytes value in bytes
+ * @result Formatted String for example `2.5MB`
+ */
 const std::string FormatBytes(unsigned long long bytes);
+/**
+ * Extract the Filename out of a Path
+ * @param path Path to extract from
+ * @param saperators Path Split Chars
+ * @return extracted filename
+ */
 const std::string GetFileName(const std::string& path,
                               const std::string& saperators = "/\\");
+/**
+ * Remove Extension from a Path / Filename
+ * @param path Input Path
+ * @return Path without Extension
+ */
 const std::string PathRemoveExtension(const std::string& path);
+/**
+ * Function to Convert a Type to a hex value
+ * @tparam T Type
+ * @param v value
+ * @return hex string beginning with 0x
+ */
 template <typename T>
 inline const std::string ToHex(const T& v) {
   std::stringstream s;
   s << "0x" << std::setfill('0') << std::setw(sizeof(v) * 2) << std::hex << v;
   return s.str();
 }
+/**
+ * Generate a Hash out of a string
+ * @param s String to hash
+ * @return 32Bit Hash
+ */
 u32 FastHash(const std::string& s);
+/**
+ * Function to Generate a Compiler Name and Version String
+ * Based on their Macros
+ * @return CompilerName: Version
+ */
 inline const std::string GetCompilerVersion() {
   /// As the function looks like this Project is meant to
   /// Be ported to other systems as well

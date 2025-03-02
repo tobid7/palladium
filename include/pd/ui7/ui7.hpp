@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/drivers/hid.hpp>  //// WOW A NON UI/ Header
+#include <pd/drivers/hid.hpp>
 #include <pd/ui7/drawlist.hpp>
 #include <pd/ui7/flags.hpp>
 #include <pd/ui7/id.hpp>
@@ -32,67 +32,113 @@ SOFTWARE.
 
 namespace PD {
 namespace UI7 {
+/** Base Context for UI7 */
 class Context : public SmartCtor<Context> {
  public:
+  /**
+   * Constructor for UI7 Context
+   * @param ren Renderer Reference
+   * @param hid Input Driver Reference
+   */
   Context(LI::Renderer::Ref ren, Hid::Ref hid) {
+    /// Set the Internal References
     this->ren = ren;
     this->inp = hid;
+    /// Init Theme and Front / Back Drawlists
     theme = Theme::New();
     back = DrawList::New(ren);
     front = DrawList::New(ren);
   }
-  ~Context() {}
+  ~Context() = default;
 
+  /**
+   * Begin a New Menu
+   * @param id Menu ID / Name shown in Titlebar
+   * @param flags Optional flags to change stuff
+   * @return If the Menu was Created
+   * (useless as false results in an error screen)
+   */
   bool BeginMenu(const ID& id, UI7MenuFlags flags = 0);
+  /**
+   * Get the Current Menu
+   * for example for auto m = ctx->GetCurrentMenu
+   */
   Menu::Ref GetCurrentMenu();
+  /**
+   * Find a Menu by its ID to edit things outside of
+   * the place between Begin and EndMenu
+   * @param id ID (Menu Name) to search for
+   */
   Menu::Ref FindMenu(const ID& id);
+  /**
+   * Ends the Current Menu
+   * (to be able to create another one)
+   */
   void EndMenu();
 
-  /// @brief Get Theme reference
-  /// @return Reference to the base Theme of the context
+  /**
+   * Get Theme reference
+   * @return Reference to the base Theme of the context
+   */
   Theme::Ref GetTheme() { return theme; }
-  /// @brief Directly return a Color by using the
-  /// ctx->ThemeColor(UI7Color_Text) for example
-  /// @param clr The Input UI7 Color
-  /// @return The 32bit color value
+  /**
+   *Directly return a Color by using the
+   * ctx->ThemeColor(UI7Color_Text) for example
+   * @param clr The Input UI7 Color
+   * @return The 32bit color value
+   */
   u32 ThemeColor(UI7Color clr) const { return theme->Get(clr); }
 
-  /// @brief Update Context (Render menus)
-  /// @param delta deltatime
+  /**
+   * Update Context (Render menus)
+   * @param delta deltatime
+   */
   void Update(float delta);
 
-  /// Expose DrawLists
+  // Expose DrawLists
+
+  /** Background DrawList Reference */
   DrawList::Ref BackList() { return back; }
+  /** Foreground DrawList Reference */
   DrawList::Ref FrontList() { return front; }
 
+  /**
+   * Set the Root Layer of the Menu
+   * @param l Layer
+   */
   void RootLayer(int l) { root_layer = l; }
+  /** Get the Root Layer of the Menu */
   int RootLayer() const { return root_layer; }
 
  private:
   // Used in Overlays
   int root_layer = 0;
-  // Linked Renderer / Hid
+  // Linked Renderer
   LI::Renderer::Ref ren;
+  // Input Driver Reference
   Hid::Ref inp;
-  // Timing
+  // Delta time
   float delta;
+  // Context Run Time
   float time;
+  /// @brief Last Time [unused ?]
   float last;
-  // Context
+  // In Menu [unused ?]
   bool in_menu;
-  // Debug
+  // Is Debugging [unused ?]
   bool debugging;
-  // Menu Handlers
+  // Map of The Menus by ID
   std::unordered_map<u32, Menu::Ref> menus;
-  std::vector<u32> amenus;  // Active ones
-  Menu::Ref current;
-  // Context DrawList
+  std::vector<u32> amenus;  ///< Active ones
+  Menu::Ref current;        ///< Current Menu
+  // Debug Drawlist
   DrawList::Ref debug;
+  // Foreground Drawlist
   DrawList::Ref front;
+  // Background Drawlist
   DrawList::Ref back;
-  // Theme
+  // Active Theme
   Theme::Ref theme;
-  // Promt Handler
 };
 }  // namespace UI7
 }  // namespace PD

@@ -27,8 +27,21 @@ SOFTWARE.
 
 namespace PD {
 namespace UI7 {
+/**
+ * Button Object
+ * @note Button Press is delayed by 1 frame
+ * (but the visual reaction is done in the same frame)
+ * This only means that InPressed is responding the info in
+ * the next frame
+ */
 class Button : public Container {
  public:
+  /**
+   * Button Object constructor
+   * @param label Label of the Button
+   * @param pos Base Position
+   * @param lr Reference to the Renderer
+   */
   Button(const std::string& label, vec2 pos, LI::Renderer::Ref lr) {
     this->screen = lr->CurrentScreen();
     this->label = label;
@@ -37,17 +50,27 @@ class Button : public Container {
     color = UI7Color_Button;
     this->SetSize(tdim + vec2(8, 4));
   }
-  ~Button() {}
+  ~Button() = default;
 
+  /** Return true if butten is pressed*/
   bool IsPressed() { return pressed; }
+  /**
+   * Override for the Input Handler
+   * @note This function is usally called by Menu::Update
+   * @param inp Reference to the Input Handler
+   */
   void HandleInput(Hid::Ref inp) override;
+  /**
+   * Override for the Rendering Handler
+   * @note This function is usally called by Menu::Update
+   * */
   void Draw() override;
 
  private:
-  vec2 tdim;
-  UI7Color color;
-  std::string label;
-  bool pressed = false;
+  vec2 tdim;             ///< Text size
+  UI7Color color;        ///< current button color
+  std::string label;     ///< Label of the Button
+  bool pressed = false;  ///< ispressed value
 };
 }  // namespace UI7
 }  // namespace PD

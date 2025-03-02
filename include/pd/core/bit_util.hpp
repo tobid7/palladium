@@ -27,8 +27,21 @@ SOFTWARE.
 #include <pd/core/common.hpp>
 
 namespace PD {
+/**
+ * Binary Utillity Functions
+ */
 namespace BitUtil {
+/**
+ * Check if a 32 Bit number only set a sigle bit to 1
+ * @param v 32 bit unsigned int
+ * @return true if its a single bit number
+ */
 bool IsSingleBit(u32 v);
+/**
+ * Get the Next Power of two Number
+ * @param v Current Number
+ * @return Next Number thats a Pow of 2
+ */
 u32 GetPow2(u32 v);
 }  // namespace BitUtil
 }  // namespace PD

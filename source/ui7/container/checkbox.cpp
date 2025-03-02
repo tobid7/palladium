@@ -35,11 +35,11 @@ void Checkbox::HandleInput(Hid::Ref inp) {
   Assert(screen.get(), "Screen is not set up!");
   if (screen->ScreenType() == Screen::Bottom) {
     if (inp->IsHeld(inp->Touch) &&
-        LI::Renderer::InBox(inp->TouchPos(), vec4(pos, size))) {
+        LI::Renderer::InBox(inp->TouchPos(), vec4(FinalPos(), size))) {
       color = UI7Color_FrameBackgroundHovered;
     }
     if (inp->IsUp(inp->Touch) &&
-        LI::Renderer::InBox(inp->TouchPosLast(), vec4(pos, size))) {
+        LI::Renderer::InBox(inp->TouchPosLast(), vec4(FinalPos(), size))) {
       color = UI7Color_FrameBackgroundHovered;
       usr_ref = !usr_ref;
     }
@@ -50,12 +50,12 @@ void Checkbox::Draw() {
   Assert(ren.get() && list.get() && theme,
          "Did you run Container::Init correctly?");
   ren->OnScreen(screen);
-  list->AddRectangle(pos, cbs, theme->Get(color));
+  list->AddRectangle(FinalPos(), cbs, theme->Get(color));
   if (usr_ref) {
-    list->AddRectangle(pos + 2, cbs - 4, theme->Get(UI7Color_Checkmark));
+    list->AddRectangle(FinalPos() + 2, cbs - 4, theme->Get(UI7Color_Checkmark));
   }
-  list->AddText(pos + vec2(cbs.x() + 5, cbs.y() * 0.5 - tdim.y() * 0.5), label,
-                theme->Get(UI7Color_Text));
+  list->AddText(FinalPos() + vec2(cbs.x() + 5, cbs.y() * 0.5 - tdim.y() * 0.5),
+                label, theme->Get(UI7Color_Text));
 }
 }  // namespace UI7
 }  // namespace PD

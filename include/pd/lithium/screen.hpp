@@ -30,9 +30,21 @@ SOFTWARE.
 #include <pd/core/vec.hpp>
 
 namespace PD {
+/**
+ * 3DS Screen (RenderTarget)
+ */
 class Screen : public SmartCtor<Screen> {
  public:
-  enum Screen_ { Top, Bottom, TopRight };
+  /** Screens */
+  enum Screen_ {
+    Top,      ///< Top Screen
+    Bottom,   ///< Bottom Screen
+    TopRight  ///< Top Right Screen area
+  };
+  /**
+   * Constructor to create Screen by Screen Type
+   * @param screen Screen to grab default init values for
+   */
   Screen(Screen_ screen) : type(screen) {
     if (screen == Top) {
       target = C3D_RenderTargetCreate(240, 400, GPU_RB_RGBA8,
@@ -51,27 +63,36 @@ class Screen : public SmartCtor<Screen> {
                                 DisplayTransferFlags);
     }
   }
-  ~Screen() {}
+  ~Screen() = default;
 
+  /** Clear the Screen */
   void Clear() { C3D_RenderTargetClear(target, C3D_CLEAR_ALL, 0x00000000, 0); }
+  /** Set the Screen active for Rendering */
   void Use() { C3D_FrameDrawOn(target); }
 
+  /** Get the Screens Size */
   vec2 GetSize() const {
     return vec2(target->frameBuf.height, target->frameBuf.width);
   }
 
+  /** Get the Screen Type */
   Screen_ ScreenType() const { return type; }
 
+  /** Get the Raw Rendertarget object */
   C3D_RenderTarget* Get() const { return target; }
+  /** Operartor to get the raw RenderTarget */
   operator C3D_RenderTarget*() const { return target; }
 
  private:
+  /** Screen Type */
   Screen_ type;
+  /** Default Init Flags */
   const u32 DisplayTransferFlags =
       (GX_TRANSFER_FLIP_VERT(0) | GX_TRANSFER_OUT_TILED(0) |
        GX_TRANSFER_RAW_COPY(0) | GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGBA8) |
        GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB8) |
        GX_TRANSFER_SCALING(GX_TRANSFER_SCALE_NO));
+  /** RenderTarget */
   C3D_RenderTarget* target;
 };
 }  // namespace PD

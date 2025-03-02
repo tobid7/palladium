@@ -27,19 +27,20 @@ make install
 
 | Name | Last Updated | Platform | Depends |
 |---|---|---|---|
-| pd-core | 0.2.3 | multi | none |
+| pd-core | 0.2.4 | multi | none |
 | pd-external | 0.1.0 | multi | none |
-| pd-image | 0.2.3 | multi | pd-core |
-| pd-drivers | 0.2.1 | multi | pd-core |
-| pd-lib3ds | 0.2.2 | 3ds | pd-core, pd-drivers |
-| pd-net | 0.2.2 | 3ds | pd-core, pd-lib3ds |
-| pd-lithium | 0.2.1 | 3ds | pd-core, pd-image pd-lib3ds, citro3d |
-| pd-sound | 0.2.2 | 3ds | pd-core, mpg123 |
-| pd-overlays | 0.2.1 | 3ds | pd-core, pd-image, pd-lib3ds, pd-lithium, pd-ui7 |
-| pd-ui7 | 0.2.2 | 3ds | pd-core, pd-image, pd-lib3ds, pd-lithium |
-| pd-app | 0.2.2 | 3ds | pd-core, pd-image, pd-lib3ds, pd-lithium |
+| pd-image | 0.2.4 | multi | pd-core |
+| pd-drivers | 0.2.4 | multi | pd-core |
+| pd-lib3ds | 0.2.4 | 3ds | pd-core, pd-drivers |
+| pd-net | 0.2.4 | 3ds | pd-core, pd-lib3ds |
+| pd-lithium | 0.2.4 | 3ds | pd-core, pd-image pd-lib3ds, citro3d |
+| pd-sound | 0.2.4 | 3ds | pd-core, mpg123 |
+| pd-overlays | 0.2.4 | 3ds | pd-core, pd-image, pd-lib3ds, pd-lithium, pd-ui7 |
+| pd-ui7 | 0.2.4 | 3ds | pd-core, pd-image, pd-lib3ds, pd-lithium |
+| pd-app | 0.2.4 | 3ds | pd-core, pd-image, pd-lib3ds, pd-lithium |
 
 ## Credits
+
 | Icon | Username | Description |
 |---|---|---|
 | <img src="https://github.com/tobid7.png" alt="https://github.com/tobid7" width="48"/>                 | [tobid7](https://github.com/tobid7)                 | main dev of RenderD7, Palladium                               |

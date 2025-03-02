@@ -30,19 +30,37 @@ SOFTWARE.
 #include <pd/lithium/texture.hpp>
 
 namespace PD {
+/**
+ * Tex 3DS Spritesheet integration to Lithium
+ */
 class SpriteSheet : public SmartCtor<SpriteSheet> {
  public:
-  SpriteSheet() {}
+  SpriteSheet() = default;
+  /**
+   * Constructor to directly load a spritesheet
+   * @param path Path to spritesheet
+   */
   SpriteSheet(const std::string& path) { this->LoadFile(path); }
+  /**
+   * Deconstructor to unload the Spritesheet
+   */
   ~SpriteSheet();
 
+  /**
+   * Function to load a Spritesheet
+   * @param path Path to the file
+   */
   void LoadFile(const std::string& path);
+  /** Get a Textures Reference */
   Texture::Ref Get(int idx);
+  /** Get Number of Textures in spritesheet */
   int NumTextures() const;
 
+  /** Operator to get Texture reference */
   Texture::Ref operator[](int idx) { return Get(idx); }
 
  private:
+  /** Storage of the Spritesheets textures */
   std::vector<Texture::Ref> textures;
 };
 }  // namespace PD

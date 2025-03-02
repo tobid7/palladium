@@ -27,8 +27,21 @@ SOFTWARE.
 
 namespace PD {
 namespace UI7 {
+/**
+ * Checkbox Object
+ * @note The Updated input is available after
+ * Context::Update while the visual update is done
+ * during the Update
+ */
 class Checkbox : public Container {
  public:
+  /**
+   * Constructor for Checkbox Object
+   * @param label Label of the Checkbox
+   * @param pos Base Position
+   * @param usr_ref Reference to the bool value to update
+   * @param lr Reference to the renderer (for text size calculation)
+   */
   Checkbox(const std::string& label, vec2 pos, bool& usr_ref,
            LI::Renderer::Ref lr)
       : usr_ref(usr_ref) {
@@ -39,17 +52,25 @@ class Checkbox : public Container {
     color = UI7Color_FrameBackground;
     this->SetSize(cbs + vec2(tdim.x() + 5, 0));
   }
-  ~Checkbox() {}
-
+  ~Checkbox() = default;
+  /**
+   * Override for the Input Handler
+   * @note This function is usally called by Menu::Update
+   * @param inp Reference to the Input Handler
+   */
   void HandleInput(Hid::Ref inp) override;
+  /**
+   * Override for the Rendering Handler
+   * @note This function is usally called by Menu::Update
+   * */
   void Draw() override;
 
  private:
-  vec2 tdim;
-  vec2 cbs = vec2(18);
-  UI7Color color;
-  std::string label;
-  bool& usr_ref;
+  vec2 tdim;            ///< Text Size
+  vec2 cbs = vec2(18);  ///< Checkbox size
+  UI7Color color;       ///< Checkbox background Color
+  std::string label;    ///< Checkbox Label
+  bool& usr_ref;        ///< User bool reference
 };
 }  // namespace UI7
 }  // namespace PD

@@ -25,59 +25,128 @@ SOFTWARE.
 
 #include <pd/core/common.hpp>
 #include <pd/core/strings.hpp>
-#include <pd/drivers/hid.hpp>
 #include <pd/core/vec.hpp>
+#include <pd/drivers/hid.hpp>
 #include <pd/ui7/drawlist.hpp>
 
 namespace PD {
 namespace UI7 {
+/**
+ * Container base class all Objects are based on
+ * @note this class can be used to create custom Objects as well
+ */
 class Container : public SmartCtor<Container> {
  public:
-  Container() {}
+  Container() = default;
+  /**
+   * Constructor with pos and Size
+   * @param pos Container Position
+   * @param size Container Size
+   */
   Container(const vec2& pos, const vec2& size) : pos(pos), size(size) {}
-  Container(const vec4& box) : pos(box.xy()), size(box.zw()) {}
-  ~Container() {}
+  /**
+   * Constructor by a vec4 box
+   * @param box Box containing top left and bottom right coords
+   */
+  Container(const vec4& box) : pos(box.xy()), size(box.zw() - box.xy()) {}
+  ~Container() = default;
 
+  /**
+   * Init Function Required by every Object that uses
+   * Render or Input functions
+   * @param r Renderer Reference
+   * @param l DrawList Reference
+   * @param lt Theme Reference
+   */
   void Init(LI::Renderer::Ref r, UI7::DrawList::Ref l, UI7::Theme::Ref lt) {
     list = l;
     theme = lt;
     ren = r;
   }
 
+  /** Setter for Position */
   void SetPos(const vec2& pos) { this->pos = pos; }
+  /** Setter for Size */
   void SetSize(const vec2& size) { this->size = size; }
-
+  /** Getter for Position */
   vec2 GetPos() { return pos; }
+  /** Getter for Size */
   vec2 GetSize() { return size; }
+  /**
+   * Get the Containers Final Position
+   * for Rendering and Input (if it has a parent Object)
+   */
+  vec2 FinalPos() {
+    vec2 res = pos;
+    if (parent) {
+      /// Probably should use parant->FinalPos here
+      res += parent->GetPos();
+    }
+    return res;
+  }
 
+  /** Setter for Parent Container */
   void SetParent(Container::Ref v) { parent = v; }
+  /** Getter for Parent Container */
   Container::Ref GetParent() { return parent; }
 
+  /** Check if Rendering can be skipped */
   bool Skippable() const { return skippable; }
+  /** Check if the Object got a timeout (ID OBJ Relevant) */
   bool Removable() const { return rem; }
 
+  /**
+   * Handles Scrolling by scrolling pos as well as
+   * Time for Remove for ID Objects
+   * @param scrolling Scrolling Position
+   * @param viewport Viewport to check if the Object is skippable
+   */
   void HandleScrolling(vec2 scrolling, vec4 viewport);
+  /** Template function for Input Handling */
   virtual void HandleInput(Hid::Ref inp) {}
+  /** Tamplate function for Object rendering */
   virtual void Draw() {}
 
+  /**
+   * Function to unlock Input after Rendering is done in
+   * Menu::Update
+   * @note This is used if the Object got Input Handled directly after creation
+   * to not check for Inputs twice
+   */
   void UnlockInput() { inp_done = false; }
 
+  /** Get the Objects ID (if it is an ID object)*/
   u32 GetID() const { return id; }
+  /**
+   * Set ID for ID Objects
+   * @param id Object ID (hashed prefix+objname+prefixed_counter)
+   */
   void SetID(u32 id) { this->id = id; }
 
  protected:
-  /// used to skip Input/Render preocessing ot not
+  /** used to skip Input/Render preocessing ot not*/
   bool skippable = false;
+  /** value to check if an ID Object goes out of lifetime*/
   bool rem = false;
+  /** Time of the last use (set by HandleScrolling)*/
   u64 last_use = 0;
+  /** Input done or not for current frame*/
   bool inp_done = false;
+  /** Reference to the Screen to draw the Object on*/
   Screen::Ref screen;
+  /** Container Position*/
   vec2 pos;
+  /** Container Size*/
   vec2 size;
+  /** Reference to the Drawlist to Draw to*/
   UI7::DrawList::Ref list;
+  /** Reference to the theme to use*/
   UI7::Theme::Ref theme;
+  /** Reference to the Renderer*/
   LI::Renderer::Ref ren;
+  /** Reference to the parent container*/
   Container::Ref parent;
+  /** Object ID (0 if unused)*/
   u32 id = 0;
 };
 }  // namespace UI7

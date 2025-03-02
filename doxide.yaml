@@ -1,0 +1,15 @@
+title: Palladium
+description: 
+files:
+  - "include/*.hpp"
+  - "include/pd/app/*.hpp"
+  - "include/pd/core/*.hpp"
+  - "include/pd/drivers/*.hpp"
+  - "include/pd/image/*.hpp"
+  - "include/pd/lib3ds/*.hpp"
+  - "include/pd/lithium/*.hpp"
+  - "include/pd/net/*.hpp"
+  - "include/pd/overlays/*.hpp"
+  - "include/pd/sound/*.hpp"
+  - "include/pd/ui7/*.hpp"
+  - "include/pd/ui7/container/*.hpp"

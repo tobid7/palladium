@@ -28,28 +28,41 @@ SOFTWARE.
 #include <pd/core/vec.hpp>
 
 namespace PD {
+/**
+ * Namepace containing functions to blur images
+ */
 namespace ImgBlur {
+/**
+ * Function to create Gaussian Kernel List
+ * @param radius Rasius to use
+ * @param si sigma value to use
+ * @return list of kernel values
+ */
 std::vector<float> GaussianKernel(int radius, float si);
-/// @brief Gaussian Blur for basic Image Buffer
-/// @param buf Image Buffer (unsigned char)
-/// @param w // width of the image
-/// @param h // width of the image
-/// @param radius // Blur radius
-/// @param si // Blur sigma
-/// @param idxfn // Indexing function (if buffer is 3ds tiled)
+/**
+ * Gaussian Blur for basic Image Buffer
+ * @param buf Image Buffer (unsigned char)
+ * @param w width of the image
+ * @param h width of the image
+ * @param radius Blur radius
+ * @param si Blur sigma
+ * @param idxfn Indexing function
+ */
 void GaussianBlur(
     std::vector<u8> &buf, int w, int h, float radius, float si,
     std::function<int(int, int, int)> idxfn = [](int x, int y, int w) -> int {
       return y * w + x;
     });
-/// @brief Advanced func to access memory directly
-/// @param buf Referenvce to the buffer
-/// @param w // width of the image
-/// @param h // width of the image
-/// @param bpp Bytes per Pixels (RGB[A], RGB565, etc)
-/// @param radius // Blur radius
-/// @param si // Blur sigma
-/// @param idxfn // Indexing function (if buffer is 3ds tiled)
+/**
+ * Advanced func to access memory directly
+ * @param buf Referenvce to the buffer
+ * @param w width of the image
+ * @param h width of the image
+ * @param bpp Bytes per Pixels (RGB[A], RGB565, etc)
+ * @param radius Blur radius
+ * @param si Blur sigma
+ * @param idxfn Indexing function
+ */
 void GaussianBlur(
     void *buf, int w, int h, int bpp, float radius, float si,
     std::function<int(int, int, int)> idxfn = [](int x, int y, int w) -> int {

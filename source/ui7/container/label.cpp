@@ -29,7 +29,7 @@ void Label::Draw() {
   Assert(ren.get() && list.get() && theme,
          "Did you run Container::Init correctly?");
   ren->OnScreen(screen);
-  list->AddText(pos, label, theme->Get(UI7Color_Text));
+  list->AddText(FinalPos(), label, theme->Get(UI7Color_Text));
 }
 }  // namespace UI7
 }  // namespace PD

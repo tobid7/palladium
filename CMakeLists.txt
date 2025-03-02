@@ -16,6 +16,7 @@ target_compile_definitions(${TARGET_NAME} PUBLIC
     -D_GNU_SOURCE=1
     -DPALLADIUM_VERSION="${PROJECT_VERSION}"
     -DPALLADIUM_GIT_COMMIT="${GIT_SHORT_HASH}"
+    -DPALLADIUM_GIT_BRANCH="${GIT_BRANCH}"
     -DBUILD_CTR=1)
 ### For the libs that depend on another
 if(ARG_DEPENDS)
@@ -34,6 +35,7 @@ if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
     endif()
 endif()
 
+## Get Current Git Commit Value
 execute_process(
     COMMAND git rev-parse --short HEAD
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
@@ -41,8 +43,16 @@ execute_process(
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
+## Get Current Git Branch
+execute_process(
+    COMMAND git rev-parse --abbrev-ref HEAD
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    OUTPUT_VARIABLE GIT_BRANCH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
 # Set Project
-project(palladium LANGUAGES C CXX VERSION 0.2.3)
+project(palladium LANGUAGES C CXX VERSION 0.2.4)
 
 option(PD_BUILD_TESTS "Sets if TestApp and TestBench get build" OFF)
 

@@ -38,43 +38,82 @@ SOFTWARE.
 #include <vector>
 
 namespace PD {
-// New Version of Smart CTOR
-// Using as Template class
+/**
+ * SmartCtor (std::shared_ptr) Template class for Smart Pointers
+ *
+ * - Just add : public PD::SmartCtor<YourClass> to your class
+ * @tparam T Your Class
+ */
 template <typename T>
 class SmartCtor {
  public:
-  /// @brief Type Reference
+  /** Reference alias for std::shared_ptr<Type> */
   using Ref = std::shared_ptr<T>;
 
-  /// @brief Creates a New Shared Pointer
-  /// @param ...args Arguments to forward
-  /// @return Shared Pointer (Reference)
+  /**
+   * static Function to Create a New Reference
+   * @param args Additional Arguments (Depends on your classes Constructors)
+   * @return New Reference Object
+   */
   template <typename... Args>
   static Ref New(Args&&... args) {
     return std::make_shared<T>(std::forward<Args>(args)...);
   }
 };
-/// @brief Wrapper for SmartCtor<Type>::New
-/// @tparam T class type
-/// @param ...args Arguments
-/// @return SmartCtor<T>::Ref type reference
-/// @note Not sure if this is solving the problem or
-/// if I schould switch back to the macro
+/**
+ * Wrapper for SmartCtor<Type>::New(Args)
+ * @tparam T Class Type
+ * @param args Arguments
+ * @return Type Reference (SmartPointer)
+ */
 template <typename T, typename... Args>
 SmartCtor<T>::Ref New(Args&&... args) {
   return SmartCtor<T>::New(std::forward<Args>(args)...);
 }
 // Defines
+
+/** alias for 64 Bit unsigned integer */
 using u64 = unsigned long long;
+/** alias for 32 Bit unsigned integer */
 using u32 = unsigned int;
+/** alias for 16 Bit unsigned integer */
 using u16 = unsigned short;
+/** alias for 8 Bit unsigned integer */
 using u8 = unsigned char;
 
+/**
+ * LinInfo Compile Information
+ */
 namespace LibInfo {
+/**
+ * Get the Compiler Name and Version the lib got Compiled with
+ * @return Compiler Name / Version
+ */
 const std::string CompiledWith();
+/**
+ * Get the C++ Version used to compile the lib
+ * @return C++ Version (__cplusplus)
+ */
 const std::string CxxVersion();
+/**
+ * Get the Buildtime of the Library
+ * @return Build Time
+ */
 const std::string BuildTime();
+/**
+ * Get the Library Version
+ * @return Library Version String
+ */
 const std::string Version();
+/**
+ * Get the Git Commit the Lib got compiled in
+ * @return Git Commit 7digit short hash
+ */
 const std::string Commit();
+/**
+ * Get the Git Branch which was active when compiling the lib
+ * @return Git Branch
+ */
+const std::string Branch();
 }  // namespace LibInfo
 }  // namespace PD

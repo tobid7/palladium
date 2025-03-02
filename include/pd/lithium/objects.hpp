@@ -25,23 +25,34 @@ SOFTWARE.
  */
 
 #include <pd/core/common.hpp>
+#include <pd/core/vec.hpp>
 #include <pd/lithium/command.hpp>
 #include <pd/lithium/flags.hpp>
 #include <pd/lithium/font.hpp>
 #include <pd/lithium/texture.hpp>
 #include <pd/lithium/vertex.hpp>
-#include <pd/core/vec.hpp>
 
 namespace PD {
 namespace LI {
 class Renderer;
+/**
+ * Prerendered Object that can be edidet at runtime
+ * and supports diffrent textures as well
+ */
 class StaticObject : public SmartCtor<StaticObject> {
  public:
-  StaticObject() {}
-  ~StaticObject() {}
+  StaticObject() = default;
+  ~StaticObject() = default;
 
+  /**
+   * Push a Draw Command to the Static Object
+   * @param v Command to add
+   */
   void PushCommand(Command::Ref v) { cmds.push_back(v); }
 
+  /**
+   * Copy the root Object to a copy buffer for modification
+   */
   void ReCopy() {
     cpy.clear();
     for (auto it : cmds) {
@@ -49,6 +60,11 @@ class StaticObject : public SmartCtor<StaticObject> {
     }
   }
 
+  /**
+   * Modify the Color of a specific Command in the List
+   * @param idx Index of the Command
+   * @param col new COlor to replace with
+   */
   void ReColorQuad(int idx, u32 col) {
     if (idx > (int)cpy.size()) {
       return;
@@ -58,6 +74,10 @@ class StaticObject : public SmartCtor<StaticObject> {
     }
   }
 
+  /**
+   * Move the every Command in the Object by a specific offset
+   * @param off offset position to apply
+   */
   void MoveIt(vec2 off) {
     for (auto& it : cpy) {
       for (auto& jt : it->VertexList()) {
@@ -66,6 +86,10 @@ class StaticObject : public SmartCtor<StaticObject> {
     }
   }
 
+  /**
+   * Change Color of all Commands in the List
+   * @param col new Color to use
+   */
   void ReColor(u32 col) {
     for (auto& it : cpy) {
       for (auto& jt : it->VertexList()) {
@@ -74,18 +98,30 @@ class StaticObject : public SmartCtor<StaticObject> {
     }
   }
 
+  /**
+   * Add the Layer by a specific number
+   * @param base_layer baselayer or number to add on top of the commands layer
+   */
   void ReLayer(int base_layer) {
     for (auto& it : cpy) {
       it->Layer(it->Layer() + base_layer);
     }
   }
 
+  /**
+   * Change the Commands Index by setting a start index
+   * @param start Start index position
+   */
   void ReIndex(int start) {
     for (int i = 0; i < (int)cpy.size(); i++) {
       cpy[i]->Index(start + i);
     }
   }
 
+  /**
+   * Get a Reference to the Copy Commands List
+   * @return command list reference
+   */
   std::vector<Command::Ref>& List() {
     if (cpy.size() != 0) {
       return cpy;
@@ -94,72 +130,184 @@ class StaticObject : public SmartCtor<StaticObject> {
   }
 
  private:
+  /** Copy Buffer */
   std::vector<Command::Ref> cpy;
+  /** Source Buffer */
   std::vector<Command::Ref> cmds;
 };
-
+/**
+ * Text Box container for TMS and AST
+ */
 class TextBox {
  public:
-  TextBox() {}
+  TextBox() = default;
+  /**
+   * Baisc Constructor
+   * @param s Size of the text
+   * @param time creation time
+   */
   TextBox(const vec2& s, float time) {
     size = s;
     time_created = time;
     optional = false;
   }
-  ~TextBox() {}
+  ~TextBox() = default;
 
+  /**
+   * Setter for Time created
+   * @param v time
+   */
   void TimeCreated(float v) { time_created = v; }
+  /**
+   * Setter for Size
+   * @param v size
+   */
   void Size(const vec2& v) { size = v; }
+  /**
+   * Setter for is optional
+   *
+   * - optional text contains the result string of wrap/short
+   * @param v optional
+   */
   void Optional(bool v) { optional = v; }
+  /**
+   * set Result of Short Text or Wrap Text
+   * @param v text
+   */
   void Text(const std::string& v) { text = v; }
 
+  /**
+   * Get Size
+   * @return size
+   */
   vec2 Size() const { return size; }
+  /**
+   * Get Time Created / Updated
+   * @param time created/updated
+   */
   float TimeCreated() const { return time_created; }
+  /**
+   * Check if Optional or not
+   * @return is optional
+   */
   bool Optional() const { return optional; }
+  /**
+   * Get Optional Text
+   * @return text
+   */
   std::string Text() const { return text; }
 
  private:
+  /** Text Size */
   vec2 size;
+  /** Time Created / Updated */
   float time_created;
+  /** Is Optional */
   bool optional;
-  std::string text;  // TextWrap
+  /** Text Wrap / Short */
+  std::string text;
 };
-
+/**
+ * Static Text [abillity to Prerender Texts into a list of Commands]
+ */
 class StaticText : public SmartCtor<StaticText> {
  public:
-  StaticText() {}
+  StaticText() = default;
+  /**
+   * Wrap Constructor to Setup
+   * @param ren Renderer direct pointer reference
+   * @param pos Position
+   * @param clr Color
+   * @param text Text to Render
+   * @param flags Text Flags
+   * @param box Additional textbox for specific flags
+   */
   StaticText(Renderer* ren, const vec2& pos, u32 clr, const std::string& text,
              LITextFlags flags = 0, const vec2& box = 0) {
     Setup(ren, pos, clr, text, flags, box);
   }
-  ~StaticText() {}
-
+  ~StaticText() = default;
+  /**
+   * Function that Sets Up the Rendering
+   * @param ren Renderer direct pointer reference
+   * @param pos Position
+   * @param clr Color
+   * @param text Text to Render
+   * @param flags Text Flags
+   * @param box Additional textbox for specific flags
+   */
   void Setup(Renderer* ren, const vec2& pos, u32 clr, const std::string& text,
              LITextFlags flags = 0, const vec2& box = 0);
 
+  /**
+   * Get Text Size
+   * @return size
+   */
   vec2 GetDim() const { return tdim; }
+  /**
+   * Get Text Posiotion
+   * @return position
+   */
   vec2 GetPos() const { return pos; }
-
+  /**
+   * Setter to Update Color
+   * @param col color
+   */
   void SetColor(u32 col);
+  /**
+   * Setter to raplace the texts Commands Position
+   * @param pos new position
+   */
   void SetPos(const vec2& pos);
+  /**
+   * Set Layer of the Text
+   * @param l layer
+   */
   void SetLayer(int l);
 
+  /**
+   * Function to unset the used variable
+   */
   void SetUnused() { used = false; }
+  /**
+   * Function to check if the text got rendered
+   * @return is used
+   */
   bool Used() const { return used; }
-
+  /**
+   * Function to check if the text got setup
+   * @return is setup
+   */
   bool IsSetup() { return text != nullptr; }
 
+  /**
+   * Draw the Text
+   */
   void Draw();
 
+  /**
+   * Set Font used by the static Text
+   * @param fnt Font used
+   */
   void Font(Font::Ref fnt) { font = fnt; }
+  /**
+   * Get Font used by the Text
+   * @return Font Reference
+   */
   Font::Ref Font() { return font; }
 
  private:
+  /** Font */
   Font::Ref font;
+  /** Text got Rendered */
   bool used;
+  /** Renderer pointer Reference */
   Renderer* ren;
+  /** Text Size */
   vec2 tdim;
+  /** Text Position */
   vec2 pos;
+  /** Static Text Object */
   StaticObject::Ref text;
 };
 }  // namespace LI

@@ -26,8 +26,21 @@ SOFTWARE.
 #include <pd/core/common.hpp>
 
 namespace PD {
+/**
+ * Set of File Functions
+ */
 namespace IO {
+/**
+ * Load a File into an 8Bit Memory Buffer
+ * @param path Path to the File
+ * @return 8Bit FileBuffer
+ */
 std::vector<u8> LoadFile2Mem(const std::string& path);
+/**
+ * Hash a 8Bit Memory Buffer
+ * @param data 8Bit input Buffer
+ * @return 32Bit Hash
+ */
 u32 HashMemory(const std::vector<u8>& data);
 }  // namespace IO
 }  // namespace PD

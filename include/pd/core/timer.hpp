@@ -27,21 +27,58 @@ SOFTWARE.
 #include <pd/core/sys.hpp>
 
 namespace PD {
+/**
+ * Timer class
+ */
 class Timer : public SmartCtor<Timer> {
  public:
+  /**
+   * Constructor
+   * @param auto_start [default true] sets if timer should start after creation
+   */
   Timer(bool auto_start = true);
+  /**
+   * Unused Deconstructor
+   */
   ~Timer() {}
+  /**
+   * Resume Timer if Paused
+   */
   void Rseume();
+  /**
+   * Pause Timer if not Paused
+   */
   void Pause();
+  /**
+   * Update Timer
+   */
   void Update();
+  /**
+   * Reset Timer
+   */
   void Reset();
+  /**
+   * Check if the Timer is Running
+   * @return true if its running
+   */
   bool IsRunning() const;
+  /**
+   *  Get 64 Bit milliseconds value
+   *  @return 64Bit millis
+   */
   u64 Get();
+  /**
+   * Get as Seconds
+   * @return seconds as floating number
+   */
   double GetSeconds();
 
  private:
+  /** Start of the Timer */
   u64 start;
+  /** Current Time */
   u64 now;
+  /** Is Running */
   bool is_running = false;
 };
 }  // namespace PD
