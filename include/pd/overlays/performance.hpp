@@ -27,8 +27,25 @@ SOFTWARE.
 #include <pd/overlays/overlay.hpp>
 
 namespace PD {
+/**
+ * Performance Overlay
+ *
+ * - Framerate / Frametime
+ * - Renderer Avarage Time
+ * - Overlays Avarage Time
+ * - UserApp Average Time
+ * - **V**ertices and **I**ndices
+ * - **D**Draw Commands and Draw **C**alls
+ * - Text Map System Texts
+ * - Auto static Text Texts
+ */
 class Performance : public Overlay {
  public:
+  /**
+   * Constructor
+   * @param skill (if set to true the Overlay self kills)
+   * @param screen Bottom or Top Screen
+   */
   Performance(bool& skill, bool& screen) {
     too++;
     if (too > 1) {
@@ -39,11 +56,24 @@ class Performance : public Overlay {
     *this->skill = false;  // Make sure its false
     this->screen = &screen;
   }
+  /** Deconstructor */
   ~Performance() { too--; }
 
+  /**
+   * Rendering Function
+   * @param delta Deltatime
+   * @param ren Renderer Reference
+   * @param inp Input Driver Reference
+   */
   void Update(float delta, LI::Renderer::Ref ren, Hid::Ref inp) override;
 
  private:
+  /**
+   * Render an Info line
+   * @param pos Position reference (gets updated for next line)
+   * @param text Text to Show
+   * @param ren Renderer Reference
+   */
   void Line(vec2& pos, const std::string& text, LI::Renderer::Ref ren);
   // Trace String Average
   std::string TSA(const std::string& id);

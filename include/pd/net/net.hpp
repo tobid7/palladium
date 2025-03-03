@@ -27,9 +27,14 @@ SOFTWARE.
 #include <pd/external/json.hpp>
 
 namespace PD {
+/**
+ * Download manager class
+ */
 class DownloadManager : public SmartCtor<DownloadManager> {
  public:
+  /** Alias to contain Error Cdoe and for some Errors a Status Code */
   using Error = u64;
+  /** Error Codes of DL Manager */
   enum Error_ {
     Error_None,        ///< Function Executed Successfully
     Error_Memory,      ///< Memory  Allocation Error
@@ -42,12 +47,22 @@ class DownloadManager : public SmartCtor<DownloadManager> {
     Error_Invalid,     ///< Invalid Json struct
     Error_NoWifi,      ///< Console not connected to wifi
   };
-  DownloadManager() {}
-  ~DownloadManager() {}
+  DownloadManager() = default;
+  ~DownloadManager() = default;
 
+  /**
+   * Extract the DL Manager Error code of a Error
+   * @param err Error
+   * @return Downloadmanager Error code
+   */
   static Error_ GetErrorCode(Error err) {
     return (Error_)u32(err & 0xffffffff);
   }
+  /**
+   * Extract the DL Manager Status code of a Error
+   * @param err Error
+   * @return Status code
+   */
   static int GetStatusCode(Error err) {
     Error_ c = GetErrorCode(err);
     if (c != Error_StatusCode && c != Error_CtrStatus && c != Error_Curl) {
@@ -56,17 +71,45 @@ class DownloadManager : public SmartCtor<DownloadManager> {
     return u32(err >> 32);
   }
 
+  /**
+   * Download from URL inro a String Buffer
+   * @param url URL to download from
+   * @param res result buffer
+   * @return Error Code
+   */
   Error Get(const std::string& url, std::string& res);
+  /**
+   * Download from URL into a File
+   * @param url URL to download from
+   * @param res_path Path to write file to
+   * @return Error Code
+   */
   Error GetFile(const std::string& url, const std::string& res_path);
+  /**
+   * Download a File from a Git Release
+   * @param url URL of the repo
+   * @param asset Asset to download
+   * @param path Path to write file into
+   * @param pre download from Prerelease
+   * @return Error Code
+   */
   Error GetGitRelease(const std::string& url, const std::string& asset,
                       const std::string& path, bool pre);
+  /**
+   * Get a json API request as nlohmann json object
+   * @param url URL to request
+   * @param res result json object
+   * @return Error Code
+   */
   Error GetAsJson(const std::string& url, nlohmann::json& res);
 
+  /** Get Current Progress in Bytes */
   u64 ProgressCurrent() const { return current; }
+  /** Get Total number in bytes */
   u64 ProgressTotal() const { return total; }
 
  private:
-  u64 current;
-  u64 total;
+  u64 current;  ///< Current Progress
+  u64 total;    ///< Total Bytes tp Download
 };
 }  // namespace PD

@@ -27,17 +27,27 @@ SOFTWARE.
 
 namespace PD {
 namespace Music {
+/**
+ * Decoder Template class
+ */
 class Decoder : public SmartCtor<Decoder> {
  public:
-  Decoder() {}
-  virtual ~Decoder() {}
+  Decoder() = default;
+  virtual ~Decoder() = default;
 
+  /** Template Init function */
   virtual int Init(const std::string& path) = 0;
+  /** Template deinit function */
   virtual void Deinit() = 0;
+  /** Template function to get sample rate */
   virtual u32 GetSampleRate() = 0;
+  /** template function to get number of channels */
   virtual u8 GetChannels() = 0;
+  /** template function to get buffer size */
   virtual size_t GetBufSize() = 0;
+  /** template decode function */
   virtual u64 Decode(u16* buf_address) = 0;
+  /** template function to get file sanples if exist */
   virtual size_t GetFileSamples() = 0;
 };
 }  // namespace Music

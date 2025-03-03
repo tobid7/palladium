@@ -27,25 +27,42 @@ SOFTWARE.
 
 namespace PD {
 namespace Music {
+/**
+ * Music Metadata Data Holder
+ */
 class MetaData {
  public:
-  MetaData() {}
-  ~MetaData() {}
+  MetaData() = default;
+  ~MetaData() = default;
 
+  /** Getter for name */
   std::string Name() const { return name; }
+  /** Getter for album */
   std::string Album() const { return album; }
+  /** Getter for year */
   std::string Year() const { return year; }
+  /** Getter for Title */
   std::string Title() const { return title; }
+  /** Getter for Artist */
   std::string Artist() const { return artist; }
+  /** Getter for [what is this] */
   std::string Mdt() const { return mdt; }
+  /** Gettr for file path */
   std::string Path() const { return path; }
 
+  /** Setter for Name */
   void Name(const std::string &v) { name = v; }
+  /** Setter for Album */
   void Album(const std::string &v) { album = v; }
+  /** Settr for Year */
   void Year(const std::string &v) { year = v; }
+  /** Settr for Title */
   void Title(const std::string &v) { title = v; }
+  /** Settr for Artist */
   void Artist(const std::string &v) { artist = v; }
+  /** Settr for [what is this] */
   void Mdt(const std::string &v) { mdt = v; }
+  /** Settr for Path */
   void Path(const std::string &v) { path = v; }
 
  private:

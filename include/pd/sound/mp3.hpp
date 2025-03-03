@@ -29,17 +29,27 @@ SOFTWARE.
 
 namespace PD {
 namespace Music {
+  /**
+   * MP3 Decoder
+   */
 class Mp3Decoder : public Decoder {
  public:
-  Mp3Decoder() {}
-  ~Mp3Decoder() {}
+  Mp3Decoder() = default;
+  ~Mp3Decoder() = default;
 
+  /** Init Funciton to load file and Init decoder */
   int Init(const std::string& path) override;
+  /** Unload Decoder */
   void Deinit() override;
+  /** Get Sample Rate */
   u32 GetSampleRate() override;
+  /** Get Channels */
   u8 GetChannels() override;
+  /** Get Buffer Size */
   size_t GetBufSize() override;
+  /** Decode next data */
   u64 Decode(u16* buf_address) override;
+  /** Get File Samples if exist */
   size_t GetFileSamples() override;
 
  private:

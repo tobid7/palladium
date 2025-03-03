@@ -23,14 +23,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/drivers/hid.hpp>
 #include <pd/core/tween.hpp>
+#include <pd/drivers/hid.hpp>
 #include <pd/overlays/overlay.hpp>
 #include <pd/ui7/ui7.hpp>
 
 namespace PD {
+/**
+ * Settings Menu Overlay
+ */
 class SettingsMenu : public Overlay {
  public:
+  /**
+   * Constructor to setup Overlay
+   */
   SettingsMenu() {
     too++;
     if (too > 1) {
@@ -39,10 +45,15 @@ class SettingsMenu : public Overlay {
     }
     flymgr.From(vec2(0, 240)).To(vec2(0, 115)).In(0.3f).As(flymgr.EaseInQuad);
   }
+  /** Deconstructor */
   ~SettingsMenu() { too--; }
 
+  /** Rendering and Input Handler */
   void Update(float delta, LI::Renderer::Ref ren, Hid::Ref inp) override;
 
+  /**
+   * Function to Trigger remove animation
+   */
   void Rem() {
     rem = true;
     flymgr.From(vec2(0, 115)).To(vec2(0, 240)).In(0.2f).As(flymgr.EaseOutQuad);

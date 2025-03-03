@@ -23,24 +23,45 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/lithium/renderer.hpp>
 #include <pd/core/color.hpp>
 #include <pd/core/tween.hpp>
+#include <pd/lithium/renderer.hpp>
 
 namespace PD {
+/**
+ * Message Manager
+ */
 class MessageMgr : public PD::SmartCtor<MessageMgr> {
  public:
+  /**
+   * Message Container
+   */
   class Container : public PD::SmartCtor<Container> {
    public:
+    /**
+     * Message Constructor
+     * @param title Title
+     * @param msg Message
+     */
     Container(const std::string& title, const std::string& msg);
-    ~Container() {}
+    ~Container() = default;
 
+    /** Render the Container */
     void Render(PD::LI::Renderer::Ref ren);
+    /**
+     * Update Animations by slot and delta
+     * @param slot Slot
+     * @param delta Deltatime
+     */
     void Update(int slot, float delta);
+    /** Trigger Fly in Animation */
     void FlyIn();
+    /** Trigger Change Position Animation */
     void ToBeMoved(int slot);
+    /** Trigger Removed Animation */
     void ToBeRemoved();
 
+    /** Check if Message can be removed from list */
     bool ShouldBeRemoved() const { return (tbr && pos.IsFinished()) || kill; }
 
    private:
@@ -55,14 +76,24 @@ class MessageMgr : public PD::SmartCtor<MessageMgr> {
     bool kill = false;     // Instant Kill
     int s = 0;             // Slot
   };
+  /** Constructor to Link a Renderer reference */
   MessageMgr(PD::LI::Renderer::Ref r) { ren = r; }
-  ~MessageMgr() {}
+  ~MessageMgr() = default;
 
+  /**
+   * Add a New Message
+   * @param title Message Title
+   * @param text Message Text
+   */
   void Push(const std::string& title, const std::string& text);
+  /**
+   * Update Messages
+   * @param delta Deltatime
+   */
   void Update(float delta);
 
  private:
-  std::vector<Container::Ref> msgs;
-  PD::LI::Renderer::Ref ren;
+  std::vector<Container::Ref> msgs;  // List of Messages
+  PD::LI::Renderer::Ref ren;         // Renderer Reference
 };
 }  // namespace PD

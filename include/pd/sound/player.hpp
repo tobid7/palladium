@@ -29,6 +29,9 @@ SOFTWARE.
 
 namespace PD {
 namespace Music {
+/**
+ * Music Player
+ */
 class Player : public SmartCtor<Player> {
  public:
   Player() {}

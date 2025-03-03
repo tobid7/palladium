@@ -28,20 +28,37 @@ SOFTWARE.
 #include <pd/overlays/overlay.hpp>
 
 namespace PD {
+/**
+ * Overlay Manager Class
+ */
 class OverlayMgr : public SmartCtor<OverlayMgr> {
  public:
+  /**
+   * Constructor
+   * @param ren Renderer
+   * @param inp Input Driver reference
+   */
   OverlayMgr(LI::Renderer::Ref ren, Hid::Ref inp) {
     this->ren = ren;
     this->inp = inp;
   }
+  /** Deconstructor */
   ~OverlayMgr() { overlays.clear(); }
 
+  /**
+   * Append a New Overlay
+   * @param overlay Overlay reference to push
+   */
   void Push(Overlay::Ref overlay);
+  /**
+   * Update Overlays
+   * @paran delta Deltatime
+   */
   void Update(float delta);
 
  private:
-  std::vector<Overlay::Ref> overlays;
-  LI::Renderer::Ref ren;
-  Hid::Ref inp;
+  std::vector<Overlay::Ref> overlays;  ///< Overlay List
+  LI::Renderer::Ref ren;               ///< Renderer reference
+  Hid::Ref inp;                        ///< Input Driver reference
 };
 }  // namespace PD

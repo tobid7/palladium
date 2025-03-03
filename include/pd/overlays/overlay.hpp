@@ -28,19 +28,30 @@ SOFTWARE.
 #include <pd/lithium/renderer.hpp>
 
 namespace PD {
+/**
+ * Overlay Template class
+ */
 class Overlay : public SmartCtor<Overlay> {
  public:
-  Overlay() {}
-  virtual ~Overlay() {}
+  Overlay() = default;
+  virtual ~Overlay() = default;
 
+  /**
+   * Update Function for Overlay input and rendering
+   * @param delta Deltatime
+   * @param ren Renderer reference
+   * @param inp Input Driver
+   */
   virtual void Update(float delta, LI::Renderer::Ref ren, Hid::Ref inp) = 0;
 
+  /** Check if killed to remove from Overlay Manager */
   bool IsKilled() const { return kill; }
 
  protected:
+  /** Internall Kill function to call from your Overlay */
   void Kill() { kill = true; }
 
  private:
-  bool kill = false;
+  bool kill = false;  ///< Should be killed or not
 };
 }  // namespace PD
