@@ -14,15 +14,16 @@ void SettingsMenu::Update(float delta, LI::Renderer::Ref ren, Hid::Ref inp) {
   ren->OnScreen(ren->GetScreen(false));
   if (ctx->BeginMenu("Palladium - Settings", UI7MenuFlags_CenterTitle)) {
     auto m = ctx->GetCurrentMenu();
+    m->PushAlignment(UI7Align_Center);
     m->SeparatorText("Library Info");
     m->Label(LibInfo::CompiledWith());
-    m->AfterAlign(UI7Align_Center);
+    m->Join();
     m->Label(LibInfo::CxxVersion());
-    m->AfterAlign(UI7Align_Center);
+    m->Join();
     m->Label("Version: " + LibInfo::Version() + "[" + LibInfo::Commit() + "]");
-    m->AfterAlign(UI7Align_Center);
+    m->Join();
     m->Label("Build Time: " + LibInfo::BuildTime());
-    m->AfterAlign(UI7Align_Center);
+    m->JoinAlign(UI7Align_Mid);
     ctx->EndMenu();
   }
   ren->OnScreen(ren->GetScreen(true));

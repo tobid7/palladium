@@ -82,7 +82,7 @@ class Test : public PD::App {
       }
       m->SameLine();
       if (m->Button("Palladium")) {
-        this->FeatureDisable(AppFLags_UserLoop);
+        //sthis->FeatureDisable(AppFLags_UserLoop);
         Overlays()->Push(PD::New<PD::SettingsMenu>());
       }
       m->SeparatorText("SeparatorText");

@@ -71,6 +71,14 @@ class DrawList : public SmartCtor<DrawList> {
    * @param size Optional Size of the Image
    */
   void AddImage(vec2 pos, Texture::Ref img, vec2 size = 0.f);
+  /**
+   * Render a Line from Position A to Position B
+   * @param a Pos a
+   * @param b Pos b
+   * @param clr Color
+   * @param t Thcikness
+   */
+  void AddLine(const vec2& a, const vec2& b, const UI7Color& clr, int t = 1);
 
   /** Clear the Drawlist */
   void Clear();

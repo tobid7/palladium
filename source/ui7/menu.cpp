@@ -320,14 +320,29 @@ void UI7::Menu::SeparatorText(const std::string& label) {
   if (HandleScrolling(pos, size)) {
     return;
   }
+  auto alignment = GetAlignment();
+  vec2 rpos =
+      AlignPos(pos, view_area.z() - 10, view_area, alignment);  // RenderPos
   /// Label pos for better overview
-  vec2 lpos = pos + vec2((view_area.z() - 10) * 0.5 - tdim.x() * 0.5, 0);
-  main->AddRectangle(pos + vec2(0, tdim.y() * 0.5),
-                     vec2(lpos.x() - pos.x() - 5, size.y()),
-                     theme->Get(UI7Color_TextDead));
-  main->AddRectangle(pos + vec2(lpos.x() + tdim.x(), tdim.y() * 0.5),
-                     vec2(size.x() - (lpos.x() + tdim.x()), size.y()),
-                     theme->Get(UI7Color_TextDead));
+  vec2 lpos = rpos;
+  if (alignment & UI7Align_Center) {
+    lpos += vec2((view_area.z() - 10) * 0.5 - tdim.x() * 0.5, 0);
+  } else if (alignment & UI7Align_Right) {
+    lpos = vec2(view_area.z() - 10 - tdim.x(), rpos.y());
+    if (scrolling[1]) {
+      lpos.x() -= 8;
+    }
+  }
+  if (!(alignment & UI7Align_Left)) {
+    main->AddRectangle(pos + vec2(0, tdim.y() * 0.5),
+                       vec2(lpos.x() - pos.x() - 5, size.y()),
+                       theme->Get(UI7Color_TextDead));
+  }
+  if (!(alignment & UI7Align_Right)) {
+    main->AddRectangle(pos + vec2(lpos.x() + tdim.x(), tdim.y() * 0.5),
+                       vec2(size.x() - (lpos.x() + tdim.x()), size.y()),
+                       theme->Get(UI7Color_TextDead));
+  }
   main->AddText(lpos, label, theme->Get(UI7Color_Text), 0,
                 vec2(view_area.z(), 20));
 }

@@ -112,6 +112,22 @@ void DrawList::AddImage(vec2 pos, Texture::Ref img, vec2 size) {
       ren->CurrentScreen()->ScreenType() == Screen::Bottom, cmd));
 }
 
+void DrawList::AddLine(const vec2& a, const vec2& b, const UI7Color& clr,
+                       int t) {
+  if (!ren->InBox(a, ren->GetViewport()) ||
+      !ren->InBox(b, ren->GetViewport())) {
+    return;
+  }
+  auto line = ren->CreateLine(a, b, t);
+  auto cmd = LI::Command::New();
+  ren->UseTex();
+  ren->SetupCommand(cmd);
+  cmd->Layer(base + layer);
+  ren->QuadCommand(cmd, line, vec4(0.f, 1.f, 1.f, 0.f), clr);
+  commands.push_back(std::make_pair(
+      ren->CurrentScreen()->ScreenType() == Screen::Bottom, cmd));
+}
+
 void DrawList::Clear() { commands.clear(); }
 
 void DrawList::Process() {
