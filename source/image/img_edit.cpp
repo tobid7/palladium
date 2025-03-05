@@ -1,8 +1,7 @@
-#pragma once
-
 /*
 MIT License
-Copyright (c) 2024 - 2025 René Amthor (tobid7)
+
+Copyright (c) 2024 - 2025 tobid7
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,44 +22,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/ui7/container/container.hpp>
+#include <pd/external/stb_image.h>
+
+#include <cstring>
+#include <memory>
+#include <pd/image/img_edit.hpp>
 
 namespace PD {
-namespace UI7 {
-/**
- * Image Object
- */
-class Image : public Container {
- public:
-  /**
-   * Constructor for the Image Object
-   * @param img Image Texture Reference
-   * @param pos Base Position
-   * @param lr Renderer Reference [to determinate screen]
-   * @param size Custom Size of the Image
-   */
-  Image(Texture::Ref img, vec2 pos, LI::Renderer::Ref lr, vec2 size = 0.f) {
-    this->screen = lr->CurrentScreen();
-    this->img = img;
-    this->SetPos(pos);
-    this->newsize = size;
-    if (size.x() != 0 || size.y() != 0) {
-      this->SetSize(size);
-    } else {
-      this->SetSize(img->GetSize());
-    }
-  }
-  ~Image() = default;
-
-  /**
-   * Override for the Rendering Handler
-   * @note This function is usally called by Menu::Update
-   * */
-  void Draw() override;
-
- private:
-  Texture::Ref img;    ///< Texture reference to the Image
-  vec2 newsize = 0.f;  ///< New Size
-};
-}  // namespace UI7
+void ImgEdit::Load(const std::string& path) {
+  u8* buf = stbi_load(path.c_str(), &w, &h, &fmt, 4);
+  buffer.assign(buf, buf + (w * h * 4));
+  stbi_image_free(buf);
+}
+void ImgEdit::Load(const std::vector<u8>& buf) {}
+void ImgEdit::Copy(const std::vector<u8>& buf, int w, int h, int fmt) {}
 }  // namespace PD

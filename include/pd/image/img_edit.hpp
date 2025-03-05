@@ -2,7 +2,8 @@
 
 /*
 MIT License
-Copyright (c) 2024 - 2025 René Amthor (tobid7)
+
+Copyright (c) 2024 - 2025 tobid7
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,44 +24,41 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/ui7/container/container.hpp>
+#include <pd/core/common.hpp>
 
 namespace PD {
-namespace UI7 {
-/**
- * Image Object
- */
-class Image : public Container {
+class ImgEdit {
  public:
-  /**
-   * Constructor for the Image Object
-   * @param img Image Texture Reference
-   * @param pos Base Position
-   * @param lr Renderer Reference [to determinate screen]
-   * @param size Custom Size of the Image
-   */
-  Image(Texture::Ref img, vec2 pos, LI::Renderer::Ref lr, vec2 size = 0.f) {
-    this->screen = lr->CurrentScreen();
-    this->img = img;
-    this->SetPos(pos);
-    this->newsize = size;
-    if (size.x() != 0 || size.y() != 0) {
-      this->SetSize(size);
-    } else {
-      this->SetSize(img->GetSize());
-    }
+  ImgEdit() = default;
+  ImgEdit(const std::string& path) { this->Load(path); }
+  ImgEdit(const std::vector<u8>& buf) { this->Load(buf); }
+  ImgEdit(const std::vector<u8>& buf, int w, int h, int fmt = 4) {
+    this->Copy(buf, w, h, fmt);
   }
-  ~Image() = default;
+  ~ImgEdit() = default;
 
-  /**
-   * Override for the Rendering Handler
-   * @note This function is usally called by Menu::Update
-   * */
-  void Draw() override;
+  void Load(const std::string& path);
+  void Load(const std::vector<u8>& buf);
+  void Copy(const std::vector<u8>& buf, int w, int h, int fmt = 4);
+
+  std::vector<u8>& GetBuffer() { return buffer; }
+  std::vector<u8> GetBuffer() const { return buffer; }
+
+  int Width() const { return w; }
+  int Height() const { return h; }
+
+  u8& operator[](int idx) { return buffer[idx]; }
+  u8 operator[](int idx) const { return buffer[idx]; }
+
+  // Probably these make th eabove ones useless
+
+  operator std::vector<u8>&() { return buffer; }
+  operator std::vector<u8>() const { return buffer; }
 
  private:
-  Texture::Ref img;    ///< Texture reference to the Image
-  vec2 newsize = 0.f;  ///< New Size
+  std::vector<u8> buffer;
+  int w = 0;
+  int h = 0;
+  int fmt = 0;
 };
-}  // namespace UI7
 }  // namespace PD

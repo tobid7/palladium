@@ -40,6 +40,7 @@ SOFTWARE.
 // Image
 #include <pd/image/img_blur.hpp>
 #include <pd/image/img_convert.hpp>
+#include <pd/image/img_edit.hpp>
 // Drivers
 #include <pd/drivers/hid.hpp>
 // Overlays

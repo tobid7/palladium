@@ -148,7 +148,7 @@ class Font : public SmartCtor<Font> {
    */
   void LoadTTF(const std::string& path, int px_height = 32);
   /**
-   * Load 3DS System FOnt
+   * Load 3DS System Font
    */
   void LoadSystemFont();
   /**

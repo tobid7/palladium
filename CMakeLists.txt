@@ -52,7 +52,7 @@ execute_process(
 )
 
 # Set Project
-project(palladium LANGUAGES C CXX VERSION 0.2.5)
+project(palladium LANGUAGES C CXX VERSION 0.2.6)
 
 option(PD_BUILD_TESTS "Sets if TestApp and TestBench get build" OFF)
 
@@ -80,6 +80,7 @@ source/core/timetrace.cpp)
 
 ## Image Source Code
 set(IMAGE_SRC
+source/image/img_edit.cpp
 source/image/img_blur.cpp
 source/image/img_convert.cpp)
 

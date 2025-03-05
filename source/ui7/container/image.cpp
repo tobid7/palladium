@@ -29,7 +29,7 @@ void Image::Draw() {
   Assert(ren.get() && list.get(), "Did you run Container::Init correctly?");
   Assert(img.get(), "Image is nullptr!");
   ren->OnScreen(screen);
-  list->AddImage(FinalPos(), img);
+  list->AddImage(FinalPos(), img, newsize);
 }
 }  // namespace UI7
 }  // namespace PD
