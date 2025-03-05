@@ -167,6 +167,24 @@ class Command : public SmartCtor<Command> {
    */
   RenderMode Rendermode() const { return mode; }
 
+  /** Setter for Scissor Mode */
+  Command& SetScissorMode(ScissorMode mode) {
+    scissor = mode;
+    return *this;
+  }
+
+  /** Getter for Scissor Mode */
+  ScissorMode GetScissorMode() const { return scissor; }
+
+  /** Setter for Scissor Area */
+  Command& ScissorRect(const vec4& v) {
+    scissor_area = v;
+    return *this;
+  }
+
+  /** Getter for Scissor Area */
+  vec4 ScissorRect() const { return scissor_area; }
+
  private:
   /**
    * Vertex Buffer
@@ -188,6 +206,10 @@ class Command : public SmartCtor<Command> {
   int index;
   /** RenderMode (Default to RenderMode_RGBA) */
   RenderMode mode = RenderMode_RGBA;
+  /** Scissor Mode (for defined area to render) */
+  ScissorMode scissor = ScissorMode_None;
+  /** scissor box (top left and bottom right) */
+  vec4 scissor_area;
 };
 }  // namespace LI
 }  // namespace PD

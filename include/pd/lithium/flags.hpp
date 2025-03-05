@@ -61,5 +61,11 @@ enum RenderMode {
   RenderMode_RGBA,  ///< RGBA [for textures or solid colors]
   RenderMode_Font,  ///< A8 [for textures only crated by 1 color channel]
 };
+/** Scissor Mode (for ClipRect related rendering) */
+enum ScissorMode {
+  ScissorMode_None = 0,      ///< No Scissor
+  ScissorMode_Inverted = 1,  ///< Render Pixels outside the box
+  ScissorMode_Normal = 3,    ///< Only render pixels inside the box
+};
 }  // namespace LI
 }  // namespace PD

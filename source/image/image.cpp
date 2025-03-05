@@ -26,14 +26,35 @@ SOFTWARE.
 
 #include <cstring>
 #include <memory>
-#include <pd/image/img_edit.hpp>
+#include <pd/image/image.hpp>
+#include <pd/image/img_convert.hpp>
 
 namespace PD {
-void ImgEdit::Load(const std::string& path) {
-  u8* buf = stbi_load(path.c_str(), &w, &h, &fmt, 4);
-  buffer.assign(buf, buf + (w * h * 4));
-  stbi_image_free(buf);
+void Image::Load(const std::string& path) {
+  u8* img = stbi_load(path.c_str(), &w, &h, &fmt, 4);
+  if (fmt == 3) {
+    stbi_image_free(img);
+    img = stbi_load(path.c_str(), &w, &h, &fmt, 3);
+    buffer.resize(w * h * 4);
+    PD::ImgConvert::RGB24toRGBA32(
+        buffer, std::vector<u8>(img, img + (w * h * 3)), w, h);
+  } else {
+    buffer.assign(img, img + (w * h * 4));
+    stbi_image_free(img);
+  }
 }
-void ImgEdit::Load(const std::vector<u8>& buf) {}
-void ImgEdit::Copy(const std::vector<u8>& buf, int w, int h, int fmt) {}
+void Image::Load(const std::vector<u8>& buf) {
+  u8* img = stbi_load_from_memory(buf.data(), buf.size(), &w, &h, &fmt, 4);
+  if (fmt == 3) {
+    stbi_image_free(img);
+    img = stbi_load_from_memory(buf.data(), buf.size(), &w, &h, &fmt, 3);
+    buffer.resize(w * h * 4);
+    PD::ImgConvert::RGB24toRGBA32(
+        buffer, std::vector<u8>(img, img + (w * h * 3)), w, h);
+  } else {
+    buffer.assign(img, img + (w * h * 4));
+    stbi_image_free(img);
+  }
+}
+void Image::Copy(const std::vector<u8>& buf, int w, int h, int fmt) {}
 }  // namespace PD

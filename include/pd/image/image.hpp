@@ -27,15 +27,15 @@ SOFTWARE.
 #include <pd/core/common.hpp>
 
 namespace PD {
-class ImgEdit {
+class Image {
  public:
-  ImgEdit() = default;
-  ImgEdit(const std::string& path) { this->Load(path); }
-  ImgEdit(const std::vector<u8>& buf) { this->Load(buf); }
-  ImgEdit(const std::vector<u8>& buf, int w, int h, int fmt = 4) {
+  Image() = default;
+  Image(const std::string& path) { this->Load(path); }
+  Image(const std::vector<u8>& buf) { this->Load(buf); }
+  Image(const std::vector<u8>& buf, int w, int h, int fmt = 4) {
     this->Copy(buf, w, h, fmt);
   }
-  ~ImgEdit() = default;
+  ~Image() = default;
 
   void Load(const std::string& path);
   void Load(const std::vector<u8>& buf);

@@ -27,11 +27,12 @@ SOFTWARE.
 #include <tex3ds.h>
 
 #include <pd/app/error.hpp>
+#include <pd/core/bit_util.hpp>
 #include <pd/core/io.hpp>
 #include <pd/core/timetrace.hpp>
-#include <pd/lithium/texture.hpp>
-#include <pd/core/bit_util.hpp>
+#include <pd/image/image.hpp>
 #include <pd/image/img_convert.hpp>
+#include <pd/lithium/texture.hpp>
 
 namespace PD {
 GPU_TEXCOLOR GetTexFmt(Texture::Type type) {
@@ -115,51 +116,24 @@ void Texture::Delete() {
 void Texture::LoadFile(const std::string& path) {
   PD::TT::Scope st("texldr-" + path);
   Delete();
-  int w = 0, h = 0, c = 0;
-  u8* image = stbi_load(path.c_str(), &w, &h, &c, 4);
-  PD::Assert(image != nullptr, "Unable to load image: " + path);
-  if (w > 1024 || h > 1024) {
-    stbi_image_free(image);
+  PD::Image img(path);
+  PD::Assert(img.GetBuffer().size(), "Unable to load image: " + path);
+  if (img.Width() > 1024 || img.Height() > 1024) {
     PD::Error("Width or heigt is > 1024");
     return;
   }
-  std::vector<u8> buf;
-  if (c == 3) {
-    stbi_image_free(image);
-    image = stbi_load(path.c_str(), &w, &h, &c, 3);
-    buf.resize(w * h * 4);
-    PD::ImgConvert::RGB24toRGBA32(
-        buf, std::vector<u8>(image, image + (w * h * 3)), w, h);
-  } else {
-    buf.assign(image, image + (w * h * 4));
-    stbi_image_free(image);
-  }
-  MakeTex(buf, w, h);
+  MakeTex(img, img.Width(), img.Height());
 }
 
 void Texture::LoadMemory(const std::vector<u8>& data) {
   Delete();
-  int w, h, c;
-  u8* image = stbi_load_from_memory(data.data(), data.size(), &w, &h, &c, 4);
-  if (image == nullptr) {
+  PD::Image img(data);
+  PD::Assert(img.GetBuffer().size(), "Unable to load image from Memory!");
+  if (img.Width() > 1024 || img.Height() > 1024) {
+    PD::Error("Width or heigt is > 1024");
     return;
   }
-  if (w > 1024 || h > 1024) {
-    stbi_image_free(image);
-    return;
-  }
-  std::vector<u8> buf;
-  if (c == 3) {
-    stbi_image_free(image);
-    image = stbi_load_from_memory(data.data(), data.size(), &w, &h, &c, 3);
-    buf.resize(w * h * 4);
-    PD::ImgConvert::RGB24toRGBA32(
-        buf, std::vector<u8>(image, image + (w * h * 3)), w, h);
-  } else {
-    buf.assign(image, image + (w * h * 4));
-    stbi_image_free(image);
-  }
-  MakeTex(buf, w, h);
+  MakeTex(img, img.Width(), img.Height());
 }
 
 void Texture::LoadPixels(const std::vector<u8>& pixels, int w, int h, Type type,

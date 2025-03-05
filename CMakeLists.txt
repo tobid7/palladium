@@ -80,7 +80,7 @@ source/core/timetrace.cpp)
 
 ## Image Source Code
 set(IMAGE_SRC
-source/image/img_edit.cpp
+source/image/image.cpp
 source/image/img_blur.cpp
 source/image/img_convert.cpp)
 

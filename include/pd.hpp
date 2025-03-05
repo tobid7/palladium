@@ -38,9 +38,9 @@ SOFTWARE.
 #include <pd/lithium/renderer.hpp>
 #include <pd/lithium/spritesheet.hpp>
 // Image
+#include <pd/image/image.hpp>
 #include <pd/image/img_blur.hpp>
 #include <pd/image/img_convert.hpp>
-#include <pd/image/img_edit.hpp>
 // Drivers
 #include <pd/drivers/hid.hpp>
 // Overlays

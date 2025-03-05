@@ -465,11 +465,17 @@ void Renderer::Render(Screen::Ref s) {
   while (index < cmds.size()) {
     C3D_Tex* tex = cmds[index]->Tex()->GetTex();
     auto mode = cmds[index]->Rendermode();
+    auto smode = cmds[index]->GetScissorMode();
+    auto spos = cmds[index]->ScissorRect();
+    C3D_SetScissor((GPU_SCISSORMODE)smode, s->GetSize().y() - spos.w(),
+                   s->GetSize().x() - spos.z(), s->GetSize().y() - spos.y(),
+                   s->GetSize().x() - spos.x());
     UpdateRenderMode(mode);
     u32 start_vtx = vertex_idx;
     u32 start_idx = index_idx;
     while (index < cmds.size() && cmds[index]->Tex()->GetTex() == tex &&
-           cmds[index]->Rendermode() == mode) {
+           cmds[index]->Rendermode() == mode &&
+           cmds[index]->GetScissorMode() == smode) {
       auto c = cmds[index];
       // Indices
       for (size_t i = 0; i < c->IndexList().size(); i++) {

@@ -108,6 +108,7 @@ void UI7::Menu::Update(float delta) {
   if (!scroll_anim.IsFinished()) {
     scrolling_off = scroll_anim;
   }
+  main->PushClipRect(vec4(5, tbh, view_area.z() - 12, view_area.w()));
   std::vector<int> tbr;
   for (int i = 0; i < (int)objects.size(); i++) {
     auto& it = objects[i];
@@ -131,6 +132,7 @@ void UI7::Menu::Update(float delta) {
   for (auto it : tbr) {
     idobjs.erase(idobjs.begin() + it);
   }
+  main->PopClipRect();
   this->back->Process();
   this->main->Process();
   this->front->Process();

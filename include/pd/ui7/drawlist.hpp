@@ -85,6 +85,12 @@ class DrawList : public SmartCtor<DrawList> {
   /** Process [Render] the Drawlist */
   void Process();
 
+  /** Push a Clip Rect */
+  void PushClipRect(const vec4& v) { clip_rects.push(v); }
+
+  /** Revert Last Clip Rect */
+  void PopClipRect() { clip_rects.pop(); }
+
   /** Getter for the Layer */
   int Layer() const { return layer; }
   /** Setter fot the Layer */
@@ -100,9 +106,10 @@ class DrawList : public SmartCtor<DrawList> {
   friend class Menu;
   friend class Context;
 
-  int layer;              ///< Current Layer
-  int base;               ///< Base Layer
-  LI::Renderer::Ref ren;  ///< Renderer Reference
+  int layer;                    ///< Current Layer
+  int base;                     ///< Base Layer
+  LI::Renderer::Ref ren;        ///< Renderer Reference
+  std::stack<vec4> clip_rects;  ///< Stack containing Scissor Areas
   // Map for Auto Static Text
   std::unordered_map<u32, LI::StaticText::Ref> static_text;
   // List of Drawcommands generated

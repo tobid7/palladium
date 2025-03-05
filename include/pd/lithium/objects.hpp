@@ -119,6 +119,26 @@ class StaticObject : public SmartCtor<StaticObject> {
   }
 
   /**
+   *  Set a Custom Scissor Mode for Object Copy List
+   * @param m New Mode to Set
+   */
+  void ReSetScissorMode(ScissorMode m) {
+    for (auto& i : cpy) {
+      i->SetScissorMode(m);
+    }
+  }
+
+  /**
+   * Set Custom Scissor Rect to All Objects
+   * @param v Scissor Rect to set
+   */
+  void ReScissorRect(const vec4& v) {
+    for (auto& i : cpy) {
+      i->ScissorRect(v);
+    }
+  }
+
+  /**
    * Get a Reference to the Copy Commands List
    * @return command list reference
    */
@@ -295,6 +315,18 @@ class StaticText : public SmartCtor<StaticText> {
    * @return Font Reference
    */
   Font::Ref Font() { return font; }
+
+  /**
+   *  Set a Custom Scissor Mode Static Text
+   * @param m New Mode to Set
+   */
+  void SetScissorMode(ScissorMode m) { text->ReSetScissorMode(m); }
+
+  /**
+   * Set Custom Scissor Rect to Static Text
+   * @param v Scissor Rect to set
+   */
+  void ScissorRect(const vec4& v) { text->ReScissorRect(v); }
 
  private:
   /** Font */
