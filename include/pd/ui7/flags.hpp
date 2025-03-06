@@ -38,6 +38,7 @@ enum UI7MenuFlags_ {
   UI7MenuFlags_NoBackground = 1 << 4,  ///< Dont Render Menu Background
   UI7MenuFlags_NoClipRect = 1 << 5,    ///< Disable clip render area of the Menu
   UI7MenuFlags_NoCollapse = 1 << 6,    ///< Disable Menu Collapse
+  UI7MenuFlags_NoMove = 1 << 7,        ///< Disable Window Movement
   // Enable Horizontal and Vertical Scrolling
   UI7MenuFlags_Scrolling = UI7MenuFlags_HzScrolling | UI7MenuFlags_VtScrolling,
 };

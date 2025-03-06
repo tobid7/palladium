@@ -61,7 +61,7 @@ bool UI7::Context::BeginMenu(const ID& id, UI7MenuFlags flags) {
   if (!this->current->is_open) {
     this->current = nullptr;
   }
-  return this->current->is_open;
+  return this->current != nullptr;
 }
 
 UI7::Menu::Ref UI7::Context::GetCurrentMenu() {

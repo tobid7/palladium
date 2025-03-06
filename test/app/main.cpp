@@ -57,7 +57,7 @@ class Test : public PD::App {
                        UI7MenuFlags_Scrolling | UI7MenuFlags_CenterTitle)) {
       auto m = ui7->GetCurrentMenu();
       m->SeparatorText("Menu Timings");
-      m->DebugLabels();
+      PD::UI7::Menu::DebugLabels(m);
       m->SeparatorText("Palladium Info");
       m->PushAlignment(UI7Align_Center);
       m->Label("Version: " + PD::LibInfo::Version() + " [" +
@@ -82,7 +82,7 @@ class Test : public PD::App {
       }
       m->SameLine();
       if (m->Button("Palladium")) {
-        //sthis->FeatureDisable(AppFLags_UserLoop);
+        // sthis->FeatureDisable(AppFLags_UserLoop);
         Overlays()->Push(PD::New<PD::SettingsMenu>());
       }
       m->SeparatorText("SeparatorText");

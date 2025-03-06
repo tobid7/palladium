@@ -228,23 +228,25 @@ void UI7::Menu::PreHandler(UI7MenuFlags flags) {
 
 void UI7::Menu::PostHandler() {
   TT::Scope st("MPOS_" + name);
-  if (inp->IsDown(inp->Touch) &&
-      LI::Renderer::InBox(inp->TouchPos(),
-                          vec4(pos + vec2(18, 0), vec2(view_area.z(), tbh))) &&
-      has_touch) {
-    mouse = inp->TouchPos();
-  } else if (inp->IsUp(inp->Touch) &&
-             LI::Renderer::InBox(
-                 inp->TouchPos(),
-                 vec4(pos + vec2(18, 0), vec2(view_area.z(), tbh))) &&
-             has_touch) {
-    mouse = 0;
-  } else if (inp->IsHeld(inp->Touch) &&
-             LI::Renderer::InBox(
-                 inp->TouchPosLast(),
-                 vec4(pos + vec2(18, 0), vec2(view_area.z(), tbh))) &&
-             has_touch) {
-    pos = inp->TouchPos() - mouse;
+  if (!(flags & UI7MenuFlags_NoMove)) {
+    if (inp->IsDown(inp->Touch) &&
+        LI::Renderer::InBox(inp->TouchPos(), vec4(pos + vec2(18, 0),
+                                                  vec2(view_area.z(), tbh))) &&
+        has_touch) {
+      mouse = inp->TouchPos();
+    } else if (inp->IsUp(inp->Touch) &&
+               LI::Renderer::InBox(
+                   inp->TouchPos(),
+                   vec4(pos + vec2(18, 0), vec2(view_area.z(), tbh))) &&
+               has_touch) {
+      mouse = 0;
+    } else if (inp->IsHeld(inp->Touch) &&
+               LI::Renderer::InBox(
+                   inp->TouchPosLast(),
+                   vec4(pos + vec2(18, 0), vec2(view_area.z(), tbh))) &&
+               has_touch) {
+      pos = inp->TouchPos() - mouse;
+    }
   }
   if (scrolling[1]) {
     scroll_allowed[1] = (max[1] > 235);
