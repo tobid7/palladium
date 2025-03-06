@@ -23,15 +23,29 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
+#include <pd/core/timetrace.hpp>
 #include <pd/drivers/hid.hpp>
 #include <pd/ui7/drawlist.hpp>
 #include <pd/ui7/flags.hpp>
 #include <pd/ui7/id.hpp>
 #include <pd/ui7/menu.hpp>
 #include <pd/ui7/theme.hpp>
+/**
+ * Declare UI7 Version
+ * Format: 00    00    00    00
+ *         Major Minor Patch Build
+ * 0x01010000 -> 1.1.0-0
+ */
+#define UI7_VERSION 0x00020700
 
 namespace PD {
 namespace UI7 {
+/**
+ * Get UI7 Version String
+ * @param show_build Ahow build num (mostly unused)
+ * @return Version String (1.0.0-1 for example)
+ */
+std::string GetVersion(bool show_build = false);
 /** Base Context for UI7 */
 class Context : public SmartCtor<Context> {
  public:
@@ -48,6 +62,7 @@ class Context : public SmartCtor<Context> {
     theme = Theme::New();
     back = DrawList::New(ren);
     front = DrawList::New(ren);
+    s_delta = TimeStats::New(60);
   }
   ~Context() = default;
 
@@ -110,6 +125,14 @@ class Context : public SmartCtor<Context> {
   /** Get the Root Layer of the Menu */
   int RootLayer() const { return root_layer; }
 
+  // Debugging / Demo / About
+
+  /** About Menu */
+  void AboutMenu();
+
+  /** Metrics */
+  void MetricsMenu();
+
  private:
   // Used in Overlays
   int root_layer = 0;
@@ -139,6 +162,11 @@ class Context : public SmartCtor<Context> {
   DrawList::Ref back;
   // Active Theme
   Theme::Ref theme;
+
+  // Metrics
+
+  // Deltatime Average
+  TimeStats::Ref s_delta;
 };
 }  // namespace UI7
 }  // namespace PD

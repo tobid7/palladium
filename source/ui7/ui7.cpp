@@ -25,6 +25,14 @@ SOFTWARE.
 #include <pd/ui7/ui7.hpp>
 
 namespace PD {
+std::string UI7::GetVersion(bool show_build) {
+  std::stringstream s;
+  s << ((UI7_VERSION >> 24) & 0xFF) << ".";
+  s << ((UI7_VERSION >> 16) & 0xFF) << ".";
+  s << ((UI7_VERSION >> 8) & 0xFF);
+  if (show_build) s << "-" << ((UI7_VERSION) & 0xFF);
+  return s.str();
+}
 bool UI7::Context::BeginMenu(const ID& id, UI7MenuFlags flags) {
   Assert(!this->current, "You are already in another Menu!");
   Assert(std::find(amenus.begin(), amenus.end(), (u32)id) == amenus.end(),
@@ -50,7 +58,10 @@ bool UI7::Context::BeginMenu(const ID& id, UI7MenuFlags flags) {
   this->current->ViewArea(this->ren->GetViewport());
   this->current->PreHandler(flags);
   amenus.push_back(this->current->GetID());
-  return true;
+  if (!this->current->is_open) {
+    this->current = nullptr;
+  }
+  return this->current->is_open;
 }
 
 UI7::Menu::Ref UI7::Context::GetCurrentMenu() {
@@ -74,6 +85,8 @@ void UI7::Context::EndMenu() {
 void UI7::Context::Update(float delta) {
   TT::Scope st("UI7_Update");
   Assert(current == nullptr, "Still in a Menu!");
+  this->delta = delta;
+  s_delta->Add(delta * 1000);
   this->back->BaseLayer(root_layer + 10);
   this->back->Process();
   for (auto it : amenus) {
@@ -82,5 +95,45 @@ void UI7::Context::Update(float delta) {
   this->front->BaseLayer(root_layer + 60);
   this->front->Process();
   this->amenus.clear();
+}
+
+void UI7::Context::AboutMenu() {
+  if (this->BeginMenu("About UI7", UI7MenuFlags_Scrolling)) {
+    auto m = this->GetCurrentMenu();
+
+    m->Label("Palladium - UI7 " + GetVersion());
+    m->Separator();
+    m->Label("(c) 2023-2025 René Amthor");
+    m->Label("UI7 is licensed under the MIT License.");
+    m->Label("See LICENSE for more information.");
+    static bool show_build;
+    m->Checkbox("Show Build Info", show_build);
+    if (show_build) {
+      m->SeparatorText("Build Info");
+      m->Label("Full Version -> " + GetVersion(true));
+      m->Label("sizeof(size_t) -> " + std::to_string(sizeof(size_t)));
+      m->Label("sizeof(LI::Vertex) -> " + std::to_string(sizeof(LI::Vertex)));
+      m->Label("__cplusplus -> " + std::to_string(__cplusplus));
+      m->Label("Compiler -> " + LibInfo::CompiledWith());
+    }
+    this->EndMenu();
+  }
+}
+
+void UI7::Context::MetricsMenu() {
+  if (this->BeginMenu("UI7 Metrics", UI7MenuFlags_Scrolling)) {
+    auto m = this->GetCurrentMenu();
+
+    m->Label("Palladium - UI7 " + GetVersion());
+    m->Separator();
+    m->Label(std::format("Average {:.3f} ms/f ({:.1f} FPS)",
+                         ((float)s_delta->GetAverage() / 1000.f),
+                         1000.f / ((float)s_delta->GetAverage() / 1000.f)));
+    m->Label(std::format("Vertices: {} Indices: {}", ren->Vertices(),
+                         ren->Indices()));
+    m->Label("Triangles: " + std::to_string(ren->Indices() / 3));
+    m->Label("Menus: " + std::to_string(menus.size()));
+    this->EndMenu();
+  }
 }
 }  // namespace PD

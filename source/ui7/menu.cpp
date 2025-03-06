@@ -78,28 +78,32 @@ void UI7::Menu::Image(Texture::Ref img, vec2 size) {
   r->HandleScrolling(scrolling_off, view_area);
 }
 
-void UI7::Menu::DebugLabels() {
+void UI7::Menu::DebugLabels(Menu::Ref m, Menu::Ref t) {
+  if (t == nullptr) {
+    t = m;
+  }
   std::stringstream s;
-  s << "Name: " << name << " [";
-  s << std::hex << std::setw(8) << std::setfill('0') << id;
+  s << "Name: " << m->name << " [";
+  s << std::hex << std::setw(8) << std::setfill('0') << m->id;
   s << std::dec << "]";
-  this->Label(s.str());
-  this->Label(
+  t->Label(s.str());
+  t->Label(std::format("Size: {:.2f}, {:.2f}", m->max.x(), m->max.y()));
+  t->Label(
       "Pre: " +
       Strings::FormatNanos(
-          Sys::GetTraceRef("MPRE_" + name)->GetProtocol()->GetAverage()));
-  this->Label(
+          Sys::GetTraceRef("MPRE_" + m->name)->GetProtocol()->GetAverage()));
+  t->Label(
       "Post: " +
       Strings::FormatNanos(
-          Sys::GetTraceRef("MPOS_" + name)->GetProtocol()->GetAverage()));
-  this->Label(
+          Sys::GetTraceRef("MPOS_" + m->name)->GetProtocol()->GetAverage()));
+  t->Label(
       "Update: " +
       Strings::FormatNanos(
-          Sys::GetTraceRef("MUPT_" + name)->GetProtocol()->GetAverage()));
-  this->Label(
+          Sys::GetTraceRef("MUPT_" + m->name)->GetProtocol()->GetAverage()));
+  t->Label(
       "MUser: " +
       Strings::FormatNanos(
-          Sys::GetTraceRef("MUSR_" + name)->GetProtocol()->GetAverage()));
+          Sys::GetTraceRef("MUSR_" + m->name)->GetProtocol()->GetAverage()));
 }
 
 void UI7::Menu::Update(float delta) {
@@ -108,7 +112,11 @@ void UI7::Menu::Update(float delta) {
   if (!scroll_anim.IsFinished()) {
     scrolling_off = scroll_anim;
   }
-  main->PushClipRect(vec4(5, tbh, view_area.z() - 12, view_area.w()));
+  if (!(flags & UI7MenuFlags_NoClipRect)) {
+    main->PushClipRect(vec4(pos.x() + 5, pos.y() + tbh,
+                            pos.x() + view_area.z() - 12,
+                            pos.y() + view_area.w()));
+  }
   std::vector<int> tbr;
   for (int i = 0; i < (int)objects.size(); i++) {
     auto& it = objects[i];
@@ -132,7 +140,9 @@ void UI7::Menu::Update(float delta) {
   for (auto it : tbr) {
     idobjs.erase(idobjs.begin() + it);
   }
-  main->PopClipRect();
+  if (!(flags & UI7MenuFlags_NoClipRect)) {
+    main->PopClipRect();
+  }
   this->back->Process();
   this->main->Process();
   this->front->Process();
@@ -163,28 +173,79 @@ void UI7::Menu::PreHandler(UI7MenuFlags flags) {
   this->scrolling[0] = flags & UI7MenuFlags_HzScrolling;
   this->scrolling[1] = flags & UI7MenuFlags_VtScrolling;
   has_touch = main->ren->CurrentScreen()->ScreenType() == Screen::Bottom;
-  if (!(flags & UI7MenuFlags_NoBackground)) {
-    back->AddRectangle(0, view_area.zw(), theme->Get(UI7Color_Background));
+  if (!(flags & UI7MenuFlags_NoBackground) && is_open) {
+    back->AddRectangle(pos, view_area.zw(), theme->Get(UI7Color_Background));
   }
   if (!(flags & UI7MenuFlags_NoTitlebar)) {
     tbh = front->ren->TextScale() * 30.f;
-    front->AddRectangle(0, vec2(view_area.z(), tbh),
+    front->AddRectangle(pos, vec2(view_area.z(), tbh),
                         theme->Get(UI7Color_Header));
     vec2 tpos(5, tbh * 0.5 - front->ren->GetTextDimensions(name).y() * 0.5);
+    if (!(flags & UI7MenuFlags_NoCollapse)) {
+      tpos.x() += 18;
+      vec2 cpos = pos + 5;
+      UI7Color clr = UI7Color_FrameBackground;
+      if (inp->IsUp(inp->Touch) &&
+          LI::Renderer::InBox(inp->TouchPosLast(), vec4(cpos, vec2(18, tbh))) &&
+          has_touch) {
+        is_open = !is_open;
+      }
+      if (inp->IsHeld(inp->Touch) &&
+          LI::Renderer::InBox(inp->TouchPos(), vec4(cpos, vec2(18, tbh))) &&
+          has_touch) {
+        clr = UI7Color_FrameBackgroundHovered;
+      }
+      vec2 positions[2] = {
+          vec2(12, 6),
+          vec2(0, 12),
+      };
+      if (is_open) {
+        float t = positions[0].y();
+        positions[0].y() = positions[1].x();
+        positions[1].x() = t;
+      }
+      this->front->AddTriangle(cpos, cpos + positions[0], cpos + positions[1],
+                               theme->Get(clr));
+    }
     LITextFlags tflags = LITextFlags_None;
     if (flags & UI7MenuFlags_CenterTitle) {
       tpos = 0;
       tflags = LITextFlags_AlignMid;
     }
-    front->AddText(tpos, this->name, theme->Get(UI7Color_Text), tflags,
+    front->Layer(front->Layer() + 1);
+    front->AddText(pos + tpos, this->name, theme->Get(UI7Color_Text), tflags,
                    vec2(view_area.z(), tbh));
     main_area[1] = tbh;
     CursorInit();
+    // Add a clip Rect for Separators
+    if (!(flags & UI7MenuFlags_NoClipRect)) {
+      main->PushClipRect(vec4(pos.x() + 5, pos.y() + tbh,
+                              pos.x() + view_area.z() - 12,
+                              pos.y() + view_area.w()));
+    }
   }
 }
 
 void UI7::Menu::PostHandler() {
   TT::Scope st("MPOS_" + name);
+  if (inp->IsDown(inp->Touch) &&
+      LI::Renderer::InBox(inp->TouchPos(),
+                          vec4(pos + vec2(18, 0), vec2(view_area.z(), tbh))) &&
+      has_touch) {
+    mouse = inp->TouchPos();
+  } else if (inp->IsUp(inp->Touch) &&
+             LI::Renderer::InBox(
+                 inp->TouchPos(),
+                 vec4(pos + vec2(18, 0), vec2(view_area.z(), tbh))) &&
+             has_touch) {
+    mouse = 0;
+  } else if (inp->IsHeld(inp->Touch) &&
+             LI::Renderer::InBox(
+                 inp->TouchPosLast(),
+                 vec4(pos + vec2(18, 0), vec2(view_area.z(), tbh))) &&
+             has_touch) {
+    pos = inp->TouchPos() - mouse;
+  }
   if (scrolling[1]) {
     scroll_allowed[1] = (max[1] > 235);
     scrollbar[1] = scroll_allowed[1];
@@ -286,14 +347,20 @@ void UI7::Menu::PostHandler() {
                            0.f, float(szs - vslider_h - 4));
 
       /// Rendering Stage
-      front->AddRectangle(vec2(screen_w - 12, tsp), vec2(slider_w * 2, szs),
+      front->AddRectangle(pos + vec2(screen_w - 12, tsp),
+                          vec2(slider_w * 2, szs),
                           theme->Get(UI7Color_FrameBackground));
-      front->AddRectangle(vec2(screen_w - 10, tsp + 2), vec2(slider_w, szs - 4),
+      front->AddRectangle(pos + vec2(screen_w - 10, tsp + 2),
+                          vec2(slider_w, szs - 4),
                           theme->Get(UI7Color_FrameBackgroundHovered));
-      front->AddRectangle(vec2(screen_w - 10, srpos + 2),
+      front->AddRectangle(pos + vec2(screen_w - 10, srpos + 2),
                           vec2(slider_w, vslider_h),
                           theme->Get(UI7Color_Button));
     }
+  }
+  // Remove the Clip Rect
+  if (!(flags & UI7MenuFlags_NoClipRect)) {
+    main->PopClipRect();
   }
   TT::End("MUSR_" + name);
 }

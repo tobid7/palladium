@@ -27,16 +27,16 @@ make install
 
 | Name | Last Updated | Platform | Depends |
 |---|---|---|---|
-| pd-core | 0.2.4 | multi | none |
+| pd-core | 0.2.6 | multi | none |
 | pd-external | 0.1.0 | multi | none |
 | pd-image | 0.2.6 | multi | pd-core |
 | pd-drivers | 0.2.4 | multi | pd-core |
 | pd-lib3ds | 0.2.4 | 3ds | pd-core, pd-drivers |
 | pd-net | 0.2.4 | 3ds | pd-core, pd-lib3ds |
-| pd-lithium | 0.2.6 | 3ds | pd-core, pd-image pd-lib3ds, citro3d |
+| pd-lithium | 0.2.7 | 3ds | pd-core, pd-image pd-lib3ds, citro3d |
 | pd-sound | 0.2.4 | 3ds | pd-core, mpg123 |
 | pd-overlays | 0.2.4 | 3ds | pd-core, pd-image, pd-lib3ds, pd-lithium, pd-ui7 |
-| pd-ui7 | 0.2.6 | 3ds | pd-core, pd-image, pd-lib3ds, pd-lithium |
+| pd-ui7 | 0.2.7 | 3ds | pd-core, pd-image, pd-lib3ds, pd-lithium |
 | pd-app | 0.2.4 | 3ds | pd-core, pd-image, pd-lib3ds, pd-lithium |
 
 ## Credits

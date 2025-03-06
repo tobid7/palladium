@@ -152,7 +152,6 @@ void Renderer::QuadCommand(Command::Ref cmd, const Rect& quad, const Rect& uv,
 
 void Renderer::TriangleCommand(Command::Ref cmd, const vec2& a, const vec2& b,
                                const vec2& c, u32 col) {
-  cmd->Index(cmd_idx++).Layer(current_layer).Tex(current_tex);
   cmd->PushIndex(2).PushIndex(1).PushIndex(0);
   cmd->PushVertex(Vertex(a, vec2(0.f, 1.f), col));
   cmd->PushVertex(Vertex(b, vec2(1.f, 1.f), col));

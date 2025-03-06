@@ -158,7 +158,7 @@ class Menu : public SmartCtor<Menu> {
    * Get the Cursor Position
    * @return Cursor Pos
    */
-  vec2 Cursor() const { return cursor; }
+  vec2 Cursor() const { return pos + cursor; }
   /**
    * Set the Cursor position
    * @note The old Position can be restored with RestoreCursor
@@ -268,8 +268,12 @@ class Menu : public SmartCtor<Menu> {
 
   // Advanced
 
-  /** Display Debug Labels of the Menu */
-  void DebugLabels();
+  /**
+   * Display Debug Labels of a Menu
+   * @param m Menu to display Data from
+   * @param t Target to Write the Labels into
+   */
+  static void DebugLabels(Menu::Ref m, Menu::Ref t = nullptr);
 
   // Uneditable Stuff
 
@@ -352,6 +356,7 @@ class Menu : public SmartCtor<Menu> {
   bool scrollbar[2];       ///< Is Hz or Vt Scrollbar rendered
   bool scroll_allowed[2];  ///< Is Hz or Vt Scrolling Alowed
   bool has_touch;          ///< Menu has touch (depends on screen)
+  bool is_open = true;    ///< For Collapse Event
 
   Container::Ref tmp_parent;  ///< Parent Container (for better alignment etc)
 
@@ -373,6 +378,7 @@ class Menu : public SmartCtor<Menu> {
   vec2 mouse;      ///< Mouse/Touch Position
   vec2 bslpos;     ///< Before Sameline Position
   vec2 last_size;  ///< Last Object Size
+  vec2 pos;        ///< Menu Position
 
   // Theme
   Theme::Ref theme;
