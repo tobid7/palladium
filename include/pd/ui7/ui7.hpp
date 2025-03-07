@@ -28,6 +28,7 @@ SOFTWARE.
 #include <pd/ui7/drawlist.hpp>
 #include <pd/ui7/flags.hpp>
 #include <pd/ui7/id.hpp>
+#include <pd/ui7/io.hpp>
 #include <pd/ui7/menu.hpp>
 #include <pd/ui7/theme.hpp>
 /**
@@ -36,7 +37,7 @@ SOFTWARE.
  *         Major Minor Patch Build
  * 0x01010000 -> 1.1.0-0
  */
-#define UI7_VERSION 0x00020701
+#define UI7_VERSION 0x00020702
 
 namespace PD {
 namespace UI7 {
@@ -58,6 +59,7 @@ class Context : public SmartCtor<Context> {
     /// Set the Internal References
     this->ren = ren;
     this->inp = hid;
+    io = IO::New(hid);
     /// Init Theme and Front / Back Drawlists
     theme = Theme::New();
     back = DrawList::New(ren);
@@ -125,6 +127,9 @@ class Context : public SmartCtor<Context> {
   /** Get the Root Layer of the Menu */
   int RootLayer() const { return root_layer; }
 
+  /** Get IO Reference */
+  IO::Ref GetIO() { return io; }
+
   // Debugging / Demo / About
 
   /** About Menu */
@@ -167,6 +172,9 @@ class Context : public SmartCtor<Context> {
 
   // Deltatime Average
   TimeStats::Ref s_delta;
+
+  // IO
+  IO::Ref io;
 };
 }  // namespace UI7
 }  // namespace PD

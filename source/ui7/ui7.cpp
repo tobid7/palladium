@@ -40,6 +40,7 @@ bool UI7::Context::BeginMenu(const ID& id, UI7MenuFlags flags) {
   auto menu = this->menus.find(id);
   if (menu == this->menus.end()) {
     this->menus[id] = Menu::New(id, theme, inp);
+    this->menus[id]->ViewArea(this->ren->GetViewport());
     menu = this->menus.find(id);
   }
   this->current = menu->second;
@@ -55,7 +56,6 @@ bool UI7::Context::BeginMenu(const ID& id, UI7MenuFlags flags) {
     this->current->FrontList(DrawList::New(ren));
     this->current->FrontList()->BaseLayer(root_layer + 50);
   }
-  this->current->ViewArea(this->ren->GetViewport());
   this->current->PreHandler(flags);
   amenus.push_back(this->current->GetID());
   if (!this->current->is_open) {
@@ -129,10 +129,11 @@ void UI7::Context::MetricsMenu() {
     m->Label(std::format("Average {:.3f} ms/f ({:.1f} FPS)",
                          ((float)s_delta->GetAverage() / 1000.f),
                          1000.f / ((float)s_delta->GetAverage() / 1000.f)));
+    m->Label("Menus: " + std::to_string(menus.size()));
+    m->SeparatorText("Lithium");
     m->Label(std::format("Vertices: {} Indices: {}", ren->Vertices(),
                          ren->Indices()));
     m->Label("Triangles: " + std::to_string(ren->Indices() / 3));
-    m->Label("Menus: " + std::to_string(menus.size()));
     this->EndMenu();
   }
 }

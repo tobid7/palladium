@@ -79,6 +79,9 @@ void UI7::Menu::Image(Texture::Ref img, vec2 size) {
 }
 
 void UI7::Menu::DebugLabels(Menu::Ref m, Menu::Ref t) {
+  if (!m) {
+    return;
+  }
   if (t == nullptr) {
     t = m;
   }
@@ -87,7 +90,11 @@ void UI7::Menu::DebugLabels(Menu::Ref m, Menu::Ref t) {
   s << std::hex << std::setw(8) << std::setfill('0') << m->id;
   s << std::dec << "]";
   t->Label(s.str());
-  t->Label(std::format("Size: {:.2f}, {:.2f}", m->max.x(), m->max.y()));
+  t->Label(std::format("Max Size: {:.2f}, {:.2f}", m->max.x(), m->max.y()));
+  t->Label(std::format("Pos: {:.2f}, {:.2f} Size: {:.2f}, {:.2f}",
+                       m->view_area.x(), m->view_area.y(), m->view_area.z(),
+                       m->view_area.w()));
+  t->Label(std::format("Flags: {:#08x}", m->flags));
   t->Label(
       "Pre: " +
       Strings::FormatNanos(
@@ -113,9 +120,9 @@ void UI7::Menu::Update(float delta) {
     scrolling_off = scroll_anim;
   }
   if (!(flags & UI7MenuFlags_NoClipRect)) {
-    main->PushClipRect(vec4(pos.x() + 5, pos.y() + tbh,
-                            pos.x() + view_area.z() - 12,
-                            pos.y() + view_area.w()));
+    main->PushClipRect(vec4(view_area.x() + 5, view_area.y() + tbh,
+                            view_area.x() + view_area.z() - 12,
+                            view_area.y() + view_area.w()));
   }
   std::vector<int> tbr;
   for (int i = 0; i < (int)objects.size(); i++) {
@@ -174,16 +181,19 @@ void UI7::Menu::PreHandler(UI7MenuFlags flags) {
   this->scrolling[1] = flags & UI7MenuFlags_VtScrolling;
   has_touch = main->ren->CurrentScreen()->ScreenType() == Screen::Bottom;
   if (!(flags & UI7MenuFlags_NoBackground) && is_open) {
-    back->AddRectangle(pos, view_area.zw(), theme->Get(UI7Color_Background));
+    back->AddRectangle(view_area.xy() + vec2(0, tbh),
+                       view_area.zw() - vec2(0, tbh),
+                       theme->Get(UI7Color_Background));
   }
   if (!(flags & UI7MenuFlags_NoTitlebar)) {
+    // Title bar setup and Rendering
     tbh = front->ren->TextScale() * 30.f;
-    front->AddRectangle(pos, vec2(view_area.z(), tbh),
+    front->AddRectangle(view_area.xy(), vec2(view_area.z(), tbh),
                         theme->Get(UI7Color_Header));
     vec2 tpos(5, tbh * 0.5 - front->ren->GetTextDimensions(name).y() * 0.5);
     if (!(flags & UI7MenuFlags_NoCollapse)) {
       tpos.x() += 18;
-      vec2 cpos = pos + 5;
+      vec2 cpos = view_area.xy() + 5;
       UI7Color clr = UI7Color_FrameBackground;
       if (inp->IsUp(inp->Touch) &&
           LI::Renderer::InBox(inp->TouchPosLast(), vec4(cpos, vec2(18, tbh))) &&
@@ -213,43 +223,69 @@ void UI7::Menu::PreHandler(UI7MenuFlags flags) {
       tflags = LITextFlags_AlignMid;
     }
     front->Layer(front->Layer() + 1);
-    front->AddText(pos + tpos, this->name, theme->Get(UI7Color_Text), tflags,
-                   vec2(view_area.z(), tbh));
+    front->AddText(view_area.xy() + tpos, this->name, theme->Get(UI7Color_Text),
+                   tflags, vec2(view_area.z(), tbh));
     main_area[1] = tbh;
     CursorInit();
-    // Add a clip Rect for Separators
-    if (!(flags & UI7MenuFlags_NoClipRect)) {
-      main->PushClipRect(vec4(pos.x() + 5, pos.y() + tbh,
-                              pos.x() + view_area.z() - 12,
-                              pos.y() + view_area.w()));
+    // Menu Movement
+    if (!(flags & UI7MenuFlags_NoMove)) {
+      if (inp->IsDown(inp->Touch) &&
+          LI::Renderer::InBox(
+              inp->TouchPos(),
+              vec4(view_area.xy() + vec2(18, 0), vec2(view_area.z(), tbh))) &&
+          has_touch) {
+        mouse = inp->TouchPos();
+      } else if (inp->IsUp(inp->Touch) &&
+                 LI::Renderer::InBox(inp->TouchPos(),
+                                     vec4(view_area.xy() + vec2(18, 0),
+                                          vec2(view_area.z(), tbh))) &&
+                 has_touch) {
+        mouse = 0;
+      } else if (inp->IsHeld(inp->Touch) &&
+                 LI::Renderer::InBox(inp->TouchPos(),
+                                     vec4(view_area.xy() + vec2(18, 0),
+                                          vec2(view_area.z(), tbh))) &&
+                 has_touch) {
+        view_area =
+            vec4(view_area.xy() + (inp->TouchPos() - mouse), view_area.zw());
+        mouse = inp->TouchPos();
+      }
     }
+  }
+  // Add a clip Rect for Separators
+  if (!(flags & UI7MenuFlags_NoClipRect)) {
+    main->PushClipRect(vec4(view_area.x() + 5, view_area.y() + tbh,
+                            view_area.x() + view_area.z() - 12,
+                            view_area.y() + view_area.w()));
   }
 }
 
 void UI7::Menu::PostHandler() {
   TT::Scope st("MPOS_" + name);
-  if (!(flags & UI7MenuFlags_NoMove)) {
+  if (!(flags & UI7MenuFlags_NoResize)) {
+    front->AddRectangle(view_area.xy() + view_area.zw() - 20, 20, 0xffffffff);
     if (inp->IsDown(inp->Touch) &&
-        LI::Renderer::InBox(inp->TouchPos(), vec4(pos + vec2(18, 0),
-                                                  vec2(view_area.z(), tbh))) &&
+        LI::Renderer::InBox(inp->TouchPos(),
+                            vec4(view_area.xy() + view_area.zw() - 20, 20)) &&
         has_touch) {
       mouse = inp->TouchPos();
-    } else if (inp->IsUp(inp->Touch) &&
-               LI::Renderer::InBox(
-                   inp->TouchPos(),
-                   vec4(pos + vec2(18, 0), vec2(view_area.z(), tbh))) &&
-               has_touch) {
-      mouse = 0;
-    } else if (inp->IsHeld(inp->Touch) &&
-               LI::Renderer::InBox(
-                   inp->TouchPosLast(),
-                   vec4(pos + vec2(18, 0), vec2(view_area.z(), tbh))) &&
-               has_touch) {
-      pos = inp->TouchPos() - mouse;
     }
+    if (inp->IsHeld(inp->Touch) &&
+        LI::Renderer::InBox(inp->TouchPos(),
+                            vec4(view_area.xy() + view_area.zw() - 20, 20)) &&
+        has_touch) {
+      view_area =
+          vec4(view_area.xy(), view_area.zw() + (inp->TouchPos() - mouse));
+      mouse = inp->TouchPos();
+    }
+    // Not vidible dor some reason
+    // front->AddTriangle(10, vec2(10, 0), vec2(10, 0), 0xffffffff);
   }
   if (scrolling[1]) {
-    scroll_allowed[1] = (max[1] > 235);
+    scroll_allowed[1] = (max[1] > view_area.w() - 5);
+    if (max[1] < view_area.w() - 5) {
+      scrolling_off[1] = 0.f;
+    }
     scrollbar[1] = scroll_allowed[1];
 
     if (scrollbar[1]) {
@@ -298,7 +334,8 @@ void UI7::Menu::PostHandler() {
           mouse = vec2();
         }
         if (inp->IsHeld(inp->Touch)) {
-          if (front->ren->InBox(tpos, main_area)) {
+          if (front->ren->InBox(tpos, vec4(view_area.xy() + main_area.xy(),
+                                           main_area.zw()))) {
             if (scrolling_off[1] < max[1] - view_area[3] + 40 &&
                 scrolling_off[1] > -40) {
               /// Cursor Mod
@@ -333,7 +370,8 @@ void UI7::Menu::PostHandler() {
       /// Probably need a new API for this
       auto tp = inp->TouchPos();
       if (inp->IsHeld(inp->Touch) &&
-          LI::Renderer::InBox(tp, vec4(screen_w - 12, tsp, 8, szs))) {
+          LI::Renderer::InBox(tp, vec4(view_area.x() + screen_w - 12,
+                                       view_area.y() + tsp, 8, szs))) {
         float drag_center = vslider_h / 2.0f;
         float drag_pos =
             std::clamp(static_cast<float>((tp[1] - tsp - drag_center) /
@@ -349,13 +387,13 @@ void UI7::Menu::PostHandler() {
                            0.f, float(szs - vslider_h - 4));
 
       /// Rendering Stage
-      front->AddRectangle(pos + vec2(screen_w - 12, tsp),
+      front->AddRectangle(view_area.xy() + vec2(screen_w - 12, tsp),
                           vec2(slider_w * 2, szs),
                           theme->Get(UI7Color_FrameBackground));
-      front->AddRectangle(pos + vec2(screen_w - 10, tsp + 2),
+      front->AddRectangle(view_area.xy() + vec2(screen_w - 10, tsp + 2),
                           vec2(slider_w, szs - 4),
                           theme->Get(UI7Color_FrameBackgroundHovered));
-      front->AddRectangle(pos + vec2(screen_w - 10, srpos + 2),
+      front->AddRectangle(view_area.xy() + vec2(screen_w - 10, srpos + 2),
                           vec2(slider_w, vslider_h),
                           theme->Get(UI7Color_Button));
     }
@@ -405,12 +443,12 @@ void UI7::Menu::SeparatorText(const std::string& label) {
     }
   }
   if (!(alignment & UI7Align_Left)) {
-    main->AddRectangle(pos + vec2(0, tdim.y() * 0.5),
-                       vec2(lpos.x() - pos.x() - 5, size.y()),
+    main->AddRectangle(rpos + vec2(0, tdim.y() * 0.5),
+                       vec2(lpos.x() - rpos.x() - 5, size.y()),
                        theme->Get(UI7Color_TextDead));
   }
   if (!(alignment & UI7Align_Right)) {
-    main->AddRectangle(pos + vec2(lpos.x() + tdim.x(), tdim.y() * 0.5),
+    main->AddRectangle(rpos + vec2(lpos.x() + tdim.x(), tdim.y() * 0.5),
                        vec2(size.x() - (lpos.x() + tdim.x()), size.y()),
                        theme->Get(UI7Color_TextDead));
   }
