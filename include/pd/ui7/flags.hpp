@@ -27,6 +27,8 @@ SOFTWARE.
 using UI7MenuFlags = unsigned int;
 /** 32Bit Value to store Alignment Flags */
 using UI7Align = unsigned int;
+/** 32Bit Value to store Context (IO) flags */
+using UI7IOFlags = unsigned int;
 
 /** Menu Flags */
 enum UI7MenuFlags_ {
@@ -42,6 +44,13 @@ enum UI7MenuFlags_ {
   UI7MenuFlags_NoResize = 1 << 8,      ///< Disable Menu Resize
   // Enable Horizontal and Vertical Scrolling
   UI7MenuFlags_Scrolling = UI7MenuFlags_HzScrolling | UI7MenuFlags_VtScrolling,
+};
+
+/** UI7 Context Flags */
+enum UI7IOFlags_ {
+  UI7IOFlags_None = 0,                 ///< No Additional Config available
+  UI7IOFlags_HasTouch = 1 << 0,        ///< Enable touch support [future]
+  UI7IOFlags_HasMouseCursor = 1 << 1,  ///< Enable Mouse support [future]
 };
 
 /** Probably need to update this */

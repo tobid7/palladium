@@ -36,7 +36,7 @@ make install
 | pd-lithium | 0.2.7 | 3ds | pd-core, pd-image pd-lib3ds, citro3d |
 | pd-sound | 0.2.4 | 3ds | pd-core, mpg123 |
 | pd-overlays | 0.2.4 | 3ds | pd-core, pd-image, pd-lib3ds, pd-lithium, pd-ui7 |
-| pd-ui7 | 0.2.7 | 3ds | pd-core, pd-image, pd-lib3ds, pd-lithium |
+| pd-ui7 | 0.2.8 | 3ds | pd-core, pd-image, pd-lib3ds, pd-lithium |
 | pd-app | 0.2.4 | 3ds | pd-core, pd-image, pd-lib3ds, pd-lithium |
 
 ## Credits

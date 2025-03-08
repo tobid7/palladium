@@ -21,19 +21,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/core/sys.hpp>
-#include <pd/ui7/container/container.hpp>
+#include <pd/core/timetrace.hpp>
+#include <pd/ui7/io.hpp>
 
 namespace PD {
-namespace UI7 {
-void Container::HandleScrolling(vec2 scrolling, vec4 viewport) {
-  if (last_use != 0 && Sys::GetTime() - last_use > 5000) {
-    rem = true;
-  }
-  last_use = Sys::GetTime();
-  pos -= vec2(0, scrolling.y());
-  skippable = !LI::Renderer::InBox(
-      pos, size, vec4(viewport.xy(), viewport.xy() + viewport.zw()));
+void UI7::IO::Update() {
+  Time->Update();
+  DragTime->Update();
+  DragReleased = false;
+  Framerate = 1000.f / Delta;
 }
-}  // namespace UI7
 }  // namespace PD

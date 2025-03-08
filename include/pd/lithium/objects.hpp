@@ -305,6 +305,9 @@ class StaticText : public SmartCtor<StaticText> {
    */
   void Draw();
 
+  /** Get the Raw Object for Custom API's */
+  StaticObject::Ref GetRawObject() { return text; }
+
   /**
    * Set Font used by the static Text
    * @param fnt Font used

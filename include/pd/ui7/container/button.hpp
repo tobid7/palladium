@@ -24,6 +24,7 @@ SOFTWARE.
  */
 
 #include <pd/ui7/container/container.hpp>
+#include <pd/ui7/io.hpp>
 
 namespace PD {
 namespace UI7 {
@@ -42,13 +43,9 @@ class Button : public Container {
    * @param pos Base Position
    * @param lr Reference to the Renderer
    */
-  Button(const std::string& label, vec2 pos, LI::Renderer::Ref lr) {
-    this->screen = lr->CurrentScreen();
+  Button(const std::string& label, UI7::IO::Ref io) {
     this->label = label;
-    this->SetPos(pos);
-    this->tdim = lr->GetTextDimensions(label);
-    color = UI7Color_Button;
-    this->SetSize(tdim + vec2(8, 4));
+    this->tdim = io->Ren->GetTextDimensions(label);
   }
   ~Button() = default;
 
@@ -66,11 +63,14 @@ class Button : public Container {
    * */
   void Draw() override;
 
+  /** Function to Update Size if framepadding changes */
+  void Update() override;
+
  private:
-  vec2 tdim;             ///< Text size
-  UI7Color color;        ///< current button color
-  std::string label;     ///< Label of the Button
-  bool pressed = false;  ///< ispressed value
+  vec2 tdim;                         ///< Text size
+  UI7Color color = UI7Color_Button;  ///< current button color
+  std::string label;                 ///< Label of the Button
+  bool pressed = false;              ///< ispressed value
 };
 }  // namespace UI7
 }  // namespace PD

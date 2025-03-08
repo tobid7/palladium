@@ -26,9 +26,9 @@ SOFTWARE.
 namespace PD {
 namespace UI7 {
 void Image::Draw() {
-  Assert(ren.get() && list.get(), "Did you run Container::Init correctly?");
+  Assert(io.get() && list.get(), "Did you run Container::Init correctly?");
   Assert(img.get(), "Image is nullptr!");
-  ren->OnScreen(screen);
+  io->Ren->OnScreen(screen);
   list->AddImage(FinalPos(), img, newsize);
 }
 }  // namespace UI7

@@ -28,11 +28,10 @@ SOFTWARE.
 namespace PD {
 namespace UI7 {
 void UI7::Menu::Label(const std::string& label) {
-  Container::Ref r =
-      ObjectPush(PD::New<UI7::Label>(label, Cursor(), this->back->ren));
-  r->SetPos(AlignPos(r->GetPos(), r->GetSize(), view_area, GetAlignment()));
+  Container::Ref r = ObjectPush(PD::New<UI7::Label>(label, io->Ren));
+  r->SetPos(AlignPos(Cursor(), r->GetSize(), view_area, GetAlignment()));
   CursorMove(r->GetSize());
-  r->Init(main->ren, main, theme);
+  r->Init(io, main);
   r->HandleScrolling(scrolling_off, view_area);
 }
 
@@ -41,12 +40,13 @@ bool UI7::Menu::Button(const std::string& label) {
   u32 id = Strings::FastHash("btn" + label + std::to_string(count_btn++));
   Container::Ref r = FindIDObj(id);
   if (!r) {
-    r = PD::New<UI7::Button>(label, Cursor(), this->back->ren);
+    r = PD::New<UI7::Button>(label, io);
     r->SetID(id);
-    r->Init(main->ren, main, theme);
+    r->Init(io, main);
   }
   ObjectPush(r);
   r->SetPos(AlignPos(Cursor(), r->GetSize(), view_area, GetAlignment()));
+  r->Update();
   CursorMove(r->GetSize());
   r->HandleScrolling(scrolling_off, view_area);
   if (!r->Skippable()) {
@@ -59,22 +59,22 @@ void UI7::Menu::Checkbox(const std::string& label, bool& v) {
   u32 id = Strings::FastHash("cbx" + label + std::to_string(count_cbx++));
   Container::Ref r = FindIDObj(id);
   if (!r) {
-    r = PD::New<UI7::Checkbox>(label, Cursor(), v, this->back->ren);
+    r = PD::New<UI7::Checkbox>(label, v, io);
     r->SetID(id);
-    r->Init(main->ren, main, theme);
+    r->Init(io, main);
   }
   ObjectPush(r);
   r->SetPos(AlignPos(Cursor(), r->GetSize(), view_area, GetAlignment()));
+  r->Update();
   CursorMove(r->GetSize());
   r->HandleScrolling(scrolling_off, view_area);
 }
 
 void UI7::Menu::Image(Texture::Ref img, vec2 size) {
-  Container::Ref r =
-      ObjectPush(PD::New<UI7::Image>(img, Cursor(), this->back->ren, size));
-  r->SetPos(AlignPos(r->GetPos(), r->GetSize(), view_area, GetAlignment()));
+  Container::Ref r = ObjectPush(PD::New<UI7::Image>(img, size));
+  r->SetPos(AlignPos(Cursor(), r->GetSize(), view_area, GetAlignment()));
   CursorMove(r->GetSize());
-  r->Init(main->ren, main, theme);
+  r->Init(io, main);
   r->HandleScrolling(scrolling_off, view_area);
 }
 
@@ -120,8 +120,9 @@ void UI7::Menu::Update(float delta) {
     scrolling_off = scroll_anim;
   }
   if (!(flags & UI7MenuFlags_NoClipRect)) {
-    main->PushClipRect(vec4(view_area.x() + 5, view_area.y() + tbh,
-                            view_area.x() + view_area.z() - 12,
+    main->PushClipRect(vec4(view_area.x() + io->MenuPadding[0],
+                            view_area.y() + tbh,
+                            view_area.x() + view_area.z() - io->MenuPadding[0],
                             view_area.y() + view_area.w()));
   }
   std::vector<int> tbr;
@@ -132,7 +133,7 @@ void UI7::Menu::Update(float delta) {
     }
     if (!it->Skippable()) {
       if (scroll_mod[1] == 0.f) {
-        it->HandleInput(inp);
+        it->HandleInput(io->Inp);
       }
       /// Unlock Input after to ensure nothing is checked twice
       it->UnlockInput();
@@ -150,20 +151,18 @@ void UI7::Menu::Update(float delta) {
   if (!(flags & UI7MenuFlags_NoClipRect)) {
     main->PopClipRect();
   }
-  this->back->Process();
-  this->main->Process();
-  this->front->Process();
   this->objects.clear();
 }
 
 void UI7::Menu::CursorMove(const vec2& size) {
   last_size = size;
-  slcursor = cursor + vec2(size[0] + 5, 0);
+  slcursor = cursor + vec2(size[0] + io->ItemSpace[0], 0);
   if (bslpos[1]) {
-    cursor = vec2(5, cursor[1] + bslpos[1] + 5);
+    cursor = vec2(io->MenuPadding[0], cursor[1] + bslpos[1] + io->ItemSpace[1]);
     bslpos = vec2();
   } else {
-    cursor = vec2(5, cursor[1] + size[1] + 5);
+    cursor = vec2(io->MenuPadding[0] + icursoroff[0],
+                  cursor[1] + size[1] + io->ItemSpace[1]);
   }
   max = vec2(slcursor[0], cursor[1]);
 }
@@ -183,26 +182,24 @@ void UI7::Menu::PreHandler(UI7MenuFlags flags) {
   if (!(flags & UI7MenuFlags_NoBackground) && is_open) {
     back->AddRectangle(view_area.xy() + vec2(0, tbh),
                        view_area.zw() - vec2(0, tbh),
-                       theme->Get(UI7Color_Background));
+                       io->Theme->Get(UI7Color_Background));
   }
   if (!(flags & UI7MenuFlags_NoTitlebar)) {
     // Title bar setup and Rendering
     tbh = front->ren->TextScale() * 30.f;
     front->AddRectangle(view_area.xy(), vec2(view_area.z(), tbh),
-                        theme->Get(UI7Color_Header));
-    vec2 tpos(5, tbh * 0.5 - front->ren->GetTextDimensions(name).y() * 0.5);
+                        io->Theme->Get(UI7Color_Header));
+    vec2 tpos(io->MenuPadding[0],
+              tbh * 0.5 - front->ren->GetTextDimensions(name).y() * 0.5);
     if (!(flags & UI7MenuFlags_NoCollapse)) {
       tpos.x() += 18;
-      vec2 cpos = view_area.xy() + 5;
+      vec2 cpos = view_area.xy() + io->FramePadding;
       UI7Color clr = UI7Color_FrameBackground;
-      if (inp->IsUp(inp->Touch) &&
-          LI::Renderer::InBox(inp->TouchPosLast(), vec4(cpos, vec2(18, tbh))) &&
-          has_touch) {
-        is_open = !is_open;
-      }
-      if (inp->IsHeld(inp->Touch) &&
-          LI::Renderer::InBox(inp->TouchPos(), vec4(cpos, vec2(18, tbh))) &&
-          has_touch) {
+      if (has_touch &&
+          io->DragObject(UI7::ID(name + "clbse"), vec4(cpos, vec2(18, tbh)))) {
+        if (io->DragReleased) {
+          is_open = !is_open;
+        }
         clr = UI7Color_FrameBackgroundHovered;
       }
       vec2 positions[2] = {
@@ -215,7 +212,7 @@ void UI7::Menu::PreHandler(UI7MenuFlags flags) {
         positions[1].x() = t;
       }
       this->front->AddTriangle(cpos, cpos + positions[0], cpos + positions[1],
-                               theme->Get(clr));
+                               io->Theme->Get(clr));
     }
     LITextFlags tflags = LITextFlags_None;
     if (flags & UI7MenuFlags_CenterTitle) {
@@ -223,39 +220,27 @@ void UI7::Menu::PreHandler(UI7MenuFlags flags) {
       tflags = LITextFlags_AlignMid;
     }
     front->Layer(front->Layer() + 1);
-    front->AddText(view_area.xy() + tpos, this->name, theme->Get(UI7Color_Text),
-                   tflags, vec2(view_area.z(), tbh));
+    front->AddText(view_area.xy() + tpos, this->name,
+                   io->Theme->Get(UI7Color_Text), tflags,
+                   vec2(view_area.z(), tbh));
     main_area[1] = tbh;
     CursorInit();
     // Menu Movement
     if (!(flags & UI7MenuFlags_NoMove)) {
-      if (inp->IsDown(inp->Touch) &&
-          LI::Renderer::InBox(
-              inp->TouchPos(),
-              vec4(view_area.xy() + vec2(18, 0), vec2(view_area.z(), tbh))) &&
-          has_touch) {
-        mouse = inp->TouchPos();
-      } else if (inp->IsUp(inp->Touch) &&
-                 LI::Renderer::InBox(inp->TouchPos(),
-                                     vec4(view_area.xy() + vec2(18, 0),
-                                          vec2(view_area.z(), tbh))) &&
-                 has_touch) {
-        mouse = 0;
-      } else if (inp->IsHeld(inp->Touch) &&
-                 LI::Renderer::InBox(inp->TouchPos(),
-                                     vec4(view_area.xy() + vec2(18, 0),
-                                          vec2(view_area.z(), tbh))) &&
-                 has_touch) {
+      if (has_touch &&
+          io->DragObject(name + "tmv", vec4(view_area.xy() + vec2(18, 0),
+                                            vec2(view_area.z(), tbh)))) {
         view_area =
-            vec4(view_area.xy() + (inp->TouchPos() - mouse), view_area.zw());
-        mouse = inp->TouchPos();
+            vec4(view_area.xy() + (io->DragPosition - io->DragLastPosition),
+                 view_area.zw());
       }
     }
   }
   // Add a clip Rect for Separators
   if (!(flags & UI7MenuFlags_NoClipRect)) {
-    main->PushClipRect(vec4(view_area.x() + 5, view_area.y() + tbh,
-                            view_area.x() + view_area.z() - 12,
+    main->PushClipRect(vec4(view_area.x() + io->MenuPadding[0],
+                            view_area.y() + tbh,
+                            view_area.x() + view_area.z() - io->MenuPadding[0],
                             view_area.y() + view_area.w()));
   }
 }
@@ -263,27 +248,22 @@ void UI7::Menu::PreHandler(UI7MenuFlags flags) {
 void UI7::Menu::PostHandler() {
   TT::Scope st("MPOS_" + name);
   if (!(flags & UI7MenuFlags_NoResize)) {
-    front->AddRectangle(view_area.xy() + view_area.zw() - 20, 20, 0xffffffff);
-    if (inp->IsDown(inp->Touch) &&
-        LI::Renderer::InBox(inp->TouchPos(),
-                            vec4(view_area.xy() + view_area.zw() - 20, 20)) &&
-        has_touch) {
-      mouse = inp->TouchPos();
+    if (has_touch &&
+        io->DragObject(name + "rszs",
+                       vec4(view_area.xy() + view_area.zw() - 20, 20))) {
+      view_area = vec4(view_area.xy(), view_area.zw() + (io->DragPosition -
+                                                         io->DragLastPosition));
     }
-    if (inp->IsHeld(inp->Touch) &&
-        LI::Renderer::InBox(inp->TouchPos(),
-                            vec4(view_area.xy() + view_area.zw() - 20, 20)) &&
-        has_touch) {
-      view_area =
-          vec4(view_area.xy(), view_area.zw() + (inp->TouchPos() - mouse));
-      mouse = inp->TouchPos();
-    }
-    // Not vidible dor some reason
-    // front->AddTriangle(10, vec2(10, 0), vec2(10, 0), 0xffffffff);
+    // front->AddRectangle(view_area.xy() + view_area.zw() - 20, 20,
+    // 0xffffffff); Not vidible dor some reason
+    int l = front->Layer();
+    front->Layer(l + 1);
+    front->AddTriangle(10, vec2(10, 0), vec2(10, 0), 0xffffffff);
+    front->Layer(l);
   }
   if (scrolling[1]) {
-    scroll_allowed[1] = (max[1] > view_area.w() - 5);
-    if (max[1] < view_area.w() - 5) {
+    scroll_allowed[1] = (max[1] > view_area.w() - io->MenuPadding[1]);
+    if (max[1] < view_area.w() - io->MenuPadding[1]) {
       scrolling_off[1] = 0.f;
     }
     scrollbar[1] = scroll_allowed[1];
@@ -291,9 +271,9 @@ void UI7::Menu::PostHandler() {
     if (scrollbar[1]) {
       /// Setup Some Variables hare [they are self described]
       int screen_w = view_area.z();
-      int tsp = 5 + tbh;
+      int tsp = io->MenuPadding[1] + tbh;
       int slider_w = 4;
-      int szs = view_area.w() - tsp - 5;
+      int szs = view_area.w() - tsp - io->MenuPadding[1];
       /// Actually dont have a Horizontal bar yet
       if (scrollbar[0]) szs -= slider_w - 2;
       int lslider_h = 20;  // Dont go less heigt for the drag
@@ -304,7 +284,7 @@ void UI7::Menu::PostHandler() {
       /// Check if we overscroll to the bottom and Auto scroll back...
       /// Probably schould use Tween ENgine here
       if (scrolling_off[1] > max[1] - view_area[3] && max[1] != 0.f &&
-          max[1] >= view_area[3] - 5) {
+          max[1] >= view_area[3] - io->MenuPadding[1]) {
         scrolling_off[1] -= 3.f;
         if (scrolling_off[1] < max[1] - view_area[3]) {
           scrolling_off[1] = max[1] - view_area[3];
@@ -326,14 +306,14 @@ void UI7::Menu::PostHandler() {
       }
 
       /// The pain :(
-      if (has_touch) {
-        vec2 tpos = inp->TouchPos();
-        if (inp->IsDown(inp->Touch)) {
+      if (has_touch && !io->IsObjectDragged()) {
+        vec2 tpos = io->Inp->TouchPos();
+        if (io->Inp->IsDown(io->Inp->Touch)) {
           mouse = tpos;
-        } else if (inp->IsUp(inp->Touch)) {
+        } else if (io->Inp->IsUp(io->Inp->Touch)) {
           mouse = vec2();
         }
-        if (inp->IsHeld(inp->Touch)) {
+        if (io->Inp->IsHeld(io->Inp->Touch)) {
           if (front->ren->InBox(tpos, vec4(view_area.xy() + main_area.xy(),
                                            main_area.zw()))) {
             if (scrolling_off[1] < max[1] - view_area[3] + 40 &&
@@ -365,22 +345,22 @@ void UI7::Menu::PostHandler() {
           scroll_mod[1] = 0;
         }
       }
-
+      UI7Color sldr_drag = UI7Color_Button;
       /// Slider Dragging????
       /// Probably need a new API for this
-      auto tp = inp->TouchPos();
-      if (inp->IsHeld(inp->Touch) &&
-          LI::Renderer::InBox(tp, vec4(view_area.x() + screen_w - 12,
-                                       view_area.y() + tsp, 8, szs))) {
+      if (has_touch &&
+          io->DragObject(name + "sldr", vec4(view_area.x() + screen_w - 12,
+                                             view_area.y() + tsp, 8, szs)) &&
+          !io->DragReleased) {
+        sldr_drag = UI7Color_ButtonHovered;
         float drag_center = vslider_h / 2.0f;
-        float drag_pos =
-            std::clamp(static_cast<float>((tp[1] - tsp - drag_center) /
-                                          (szs - vslider_h - 4)),
-                       0.0f, 1.0f);
+        float drag_pos = std::clamp(
+            static_cast<float>((io->DragPosition[1] - tsp - drag_center) /
+                               (szs - vslider_h - 4)),
+            0.0f, 1.0f);
 
         scrolling_off[1] = drag_pos * (max[1] - 240.f);
       }
-
       int srpos =
           tsp + std::clamp(float(szs - vslider_h - 4) *
                                (scrolling_off[1] / (max[1] - view_area[3])),
@@ -389,13 +369,12 @@ void UI7::Menu::PostHandler() {
       /// Rendering Stage
       front->AddRectangle(view_area.xy() + vec2(screen_w - 12, tsp),
                           vec2(slider_w * 2, szs),
-                          theme->Get(UI7Color_FrameBackground));
+                          io->Theme->Get(UI7Color_FrameBackground));
       front->AddRectangle(view_area.xy() + vec2(screen_w - 10, tsp + 2),
                           vec2(slider_w, szs - 4),
-                          theme->Get(UI7Color_FrameBackgroundHovered));
+                          io->Theme->Get(UI7Color_FrameBackgroundHovered));
       front->AddRectangle(view_area.xy() + vec2(screen_w - 10, srpos + 2),
-                          vec2(slider_w, vslider_h),
-                          theme->Get(UI7Color_Button));
+                          vec2(slider_w, vslider_h), io->Theme->Get(sldr_drag));
     }
   }
   // Remove the Clip Rect
@@ -417,49 +396,51 @@ void UI7::Menu::Separator() {
   if (HandleScrolling(pos, size)) {
     return;
   }
-  main->AddRectangle(pos, size, theme->Get(UI7Color_TextDead));
+  main->AddRectangle(pos, size, io->Theme->Get(UI7Color_TextDead));
 }
 
 void UI7::Menu::SeparatorText(const std::string& label) {
   vec2 size = vec2(view_area.z() - (scrollbar[1] ? 24 : 10), 1);
   vec2 tdim = this->back->ren->GetTextDimensions(label);
   vec2 pos = Cursor();
-  CursorMove(vec2(size.x(), tdim.y() - 4));  // Fix to make gap not to large
+  CursorMove(vec2(size.x(), tdim.y()));
 
   if (HandleScrolling(pos, size)) {
     return;
   }
   auto alignment = GetAlignment();
-  vec2 rpos =
-      AlignPos(pos, view_area.z() - 10, view_area, alignment);  // RenderPos
+  vec2 rpos = AlignPos(pos, view_area.z() - (io->MenuPadding[0] * 2), view_area,
+                       alignment);  // RenderPos
   /// Label pos for better overview
   vec2 lpos = rpos;
   if (alignment & UI7Align_Center) {
-    lpos += vec2((view_area.z() - 10) * 0.5 - tdim.x() * 0.5, 0);
+    lpos += vec2(
+        (view_area.z() - (io->MenuPadding[0] * 2)) * 0.5 - tdim.x() * 0.5, 0);
   } else if (alignment & UI7Align_Right) {
-    lpos = vec2(view_area.z() - 10 - tdim.x(), rpos.y());
+    lpos = vec2(view_area.z() - (io->MenuPadding[0] * 2) - tdim.x(), rpos.y());
     if (scrolling[1]) {
       lpos.x() -= 8;
     }
   }
   if (!(alignment & UI7Align_Left)) {
     main->AddRectangle(rpos + vec2(0, tdim.y() * 0.5),
-                       vec2(lpos.x() - rpos.x() - 5, size.y()),
-                       theme->Get(UI7Color_TextDead));
+                       vec2(lpos.x() - rpos.x() - io->MenuPadding[0], size.y()),
+                       io->Theme->Get(UI7Color_TextDead));
   }
   if (!(alignment & UI7Align_Right)) {
     main->AddRectangle(rpos + vec2(lpos.x() + tdim.x(), tdim.y() * 0.5),
                        vec2(size.x() - (lpos.x() + tdim.x()), size.y()),
-                       theme->Get(UI7Color_TextDead));
+                       io->Theme->Get(UI7Color_TextDead));
   }
-  main->AddText(lpos, label, theme->Get(UI7Color_Text), 0,
+  main->AddText(lpos, label, io->Theme->Get(UI7Color_Text), 0,
                 vec2(view_area.z(), 20));
 }
 
 bool UI7::Menu::HandleScrolling(vec2& pos, const vec2& size) {
   if (scrolling[1]) {
     pos -= vec2(0, scrolling_off.y());
-    if (pos.y() > view_area.w() || (pos.y() + size.y() < view_area.y())) {
+    if (!io->Ren->InBox(
+            pos, size, vec4(view_area.xy(), view_area.xy() + view_area.zw()))) {
       return true;
     }
   }
@@ -541,6 +522,55 @@ void UI7::Menu::CreateParent() {
   tmp_parent = Container::New();
   tmp_parent->SetPos(0);
   tmp_parent->SetSize(0);
+}
+
+bool UI7::Menu::BeginTreeNode(const UI7::ID& id) {
+  auto n = tree_nodes.find((u32)id);
+  if (n == tree_nodes.end()) {
+    tree_nodes[(u32)id] = false;
+    n = tree_nodes.find((u32)id);
+  }
+  vec2 pos = Cursor();
+  vec2 tdim = io->Ren->GetTextDimensions(id.GetName());
+  vec2 size = vec2(tdim.x() + 10 + io->ItemSpace[0], tdim.y());
+  if (n->second) {
+    icursoroff.x() += 10.f;
+  }
+  CursorMove(size);
+  if (HandleScrolling(pos, size)) {
+    return n->second;
+  }
+  vec2 ts = pos + vec2(0, 3);
+  vec2 positions[2] = {
+      vec2(10, 5),
+      vec2(0, 10),
+  };
+  if (n->second) {
+    float t = positions[0].y();
+    positions[0].y() = positions[1].x();
+    positions[1].x() = t;
+  }
+  main->AddTriangle(ts, ts + positions[0], ts + positions[1],
+                    io->Theme->Get(UI7Color_FrameBackground));
+  main->AddText(pos + vec2(10 + io->ItemSpace[0], 0), id.GetName(),
+                io->Theme->Get(UI7Color_Text));
+  if (has_touch && io->DragObject(name + id.GetName(), vec4(pos, size))) {
+    if (io->DragReleased) {
+      n->second = !n->second;
+      if (!n->second) {
+        icursoroff.x() -= 10.f;
+        cursor.x() -= 10;
+      }
+    }
+  }
+  return n->second;
+}
+void UI7::Menu::EndTreeNode() {
+  icursoroff.x() -= 10.f;
+  cursor.x() -= 10;
+  if (icursoroff.x() < 0.f) {
+    icursoroff.x() = 0.f;
+  }
 }
 }  // namespace UI7
 }  // namespace PD

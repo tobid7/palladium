@@ -42,6 +42,9 @@ void StaticText::Setup(Renderer* ren, const vec2& pos, u32 clr,
   ren->TextCommand(this->text->List(), pos, clr, text,
                    flags | LITextFlags_RenderOOS, box);
   Renderer::OptiCommandList(this->text->List());
+  // Make sure to bring the text in edit mode
+  // Fixes flickering problems in ui7
+  this->text->ReCopy();
 }
 
 void StaticText::Draw() {

@@ -38,19 +38,13 @@ class Checkbox : public Container {
   /**
    * Constructor for Checkbox Object
    * @param label Label of the Checkbox
-   * @param pos Base Position
    * @param usr_ref Reference to the bool value to update
-   * @param lr Reference to the renderer (for text size calculation)
+   * @param io IO Reference
    */
-  Checkbox(const std::string& label, vec2 pos, bool& usr_ref,
-           LI::Renderer::Ref lr)
+  Checkbox(const std::string& label, bool& usr_ref, UI7::IO::Ref io)
       : usr_ref(usr_ref) {
-    this->screen = lr->CurrentScreen();
     this->label = label;
-    this->SetPos(pos);
-    this->tdim = lr->GetTextDimensions(label);
-    color = UI7Color_FrameBackground;
-    this->SetSize(cbs + vec2(tdim.x() + 5, 0));
+    this->tdim = io->Ren->GetTextDimensions(label);
   }
   ~Checkbox() = default;
   /**
@@ -65,12 +59,15 @@ class Checkbox : public Container {
    * */
   void Draw() override;
 
+  /** Update Size if framepadding changed */
+  void Update() override;
+
  private:
-  vec2 tdim;            ///< Text Size
-  vec2 cbs = vec2(18);  ///< Checkbox size
-  UI7Color color;       ///< Checkbox background Color
-  std::string label;    ///< Checkbox Label
-  bool& usr_ref;        ///< User bool reference
+  vec2 tdim;                                  ///< Text Size
+  vec2 cbs = vec2(18);                        ///< Checkbox size
+  UI7Color color = UI7Color_FrameBackground;  ///< Checkbox background Color
+  std::string label;                          ///< Checkbox Label
+  bool& usr_ref;                              ///< User bool reference
 };
 }  // namespace UI7
 }  // namespace PD

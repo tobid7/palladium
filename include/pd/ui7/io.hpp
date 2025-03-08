@@ -25,9 +25,10 @@ SOFTWARE.
 
 #include <pd/core/common.hpp>
 #include <pd/core/timer.hpp>
+#include <pd/drivers/hid.hpp>
 #include <pd/ui7/drawlist.hpp>
 #include <pd/ui7/flags.hpp>
-#include <pd/ui7/menu.hpp>
+#include <pd/ui7/id.hpp>
 #include <pd/ui7/theme.hpp>
 
 namespace PD {
@@ -40,21 +41,111 @@ class IO : public SmartCtor<IO> {
   /**
    * IO Constructor setting UP References
    */
-  IO(Hid::Ref input_driver) {
+  IO(Hid::Ref input_driver, LI::Renderer::Ref ren) {
     Time = Timer::New();
+    DragTime = Timer::New(false);
     Theme = UI7::Theme::New();
     Inp = input_driver;
+    Ren = ren;
+    Back = UI7::DrawList::New(Ren);
+    Front = UI7::DrawList::New(Ren);
+    DrawListRegestry["CtxBackList"] = Back;
+    DrawListRegestry["CtxFrontList"] = Front;
+    DeltaStats = TimeStats::New(60);
   };
   ~IO() = default;
 
+  /**
+   * IO Update Internal Variables
+   */
+  void Update();
+
   float Framerate = 0.f;
   float Delta = 0.f;
+  TimeStats::Ref DeltaStats;
   Timer::Ref Time;
   Hid::Ref Inp;
+  LI::Renderer::Ref Ren;
   UI7::Theme::Ref Theme;
-  float MenuPadding = 5.f;
+  vec2 MenuPadding = 5.f;
+  vec2 FramePadding = 5.f;
+  vec2 ItemSpace = vec2(5.f, 2.f);
+  std::map<UI7::ID, DrawList::Ref> DrawListRegestry;
   DrawList::Ref Back;
   DrawList::Ref Front;
+
+  // Layer Rules
+  int ContextBackLayer = 10;
+  int MenuBackLayer = 20;
+  int MenuMainLayer = 30;
+  int MenuFrontLayer = 40;
+  int ContextFrontLayer = 50;
+
+  // DrawListApi
+  void RegisterDrawList(const UI7::ID& id, DrawList::Ref v) {
+    DrawListRegestry[id] = v;
+  }
+
+  // Input API
+
+  u32 DraggedObject = 0;
+  vec2 DragSourcePos = 0;
+  vec2 DragPosition = 0;
+  vec2 DragLastPosition = 0;
+  vec4 DragDestination = 0;
+  Timer::Ref DragTime;
+  bool DragReleased = false;
+  /** Check if an object is Dragged already */
+  bool IsObjectDragged() const { return DraggedObject != 0; }
+  /**
+   * Function to Check if current Object is dragged
+   * or set it dragged
+   * @param id ID to identify this specific Object
+   * @param area Area where to start dragging
+   * @return if inputs to this objects are alowed or not
+   */
+  bool DragObject(const UI7::ID& id, vec4 area) {
+    if (IsObjectDragged()) {
+      // Only block if the Dragged Object has a difrent id
+      if (DraggedObject != id) {
+        return false;
+      }
+    }
+    // Get a Short define for touch pos
+    vec2 p = Inp->TouchPos();
+    // Check if Drag starts in the area position
+    if (Inp->IsDown(Inp->Touch) && Ren->InBox(p, area)) {
+      // Set ID and iniatial Positions
+      DraggedObject = id;
+      DragSourcePos = p;
+      DragPosition = p;
+      DragLastPosition = p;
+      DragDestination = area;
+      // Reset and Start DragTimer
+      DragTime->Reset();
+      DragTime->Rseume();
+      return false;  // To make sure the Object is "Dragged"
+    } else if (Inp->IsHeld(Inp->Touch) && IsObjectDragged()) {
+      // Update DragLast and DragPoisition
+      DragLastPosition = DragPosition;
+      DragPosition = p;
+    } else if (Inp->IsUp(Inp->Touch) && IsObjectDragged()) {
+      // Released... Everything gets reset
+      DraggedObject = 0;
+      DragPosition = 0;
+      DragSourcePos = 0;
+      DragLastPosition = 0;
+      DragDestination = 0;
+      DragReleased = true;  // Set Drag released to true (only one frame)
+      // Ensure timer is paused
+      DragTime->Pause();
+      DragTime->Reset();
+      // Still return The Object is Dragged to ensure
+      // the DragReleased var can be used
+      return true;
+    }
+    return IsObjectDragged();
+  }
 };
 }  // namespace UI7
 }  // namespace PD

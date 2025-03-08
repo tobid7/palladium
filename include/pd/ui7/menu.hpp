@@ -29,6 +29,7 @@ SOFTWARE.
 #include <pd/ui7/drawlist.hpp>
 #include <pd/ui7/flags.hpp>
 #include <pd/ui7/id.hpp>
+#include <pd/ui7/io.hpp>
 
 namespace PD {
 namespace UI7 {
@@ -38,13 +39,11 @@ class Menu : public SmartCtor<Menu> {
   /**
    * Menu COnstructor (Unly used by UI7::Context)
    * @param id ID of the Menu
-   * @param tl Theme Reference
-   * @param h Input Driver Reference
+   * @param io IO Config Reference
    */
-  Menu(ID id, Theme::Ref tl, Hid::Ref h) {
+  Menu(ID id, UI7::IO::Ref io) {
     /// Setup the Input Data
-    theme = tl;
-    this->inp = h;
+    this->io = io;
     this->id = id;
     this->name = id.GetName();
     /// Set Default Values here
@@ -84,6 +83,17 @@ class Menu : public SmartCtor<Menu> {
   void Image(Texture::Ref img, vec2 size = 0.f);
 
   // Basic API
+
+  /**
+   * Create a Tree Node
+   * @param id String ID of the Node
+   * @return node open or not
+   */
+  bool BeginTreeNode(const UI7::ID& id);
+  /**
+   * End a Tree Node
+   */
+  void EndTreeNode();
 
   /** Add the Next Objext to the same line */
   void SameLine();
@@ -133,14 +143,20 @@ class Menu : public SmartCtor<Menu> {
    * Returns a Reference to the theme
    * @return Reference to the base Theme of the context
    */
-  Theme::Ref GetTheme() { return theme; }
+  Theme::Ref GetTheme() { return io->Theme; }
   /**
    * Directly return a Color by using the
    * m->ThemeColor(UI7Color_Text) for example
    * @param clr The Input UI7 Color
    * @return The 32bit color value
    */
-  u32 ThemeColor(UI7Color clr) const { return theme->Get(clr); }
+  u32 ThemeColor(UI7Color clr) const { return io->Theme->Get(clr); }
+
+  /**
+   * Get IO Reference
+   * @return io Reference
+   */
+  UI7::IO::Ref GetIO() { return io; }
 
   // API for Custom Objects
 
@@ -188,7 +204,7 @@ class Menu : public SmartCtor<Menu> {
    * Init the Cursor
    * @note Useful when using with a Custom TitlebarHeight
    */
-  void CursorInit() { Cursor(vec2(5, tbh + 5)); }
+  void CursorInit() { Cursor(io->MenuPadding + vec2(0, tbh)); }
   /**
    * Move the Cursor for new Object
    * @param szs Size of the current Object
@@ -345,6 +361,7 @@ class Menu : public SmartCtor<Menu> {
   u32 id;                  ///< Menu ID
   std::string name;        ///< Menu Name
   vec2 cursor;             ///< Current Cursor Position
+  vec2 icursoroff;         ///< Initial Cursor Offset (Also in Newline)
   vec2 bcursor;            ///< Backup Cursor
   vec2 slcursor;           ///< Sameline Cursor
   vec4 view_area;          ///< view Area (Position and Size)
@@ -379,11 +396,9 @@ class Menu : public SmartCtor<Menu> {
   vec2 bslpos;     ///< Before Sameline Position
   vec2 last_size;  ///< Last Object Size
 
-  // Theme
-  Theme::Ref theme;
+  UI7::IO::Ref io;  ///< IO Reference
 
-  // Input Reference
-  Hid::Ref inp;
+  std::map<u32, bool> tree_nodes;  ///< Map of Tree nodes
 
   // Animations System
 

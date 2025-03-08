@@ -35,14 +35,10 @@ class Image : public Container {
   /**
    * Constructor for the Image Object
    * @param img Image Texture Reference
-   * @param pos Base Position
-   * @param lr Renderer Reference [to determinate screen]
    * @param size Custom Size of the Image
    */
-  Image(Texture::Ref img, vec2 pos, LI::Renderer::Ref lr, vec2 size = 0.f) {
-    this->screen = lr->CurrentScreen();
+  Image(Texture::Ref img, vec2 size = 0.f) {
     this->img = img;
-    this->SetPos(pos);
     this->newsize = size;
     if (size.x() != 0 || size.y() != 0) {
       this->SetSize(size);

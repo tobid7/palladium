@@ -47,15 +47,21 @@ void Checkbox::HandleInput(Hid::Ref inp) {
   inp_done = true;
 }
 void Checkbox::Draw() {
-  Assert(ren.get() && list.get() && theme,
-         "Did you run Container::Init correctly?");
-  ren->OnScreen(screen);
-  list->AddRectangle(FinalPos(), cbs, theme->Get(color));
+  Assert(list.get() && io.get(), "Did you run Container::Init correctly?");
+  io->Ren->OnScreen(screen);
+  list->AddRectangle(FinalPos(), cbs, io->Theme->Get(color));
   if (usr_ref) {
-    list->AddRectangle(FinalPos() + 2, cbs - 4, theme->Get(UI7Color_Checkmark));
+    list->AddRectangle(FinalPos() + 2, cbs - 4,
+                       io->Theme->Get(UI7Color_Checkmark));
   }
-  list->AddText(FinalPos() + vec2(cbs.x() + 5, cbs.y() * 0.5 - tdim.y() * 0.5),
-                label, theme->Get(UI7Color_Text));
+  list->AddText(FinalPos() + vec2(cbs.x() + io->ItemSpace.x(),
+                                  cbs.y() * 0.5 - tdim.y() * 0.5),
+                label, io->Theme->Get(UI7Color_Text));
+}
+
+void Checkbox::Update() {
+  Assert(io.get(), "Did you run Container::Init correctly?");
+  this->SetSize(cbs + vec2(tdim.x() + io->ItemSpace.x(), 0));
 }
 }  // namespace UI7
 }  // namespace PD

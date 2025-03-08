@@ -48,12 +48,16 @@ void Button::HandleInput(Hid::Ref inp) {
   inp_done = true;
 }
 void Button::Draw() {
-  Assert(ren.get() && list.get() && theme,
-         "Did you run Container::Init correctly?");
-  ren->OnScreen(screen);
-  list->AddRectangle(FinalPos(), size, theme->Get(color));
+  Assert(io.get() && list.get(), "Did you run Container::Init correctly?");
+  io->Ren->OnScreen(screen);
+  list->AddRectangle(FinalPos(), size, io->Theme->Get(color));
   list->AddText(FinalPos() + size * 0.5 - tdim * 0.5, label,
-                theme->Get(UI7Color_Text));
+                io->Theme->Get(UI7Color_Text));
+}
+
+void Button::Update() {
+  Assert(io.get(), "Did you run Container::Init correctly?");
+  this->SetSize(tdim + io->FramePadding);
 }
 }  // namespace UI7
 }  // namespace PD

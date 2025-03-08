@@ -68,27 +68,33 @@ void DrawList::AddText(vec2 pos, const std::string& text, const UI7Color& clr,
     return;
   }
   u32 id = Strings::FastHash(text);
-  auto e = static_text.find(id);
-  if (e == static_text.end()) {
-    static_text[id] = LI::StaticText::New();
-    e = static_text.find(id);
+  LI::StaticText::Ref e;
+  auto f = static_text.find(id);
+  if (static_text.find(id) == static_text.end()) {
+    e = LI::StaticText::New();
+    static_text[id] = e;
+  } else {
+    e = f->second;
   }
-  if (!e->second->IsSetup() || e->second->Font() != ren->Font()) {
+  if (!e->IsSetup() || e->Font() != ren->Font()) {
     int l = ren->Layer();
     ren->Layer(base);
-    /// Probably a simple ren.get() would handle the job too
-    e->second->Setup(&(*ren), pos, clr, text, flags, box);
-    e->second->Font(ren->Font());
+    e->Setup(ren.get(), pos, clr, text, flags, box);
+    e->Font(ren->Font());
     ren->Layer(l);
   }
-  e->second->SetPos(pos);
-  e->second->SetColor(clr);
-  e->second->SetLayer(layer);
+  e->SetPos(pos);
+  e->SetColor(clr);
+  e->SetLayer(layer);
   if (!clip_rects.empty()) {
-    e->second->SetScissorMode(LI::ScissorMode_Normal);
-    e->second->ScissorRect(clip_rects.top());
+    e->SetScissorMode(LI::ScissorMode_Normal);
+    e->ScissorRect(clip_rects.top());
   }
-  e->second->Draw();
+  for (auto it : e->GetRawObject()->List()) {
+    this->commands.push_back(std::make_pair(
+        ren->CurrentScreen()->ScreenType() == Screen::Bottom, it));
+  }
+  e->GetRawObject()->ReCopy();
 
   ////// STILL LEAVING THE OLD CODE BELOW AS IT IS MAYBE NEEDED //////
   //////   IF STATIC TEXT SYSTEM SHOULD HAVE AN DISABLE OPTION  //////

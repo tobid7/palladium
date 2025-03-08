@@ -35,15 +35,11 @@ class Label : public Container {
   /**
    * Constructor for Label Object
    * @param label Label [Text] to Draw
-   * @param pos Base Position
    * @param lr Renderer Reference
    */
-  Label(const std::string& label, vec2 pos, LI::Renderer::Ref lr) {
-    this->screen = lr->CurrentScreen();
+  Label(const std::string& label, LI::Renderer::Ref lr) {
     this->label = label;
-    this->SetPos(pos);
     this->tdim = lr->GetTextDimensions(label);
-    color = UI7Color_Text;
     this->SetSize(tdim);
   }
   ~Label() = default;
@@ -55,9 +51,9 @@ class Label : public Container {
   void Draw() override;
 
  private:
-  vec2 tdim;          ///< Text Size
-  UI7Color color;     ///< Color
-  std::string label;  ///< Text to Render
+  vec2 tdim;                       ///< Text Size
+  UI7Color color = UI7Color_Text;  ///< Color
+  std::string label;               ///< Text to Render
 };
 }  // namespace UI7
 }  // namespace PD

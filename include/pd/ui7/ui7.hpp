@@ -37,7 +37,7 @@ SOFTWARE.
  *         Major Minor Patch Build
  * 0x01010000 -> 1.1.0-0
  */
-#define UI7_VERSION 0x00020702
+#define UI7_VERSION 0x00020800
 
 namespace PD {
 namespace UI7 {
@@ -57,14 +57,7 @@ class Context : public SmartCtor<Context> {
    */
   Context(LI::Renderer::Ref ren, Hid::Ref hid) {
     /// Set the Internal References
-    this->ren = ren;
-    this->inp = hid;
-    io = IO::New(hid);
-    /// Init Theme and Front / Back Drawlists
-    theme = Theme::New();
-    back = DrawList::New(ren);
-    front = DrawList::New(ren);
-    s_delta = TimeStats::New(60);
+    io = IO::New(hid, ren);
   }
   ~Context() = default;
 
@@ -97,14 +90,14 @@ class Context : public SmartCtor<Context> {
    * Get Theme reference
    * @return Reference to the base Theme of the context
    */
-  Theme::Ref GetTheme() { return theme; }
+  Theme::Ref GetTheme() { return io->Theme; }
   /**
    *Directly return a Color by using the
    * ctx->ThemeColor(UI7Color_Text) for example
    * @param clr The Input UI7 Color
    * @return The 32bit color value
    */
-  u32 ThemeColor(UI7Color clr) const { return theme->Get(clr); }
+  u32 ThemeColor(UI7Color clr) const { return io->Theme->Get(clr); }
 
   /**
    * Update Context (Render menus)
@@ -115,9 +108,9 @@ class Context : public SmartCtor<Context> {
   // Expose DrawLists
 
   /** Background DrawList Reference */
-  DrawList::Ref BackList() { return back; }
+  DrawList::Ref BackList() { return io->Back; }
   /** Foreground DrawList Reference */
-  DrawList::Ref FrontList() { return front; }
+  DrawList::Ref FrontList() { return io->Front; }
 
   /**
    * Set the Root Layer of the Menu
@@ -138,41 +131,16 @@ class Context : public SmartCtor<Context> {
   /** Metrics */
   void MetricsMenu();
 
+  /** Style Editor Menu (Includes Theme Editor) */
+  void StyleEditor();
+
  private:
   // Used in Overlays
   int root_layer = 0;
-  // Linked Renderer
-  LI::Renderer::Ref ren;
-  // Input Driver Reference
-  Hid::Ref inp;
-  // Delta time
-  float delta;
-  // Context Run Time
-  float time;
-  /// @brief Last Time [unused ?]
-  float last;
-  // In Menu [unused ?]
-  bool in_menu;
-  // Is Debugging [unused ?]
-  bool debugging;
   // Map of The Menus by ID
   std::unordered_map<u32, Menu::Ref> menus;
   std::vector<u32> amenus;  ///< Active ones
   Menu::Ref current;        ///< Current Menu
-  // Debug Drawlist
-  DrawList::Ref debug;
-  // Foreground Drawlist
-  DrawList::Ref front;
-  // Background Drawlist
-  DrawList::Ref back;
-  // Active Theme
-  Theme::Ref theme;
-
-  // Metrics
-
-  // Deltatime Average
-  TimeStats::Ref s_delta;
-
   // IO
   IO::Ref io;
 };

@@ -52,7 +52,7 @@ execute_process(
 )
 
 # Set Project
-project(palladium LANGUAGES C CXX VERSION 0.2.7)
+project(palladium LANGUAGES C CXX VERSION 0.2.8)
 
 option(PD_BUILD_TESTS "Sets if TestApp and TestBench get build" OFF)
 
@@ -130,6 +130,7 @@ source/app/error.cpp)
 ## UI7 Source Code
 set(UI7_SRC
 source/ui7/drawlist.cpp
+source/ui7/io.cpp
 source/ui7/menu.cpp
 source/ui7/theme.cpp
 source/ui7/ui7.cpp

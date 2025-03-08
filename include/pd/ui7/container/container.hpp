@@ -28,6 +28,7 @@ SOFTWARE.
 #include <pd/core/vec.hpp>
 #include <pd/drivers/hid.hpp>
 #include <pd/ui7/drawlist.hpp>
+#include <pd/ui7/io.hpp>
 
 namespace PD {
 namespace UI7 {
@@ -54,14 +55,13 @@ class Container : public SmartCtor<Container> {
   /**
    * Init Function Required by every Object that uses
    * Render or Input functions
-   * @param r Renderer Reference
+   * @param io IO Reference
    * @param l DrawList Reference
-   * @param lt Theme Reference
    */
-  void Init(LI::Renderer::Ref r, UI7::DrawList::Ref l, UI7::Theme::Ref lt) {
+  void Init(UI7::IO::Ref io, UI7::DrawList::Ref l) {
     list = l;
-    theme = lt;
-    ren = r;
+    this->io = io;
+    this->screen = io->Ren->CurrentScreen();
   }
 
   /** Setter for Position */
@@ -106,6 +106,8 @@ class Container : public SmartCtor<Container> {
   virtual void HandleInput(Hid::Ref inp) {}
   /** Tamplate function for Object rendering */
   virtual void Draw() {}
+  /** Template function to update internal data (if needed) */
+  virtual void Update() {}
 
   /**
    * Function to unlock Input after Rendering is done in
@@ -140,10 +142,8 @@ class Container : public SmartCtor<Container> {
   vec2 size;
   /** Reference to the Drawlist to Draw to*/
   UI7::DrawList::Ref list;
-  /** Reference to the theme to use*/
-  UI7::Theme::Ref theme;
-  /** Reference to the Renderer*/
-  LI::Renderer::Ref ren;
+  /** IO Reference for Renderer and Theme */
+  UI7::IO::Ref io;
   /** Reference to the parent container*/
   Container::Ref parent;
   /** Object ID (0 if unused)*/
