@@ -37,7 +37,7 @@ SOFTWARE.
  *         Major Minor Patch Build
  * 0x01010000 -> 1.1.0-0
  */
-#define UI7_VERSION 0x00020800
+#define UI7_VERSION 0x00020900
 
 namespace PD {
 namespace UI7 {
@@ -68,7 +68,7 @@ class Context : public SmartCtor<Context> {
    * @return If the Menu was Created
    * (useless as false results in an error screen)
    */
-  bool BeginMenu(const ID& id, UI7MenuFlags flags = 0);
+  bool BeginMenu(const ID& id, UI7MenuFlags flags = 0, bool* show = nullptr);
   /**
    * Get the Current Menu
    * for example for auto m = ctx->GetCurrentMenu
@@ -126,13 +126,13 @@ class Context : public SmartCtor<Context> {
   // Debugging / Demo / About
 
   /** About Menu */
-  void AboutMenu();
+  void AboutMenu(bool* show = nullptr);
 
   /** Metrics */
-  void MetricsMenu();
+  void MetricsMenu(bool* show = nullptr);
 
   /** Style Editor Menu (Includes Theme Editor) */
-  void StyleEditor();
+  void StyleEditor(bool* show = nullptr);
 
  private:
   // Used in Overlays

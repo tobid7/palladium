@@ -82,6 +82,12 @@ class Menu : public SmartCtor<Menu> {
    */
   void Image(Texture::Ref img, vec2 size = 0.f);
 
+  /**
+   * Color Edit Object that opens a popup editor if clicked
+   * @param label Name of the Edit field
+   * @param color Color reference to edit
+   */
+  void ColorEdit(const std::string& label, u32* color);
   // Basic API
 
   /**
@@ -267,20 +273,10 @@ class Menu : public SmartCtor<Menu> {
   /** Destory the parent container (if one active) */
   void DestroyParent() { tmp_parent = nullptr; }
 
-  // Draw Lists
+  // Draw List
 
-  /** Background Layer Drawlist */
-  DrawList::Ref BackList() { return back; }
-  /** Setter for Background Layer Drawlist */
-  void BackList(DrawList::Ref v) { back = v; }
-  /** Main Layer Drawlist */
-  DrawList::Ref MainList() { return main; }
-  /** Setter for Main Layer Drawlist */
-  void MainList(DrawList::Ref v) { main = v; }
-  /** Foreground Layer Drawlist */
-  DrawList::Ref FrontList() { return front; }
-  /** Setter for Foreground Layer Drawlist */
-  void FrontList(DrawList::Ref v) { front = v; }
+  /** Get DrawList */
+  DrawList::Ref GetDrawList() { return main; }
 
   // Advanced
 
@@ -349,6 +345,19 @@ class Menu : public SmartCtor<Menu> {
   /** Internal Processing */
   void Update(float delta);
 
+  // Put some Buttons and functionality into its own functions
+
+  /** Handler of the Close Button (if exists) */
+  void CloseButtonHandler();
+  /** Handler of the Resize Dragging (lower right corner) */
+  void ResizeHandler();
+  /** Logic of the Titlebar Movement */
+  void MoveHandler();
+  /** Menu Collapse Button Handler */
+  void CollapseHandler();
+  /** Scroll Handler (Includes Slider Drag) */
+  void PostScrollHandler();
+
   // This ability is crazy useful
   friend class Context;
 
@@ -356,24 +365,25 @@ class Menu : public SmartCtor<Menu> {
 
   // Default Alignment for all Objects
   UI7Align alignment = UI7Align_Default;
-  UI7Align tmpalign = 0;   ///< Temp Alignment [only used once]
-  UI7MenuFlags flags = 0;  ///< Menu Flags
-  u32 id;                  ///< Menu ID
-  std::string name;        ///< Menu Name
-  vec2 cursor;             ///< Current Cursor Position
-  vec2 icursoroff;         ///< Initial Cursor Offset (Also in Newline)
-  vec2 bcursor;            ///< Backup Cursor
-  vec2 slcursor;           ///< Sameline Cursor
-  vec4 view_area;          ///< view Area (Position and Size)
-  vec4 main_area;          ///< Main Area [Input related]
-  vec2 scrolling_off;      ///< Scrolling Position
-  bool scrolling[2];       ///< Is Hz or Vt Scrolling Enabled
-  vec2 scroll_mod;         ///< Scroll Modificator
-  float tbh;               ///< Titlebar height
-  bool scrollbar[2];       ///< Is Hz or Vt Scrollbar rendered
-  bool scroll_allowed[2];  ///< Is Hz or Vt Scrolling Alowed
-  bool has_touch;          ///< Menu has touch (depends on screen)
-  bool is_open = true;     ///< For Collapse Event
+  UI7Align tmpalign = 0;     ///< Temp Alignment [only used once]
+  UI7MenuFlags flags = 0;    ///< Menu Flags
+  u32 id;                    ///< Menu ID
+  std::string name;          ///< Menu Name
+  vec2 cursor;               ///< Current Cursor Position
+  vec2 icursoroff;           ///< Initial Cursor Offset (Also in Newline)
+  vec2 bcursor;              ///< Backup Cursor
+  vec2 slcursor;             ///< Sameline Cursor
+  vec4 view_area;            ///< view Area (Position and Size)
+  vec4 main_area;            ///< Main Area [Input related]
+  vec2 scrolling_off;        ///< Scrolling Position
+  bool scrolling[2];         ///< Is Hz or Vt Scrolling Enabled
+  vec2 scroll_mod;           ///< Scroll Modificator
+  float tbh;                 ///< Titlebar height
+  bool scrollbar[2];         ///< Is Hz or Vt Scrollbar rendered
+  bool scroll_allowed[2];    ///< Is Hz or Vt Scrolling Alowed
+  bool has_touch;            ///< Menu has touch (depends on screen)
+  bool is_open = true;       ///< For Collapse Event
+  bool* is_shown = nullptr;  ///< For Close Button
 
   Container::Ref tmp_parent;  ///< Parent Container (for better alignment etc)
 
@@ -385,11 +395,9 @@ class Menu : public SmartCtor<Menu> {
   int count_btn = 0;                    ///< Count for Button ID Prefix
   int count_cbx = 0;                    ///< Cound for Checkbox ID Prefix
 
-  // DrawLists
+  // DrawList
 
-  DrawList::Ref back;   ///< Background Drawlist
-  DrawList::Ref main;   ///< Main Drawlist
-  DrawList::Ref front;  ///< Foreground Drawlist
+  DrawList::Ref main;  ///< Main Drawlist
 
   vec2 max;        ///< Max Position
   vec2 mouse;      ///< Mouse/Touch Position

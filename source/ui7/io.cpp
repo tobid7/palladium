@@ -29,6 +29,9 @@ void UI7::IO::Update() {
   Time->Update();
   DragTime->Update();
   DragReleased = false;
+  DragReleasedAW = false;
   Framerate = 1000.f / Delta;
+  DrawListRegestry.clear();
+  RegisterDrawList("CtxBackList", Back);
 }
 }  // namespace PD

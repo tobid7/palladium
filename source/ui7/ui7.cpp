@@ -45,10 +45,19 @@ std::string UI7::GetVersion(bool show_build) {
   if (show_build) s << "-" << ((UI7_VERSION) & 0xFF);
   return s.str();
 }
-bool UI7::Context::BeginMenu(const ID& id, UI7MenuFlags flags) {
+bool UI7::Context::BeginMenu(const ID& id, UI7MenuFlags flags, bool* show) {
   Assert(!this->current, "You are already in another Menu!");
   Assert(std::find(amenus.begin(), amenus.end(), (u32)id) == amenus.end(),
          "Menu Name Already used or\nContext::Update not called!");
+  if (show != nullptr) {
+    if (!(*show)) {
+      if (io->FocusedMenu == id) {
+        io->FocusedMenu = 0;
+        io->FocusedMenuRect = 0;
+      }
+      return false;
+    }
+  }
   auto menu = this->menus.find(id);
   if (menu == this->menus.end()) {
     this->menus[id] = Menu::New(id, io);
@@ -56,18 +65,12 @@ bool UI7::Context::BeginMenu(const ID& id, UI7MenuFlags flags) {
     menu = this->menus.find(id);
   }
   this->current = menu->second;
-  if (!this->current->BackList()) {
-    this->current->BackList(DrawList::New(io->Ren));
-    io->RegisterDrawList(this->current->name + "back", this->current->back);
+  this->current->is_shown = show;
+  this->io->CurrentMenu = this->current->id;
+  if (!this->current->main) {
+    this->current->main = DrawList::New(io->Ren);
   }
-  if (!this->current->MainList()) {
-    this->current->MainList(DrawList::New(io->Ren));
-    io->RegisterDrawList(this->current->name + "main", this->current->main);
-  }
-  if (!this->current->FrontList()) {
-    this->current->FrontList(DrawList::New(io->Ren));
-    io->RegisterDrawList(this->current->name + "front", this->current->front);
-  }
+  io->RegisterDrawList(id, this->current->main);
   this->current->PreHandler(flags);
   amenus.push_back(this->current->GetID());
   if (!this->current->is_open) {
@@ -92,6 +95,7 @@ UI7::Menu::Ref UI7::Context::FindMenu(const ID& id) {
 void UI7::Context::EndMenu() {
   this->current->PostHandler();
   this->current = nullptr;
+  this->io->CurrentMenu = 0;
 }
 
 void UI7::Context::Update(float delta) {
@@ -100,20 +104,37 @@ void UI7::Context::Update(float delta) {
   this->io->Delta = delta;
   io->DeltaStats->Add(io->Delta * 1000);
   for (auto it : amenus) {
-    menus[it]->Update(io->Delta);
+    auto m = menus[it];
+    io->CurrentMenu = m->id;
+    m->Update(io->Delta);
+    io->CurrentMenu = 0;
   }
-  int list = 1;
+  int list = 0;
+  u32 vtx_counter = 0;
+  u32 idx_counter = 0;
+  // Render the Focused Menu Last
+  std::sort(io->DrawListRegestry.begin(), io->DrawListRegestry.end(),
+            [&](const auto& a, const auto& b) {
+              return (a.first == io->FocusedMenu) <
+                     (b.first == io->FocusedMenu);
+            });
+  // Register Front List as last element
+  io->RegisterDrawList("CtxFrontList", io->Front);
   for (auto it : io->DrawListRegestry) {
-    it.second->BaseLayer(list * 10);
+    it.second->BaseLayer(list * 30);
     it.second->Process();
+    vtx_counter += it.second->num_vertices;
+    idx_counter += it.second->num_indices;
     list++;
   }
+  io->NumIndices = idx_counter;
+  io->NumVertices = vtx_counter;
   this->amenus.clear();
   this->io->Update();
 }
 
-void UI7::Context::AboutMenu() {
-  if (this->BeginMenu("About UI7", UI7MenuFlags_Scrolling)) {
+void UI7::Context::AboutMenu(bool* show) {
+  if (this->BeginMenu("About UI7", UI7MenuFlags_Scrolling, show)) {
     auto m = this->GetCurrentMenu();
 
     m->Label("Palladium - UI7 " + GetVersion());
@@ -135,8 +156,8 @@ void UI7::Context::AboutMenu() {
   }
 }
 
-void UI7::Context::MetricsMenu() {
-  if (this->BeginMenu("UI7 Metrics", UI7MenuFlags_Scrolling)) {
+void UI7::Context::MetricsMenu(bool* show) {
+  if (this->BeginMenu("UI7 Metrics", UI7MenuFlags_Scrolling, show)) {
     auto m = this->GetCurrentMenu();
 
     m->Label("Palladium - UI7 " + GetVersion());
@@ -145,11 +166,10 @@ void UI7::Context::MetricsMenu() {
         std::format("Average {:.3f} ms/f ({:.1f} FPS)",
                     ((float)io->DeltaStats->GetAverage() / 1000.f),
                     1000.f / ((float)io->DeltaStats->GetAverage() / 1000.f)));
+    m->Label(std::format("NumVertices: {}", io->NumVertices));
+    m->Label(std::format("NumIndices: {} -> {} Tris", io->NumIndices,
+                         io->NumIndices / 3));
     m->Label("Menus: " + std::to_string(menus.size()));
-    m->SeparatorText("Lithium");
-    m->Label(std::format("Vertices: {} Indices: {}", io->Ren->Vertices(),
-                         io->Ren->Indices()));
-    m->Label("Triangles: " + std::to_string(io->Ren->Indices() / 3));
     m->SeparatorText("TimeTrace");
     if (m->BeginTreeNode("Traces (" +
                          std::to_string(Sys::GetTraceMap().size()) + ")")) {
@@ -192,13 +212,19 @@ void UI7::Context::MetricsMenu() {
     if (m->BeginTreeNode("DrawLists (" +
                          std::to_string(io->DrawListRegestry.size()) + ")")) {
       for (auto& it : io->DrawListRegestry) {
-        m->Label(it.first.GetName());
+        if (m->BeginTreeNode(it.first.GetName())) {
+          m->Label("Vertices: " + std::to_string(it.second->num_vertices));
+          m->Label("Indices: " + std::to_string(it.second->num_indices));
+          m->Label("Base Layer: " + std::to_string(it.second->base));
+          m->EndTreeNode();
+        }
       }
       m->EndTreeNode();
     }
     m->Label("io->Time: " + Strings::FormatMillis(io->Time->Get()));
     m->Label(std::format("io->Delta: {:.3f}", io->Delta));
     m->Label(std::format("io->Framerate: {:.2f}", io->Framerate));
+    m->Label(UI7DHX32(io->FocusedMenu));
     m->Label(UI7DHX32(io->DraggedObject));
     m->Label(std::format("io->DragTime: {:.2f}s", io->DragTime->GetSeconds()));
     m->Label(UI7DV4(io->DragDestination));
@@ -209,8 +235,8 @@ void UI7::Context::MetricsMenu() {
   }
 }
 
-void UI7::Context::StyleEditor() {
-  if (this->BeginMenu("UI7 Style Editor", UI7MenuFlags_Scrolling)) {
+void UI7::Context::StyleEditor(bool* show) {
+  if (this->BeginMenu("UI7 Style Editor", UI7MenuFlags_Scrolling, show)) {
     auto m = this->GetCurrentMenu();
 
     m->Label("Palladium - UI7 " + GetVersion() + " Style Editor");
@@ -245,6 +271,25 @@ void UI7::Context::StyleEditor() {
     if (m->Button("+")) {
       io->ItemSpace += 1;
     }
+    m->SeparatorText("Theme");
+    /// Small trick to print without prefix
+#define ts(x) m->ColorEdit(std::string(#x).substr(9), &io->Theme->GetRef(x));
+    ts(UI7Color_Background);
+    ts(UI7Color_Button);
+    ts(UI7Color_ButtonDead);
+    ts(UI7Color_ButtonActive);
+    ts(UI7Color_ButtonHovered);
+    ts(UI7Color_Text);
+    ts(UI7Color_TextDead);
+    ts(UI7Color_Header);
+    ts(UI7Color_HeaderDead);
+    ts(UI7Color_Selector);
+    ts(UI7Color_Checkmark);
+    ts(UI7Color_FrameBackground);
+    ts(UI7Color_FrameBackgroundHovered);
+    ts(UI7Color_Progressbar);
+    ts(UI7Color_ListEven);
+    ts(UI7Color_ListOdd);
     this->EndMenu();
   }
 }

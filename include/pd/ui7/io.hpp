@@ -49,8 +49,7 @@ class IO : public SmartCtor<IO> {
     Ren = ren;
     Back = UI7::DrawList::New(Ren);
     Front = UI7::DrawList::New(Ren);
-    DrawListRegestry["CtxBackList"] = Back;
-    DrawListRegestry["CtxFrontList"] = Front;
+    RegisterDrawList("CtxBackList", Back);
     DeltaStats = TimeStats::New(60);
   };
   ~IO() = default;
@@ -70,9 +69,11 @@ class IO : public SmartCtor<IO> {
   vec2 MenuPadding = 5.f;
   vec2 FramePadding = 5.f;
   vec2 ItemSpace = vec2(5.f, 2.f);
-  std::map<UI7::ID, DrawList::Ref> DrawListRegestry;
+  std::vector<std::pair<UI7::ID, DrawList::Ref>> DrawListRegestry;
   DrawList::Ref Back;
   DrawList::Ref Front;
+  u32 NumVertices = 0;  ///< Debug Vertices Num
+  u32 NumIndices = 0;   ///< Debug Indices Num
 
   // Layer Rules
   int ContextBackLayer = 10;
@@ -83,18 +84,21 @@ class IO : public SmartCtor<IO> {
 
   // DrawListApi
   void RegisterDrawList(const UI7::ID& id, DrawList::Ref v) {
-    DrawListRegestry[id] = v;
+    DrawListRegestry.push_back(std::make_pair(id, v));
   }
 
   // Input API
-
+  u32 FocusedMenu = 0;
+  vec4 FocusedMenuRect;
+  u32 CurrentMenu = 0;
   u32 DraggedObject = 0;
   vec2 DragSourcePos = 0;
   vec2 DragPosition = 0;
   vec2 DragLastPosition = 0;
   vec4 DragDestination = 0;
   Timer::Ref DragTime;
-  bool DragReleased = false;
+  bool DragReleased = false;    ///< Drag Releaded in Box
+  bool DragReleasedAW = false;  ///< Drag Released Anywhere
   /** Check if an object is Dragged already */
   bool IsObjectDragged() const { return DraggedObject != 0; }
   /**
@@ -105,6 +109,9 @@ class IO : public SmartCtor<IO> {
    * @return if inputs to this objects are alowed or not
    */
   bool DragObject(const UI7::ID& id, vec4 area) {
+    if (CurrentMenu != FocusedMenu) {
+      return false;
+    }
     if (IsObjectDragged()) {
       // Only block if the Dragged Object has a difrent id
       if (DraggedObject != id) {
@@ -136,7 +143,10 @@ class IO : public SmartCtor<IO> {
       DragSourcePos = 0;
       DragLastPosition = 0;
       DragDestination = 0;
-      DragReleased = true;  // Set Drag released to true (only one frame)
+      // Set Drag released to true (only one frame)
+      // and Only if still in Box
+      DragReleased = Ren->InBox(Inp->TouchPosLast(), area);
+      DragReleasedAW = true;  // Advanced
       // Ensure timer is paused
       DragTime->Pause();
       DragTime->Reset();

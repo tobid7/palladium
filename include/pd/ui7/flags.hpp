@@ -42,6 +42,8 @@ enum UI7MenuFlags_ {
   UI7MenuFlags_NoCollapse = 1 << 6,    ///< Disable Menu Collapse
   UI7MenuFlags_NoMove = 1 << 7,        ///< Disable Menu Movement
   UI7MenuFlags_NoResize = 1 << 8,      ///< Disable Menu Resize
+  UI7MenuFlags_NoClose = 1 << 9,       ///< Disable Close Button
+  UI7MenuFlags_NoScrollbar = 1 << 10,  ///< Hide the Scrollbar
   // Enable Horizontal and Vertical Scrolling
   UI7MenuFlags_Scrolling = UI7MenuFlags_HzScrolling | UI7MenuFlags_VtScrolling,
 };

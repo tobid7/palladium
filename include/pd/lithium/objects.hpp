@@ -99,12 +99,12 @@ class StaticObject : public SmartCtor<StaticObject> {
   }
 
   /**
-   * Add the Layer by a specific number
-   * @param base_layer baselayer or number to add on top of the commands layer
+   * Assign a New Layer to all Objects
+   * @param layer new layer to set to all its commands
    */
-  void ReLayer(int base_layer) {
+  void ReLayer(int layer) {
     for (auto& it : cpy) {
-      it->Layer(it->Layer() + base_layer);
+      it->Layer(layer);
     }
   }
 

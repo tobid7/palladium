@@ -35,14 +35,13 @@ void Button::HandleInput(Hid::Ref inp) {
   color = UI7Color_Button;
   Assert(screen.get(), "Screen is not set up!");
   if (screen->ScreenType() == Screen::Bottom) {
-    if (inp->IsHeld(inp->Touch) &&
-        LI::Renderer::InBox(inp->TouchPos(), vec4(FinalPos(), size))) {
-      color = UI7Color_ButtonHovered;
-    }
-    if (inp->IsUp(inp->Touch) &&
-        LI::Renderer::InBox(inp->TouchPosLast(), vec4(FinalPos(), size))) {
-      color = UI7Color_ButtonActive;
-      pressed = true;
+    if (io->DragObject(this->GetID(), vec4(FinalPos(), size))) {
+      if (io->DragReleased) {
+        color = UI7Color_ButtonActive;
+        pressed = true;
+      } else {
+        color = UI7Color_ButtonHovered;
+      }
     }
   }
   inp_done = true;

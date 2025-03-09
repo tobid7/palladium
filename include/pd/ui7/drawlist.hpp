@@ -110,6 +110,8 @@ class DrawList : public SmartCtor<DrawList> {
   int base;                     ///< Base Layer
   LI::Renderer::Ref ren;        ///< Renderer Reference
   std::stack<vec4> clip_rects;  ///< Stack containing Scissor Areas
+  u32 num_vertices;             ///< Number of Vertices
+  u32 num_indices;              ///< Number of Indices
   // Map for Auto Static Text
   std::unordered_map<u32, LI::StaticText::Ref> static_text;
   // List of Drawcommands generated

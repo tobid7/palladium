@@ -34,7 +34,7 @@ void DrawList::AddRectangle(vec2 pos, vec2 szs, const UI7Color& clr) {
   auto cmd = LI::Command::New();
   ren->UseTex();
   ren->SetupCommand(cmd);
-  cmd->Layer(base + layer);
+  cmd->Layer(layer);
   if (!clip_rects.empty()) {
     cmd->SetScissorMode(LI::ScissorMode_Normal);
     cmd->ScissorRect(clip_rects.top());
@@ -52,7 +52,7 @@ void DrawList::AddTriangle(vec2 pos0, vec2 pos1, vec2 pos2,
   auto cmd = LI::Command::New();
   ren->UseTex();
   ren->SetupCommand(cmd);
-  cmd->Layer(base + layer);
+  cmd->Layer(layer);
   if (!clip_rects.empty()) {
     cmd->SetScissorMode(LI::ScissorMode_Normal);
     cmd->ScissorRect(clip_rects.top());
@@ -78,7 +78,7 @@ void DrawList::AddText(vec2 pos, const std::string& text, const UI7Color& clr,
   }
   if (!e->IsSetup() || e->Font() != ren->Font()) {
     int l = ren->Layer();
-    ren->Layer(base);
+    ren->Layer(layer);
     e->Setup(ren.get(), pos, clr, text, flags, box);
     e->Font(ren->Font());
     ren->Layer(l);
@@ -124,7 +124,7 @@ void DrawList::AddImage(vec2 pos, Texture::Ref img, vec2 size) {
   auto cmd = LI::Command::New();
   ren->UseTex(img);
   ren->SetupCommand(cmd);
-  cmd->Layer(base + layer);
+  cmd->Layer(layer);
   if (!clip_rects.empty()) {
     cmd->SetScissorMode(LI::ScissorMode_Normal);
     cmd->ScissorRect(clip_rects.top());
@@ -136,7 +136,7 @@ void DrawList::AddImage(vec2 pos, Texture::Ref img, vec2 size) {
 
 void DrawList::AddLine(const vec2& a, const vec2& b, const UI7Color& clr,
                        int t) {
-  if (!ren->InBox(a, ren->GetViewport()) ||
+  if (!ren->InBox(a, ren->GetViewport()) &&
       !ren->InBox(b, ren->GetViewport())) {
     return;
   }
@@ -144,7 +144,7 @@ void DrawList::AddLine(const vec2& a, const vec2& b, const UI7Color& clr,
   auto cmd = LI::Command::New();
   ren->UseTex();
   ren->SetupCommand(cmd);
-  cmd->Layer(base + layer);
+  cmd->Layer(layer);
   if (!clip_rects.empty()) {
     cmd->SetScissorMode(LI::ScissorMode_Normal);
     cmd->ScissorRect(clip_rects.top());
@@ -157,9 +157,14 @@ void DrawList::AddLine(const vec2& a, const vec2& b, const UI7Color& clr,
 void DrawList::Clear() { commands.clear(); }
 
 void DrawList::Process() {
+  num_vertices = 0;
+  num_indices = 0;
   for (auto command : commands) {
     ren->OnScreen(ren->GetScreen(command.first));
+    command.second->Layer(command.second->Layer() + base);
     ren->PushCommand(command.second);
+    num_vertices += command.second->VertexList().size();
+    num_indices += command.second->IndexList().size();
   }
   commands.clear();
   layer = 0;
@@ -172,6 +177,9 @@ void DrawList::Process() {
   }
   for (auto& it : rem) {
     static_text.erase(it);
+  }
+  while (!clip_rects.empty()) {
+    clip_rects.pop();
   }
 }
 }  // namespace UI7

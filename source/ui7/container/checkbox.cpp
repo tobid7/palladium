@@ -34,14 +34,13 @@ void Checkbox::HandleInput(Hid::Ref inp) {
   /// Ensure it gets sed to false and stays if not pressed
   Assert(screen.get(), "Screen is not set up!");
   if (screen->ScreenType() == Screen::Bottom) {
-    if (inp->IsHeld(inp->Touch) &&
-        LI::Renderer::InBox(inp->TouchPos(), vec4(FinalPos(), size))) {
-      color = UI7Color_FrameBackgroundHovered;
-    }
-    if (inp->IsUp(inp->Touch) &&
-        LI::Renderer::InBox(inp->TouchPosLast(), vec4(FinalPos(), size))) {
-      color = UI7Color_FrameBackgroundHovered;
-      usr_ref = !usr_ref;
+    if (io->DragObject(this->GetID(), vec4(FinalPos(), size))) {
+      if (io->DragReleased) {
+        color = UI7Color_FrameBackgroundHovered;
+        usr_ref = !usr_ref;
+      } else {
+        color = UI7Color_FrameBackgroundHovered;
+      }
     }
   }
   inp_done = true;

@@ -23,48 +23,51 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/core/common.hpp>
-#include <pd/core/strings.hpp>
+#include <pd/ui7/container/container.hpp>
+#include <pd/ui7/io.hpp>
 
 namespace PD {
 namespace UI7 {
 /**
- * ID Class (Generating an ID by String)
+ * Color Editor (Creating a PopUP when clicking)
  */
-class ID {
+class ColorEdit : public Container {
  public:
   /**
-   * Constructor to Generate ID by input string
-   * @param text Input String
+   * Constructor
+   * @param label Label of the Button
+   * @param pos Base Position
+   * @param lr Reference to the Renderer
    */
-  ID(const std::string& text) {
-    id = PD::Strings::FastHash(text);
-    name = text;
+  ColorEdit(const std::string& label, u32* color, UI7::IO::Ref io) {
+    PD::Assert(color != nullptr, "Input Color Address is null!");
+    this->label = label;
+    this->color_ref = color;
+    this->initial_color = *color;
+    this->tdim = io->Ren->GetTextDimensions(label);
   }
-  /**
-   * Constructor used for const char* which is automatically
-   * used when directly placing a string istead of using ID("")
-   * @param text Input String
-   */
-  ID(const char* text) {
-    id = PD::Strings::FastHash(text);
-    name = text;
-  }
-  /**
-   * Use an ID as Input
-   */
-  ID(u32 id) { this->id = id; }
-  ~ID() = default;
+  ~ColorEdit() = default;
 
-  /** Get The ID Initial Name */
-  std::string GetName() const { return name; }
+  /**
+   * Override for the Input Handler
+   * @note This function is usally called by Menu::Update
+   * @param inp Reference to the Input Handler
+   */
+  void HandleInput(Hid::Ref inp) override;
+  /**
+   * Override for the Rendering Handler
+   * @note This function is usally called by Menu::Update
+   * */
+  void Draw() override;
 
-  /** Return the ID when casting to u32 */
-  operator u32() const { return id; }
+  /** Function to Update Size if framepadding changes */
+  void Update() override;
 
  private:
-  u32 id;            ///< Hash of the name
-  std::string name;  ///< Name
+  vec2 tdim;                 ///< Text size
+  u32* color_ref = nullptr;  ///< Color Reference
+  u32 initial_color;         ///< Initial Color
+  std::string label;         ///< Label of the Button
 };
 }  // namespace UI7
 }  // namespace PD

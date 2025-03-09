@@ -41,6 +41,7 @@ enum UI7Color_ {
   UI7Color_Text,                    ///< UI7 Text Color
   UI7Color_TextDead,                ///< UI7 Dead Text Color
   UI7Color_Header,                  ///< UI7 Menu Header Color
+  UI7Color_HeaderDead,              ///< Inactive Header
   UI7Color_Selector,                ///< UI7 Selector Color
   UI7Color_Checkmark,               ///< UI7 Checkmark Color
   UI7Color_FrameBackground,         ///< UI7 Frame Background
@@ -114,6 +115,20 @@ class Theme : public SmartCtor<Theme> {
     auto e = theme.find(c);
     if (e == theme.end()) {
       return 0x00000000;
+    }
+    return e->second;
+  }
+
+  /**
+   * [UNSAFE] to use
+   * Get the Color Ref of a Color ReferenceID
+   * @param c ReferenceID
+   */
+  u32& GetRef(UI7Color c) {
+    auto e = theme.find(c);
+    if (e == theme.end()) {
+      static u32 noclr = 0x00000000;
+      return noclr;
     }
     return e->second;
   }
