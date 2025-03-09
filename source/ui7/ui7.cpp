@@ -103,11 +103,19 @@ void UI7::Context::Update(float delta) {
   Assert(current == nullptr, "Still in a Menu!");
   this->io->Delta = delta;
   io->DeltaStats->Add(io->Delta * 1000);
+  bool focused_exist = false;
   for (auto it : amenus) {
     auto m = menus[it];
     io->CurrentMenu = m->id;
     m->Update(io->Delta);
     io->CurrentMenu = 0;
+    if (it == io->FocusedMenu) {
+      focused_exist = true;
+    }
+  }
+  if (!focused_exist) {
+    io->FocusedMenu = 0;
+    io->FocusedMenuRect = 0;
   }
   int list = 0;
   u32 vtx_counter = 0;
