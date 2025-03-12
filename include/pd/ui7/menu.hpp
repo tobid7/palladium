@@ -80,7 +80,7 @@ class Menu : public SmartCtor<Menu> {
    * @param img Texture reference of the image
    * @param size a Custom Size if needed
    */
-  void Image(Texture::Ref img, vec2 size = 0.f);
+  void Image(Texture::Ref img, vec2 size = 0.f, LI::Rect uv = vec4(0));
 
   /**
    * Color Edit Object that opens a popup editor if clicked

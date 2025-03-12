@@ -69,6 +69,11 @@ class Theme : public SmartCtor<Theme> {
    * @param theme Theme Reference
    */
   static void Default(Theme& theme);
+  /**
+   * White Mode Theme
+   * @param Theme theme reference
+   */
+  static void Flashbang(Theme& theme);
 
   /** Revert the last Color Change */
   Theme& Pop() {

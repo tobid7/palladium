@@ -69,8 +69,10 @@ class DrawList : public SmartCtor<DrawList> {
    * @param pos Position
    * @param img Image Texture Reference
    * @param size Optional Size of the Image
+   * @param uv Custom UV coords
    */
-  void AddImage(vec2 pos, Texture::Ref img, vec2 size = 0.f);
+  void AddImage(vec2 pos, Texture::Ref img, vec2 size = 0.f,
+                LI::Rect uv = vec4(0.f));
   /**
    * Render a Line from Position A to Position B
    * @param a Pos a

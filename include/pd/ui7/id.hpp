@@ -57,7 +57,10 @@ class ID {
   ~ID() = default;
 
   /** Get The ID Initial Name */
-  std::string GetName() const { return name; }
+  const std::string& GetName() const { return name; }
+
+  /** Getter for the raw 32bit int id */
+  const u32& RawID() const { return id; }
 
   /** Return the ID when casting to u32 */
   operator u32() const { return id; }

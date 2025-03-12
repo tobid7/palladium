@@ -178,6 +178,18 @@ void UI7::Context::MetricsMenu(bool* show) {
     m->Label(std::format("NumIndices: {} -> {} Tris", io->NumIndices,
                          io->NumIndices / 3));
     m->Label("Menus: " + std::to_string(menus.size()));
+    if (m->BeginTreeNode("Font")) {
+      for (u32 i = 0; i <= 0x00ff; i++) {
+        auto& c = io->Ren->Font()->GetCodepoint(i);
+        if (!c.invalid()) {
+          m->Image(c.tex(), c.size(), c.uv());
+          if ((i % 15) != 0 || i == 0) {
+            m->SameLine();
+          }
+        }
+      }
+      m->EndTreeNode();
+    }
     m->SeparatorText("TimeTrace");
     if (m->BeginTreeNode("Traces (" +
                          std::to_string(Sys::GetTraceMap().size()) + ")")) {
@@ -280,6 +292,13 @@ void UI7::Context::StyleEditor(bool* show) {
       io->ItemSpace += 1;
     }
     m->SeparatorText("Theme");
+    if (m->Button("Dark")) {
+      UI7::Theme::Default(*io->Theme.get());
+    }
+    m->SameLine();
+    if (m->Button("Flashbang")) {
+      UI7::Theme::Flashbang(*io->Theme.get());
+    }
     /// Small trick to print without prefix
 #define ts(x) m->ColorEdit(std::string(#x).substr(9), &io->Theme->GetRef(x));
     ts(UI7Color_Background);

@@ -85,8 +85,8 @@ void UI7::Menu::Checkbox(const std::string& label, bool& v) {
   r->HandleScrolling(scrolling_off, view_area);
 }
 
-void UI7::Menu::Image(Texture::Ref img, vec2 size) {
-  Container::Ref r = ObjectPush(PD::New<UI7::Image>(img, size));
+void UI7::Menu::Image(Texture::Ref img, vec2 size, LI::Rect uv) {
+  Container::Ref r = ObjectPush(PD::New<UI7::Image>(img, size, uv));
   r->SetPos(AlignPos(Cursor(), r->GetSize(), view_area, GetAlignment()));
   CursorMove(r->GetSize());
   r->Init(io, main);
@@ -538,6 +538,7 @@ bool UI7::Menu::BeginTreeNode(const UI7::ID& id) {
   }
   return n->second;
 }
+
 void UI7::Menu::EndTreeNode() {
   icursoroff.x() -= 10.f;
   cursor.x() -= 10;
@@ -591,6 +592,9 @@ void UI7::Menu::MoveHandler() {
     if (has_touch &&
         io->DragObject(name + "tmv",
                        vec4(view_area.xy(), vec2(view_area.z(), tbh)))) {
+      if (io->DragDoubleRelease) {
+        is_open = !is_open;
+      }
       view_area =
           vec4(view_area.xy() + (io->DragPosition - io->DragLastPosition),
                view_area.zw());
@@ -626,7 +630,8 @@ void UI7::Menu::CollapseHandler() {
 
 void UI7::Menu::PostScrollHandler() {
   if (has_touch && io->DragObject(id, view_area) && scrolling[1] &&
-      flags & UI7MenuFlags_VtScrolling) {
+      flags & UI7MenuFlags_VtScrolling &&
+      max[1] - view_area.w() + io->MenuPadding[1] > 0) {
     if (io->DragReleased) {
       scroll_mod = (io->DragPosition - io->DragLastPosition);
     } else {

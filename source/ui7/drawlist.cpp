@@ -95,28 +95,11 @@ void DrawList::AddText(vec2 pos, const std::string& text, const UI7Color& clr,
         ren->CurrentScreen()->ScreenType() == Screen::Bottom, it));
   }
   e->GetRawObject()->ReCopy();
-
-  ////// STILL LEAVING THE OLD CODE BELOW AS IT IS MAYBE NEEDED //////
-  //////   IF STATIC TEXT SYSTEM SHOULD HAVE AN DISABLE OPTION  //////
-
-  // Dont create a Command here as TextCommand has autosetup
-  // cause it needs to generate multiple commands if
-  // Font uses multiple textures
-  // Oh and Handle Layer management here as well
-  //  int l = ren->Layer();
-  //  ren->Layer(base + layer);
-  //  std::vector<LI::Command::Ref> cmds;
-  //  ren->TextCommand(cmds, pos, clr, text, flags, box);
-  //  ren->Layer(l);
-  //  for (auto c : cmds) {
-  //    commands.push_back(
-  //        std::make_pair(ren->CurrentScreen()->ScreenType() == Screen::Bottom,
-  //        c));
-  //  }
 }
 
-void DrawList::AddImage(vec2 pos, Texture::Ref img, vec2 size) {
+void DrawList::AddImage(vec2 pos, Texture::Ref img, vec2 size, LI::Rect uv) {
   size = size == 0.f ? img->GetSize() : size;
+  uv = (uv.Top() == 0.0f && uv.Bot() == 0.0f) ? img->GetUV() : uv;
   if (!ren->InBox(pos, size, ren->GetViewport())) {
     return;
   }
@@ -129,7 +112,7 @@ void DrawList::AddImage(vec2 pos, Texture::Ref img, vec2 size) {
     cmd->SetScissorMode(LI::ScissorMode_Normal);
     cmd->ScissorRect(clip_rects.top());
   }
-  ren->QuadCommand(cmd, rect, img->GetUV(), 0xffffffff);
+  ren->QuadCommand(cmd, rect, uv, 0xffffffff);
   commands.push_back(std::make_pair(
       ren->CurrentScreen()->ScreenType() == Screen::Bottom, cmd));
 }

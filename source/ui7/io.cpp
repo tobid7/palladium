@@ -30,6 +30,7 @@ void UI7::IO::Update() {
   DragTime->Update();
   DragReleased = false;
   DragReleasedAW = false;
+  DragDoubleRelease = false;
   Framerate = 1000.f / Delta;
   DrawListRegestry.clear();
   RegisterDrawList("CtxBackList", Back);

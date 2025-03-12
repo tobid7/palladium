@@ -69,18 +69,12 @@ class IO : public SmartCtor<IO> {
   vec2 MenuPadding = 5.f;
   vec2 FramePadding = 5.f;
   vec2 ItemSpace = vec2(5.f, 2.f);
+  u64 DoubleClickTime = 500;  // Milliseconds
   std::vector<std::pair<UI7::ID, DrawList::Ref>> DrawListRegestry;
   DrawList::Ref Back;
   DrawList::Ref Front;
   u32 NumVertices = 0;  ///< Debug Vertices Num
   u32 NumIndices = 0;   ///< Debug Indices Num
-
-  // Layer Rules
-  int ContextBackLayer = 10;
-  int MenuBackLayer = 20;
-  int MenuMainLayer = 30;
-  int MenuFrontLayer = 40;
-  int ContextFrontLayer = 50;
 
   // DrawListApi
   void RegisterDrawList(const UI7::ID& id, DrawList::Ref v) {
@@ -97,8 +91,10 @@ class IO : public SmartCtor<IO> {
   vec2 DragLastPosition = 0;
   vec4 DragDestination = 0;
   Timer::Ref DragTime;
-  bool DragReleased = false;    ///< Drag Releaded in Box
-  bool DragReleasedAW = false;  ///< Drag Released Anywhere
+  u64 DragLastReleased = 0;
+  bool DragReleased = false;       ///< Drag Releaded in Box
+  bool DragReleasedAW = false;     ///< Drag Released Anywhere
+  bool DragDoubleRelease = false;  ///< Double Click
   /** Check if an object is Dragged already */
   bool IsObjectDragged() const { return DraggedObject != 0; }
   /**
@@ -147,6 +143,13 @@ class IO : public SmartCtor<IO> {
       // and Only if still in Box
       DragReleased = Ren->InBox(Inp->TouchPosLast(), area);
       DragReleasedAW = true;  // Advanced
+      u64 d_rel = Sys::GetTime();
+      if (d_rel - DragLastReleased < DoubleClickTime) {
+        DragDoubleRelease = true;
+        DragLastReleased = 0;  // Set 0 to prevent double exec
+      } else {
+        DragLastReleased = d_rel;
+      }
       // Ensure timer is paused
       DragTime->Pause();
       DragTime->Reset();

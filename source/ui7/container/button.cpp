@@ -50,8 +50,10 @@ void Button::Draw() {
   Assert(io.get() && list.get(), "Did you run Container::Init correctly?");
   io->Ren->OnScreen(screen);
   list->AddRectangle(FinalPos(), size, io->Theme->Get(color));
+  list->Layer(list->Layer() + 1);
   list->AddText(FinalPos() + size * 0.5 - tdim * 0.5, label,
                 io->Theme->Get(UI7Color_Text));
+  list->Layer(list->Layer() - 1);
 }
 
 void Button::Update() {
