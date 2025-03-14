@@ -25,7 +25,7 @@ SOFTWARE.
 
 namespace PD {
 namespace UI7 {
-void Checkbox::HandleInput(Hid::Ref inp) {
+void Checkbox::HandleInput() {
   /// Ensure to only check input once
   if (inp_done) {
     return;

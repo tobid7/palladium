@@ -52,7 +52,7 @@ execute_process(
 )
 
 # Set Project
-project(palladium LANGUAGES C CXX VERSION 0.3.0)
+project(palladium LANGUAGES C CXX VERSION 0.3.1)
 
 option(PD_BUILD_TESTS "Sets if TestApp and TestBench get build" OFF)
 
@@ -131,6 +131,7 @@ source/app/error.cpp)
 set(UI7_SRC
 source/ui7/drawlist.cpp
 source/ui7/io.cpp
+source/ui7/layout.cpp
 source/ui7/menu.cpp
 source/ui7/theme.cpp
 source/ui7/ui7.cpp
@@ -138,6 +139,7 @@ source/ui7/container/container.cpp
 source/ui7/container/button.cpp
 source/ui7/container/checkbox.cpp
 source/ui7/container/coloredit.cpp
+source/ui7/container/dragdata.cpp
 source/ui7/container/image.cpp
 source/ui7/container/label.cpp)
 

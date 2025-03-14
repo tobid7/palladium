@@ -26,6 +26,10 @@ SOFTWARE.
 
 namespace PD {
 void UI7::IO::Update() {
+  u64 current = Sys::GetNanoTime();
+  Delta = static_cast<float>(current - LastTime) / 1000000.f;
+  LastTime = current;
+  DeltaStats->Add(Delta * 1000);
   Time->Update();
   DragTime->Update();
   DragReleased = false;

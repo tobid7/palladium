@@ -25,7 +25,7 @@ SOFTWARE.
 
 namespace PD {
 namespace UI7 {
-void Button::HandleInput(Hid::Ref inp) {
+void Button::HandleInput() {
   /// Ensure to only check input once
   if (inp_done) {
     return;

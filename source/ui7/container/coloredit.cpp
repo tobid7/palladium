@@ -22,10 +22,11 @@ SOFTWARE.
  */
 
 #include <pd/ui7/container/coloredit.hpp>
+#include <pd/ui7/container/label.hpp>
 
 namespace PD {
 namespace UI7 {
-void ColorEdit::HandleInput(Hid::Ref inp) {
+void ColorEdit::HandleInput() {
   /// Ensure to only check input once
   if (inp_done) {
     return;
@@ -34,6 +35,7 @@ void ColorEdit::HandleInput(Hid::Ref inp) {
   if (screen->ScreenType() == Screen::Bottom) {
     if (io->DragObject(this->GetID(), vec4(FinalPos(), size))) {
       if (io->DragReleased) {
+        is_shown = !is_shown;
       }
     }
   }
@@ -45,6 +47,14 @@ void ColorEdit::Draw() {
   list->AddRectangle(FinalPos(), vec2(20, 20), *color_ref);
   list->AddText(FinalPos() + vec2(io->ItemSpace.x() + 20, 0), label,
                 io->Theme->Get(UI7Color_Text));
+  if (is_shown) {
+    if (!layout) {
+      layout = Layout::New(GetID(), io);
+    }
+    layout->AddObject(PD::New<Label>("Hello World!", io->Ren));
+    layout->Update();
+    io->RegisterDrawList(GetID(), layout->GetDrawList());
+  }
 }
 
 void ColorEdit::Update() {

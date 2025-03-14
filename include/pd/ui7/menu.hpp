@@ -30,6 +30,7 @@ SOFTWARE.
 #include <pd/ui7/flags.hpp>
 #include <pd/ui7/id.hpp>
 #include <pd/ui7/io.hpp>
+#include <pd/ui7/layout.hpp>
 
 namespace PD {
 namespace UI7 {
@@ -47,12 +48,11 @@ class Menu : public SmartCtor<Menu> {
     this->id = id;
     this->name = id.GetName();
     /// Set Default Values here
-    scrolling[0] = false;
-    scrolling[1] = false;
     scrollbar[0] = false;
     scrollbar[1] = false;
     scroll_allowed[0] = false;
     scroll_allowed[1] = false;
+    Layout = UI7::Layout::New(id, io);
   }
   ~Menu() = default;
 
@@ -88,6 +88,19 @@ class Menu : public SmartCtor<Menu> {
    * @param color Color reference to edit
    */
   void ColorEdit(const std::string& label, u32* color);
+
+  void DragFloat(const std::string& label, float* data, size_t num_elms);
+  template <typename T>
+  void DragData(const std::string& label, T* data, size_t num_elms = 1,
+                T min = 0, T max = 100) {
+    u32 id = Strings::FastHash("dfl" + label + std::to_string(count_btn++));
+    Container::Ref r = Layout->FindObject(id);
+    if (!r) {
+      r = PD::New<UI7::DragData<T>>(label, data, num_elms, io, min, max);
+      r->SetID(id);
+    }
+    Layout->AddObject(r);
+  }
   // Basic API
 
   /**
@@ -102,7 +115,7 @@ class Menu : public SmartCtor<Menu> {
   void EndTreeNode();
 
   /** Add the Next Objext to the same line */
-  void SameLine();
+  void SameLine() { Layout->SameLine(); }
   /** Add a Separator Line */
   void Separator();
   /**
@@ -128,23 +141,14 @@ class Menu : public SmartCtor<Menu> {
    * Set a Temp alignment op for the next Object
    * @param a Alignment Operation
    */
-  void NextAlign(UI7Align a) { tmpalign = a; }
+  void NextAlign(UI7Align a) { Layout->NextAlign(a); }
   /**
    * Align Every Single Object by this operationset
    * @param a Alignment
    */
-  void PushAlignment(UI7Align a) { alignment = a; }
+  void PushAlignment(UI7Align a) { Layout->SetAlign(a); }
   /** Use default alignment */
-  void PopAlignment() { alignment = UI7Align_Default; }
-  /**
-   * Get a New Position depending on the Alignment
-   * @param pos Current Position
-   * @param size Object size
-   * @param view Viewport [position and size]
-   * @param a Alignment Operations
-   * @return new position based on the alignment
-   */
-  static vec2 AlignPos(vec2 pos, vec2 size, vec4 view, UI7Align a);
+  void PopAlignment() { Layout->Alignment = UI7Align_Default; }
   /**
    * Returns a Reference to the theme
    * @return Reference to the base Theme of the context
@@ -166,35 +170,6 @@ class Menu : public SmartCtor<Menu> {
 
   // API for Custom Objects
 
-  /**
-   * Handles the Position of Objects in Scrolling Menu
-   * @note As Containers have their own FUnc to handle this, this
-   * function is only useful to Render Live Objects whicch cannot be aligned
-   * by the internal Alignment Api
-   * @param pos position reference to write the new position to
-   * @param size size of the Object
-   * @return if the object can be skipped in rendering
-   */
-  bool HandleScrolling(vec2& pos, const vec2& size);
-  /**
-   * Get the Cursor Position
-   * @return Cursor Pos
-   */
-  vec2 Cursor() const { return view_area.xy() + cursor; }
-  /**
-   * Set the Cursor position
-   * @note The old Position can be restored with RestoreCursor
-   * @param v New Position
-   */
-  void Cursor(const vec2& v) {
-    bcursor = cursor;
-    cursor = v;
-  }
-  /** Restore to the last cursor Position */
-  void RestoreCursor() {
-    cursor = bcursor;
-    bcursor = vec2();
-  }
   /** Return if a Vertical Scrollbar exists */
   bool HasVerticalScrollbar() { return scrollbar[1]; }
   /** Return if a Horizontal Scrollbar exists */
@@ -206,43 +181,13 @@ class Menu : public SmartCtor<Menu> {
    * @note Could destroy some basic functionality
    */
   void TitleBarHeight(float v) { tbh = v; }
-  /**
-   * Init the Cursor
-   * @note Useful when using with a Custom TitlebarHeight
-   */
-  void CursorInit() { Cursor(io->MenuPadding + vec2(0, tbh)); }
-  /**
-   * Move the Cursor for new Object
-   * @param szs Size of the current Object
-   */
-  void CursorMove(const vec2& szs);
-  /** Get the ViewArea of the Menu */
-  vec4 ViewArea() const { return view_area; }
-  /**
-   * Get the Main Area of the Menu
-   * (only relevant for input)
-   */
-  vec4 MainArea() const { return main_area; }
-  /**
-   * Set a MainArea for input
-   * @param v Area where Objects can receive inputs
-   */
-  void MainArea(const vec4& v) { main_area = v; }
-  /** Get The Scrolling offset */
-  vec2 ScrollOffset() const { return scrolling_off; }
-  /**
-   * Set a Scrolling offset
-   * @param v Custom Scrolling offset
-   */
-  void ScrollOffset(const vec2& v) { scrolling_off = v; }
-  /** Get the Current Scrollmodification value */
-  vec2 ScrollMod() const { return scroll_mod; }
+
   /**
    * Animated Scroll to Position
    * @param pos Destination Position
    */
   void ScrollTo(vec2 pos) {
-    scroll_anim.From(scrolling_off)
+    scroll_anim.From(Layout->ScrollOffset)
         .To(pos)
         .In(1.f)
         .As(scroll_anim.EaseInOutSine);
@@ -252,19 +197,6 @@ class Menu : public SmartCtor<Menu> {
 
   // Objects API
 
-  /**
-   * Push an object to the current ListHandler
-   * @param obj Object reference to use
-   * @return Reference to the Object (from a time
-   * where ObjectPush(Container::New()) was used)
-   */
-  Container::Ref ObjectPush(Container::Ref obj);
-  /**
-   * Search for an Object by an id
-   * @param id 32 Bit hash/id
-   * @return the found Object or nullptr
-   */
-  Container::Ref FindIDObj(u32 id);
   /**
    * Create a Parent Container to move and edit all sub
    * instances at once
@@ -276,7 +208,8 @@ class Menu : public SmartCtor<Menu> {
   // Draw List
 
   /** Get DrawList */
-  DrawList::Ref GetDrawList() { return main; }
+  DrawList::Ref GetDrawList() { return Layout->DrawList; }
+  UI7::Layout::Ref GetLayout() { return Layout; }
 
   // Advanced
 
@@ -305,43 +238,6 @@ class Menu : public SmartCtor<Menu> {
   /** Handle things like scrolling */
   void PostHandler();
 
-  // Basic Settings
-
-  /**
-   * Set Backup Cursor
-   * @param v Position
-   */
-  void BackupCursor(const vec2& v) { bcursor = v; }
-  /** Get Sameline Cursor */
-  vec2 SameLineCursor() const { return slcursor; }
-  /**
-   * Set Sameline Cursor
-   * @param v Position
-   */
-  void SameLineCursor(const vec2& v) { slcursor = v; }
-  /**
-   * Set View Area
-   * @param v vec4 containing pos and size
-   */
-  void ViewArea(const vec4& v) { view_area = v; }
-  /**
-   * Set Scroll Modification
-   * @param v Mod
-   */
-  void ScrollMod(const vec2& v) { scroll_mod = v; }
-
-  /** Get the Alignment for Current State */
-  UI7Align GetAlignment() {
-    /// if temp alignment is used then return it and
-    /// reset tmpalign
-    if (tmpalign) {
-      auto t = tmpalign;
-      tmpalign = 0;
-      return t;
-    }
-    return alignment;
-  }
-
   /** Internal Processing */
   void Update(float delta);
 
@@ -363,21 +259,9 @@ class Menu : public SmartCtor<Menu> {
 
   // Data
 
-  // Default Alignment for all Objects
-  UI7Align alignment = UI7Align_Default;
-  UI7Align tmpalign = 0;     ///< Temp Alignment [only used once]
   UI7MenuFlags flags = 0;    ///< Menu Flags
   u32 id;                    ///< Menu ID
   std::string name;          ///< Menu Name
-  vec2 cursor;               ///< Current Cursor Position
-  vec2 icursoroff;           ///< Initial Cursor Offset (Also in Newline)
-  vec2 bcursor;              ///< Backup Cursor
-  vec2 slcursor;             ///< Sameline Cursor
-  vec4 view_area;            ///< view Area (Position and Size)
-  vec4 main_area;            ///< Main Area [Input related]
-  vec2 scrolling_off;        ///< Scrolling Position
-  bool scrolling[2];         ///< Is Hz or Vt Scrolling Enabled
-  vec2 scroll_mod;           ///< Scroll Modificator
   float tbh;                 ///< Titlebar height
   bool scrollbar[2];         ///< Is Hz or Vt Scrollbar rendered
   bool scroll_allowed[2];    ///< Is Hz or Vt Scrolling Alowed
@@ -389,20 +273,9 @@ class Menu : public SmartCtor<Menu> {
 
   // Objects API
 
-  std::vector<Container::Ref> objects;  ///< Current frame Objects
-  std::vector<Container::Ref> idobjs;   ///< Objects using an ID
-  std::vector<Container*> join;         ///< List of Combined Objects
-  int count_btn = 0;                    ///< Count for Button ID Prefix
-  int count_cbx = 0;                    ///< Cound for Checkbox ID Prefix
-
-  // DrawList
-
-  DrawList::Ref main;  ///< Main Drawlist
-
-  vec2 max;        ///< Max Position
-  vec2 mouse;      ///< Mouse/Touch Position
-  vec2 bslpos;     ///< Before Sameline Position
-  vec2 last_size;  ///< Last Object Size
+  std::vector<Container*> join;  ///< List of Combined Objects
+  int count_btn = 0;             ///< Count for Button ID Prefix
+  int count_cbx = 0;             ///< Cound for Checkbox ID Prefix
 
   UI7::IO::Ref io;  ///< IO Reference
 
@@ -411,6 +284,9 @@ class Menu : public SmartCtor<Menu> {
   // Animations System
 
   Tween<vec2> scroll_anim;  ///< for Scroll to Animation
+
+  // Layout API
+  PD::UI7::Layout::Ref Layout;
 };
 }  // namespace UI7
 }  // namespace PD

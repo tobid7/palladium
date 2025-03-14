@@ -103,7 +103,7 @@ class Container : public SmartCtor<Container> {
    */
   void HandleScrolling(vec2 scrolling, vec4 viewport);
   /** Template function for Input Handling */
-  virtual void HandleInput(Hid::Ref inp) {}
+  virtual void HandleInput() {}
   /** Tamplate function for Object rendering */
   virtual void Draw() {}
   /** Template function to update internal data (if needed) */

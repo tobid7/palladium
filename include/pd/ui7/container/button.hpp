@@ -54,9 +54,8 @@ class Button : public Container {
   /**
    * Override for the Input Handler
    * @note This function is usally called by Menu::Update
-   * @param inp Reference to the Input Handler
    */
-  void HandleInput(Hid::Ref inp) override;
+  void HandleInput() override;
   /**
    * Override for the Rendering Handler
    * @note This function is usally called by Menu::Update

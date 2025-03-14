@@ -61,16 +61,13 @@ bool UI7::Context::BeginMenu(const ID& id, UI7MenuFlags flags, bool* show) {
   auto menu = this->menus.find(id);
   if (menu == this->menus.end()) {
     this->menus[id] = Menu::New(id, io);
-    this->menus[id]->ViewArea(this->io->Ren->GetViewport());
+    this->menus[id]->Layout->SetSize(io->Ren->GetViewport().zw());
     menu = this->menus.find(id);
   }
   this->current = menu->second;
   this->current->is_shown = show;
   this->io->CurrentMenu = this->current->id;
-  if (!this->current->main) {
-    this->current->main = DrawList::New(io->Ren);
-  }
-  io->RegisterDrawList(id, this->current->main);
+  io->RegisterDrawList(id, this->current->Layout->GetDrawList());
   this->current->PreHandler(flags);
   amenus.push_back(this->current->GetID());
   if (!this->current->is_open) {
@@ -98,11 +95,9 @@ void UI7::Context::EndMenu() {
   this->io->CurrentMenu = 0;
 }
 
-void UI7::Context::Update(float delta) {
+void UI7::Context::Update(float) {
   TT::Scope st("UI7_Update");
   Assert(current == nullptr, "Still in a Menu!");
-  this->io->Delta = delta;
-  io->DeltaStats->Add(io->Delta * 1000);
   bool focused_exist = false;
   for (auto it : amenus) {
     auto m = menus[it];
@@ -212,14 +207,14 @@ void UI7::Context::MetricsMenu(bool* show) {
       for (auto& it : menus) {
         if (m->BeginTreeNode(it.second->name)) {
           m->Label("Name: " + it.second->name);
-          m->Label("Pos: " + UI7DV2N(it.second->view_area.xy()));
-          m->Label("Size: " + UI7DV2N(it.second->view_area.zw()));
-          m->Label("Main Area: " + UI7DV4N(it.second->main_area));
-          m->Label("Cursor: " + UI7DV2N(it.second->cursor));
-          if (m->BeginTreeNode("ID Objects (" +
-                               std::to_string(it.second->idobjs.size()) +
-                               ")")) {
-            for (auto& jt : it.second->idobjs) {
+          m->Label("Pos: " + UI7DV2N(it.second->Layout->GetPosition()));
+          m->Label("Size: " + UI7DV2N(it.second->Layout->GetSize()));
+          m->Label("Work Rect: " + UI7DV4N(it.second->Layout->WorkRect));
+          m->Label("Cursor: " + UI7DV2N(it.second->Layout->Cursor));
+          if (m->BeginTreeNode(
+                  "ID Objects (" +
+                  std::to_string(it.second->Layout->IDObjects.size()) + ")")) {
+            for (auto& jt : it.second->Layout->IDObjects) {
               m->Label(UI7DHX32(jt->GetID()));
             }
             m->EndTreeNode();
@@ -261,36 +256,10 @@ void UI7::Context::StyleEditor(bool* show) {
 
     m->Label("Palladium - UI7 " + GetVersion() + " Style Editor");
     m->Separator();
-    m->Label(std::format("MenuPadding: {}, {}", io->MenuPadding.x(),
-                         io->MenuPadding.y()));
-    m->SameLine();
-    if (m->Button("-")) {
-      io->MenuPadding -= 1;
-    }
-    m->SameLine();
-    if (m->Button("+")) {
-      io->MenuPadding += 1;
-    }
-    m->Label(std::format("FramePadding: {}, {}", io->FramePadding.x(),
-                         io->FramePadding.y()));
-    m->SameLine();
-    if (m->Button("-")) {
-      io->FramePadding -= 1;
-    }
-    m->SameLine();
-    if (m->Button("+")) {
-      io->FramePadding += 1;
-    }
-    m->Label(
-        std::format("ItemSpace: {}, {}", io->ItemSpace.x(), io->ItemSpace.y()));
-    m->SameLine();
-    if (m->Button("-")) {
-      io->ItemSpace -= 1;
-    }
-    m->SameLine();
-    if (m->Button("+")) {
-      io->ItemSpace += 1;
-    }
+    m->DragData("MenuPadding", (float*)&io->MenuPadding, 2, 0.f, 100.f);
+    m->DragData("FramePadding", (float*)&io->FramePadding, 2, 0.f, 100.f);
+    m->DragData("ItemSpace", (float*)&io->ItemSpace, 2, 0.f, 100.f);
+    m->DragData("MinSliderSize", (float*)&io->MinSliderDragSize, 2, 1.f, 100.f);
     m->SeparatorText("Theme");
     if (m->Button("Dark")) {
       UI7::Theme::Default(*io->Theme.get());
@@ -301,22 +270,24 @@ void UI7::Context::StyleEditor(bool* show) {
     }
     /// Small trick to print without prefix
 #define ts(x) m->ColorEdit(std::string(#x).substr(9), &io->Theme->GetRef(x));
-    ts(UI7Color_Background);
-    ts(UI7Color_Button);
-    ts(UI7Color_ButtonDead);
-    ts(UI7Color_ButtonActive);
-    ts(UI7Color_ButtonHovered);
-    ts(UI7Color_Text);
-    ts(UI7Color_TextDead);
-    ts(UI7Color_Header);
-    ts(UI7Color_HeaderDead);
-    ts(UI7Color_Selector);
-    ts(UI7Color_Checkmark);
-    ts(UI7Color_FrameBackground);
-    ts(UI7Color_FrameBackgroundHovered);
-    ts(UI7Color_Progressbar);
-    ts(UI7Color_ListEven);
-    ts(UI7Color_ListOdd);
+#define ts2(x) \
+  m->DragData(std::string(#x).substr(9), (u8*)&io->Theme->GetRef(x), 4, (u8)0, (u8)255);
+    ts2(UI7Color_Background);
+    ts2(UI7Color_Button);
+    ts2(UI7Color_ButtonDead);
+    ts2(UI7Color_ButtonActive);
+    ts2(UI7Color_ButtonHovered);
+    ts2(UI7Color_Text);
+    ts2(UI7Color_TextDead);
+    ts2(UI7Color_Header);
+    ts2(UI7Color_HeaderDead);
+    ts2(UI7Color_Selector);
+    ts2(UI7Color_Checkmark);
+    ts2(UI7Color_FrameBackground);
+    ts2(UI7Color_FrameBackgroundHovered);
+    ts2(UI7Color_Progressbar);
+    ts2(UI7Color_ListEven);
+    ts2(UI7Color_ListOdd);
     this->EndMenu();
   }
 }

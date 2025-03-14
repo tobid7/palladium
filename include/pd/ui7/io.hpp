@@ -61,6 +61,7 @@ class IO : public SmartCtor<IO> {
 
   float Framerate = 0.f;
   float Delta = 0.f;
+  u64 LastTime = 0;
   TimeStats::Ref DeltaStats;
   Timer::Ref Time;
   Hid::Ref Inp;
@@ -69,7 +70,8 @@ class IO : public SmartCtor<IO> {
   vec2 MenuPadding = 5.f;
   vec2 FramePadding = 5.f;
   vec2 ItemSpace = vec2(5.f, 2.f);
-  u64 DoubleClickTime = 500;  // Milliseconds
+  vec2 MinSliderDragSize = 10.f;  // Min height (Vt) and Min Width (Hz)
+  u64 DoubleClickTime = 500;      // Milliseconds
   std::vector<std::pair<UI7::ID, DrawList::Ref>> DrawListRegestry;
   DrawList::Ref Back;
   DrawList::Ref Front;

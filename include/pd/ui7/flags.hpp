@@ -29,6 +29,8 @@ using UI7MenuFlags = unsigned int;
 using UI7Align = unsigned int;
 /** 32Bit Value to store Context (IO) flags */
 using UI7IOFlags = unsigned int;
+/** 32Bit Value for Layout Flags */
+using UI7LayoutFlags = unsigned int;
 
 /** Menu Flags */
 enum UI7MenuFlags_ {
@@ -46,6 +48,12 @@ enum UI7MenuFlags_ {
   UI7MenuFlags_NoScrollbar = 1 << 10,  ///< Hide the Scrollbar
   // Enable Horizontal and Vertical Scrolling
   UI7MenuFlags_Scrolling = UI7MenuFlags_HzScrolling | UI7MenuFlags_VtScrolling,
+};
+
+/** UI7 Layout Flags */
+enum UI7LayoutFlags_ {
+  UI7LayoutFlags_None = 0,              ///< No Flags used
+  UI7LayoutFlags_UseClipRect = 1 << 0,  ///< Enable ClipRect
 };
 
 /** UI7 Context Flags */

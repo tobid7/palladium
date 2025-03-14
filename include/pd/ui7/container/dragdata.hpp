@@ -25,14 +25,15 @@ SOFTWARE.
 
 #include <pd/ui7/container/container.hpp>
 #include <pd/ui7/io.hpp>
-#include <pd/ui7/layout.hpp>
 
 namespace PD {
 namespace UI7 {
 /**
- * Color Editor (Creating a PopUP when clicking)
+ * DragData Object can take a datatype or a list
+ * and modifys these by moving left or right when dragging
  */
-class ColorEdit : public Container {
+template <typename T>
+class DragData : public Container {
  public:
   /**
    * Constructor
@@ -40,14 +41,17 @@ class ColorEdit : public Container {
    * @param pos Base Position
    * @param lr Reference to the Renderer
    */
-  ColorEdit(const std::string& label, u32* color, UI7::IO::Ref io) {
-    PD::Assert(color != nullptr, "Input Color Address is null!");
+  DragData(const std::string& label, T* data, size_t num_elms, UI7::IO::Ref io,
+           T min = 0, T max = 100) {
+    PD::Assert(data != nullptr, "Input Data Address is null!");
     this->label = label;
-    this->color_ref = color;
-    this->initial_color = *color;
+    this->data = data;
+    this->elm_count = num_elms;
+    this->min = min;
+    this->max = max;
     this->tdim = io->Ren->GetTextDimensions(label);
   }
-  ~ColorEdit() = default;
+  ~DragData() = default;
 
   /**
    * Override for the Input Handler
@@ -64,12 +68,12 @@ class ColorEdit : public Container {
   void Update() override;
 
  private:
-  vec2 tdim;                 ///< Text size
-  u32* color_ref = nullptr;  ///< Color Reference
-  u32 initial_color;         ///< Initial Color
-  std::string label;         ///< Label of the Button
-  Layout::Ref layout;        ///< Layout to open
-  bool is_shown = false;     ///< AHow Layout Editor
+  vec2 tdim;          ///< Text size
+  std::string label;  ///< Label of the Button
+  T* data;
+  size_t elm_count = 0;
+  T min;
+  T max;
 };
 }  // namespace UI7
 }  // namespace PD
