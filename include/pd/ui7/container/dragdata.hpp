@@ -38,17 +38,26 @@ class DragData : public Container {
   /**
    * Constructor
    * @param label Label of the Button
-   * @param pos Base Position
-   * @param lr Reference to the Renderer
+   * @param data Data reference (Supported types can be seen in dragdata.cpp)
+   * @param num_elms Number of Array elements (for exaple with use ofvec4)
+   * @param io IO Reference
+   * @param min minimum number using Minimum limit
+   * @param max Maximum number set by max limit by default
+   * @param step To set the modifier for drag movement
+   * @param precision for float and double to set precision
    */
   DragData(const std::string& label, T* data, size_t num_elms, UI7::IO::Ref io,
-           T min = 0, T max = 100) {
+           T min = std::numeric_limits<T>::min(),
+           T max = std::numeric_limits<T>::max(), T step = 1,
+           int precision = 1) {
     PD::Assert(data != nullptr, "Input Data Address is null!");
     this->label = label;
     this->data = data;
     this->elm_count = num_elms;
     this->min = min;
     this->max = max;
+    this->step = step;
+    this->precision = precision;
     this->tdim = io->Ren->GetTextDimensions(label);
   }
   ~DragData() = default;
@@ -74,6 +83,8 @@ class DragData : public Container {
   size_t elm_count = 0;
   T min;
   T max;
+  T step;
+  int precision = 1;
 };
 }  // namespace UI7
 }  // namespace PD

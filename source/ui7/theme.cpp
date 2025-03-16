@@ -29,7 +29,7 @@ namespace UI7 {
 void Theme::Default(Theme& theme) {
   theme.Set(UI7Color_Text, Color("#FFFFFFFF"));
   theme.Set(UI7Color_TextDead, Color("#AAAAAAFF"));
-  theme.Set(UI7Color_Background, Color("#222222aa"));
+  theme.Set(UI7Color_Background, Color("#222222ff"));
   theme.Set(UI7Color_Button, Color("#111111FF"));
   theme.Set(UI7Color_ButtonDead, Color("#080808FF"));
   theme.Set(UI7Color_ButtonActive, Color("#2A2A2AFF"));
@@ -52,7 +52,7 @@ void Theme::Flashbang(Theme& theme) {
   theme.Set(UI7Color_Button, Color("#ccccccFF"));
   theme.Set(UI7Color_ButtonDead, Color("#bbbbbbFF"));
   theme.Set(UI7Color_ButtonActive, Color("#ccccccFF"));
-  theme.Set(UI7Color_ButtonHovered, Color("#cbcbcbFF"));
+  theme.Set(UI7Color_ButtonHovered, Color("#acacacFF"));
   theme.Set(UI7Color_Header, Color("#ddddddFF"));
   theme.Set(UI7Color_HeaderDead, Color("#cdcdcdFF"));
   theme.Set(UI7Color_Selector, Color("#222222FF"));

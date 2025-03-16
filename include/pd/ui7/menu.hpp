@@ -92,11 +92,14 @@ class Menu : public SmartCtor<Menu> {
   void DragFloat(const std::string& label, float* data, size_t num_elms);
   template <typename T>
   void DragData(const std::string& label, T* data, size_t num_elms = 1,
-                T min = 0, T max = 100) {
-    u32 id = Strings::FastHash("dfl" + label + std::to_string(count_btn++));
+                T min = std::numeric_limits<T>::min(),
+                T max = std::numeric_limits<T>::max(), T step = 1,
+                int precision = 1) {
+    u32 id = Strings::FastHash("drd" + label + std::to_string((u32)data));
     Container::Ref r = Layout->FindObject(id);
     if (!r) {
-      r = PD::New<UI7::DragData<T>>(label, data, num_elms, io, min, max);
+      r = PD::New<UI7::DragData<T>>(label, data, num_elms, io, min, max, step,
+                                    precision);
       r->SetID(id);
     }
     Layout->AddObject(r);

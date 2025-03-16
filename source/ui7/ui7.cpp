@@ -260,6 +260,8 @@ void UI7::Context::StyleEditor(bool* show) {
     m->DragData("FramePadding", (float*)&io->FramePadding, 2, 0.f, 100.f);
     m->DragData("ItemSpace", (float*)&io->ItemSpace, 2, 0.f, 100.f);
     m->DragData("MinSliderSize", (float*)&io->MinSliderDragSize, 2, 1.f, 100.f);
+    m->DragData("OverScroll Modifier", &io->OverScrollMod, 1, 0.01f,
+                std::numeric_limits<float>::max(), 0.01f, 2);
     m->SeparatorText("Theme");
     if (m->Button("Dark")) {
       UI7::Theme::Default(*io->Theme.get());
@@ -270,8 +272,9 @@ void UI7::Context::StyleEditor(bool* show) {
     }
     /// Small trick to print without prefix
 #define ts(x) m->ColorEdit(std::string(#x).substr(9), &io->Theme->GetRef(x));
-#define ts2(x) \
-  m->DragData(std::string(#x).substr(9), (u8*)&io->Theme->GetRef(x), 4, (u8)0, (u8)255);
+#define ts2(x)                                                                 \
+  m->DragData(std::string(#x).substr(9), (u8*)&io->Theme->GetRef(x), 4, (u8)0, \
+              (u8)255);
     ts2(UI7Color_Background);
     ts2(UI7Color_Button);
     ts2(UI7Color_ButtonDead);

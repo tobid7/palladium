@@ -249,7 +249,7 @@ void UI7::Menu::PostHandler() {
       if (Layout->ScrollOffset[1] > Layout->MaxPosition[1] - Layout->Size.y() &&
           Layout->MaxPosition[1] != 0.f &&
           Layout->MaxPosition[1] >= Layout->Size.y() - io->MenuPadding[1]) {
-        Layout->ScrollOffset[1] -= 3.f;
+        Layout->ScrollOffset[1] -= io->OverScrollMod * io->Delta;
         if (Layout->ScrollOffset[1] <
             Layout->MaxPosition[1] - Layout->Size.y()) {
           Layout->ScrollOffset[1] = Layout->MaxPosition[1] - Layout->Size.y();
@@ -258,7 +258,7 @@ void UI7::Menu::PostHandler() {
 
       /// Do the Same as above just for Overscroll back to the top
       if (Layout->ScrollOffset[1] < 0) {
-        Layout->ScrollOffset[1] += 3.f;
+        Layout->ScrollOffset[1] += io->OverScrollMod * io->Delta;
         if (Layout->ScrollOffset[1] > 0) {
           Layout->ScrollOffset[1] = 0;
         }

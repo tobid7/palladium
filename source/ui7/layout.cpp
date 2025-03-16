@@ -44,7 +44,7 @@ void Layout::CursorMove(const vec2& size) {
                   Cursor[1] + size[1] + IO->ItemSpace[1]);
   }
   // Logical Issue here as x should use a max check
-  MaxPosition = vec2(SamelineCursor[0], Cursor[1]);
+  MaxPosition = vec2(std::max(MaxPosition[0], SamelineCursor[0]), Cursor[1]);
 }
 
 bool Layout::ObjectWorkPos(vec2& movpos) {

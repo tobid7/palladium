@@ -63,6 +63,7 @@ class Layout : public PD::SmartCtor<Layout> {
 
   void AddObject(Container::Ref obj);
   Container::Ref FindObject(u32 id);
+  void ClearIDObjects() { IDObjects.clear(); }
 
   vec2 AlignPosition(vec2 pos, vec2 size, vec4 area, UI7Align alignment);
 

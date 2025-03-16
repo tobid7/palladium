@@ -37,7 +37,7 @@ SOFTWARE.
  *         Major Minor Patch Build
  * 0x01010000 -> 1.1.0-0
  */
-#define UI7_VERSION 0x00030100
+#define UI7_VERSION 0x00030101
 
 namespace PD {
 namespace UI7 {

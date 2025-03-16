@@ -48,7 +48,7 @@ void DragData<T>::HandleInput() {
     for (size_t i = 0; i < elm_count; i++) {
       std::string p;
       if constexpr (std::is_floating_point_v<T>) {
-        p = std::format("{:.1f}", data[i]);
+        p = std::format("{:.{}f}", data[i], precision);
       } else {
         p = std::format("{}", data[i]);
       }
@@ -57,9 +57,9 @@ void DragData<T>::HandleInput() {
       if (io->DragObject(
               this->GetID() + i + 1,
               vec4(FinalPos() + vec2(off_x, 0), tdim + io->FramePadding))) {
-        data[i] = std::clamp(
-            T(data[i] + (io->DragPosition[0] - io->DragLastPosition[0])),
-            this->min, this->max);
+        data[i] = std::clamp(T(data[i] + (step * (io->DragPosition[0] -
+                                                  io->DragLastPosition[0]))),
+                             this->min, this->max);
       }
       off_x += tdim.x() + io->ItemSpace.x() + io->FramePadding.x();
     }
@@ -75,7 +75,7 @@ void DragData<T>::Draw() {
   for (size_t i = 0; i < elm_count; i++) {
     std::string p;
     if constexpr (std::is_floating_point_v<T>) {
-      p = std::format("{:.1f}", data[i]);
+      p = std::format("{:.{}f}", data[i], precision);
     } else {
       p = std::format("{}", data[i]);
     }
@@ -88,14 +88,26 @@ void DragData<T>::Draw() {
     list->Layer(list->Layer() - 1);
     off_x += td.x() + io->ItemSpace.x() + io->FramePadding.x();
   }
-  list->AddText(FinalPos() + vec2(off_x, 0), label,
+  list->AddText(FinalPos() + vec2(off_x, io->FramePadding.y() * 0.5), label,
                 io->Theme->Get(UI7Color_Text));
 }
 
 template <typename T>
 void DragData<T>::Update() {
   Assert(io.get(), "Did you run Container::Init correctly?");
-  this->SetSize(vec2(tdim.x() + io->ItemSpace.x() + 20, 20));
+  // Probably need to find a faster solution (caching sizes calculated here)
+  float off_x = 0;
+  for (size_t i = 0; i < elm_count; i++) {
+    std::string p;
+    if constexpr (std::is_floating_point_v<T>) {
+      p = std::format("{:.{}f}", data[i], precision);
+    } else {
+      p = std::format("{}", data[i]);
+    }
+    vec2 tdim = io->Ren->GetTextDimensions(p);
+    off_x += tdim.x() + io->ItemSpace.x() + io->FramePadding.x();
+  }
+  this->SetSize(vec2(tdim.x() + off_x, tdim.y() + io->FramePadding.y()));
 }
 }  // namespace UI7
 }  // namespace PD
