@@ -71,6 +71,8 @@ class IO : public SmartCtor<IO> {
   vec2 FramePadding = 5.f;
   vec2 ItemSpace = vec2(5.f, 2.f);
   vec2 MinSliderDragSize = 10.f;  // Min height (Vt) and Min Width (Hz)
+  bool ShowMenuBorder = true;
+  bool ShowFrameBorder = false; // not implemented yet
   float OverScrollMod = 0.15f;
   u64 DoubleClickTime = 500;  // Milliseconds
   std::vector<std::pair<UI7::ID, DrawList::Ref>> DrawListRegestry;

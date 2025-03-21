@@ -262,6 +262,8 @@ void UI7::Context::StyleEditor(bool* show) {
     m->DragData("MinSliderSize", (float*)&io->MinSliderDragSize, 2, 1.f, 100.f);
     m->DragData("OverScroll Modifier", &io->OverScrollMod, 1, 0.01f,
                 std::numeric_limits<float>::max(), 0.01f, 2);
+    m->Checkbox("Menu Border", io->ShowMenuBorder);
+    m->Checkbox("Frame Border", io->ShowFrameBorder);
     m->SeparatorText("Theme");
     if (m->Button("Dark")) {
       UI7::Theme::Default(*io->Theme.get());
@@ -276,6 +278,7 @@ void UI7::Context::StyleEditor(bool* show) {
   m->DragData(std::string(#x).substr(9), (u8*)&io->Theme->GetRef(x), 4, (u8)0, \
               (u8)255);
     ts2(UI7Color_Background);
+    ts2(UI7Color_Border);
     ts2(UI7Color_Button);
     ts2(UI7Color_ButtonDead);
     ts2(UI7Color_ButtonActive);

@@ -26,40 +26,88 @@ SOFTWARE.
 
 namespace PD {
 namespace UI7 {
+void DrawList::PathArcToN(const vec2& c, float radius, float a_min, float a_max,
+                          int segments) {
+  // Path.push_back(c);
+  PathReserve(segments + 1);
+  for (int i = 0; i < segments; i++) {
+    float a = a_min + ((float)i / (float)segments) * (a_max - a_min);
+    PathNext(vec2(c.x() + std::cos(a) * radius, c.y() + std::sin(a) * radius));
+  }
+}
+
+void DrawList::PathRect(vec2 a, vec2 b, float rounding, UI7DrawFlags flags) {
+  if (rounding == 0.f) {
+    PathNext(a);
+    PathNext(vec2(b.x(), a.y()));
+    PathNext(b);
+    PathNext(vec2(a.x(), b.y()));
+  } else {
+    PathArcToN(vec2(a.x() + rounding, a.y() + rounding), rounding, 4*6, 4*9, 21);
+    PathArcToN(vec2(b.x() - rounding, a.y() + rounding), rounding, 4*9, 4*12, 21);
+    PathArcToN(vec2(b.x() - rounding, b.y() - rounding), rounding, 4*0, 4*3, 21);
+    PathArcToN(vec2(a.x() + rounding, b.y() - rounding), rounding, 4*3, 4*6, 21);
+  }
+}
+
+void DrawList::AddRect(const vec2& pos, const vec2& size, const UI7Color& clr,
+                       int thickness) {
+  if (!ren->InBox(pos, size, ren->GetViewport())) {
+    return;
+  }
+  ren->UseTex();
+  PathRect(pos, pos + size);
+  PathStroke(clr, thickness, UI7DrawFlags_Close);
+}
 void DrawList::AddRectangle(vec2 pos, vec2 szs, const UI7Color& clr) {
   if (!ren->InBox(pos, szs, ren->GetViewport())) {
     return;
   }
-  auto rect = ren->CreateRect(pos, szs, 0.f);
-  auto cmd = LI::Command::New();
   ren->UseTex();
-  ren->SetupCommand(cmd);
-  cmd->Layer(layer);
-  if (!clip_rects.empty()) {
-    cmd->SetScissorMode(LI::ScissorMode_Normal);
-    cmd->ScissorRect(clip_rects.top());
-  }
-  ren->QuadCommand(cmd, rect, vec4(0.f, 1.f, 1.f, 0.f), clr);
-  commands.push_back(std::make_pair(
-      ren->CurrentScreen()->ScreenType() == Screen::Bottom, cmd));
+  PathRect(pos, pos + szs);
+  PathFill(clr);
 }
 
-void DrawList::AddTriangle(vec2 pos0, vec2 pos1, vec2 pos2,
-                           const UI7Color& clr) {
-  if (!ren->InBox(pos0, pos1, pos2, ren->GetViewport())) {
-    return;
-  }
-  auto cmd = LI::Command::New();
+void DrawList::AddTriangle(const vec2& a, const vec2& b, const vec2& c,
+                           const UI7Color& clr, int thickness) {
   ren->UseTex();
-  ren->SetupCommand(cmd);
-  cmd->Layer(layer);
-  if (!clip_rects.empty()) {
-    cmd->SetScissorMode(LI::ScissorMode_Normal);
-    cmd->ScissorRect(clip_rects.top());
+  PathNext(a);
+  PathNext(b);
+  PathNext(c);
+  PathStroke(clr, thickness, UI7DrawFlags_Close);
+}
+
+void DrawList::AddTriangleFilled(const vec2& a, const vec2& b, const vec2& c,
+                                 const UI7Color& clr) {
+  ren->UseTex();
+  PathNext(a);
+  PathNext(b);
+  PathNext(c);
+  PathFill(clr);
+}
+
+void DrawList::AddCircle(const vec2& pos, float rad, UI7Color col,
+                         int num_segments, int thickness) {
+  if (num_segments <= 0) {
+    // Auto Segment
+  } else {
+    float am = (M_PI * 2.0f) * ((float)num_segments) / (float)num_segments;
+    PathArcToN(pos, rad, 0.f, am, num_segments);
   }
-  ren->TriangleCommand(cmd, pos0, pos1, pos2, clr);
-  commands.push_back(std::make_pair(
-      ren->CurrentScreen()->ScreenType() == Screen::Bottom, cmd));
+  ren->UseTex();
+  PathStroke(col, thickness, UI7DrawFlags_Close);
+}
+
+void DrawList::AddCircleFilled(const vec2& pos, float rad, UI7Color col,
+                               int num_segments) {
+  if (num_segments <= 0) {
+    // Auto Segment
+  } else {
+    float am = (M_PI * 2.0f) * ((float)num_segments) / (float)num_segments;
+    PathArcToN(pos, rad, 0.f, am, num_segments);
+  }
+  ren->UseTex();
+  PathFill(col);
 }
 
 void DrawList::AddText(vec2 pos, const std::string& text, const UI7Color& clr,
@@ -123,16 +171,62 @@ void DrawList::AddLine(const vec2& a, const vec2& b, const UI7Color& clr,
       !ren->InBox(b, ren->GetViewport())) {
     return;
   }
-  auto line = ren->CreateLine(a, b, t);
-  auto cmd = LI::Command::New();
   ren->UseTex();
+  PathNext(a);
+  PathNext(b);
+  PathStroke(clr, t);
+}
+
+// TODO: Don't render OOS
+void DrawList::AddPolyLine(const std::vector<vec2>& points, const UI7Color& clr,
+                           UI7DrawFlags flags, int thickness) {
+  if (points.size() < 2) {
+    return;
+  }
+  auto cmd = LI::Command::New();
   ren->SetupCommand(cmd);
   cmd->Layer(layer);
   if (!clip_rects.empty()) {
     cmd->SetScissorMode(LI::ScissorMode_Normal);
     cmd->ScissorRect(clip_rects.top());
   }
-  ren->QuadCommand(cmd, line, vec4(0.f, 1.f, 1.f, 0.f), clr);
+  bool close = (flags & UI7DrawFlags_Close);
+  int num_points = close ? (int)points.size() : (int)points.size() - 1;
+  if (flags & UI7DrawFlags_AALines) {
+    // TODO: Find a way to draw less garbage looking lines
+  } else {
+    // Non antialiased lines look awful when rendering with thickness != 1
+    for (int i = 0; i < num_points; i++) {
+      int j = (i + 1) == (int)points.size() ? 0 : (i + 1);
+      auto line = ren->CreateLine(points[i], points[j], thickness);
+      ren->QuadCommand(cmd, line, vec4(0.f, 1.f, 1.f, 0.f), clr);
+    }
+  }
+  commands.push_back(std::make_pair(
+      ren->CurrentScreen()->ScreenType() == Screen::Bottom, cmd));
+}
+
+// TODO: Don't render OOS (Probably make it with a define as it
+// would probably be faster to render out of screen than checking if
+// it could be skipped)
+void DrawList::AddConvexPolyFilled(const std::vector<vec2>& points,
+                                   const UI7Color& clr) {
+  if (points.size() < 3) {
+    return;  // Need at least three points
+  }
+  auto cmd = LI::Command::New();
+  ren->SetupCommand(cmd);
+  cmd->Layer(layer);
+  if (!clip_rects.empty()) {
+    cmd->SetScissorMode(LI::ScissorMode_Normal);
+    cmd->ScissorRect(clip_rects.top());
+  }
+  for (int i = 2; i < (int)points.size(); i++) {
+    cmd->PushIndex(0).PushIndex(i).PushIndex(i - 1);
+  }
+  for (int i = 0; i < (int)points.size(); i++) {
+    cmd->PushVertex(LI::Vertex(points[i], vec2(0, 0), clr));
+  }
   commands.push_back(std::make_pair(
       ren->CurrentScreen()->ScreenType() == Screen::Bottom, cmd));
 }

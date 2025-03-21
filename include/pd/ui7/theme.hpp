@@ -34,6 +34,7 @@ using UI7Color = PD::u32;
 /** Theme Color */
 enum UI7Color_ {
   UI7Color_Background,              ///< UI7 Menu Background
+  UI7Color_Border,                  ///< Menu/Frame Border Color
   UI7Color_Button,                  ///< UI7 Button Idle Color
   UI7Color_ButtonDead,              ///< UI7 Disabled Button Color
   UI7Color_ButtonActive,            ///< UI7 Pressed Button Color

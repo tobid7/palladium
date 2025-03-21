@@ -290,6 +290,9 @@ class Menu : public SmartCtor<Menu> {
 
   // Layout API
   PD::UI7::Layout::Ref Layout;
+
+  UI7Color clr_close_btn = UI7Color_FrameBackground;
+  UI7Color clr_collapse_tri = UI7Color_FrameBackground;
 };
 }  // namespace UI7
 }  // namespace PD

@@ -166,14 +166,12 @@ void UI7::Menu::PreHandler(UI7MenuFlags flags) {
   this->flags = flags;
   Layout->Scrolling[1] = flags & UI7MenuFlags_VtScrolling;
   has_touch = io->Ren->CurrentScreen()->ScreenType() == Screen::Bottom;
-  if (!(flags & UI7MenuFlags_NoBackground) && is_open) {
-    list->Layer(0);
-    list->AddRectangle(Layout->Pos + vec2(0, tbh), Layout->Size - vec2(0, tbh),
-                       io->Theme->Get(UI7Color_Background));
-  }
   if (!(flags & UI7MenuFlags_NoTitlebar)) {
     // Title bar setup and Rendering
     tbh = io->Ren->TextScale() * 30.f;
+    CollapseHandler();
+    CloseButtonHandler();
+    MoveHandler();
     list->Layer(20);
     list->AddRectangle(Layout->Pos, vec2(Layout->Size.x(), tbh),
                        io->Theme->Get(header));
@@ -201,11 +199,48 @@ void UI7::Menu::PreHandler(UI7MenuFlags flags) {
     if (!(flags & UI7MenuFlags_NoClipRect)) {
       Layout->DrawList->PopClipRect();
     }
+
+    /// Close Button Rendering
+    if (!(flags & UI7MenuFlags_NoClose) && is_shown) {
+      vec2 cpos =
+          vec2(Layout->Pos.x() + Layout->Size.x() - 12 - io->FramePadding.x(),
+               Layout->Pos.y() + io->FramePadding.y());
+      Layout->GetDrawList()->AddLine(cpos, cpos + 12,
+                                     io->Theme->Get(clr_close_btn), 2);
+      Layout->GetDrawList()->AddLine(cpos + vec2(0, 12), cpos + vec2(12, 0),
+                                     io->Theme->Get(clr_close_btn), 2);
+    }
+    /// Collapse Triangle Rendering
+    if (!(flags & UI7MenuFlags_NoCollapse)) {
+      vec2 cpos = Layout->Pos + io->FramePadding;
+      vec2 positions[2] = {
+          vec2(12, 6),
+          vec2(0, 12),
+      };
+      if (is_open) {
+        float t = positions[0].y();
+        positions[0].y() = positions[1].x();
+        positions[1].x() = t;
+      }
+      Layout->GetDrawList()->AddTriangleFilled(
+          cpos, cpos + positions[0], cpos + positions[1],
+          io->Theme->Get(clr_collapse_tri));
+    }
     Layout->WorkRect[1] = io->MenuPadding[1] + tbh;
     Layout->CursorInit();
-    CollapseHandler();
-    CloseButtonHandler();
-    MoveHandler();
+  }
+  if (!(flags & UI7MenuFlags_NoBackground) && is_open) {
+    list->Layer(0);
+    list->AddRectangle(Layout->Pos + vec2(0, tbh), Layout->Size - vec2(0, tbh),
+                       io->Theme->Get(UI7Color_Background));
+  }
+  if (io->ShowMenuBorder) {
+    vec2 bsize = Layout->Size;
+    if (!is_open) {
+      bsize[1] = tbh;
+    }
+    list->Layer(20);
+    list->AddRect(Layout->Pos, bsize, io->Theme->Get(UI7Color_Border));
   }
   // Add a clip Rect for Separators
   if (!(flags & UI7MenuFlags_NoClipRect)) {
@@ -221,6 +256,10 @@ void UI7::Menu::PreHandler(UI7MenuFlags flags) {
 void UI7::Menu::PostHandler() {
   TT::Scope st("MPOS_" + name);
   TT::End("MUSR_" + name);
+  // Remove the Clip Rect
+  if (!(flags & UI7MenuFlags_NoClipRect)) {
+    Layout->DrawList->PopClipRect();
+  }
   ResizeHandler();
   if (Layout->Scrolling[1]) {
     scroll_allowed[1] =
@@ -316,10 +355,6 @@ void UI7::Menu::PostHandler() {
       list->AddRectangle(Layout->Pos + vec2(screen_w - 10, srpos + 2),
                          vec2(slider_w, vslider_h), io->Theme->Get(sldr_drag));
     }
-  }
-  // Remove the Clip Rect
-  if (!(flags & UI7MenuFlags_NoClipRect)) {
-    Layout->DrawList->PopClipRect();
   }
 }
 
@@ -445,8 +480,9 @@ bool UI7::Menu::BeginTreeNode(const UI7::ID& id) {
     positions[0].y() = positions[1].x();
     positions[1].x() = t;
   }
-  Layout->GetDrawList()->AddTriangle(ts, ts + positions[0], ts + positions[1],
-                                     io->Theme->Get(UI7Color_FrameBackground));
+  Layout->GetDrawList()->AddTriangleFilled(
+      ts, ts + positions[0], ts + positions[1],
+      io->Theme->Get(UI7Color_FrameBackground));
   Layout->GetDrawList()->AddText(
       Layout->Pos + pos + vec2(10 + io->ItemSpace[0], 0), id.GetName(),
       io->Theme->Get(UI7Color_Text));
@@ -478,17 +514,14 @@ void UI7::Menu::CloseButtonHandler() {
         vec2(Layout->Pos.x() + Layout->Size.x() - 12 - io->FramePadding.x(),
              Layout->Pos.y() + io->FramePadding.y());
 
-    UI7Color clr = UI7Color_FrameBackground;
+    clr_close_btn = UI7Color_FrameBackground;
     if (has_touch &&
         io->DragObject(UI7::ID(name + "clse"), vec4(cpos, vec2(12)))) {
       if (io->DragReleased) {
         *is_shown = !(*is_shown);
       }
-      clr = UI7Color_FrameBackgroundHovered;
+      clr_close_btn = UI7Color_FrameBackgroundHovered;
     }
-    Layout->GetDrawList()->AddLine(cpos, cpos + 12, io->Theme->Get(clr), 2);
-    Layout->GetDrawList()->AddLine(cpos + vec2(0, 12), cpos + vec2(12, 0),
-                                   io->Theme->Get(clr), 2);
   }
 }
 
@@ -502,16 +535,11 @@ void UI7::Menu::ResizeHandler() {
       if (szs.y() < 30) szs[1] = 30;
       Layout->Size = szs;
     }
-    Layout->DrawList->AddTriangle(Layout->Pos + Layout->Size,
-                                  Layout->Pos + Layout->Size - vec2(0, 10),
-                                  Layout->Pos + Layout->Size - vec2(10, 0),
+    Layout->DrawList->Layer(21);
+    Layout->DrawList->AddTriangleFilled(Layout->Pos + Layout->Size,
+                                  Layout->Pos + Layout->Size - vec2(0, 15),
+                                  Layout->Pos + Layout->Size - vec2(15, 0),
                                   io->Theme->Get(UI7Color_FrameBackground));
-    // front->AddRectangle(Layout->Pos + Layout->Size - 20, 20,
-    // 0xffffffff); Not vidible dor some reason
-    // int l = front->Layer();
-    // front->Layer(l + 1);
-    // front->AddTriangle(10, vec2(10, 0), vec2(10, 0), 0xffffffff);
-    // front->Layer(l);
   }
 }
 
@@ -533,25 +561,14 @@ void UI7::Menu::CollapseHandler() {
   // Collapse logic
   if (!(flags & UI7MenuFlags_NoCollapse)) {
     vec2 cpos = Layout->Pos + io->FramePadding;
-    UI7Color clr = UI7Color_FrameBackground;
+    clr_collapse_tri = UI7Color_FrameBackground;
     if (has_touch &&
         io->DragObject(UI7::ID(name + "clbse"), vec4(cpos, vec2(18, tbh)))) {
       if (io->DragReleased) {
         is_open = !is_open;
       }
-      clr = UI7Color_FrameBackgroundHovered;
+      clr_collapse_tri = UI7Color_FrameBackgroundHovered;
     }
-    vec2 positions[2] = {
-        vec2(12, 6),
-        vec2(0, 12),
-    };
-    if (is_open) {
-      float t = positions[0].y();
-      positions[0].y() = positions[1].x();
-      positions[1].x() = t;
-    }
-    Layout->GetDrawList()->AddTriangle(
-        cpos, cpos + positions[0], cpos + positions[1], io->Theme->Get(clr));
   }
 }
 

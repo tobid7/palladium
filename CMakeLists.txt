@@ -52,7 +52,7 @@ execute_process(
 )
 
 # Set Project
-project(palladium LANGUAGES C CXX VERSION 0.3.1)
+project(palladium LANGUAGES C CXX VERSION 0.3.2)
 
 option(PD_BUILD_TESTS "Sets if TestApp and TestBench get build" OFF)
 

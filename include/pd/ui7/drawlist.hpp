@@ -25,6 +25,7 @@ SOFTWARE.
 
 #include <pd/core/common.hpp>
 #include <pd/lithium/renderer.hpp>
+#include <pd/ui7/flags.hpp>
 #include <pd/ui7/theme.hpp>
 
 namespace PD {
@@ -40,6 +41,15 @@ class DrawList : public SmartCtor<DrawList> {
   ~DrawList() = default;
 
   /**
+   * Draw a Rectangle (LINED)
+   * @param pos position of the rect
+   * @param size Size of the rect
+   * @param clr Color of the rect
+   * @param thickness Thickness of the lines
+   */
+  void AddRect(const vec2& pos, const vec2& size, const UI7Color& clr,
+               int thickness = 1);
+  /**
    * Render a Rectangle
    * @param pos Position
    * @param szs Size
@@ -48,12 +58,43 @@ class DrawList : public SmartCtor<DrawList> {
   void AddRectangle(vec2 pos, vec2 szs, const UI7Color& clr);
   /**
    * Render a Triangle
-   * @param pos0 Position a
-   * @param pos1 Position b
-   * @param pos2 Position c
+   * @param a Position a
+   * @param b Position b
+   * @param c Position c
+   * @param clr Color
+   * @param thickness Thickness of the lines
+   */
+  void AddTriangle(const vec2& a, const vec2& b, const vec2& c,
+                   const UI7Color& clr, int thickness = 1);
+  /**
+   * Render a Filled Triangle
+   * @param a Position a
+   * @param b Position b
+   * @param c Position c
    * @param clr Color
    */
-  void AddTriangle(vec2 pos0, vec2 pos1, vec2 pos2, const UI7Color& clr);
+  void AddTriangleFilled(const vec2& a, const vec2& b, const vec2& c,
+                         const UI7Color& clr);
+
+  /**
+   * Add a Lined Circle
+   * @param pos Center position
+   * @param rad radius of the circle
+   * @param col Color of the Circle
+   * @param num_segments Number of Segments (0 = auto)
+   * @param thickness thickness of the line
+   */
+  void AddCircle(const vec2& pos, float rad, UI7Color col, int num_segments = 0,
+                 int thickness = 1);
+  /**
+   * Add a Circle
+   * @param pos Center position
+   * @param rad radius of the circle
+   * @param col Color of the Circle
+   * @param num_segments Number of Segments (0 = auto)
+   */
+  void AddCircleFilled(const vec2& pos, float rad, UI7Color col,
+                       int num_segments = 0);
   /**
    * Render a Text
    * @param pos Position
@@ -82,6 +123,24 @@ class DrawList : public SmartCtor<DrawList> {
    */
   void AddLine(const vec2& a, const vec2& b, const UI7Color& clr, int t = 1);
 
+  /**
+   * Take list of points and display it as a line on screen
+   * @param points List of Positions
+   * @param clr Color of the Line
+   * @param flags Additional Flags (Close for go back to starting point)
+   * @param thickness Thickness of the Line
+   */
+  void AddPolyLine(const std::vector<vec2>& points, const UI7Color& clr,
+                   UI7DrawFlags flags = 0, int thickness = 1);
+  /**
+   * Take a List ofpoints and display it as Filled Shape
+   * @note Keep in mind to setup the list of points clockwise
+   * @param points List of Points
+   * @param clr Color of the shape
+   */
+  void AddConvexPolyFilled(const std::vector<vec2>& points,
+                           const UI7Color& clr);
+
   /** Clear the Drawlist */
   void Clear();
   /** Process [Render] the Drawlist */
@@ -97,6 +156,61 @@ class DrawList : public SmartCtor<DrawList> {
   int Layer() const { return layer; }
   /** Setter fot the Layer */
   void Layer(int v) { layer = v; }
+
+  /** Path API */
+
+  /**
+   * Function to reserve Memory to prevent overhead on
+   * pusing a lot of points with PathNext
+   * @param num_points Number of Positions you want to add
+   */
+  void PathReserve(size_t num_points) {
+    Path.reserve(Path.size() + num_points);
+  }
+  /**
+   * Clear current Path
+   * @note PathStroke and PathFill will automatically clear
+   */
+  void PathClear() { Path.clear(); }
+  /**
+   * Add a Point to the Path
+   * @note Keep in mind that this function is used for
+   * setting the starting point
+   * @param v Position to add
+   */
+  void PathNext(const vec2& v) { Path.push_back(v); }
+  /**
+   * Path Stroke Create Line from point to point
+   * @note For Primitives like Rect or Triangle mak sure to use
+   * UI7DrawFlags_Close to add a line back to the starting point
+   * @param clr Color od the line
+   * @param thickness Thickness of the line
+   * @param flags Additional Drawflags
+   */
+  void PathStroke(const UI7Color& clr, int thickness = 1,
+                  UI7DrawFlags flags = 0) {
+    AddPolyLine(Path, clr, flags, thickness);
+    Path.clear();
+  }
+  /**
+   * Fill a Path with a Color
+   * @note **IMPORTANT: ** Paths need to be setup clockwise
+   * to be rendered correctly
+   * @param clr Fill Color
+   */
+  void PathFill(const UI7Color& clr) {
+    AddConvexPolyFilled(Path, clr);
+    Path.clear();
+  }
+
+  void PathArcToN(const vec2& c, float radius, float a_min, float a_max,
+                  int segments);
+  /// @brief Create a Path Rect (uses to Positions instead of Pos/Size)
+  /// @param a Top Left Position
+  /// @param b Bottom Right Position
+  /// @param rounding rounding
+  /// @param flags DrawFlags (for special rounding rules)
+  void PathRect(vec2 a, vec2 b, float rounding = 0.f, UI7DrawFlags flags = 0);
 
  private:
   /** Base Layer offset (Internal Used) */
@@ -114,6 +228,7 @@ class DrawList : public SmartCtor<DrawList> {
   std::stack<vec4> clip_rects;  ///< Stack containing Scissor Areas
   u32 num_vertices;             ///< Number of Vertices
   u32 num_indices;              ///< Number of Indices
+  std::vector<vec2> Path;
   // Map for Auto Static Text
   std::unordered_map<u32, LI::StaticText::Ref> static_text;
   // List of Drawcommands generated

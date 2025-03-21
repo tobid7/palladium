@@ -31,6 +31,8 @@ using UI7Align = unsigned int;
 using UI7IOFlags = unsigned int;
 /** 32Bit Value for Layout Flags */
 using UI7LayoutFlags = unsigned int;
+/** 32Bit value for DrawFlags */
+using UI7DrawFlags = unsigned int;
 
 /** Menu Flags */
 enum UI7MenuFlags_ {
@@ -54,6 +56,12 @@ enum UI7MenuFlags_ {
 enum UI7LayoutFlags_ {
   UI7LayoutFlags_None = 0,              ///< No Flags used
   UI7LayoutFlags_UseClipRect = 1 << 0,  ///< Enable ClipRect
+};
+
+enum UI7DrawFlags_ {
+  UI7DrawFlags_None = 0,
+  UI7DrawFlags_Close = 1 << 0,    ///< Close a PolyLine
+  UI7DrawFlags_AALines = 1 << 1,  ///< Anti aliased Lines
 };
 
 /** UI7 Context Flags */
