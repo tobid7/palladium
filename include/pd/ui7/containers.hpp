@@ -27,5 +27,6 @@ SOFTWARE.
 #include <pd/ui7/container/checkbox.hpp>
 #include <pd/ui7/container/coloredit.hpp>
 #include <pd/ui7/container/dragdata.hpp>
+#include <pd/ui7/container/dynobj.hpp>
 #include <pd/ui7/container/image.hpp>
 #include <pd/ui7/container/label.hpp>

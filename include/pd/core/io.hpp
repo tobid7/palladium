@@ -35,12 +35,12 @@ namespace IO {
  * @param path Path to the File
  * @return 8Bit FileBuffer
  */
-std::vector<u8> LoadFile2Mem(const std::string& path);
+PD_CORE_API std::vector<u8> LoadFile2Mem(const std::string& path);
 /**
  * Hash a 8Bit Memory Buffer
  * @param data 8Bit input Buffer
  * @return 32Bit Hash
  */
-u32 HashMemory(const std::vector<u8>& data);
+PD_CORE_API u32 HashMemory(const std::vector<u8>& data);
 }  // namespace IO
 }  // namespace PD

@@ -25,11 +25,13 @@ SOFTWARE.
 
 namespace PD {
 namespace UI7 {
-void Image::Draw() {
-  Assert(io.get() && list.get(), "Did you run Container::Init correctly?");
-  Assert(img.get(), "Image is nullptr!");
-  io->Ren->OnScreen(screen);
+PD_UI7_API void Image::Draw() {
+  // Assert(io.get() && list.get(), "Did you run Container::Init correctly?");
+  // Assert(img.get(), "Image is nullptr!");
+  // io->Ren->OnScreen(screen);
+  list->Layer++;
   list->AddImage(FinalPos(), img, newsize, this->cuv);
+  list->Layer--;
 }
 }  // namespace UI7
 }  // namespace PD

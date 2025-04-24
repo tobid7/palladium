@@ -33,7 +33,7 @@ namespace UI7 {
  * and modifys these by moving left or right when dragging
  */
 template <typename T>
-class DragData : public Container {
+class PD_UI7_API DragData : public Container {
  public:
   /**
    * Constructor
@@ -50,7 +50,7 @@ class DragData : public Container {
            T min = std::numeric_limits<T>::min(),
            T max = std::numeric_limits<T>::max(), T step = 1,
            int precision = 1) {
-    PD::Assert(data != nullptr, "Input Data Address is null!");
+    // PD::Assert(data != nullptr, "Input Data Address is null!");
     this->label = label;
     this->data = data;
     this->elm_count = num_elms;
@@ -58,7 +58,7 @@ class DragData : public Container {
     this->max = max;
     this->step = step;
     this->precision = precision;
-    this->tdim = io->Ren->GetTextDimensions(label);
+    this->tdim = io->Font->GetTextBounds(label, io->FontScale);
   }
   ~DragData() = default;
 
@@ -77,7 +77,7 @@ class DragData : public Container {
   void Update() override;
 
  private:
-  vec2 tdim;          ///< Text size
+  fvec2 tdim;         ///< Text size
   std::string label;  ///< Label of the Button
   T* data;
   size_t elm_count = 0;

@@ -28,7 +28,7 @@ MessageMgr::Container::Container(const std::string& title,
                                  const std::string& msg) {
   this->title = title;
   this->msg = msg;
-  size = vec2(150, 50);
+  size = fvec2(150, 50);
   // Precalculate colors
   col_bg = PD::Color("#111111aa");
   col_text = PD::Color("#ffffff");
@@ -42,11 +42,11 @@ void MessageMgr::Container::Render(PD::LI::Renderer::Ref ren) {
   // result in the same we would waste a lot
   // of cpu performance which is a big issue
   // espeacilly on the Old3ds...
-  vec2 tpos = pos;
+  fvec2 tpos = pos;
   // Check if it goes out of screen
   // Instant kills cause it will never be on
   // Screen agains
-  if (tpos[1] + size[1] < 0) {
+  if (tpos.y + size.y < 0) {
     kill = true;
   }
   // If should be removed modify the color by fade
@@ -58,7 +58,7 @@ void MessageMgr::Container::Render(PD::LI::Renderer::Ref ren) {
   }
   // Create a backup Layer to Render
   // Text onto the next layer
-  int l = ren->Layer();
+  //int l = ren->Layer();
   ren->DrawRectSolid(tpos, size, col_bg);
   ren->Layer(l + 1);
   ren->DrawText(tpos + vec2(4, 2), col_text, title);

@@ -35,13 +35,21 @@ SOFTWARE.
 #define PALLADIUM_GIT_BRANCH "unknown"
 #endif
 
-const std::string PD::LibInfo::CompiledWith() {
+PD_CORE_API const std::string PD::LibInfo::CompiledWith() {
   return Strings::GetCompilerVersion();
 }
-const std::string PD::LibInfo::CxxVersion() {
+PD_CORE_API const std::string PD::LibInfo::CxxVersion() {
   return "CPP: " + std::to_string(__cplusplus);
 }
-const std::string PD::LibInfo::BuildTime() { return __DATE__ " - " __TIME__; }
-const std::string PD::LibInfo::Version() { return PALLADIUM_VERSION; }
-const std::string PD::LibInfo::Commit() { return PALLADIUM_GIT_COMMIT; }
-const std::string PD::LibInfo::Branch() { return PALLADIUM_GIT_BRANCH; }
+PD_CORE_API const std::string PD::LibInfo::BuildTime() {
+  return __DATE__ " - " __TIME__;
+}
+PD_CORE_API const std::string PD::LibInfo::Version() {
+  return PALLADIUM_VERSION;
+}
+PD_CORE_API const std::string PD::LibInfo::Commit() {
+  return PALLADIUM_GIT_COMMIT;
+}
+PD_CORE_API const std::string PD::LibInfo::Branch() {
+  return PALLADIUM_GIT_BRANCH;
+}

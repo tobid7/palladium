@@ -23,21 +23,23 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/core/common.hpp>
+#include <pd/core/core.hpp>
 #include <pd/lithium/renderer.hpp>
 #include <pd/ui7/flags.hpp>
+#include <pd/ui7/pd_p_api.hpp>
 #include <pd/ui7/theme.hpp>
 
 namespace PD {
 namespace UI7 {
+class IO;
 /** DrawList class */
-class DrawList : public SmartCtor<DrawList> {
+class PD_UI7_API DrawList : public SmartCtor<DrawList> {
  public:
   /**
    * Constructor for a new Drawlist
    * @param r Renderer reference
    */
-  DrawList(LI::Renderer::Ref r) { ren = r; }
+  DrawList(UI7::IO* io_ref) { pIO = io_ref; }
   ~DrawList() = default;
 
   /**
@@ -47,7 +49,7 @@ class DrawList : public SmartCtor<DrawList> {
    * @param clr Color of the rect
    * @param thickness Thickness of the lines
    */
-  void AddRect(const vec2& pos, const vec2& size, const UI7Color& clr,
+  void AddRect(const fvec2& pos, const fvec2& size, const UI7Color& clr,
                int thickness = 1);
   /**
    * Render a Rectangle
@@ -55,7 +57,7 @@ class DrawList : public SmartCtor<DrawList> {
    * @param szs Size
    * @param clr Color
    */
-  void AddRectangle(vec2 pos, vec2 szs, const UI7Color& clr);
+  void AddRectangle(fvec2 pos, fvec2 szs, const UI7Color& clr);
   /**
    * Render a Triangle
    * @param a Position a
@@ -64,7 +66,7 @@ class DrawList : public SmartCtor<DrawList> {
    * @param clr Color
    * @param thickness Thickness of the lines
    */
-  void AddTriangle(const vec2& a, const vec2& b, const vec2& c,
+  void AddTriangle(const fvec2& a, const fvec2& b, const fvec2& c,
                    const UI7Color& clr, int thickness = 1);
   /**
    * Render a Filled Triangle
@@ -73,7 +75,7 @@ class DrawList : public SmartCtor<DrawList> {
    * @param c Position c
    * @param clr Color
    */
-  void AddTriangleFilled(const vec2& a, const vec2& b, const vec2& c,
+  void AddTriangleFilled(const fvec2& a, const fvec2& b, const fvec2& c,
                          const UI7Color& clr);
 
   /**
@@ -84,8 +86,8 @@ class DrawList : public SmartCtor<DrawList> {
    * @param num_segments Number of Segments (0 = auto)
    * @param thickness thickness of the line
    */
-  void AddCircle(const vec2& pos, float rad, UI7Color col, int num_segments = 0,
-                 int thickness = 1);
+  void AddCircle(const fvec2& pos, float rad, UI7Color col,
+                 int num_segments = 0, int thickness = 1);
   /**
    * Add a Circle
    * @param pos Center position
@@ -93,7 +95,7 @@ class DrawList : public SmartCtor<DrawList> {
    * @param col Color of the Circle
    * @param num_segments Number of Segments (0 = auto)
    */
-  void AddCircleFilled(const vec2& pos, float rad, UI7Color col,
+  void AddCircleFilled(const fvec2& pos, float rad, UI7Color col,
                        int num_segments = 0);
   /**
    * Render a Text
@@ -103,8 +105,8 @@ class DrawList : public SmartCtor<DrawList> {
    * @param flags Flags
    * @param box Aditional Text Box limit (for specific flags)
    */
-  void AddText(vec2 pos, const std::string& text, const UI7Color& clr,
-               LITextFlags flags = 0, vec2 box = vec2());
+  void AddText(fvec2 pos, const std::string& text, const UI7Color& clr,
+               u32 flags = 0, fvec2 box = fvec2());
   /**
    * Render an Image
    * @param pos Position
@@ -112,8 +114,8 @@ class DrawList : public SmartCtor<DrawList> {
    * @param size Optional Size of the Image
    * @param uv Custom UV coords
    */
-  void AddImage(vec2 pos, Texture::Ref img, vec2 size = 0.f,
-                LI::Rect uv = vec4(0.f));
+  void AddImage(fvec2 pos, LI::Texture::Ref img, fvec2 size = 0.f,
+                LI::Rect uv = fvec4(0.f));
   /**
    * Render a Line from Position A to Position B
    * @param a Pos a
@@ -121,7 +123,7 @@ class DrawList : public SmartCtor<DrawList> {
    * @param clr Color
    * @param t Thcikness
    */
-  void AddLine(const vec2& a, const vec2& b, const UI7Color& clr, int t = 1);
+  void AddLine(const fvec2& a, const fvec2& b, const UI7Color& clr, int t = 1);
 
   /**
    * Take list of points and display it as a line on screen
@@ -130,7 +132,7 @@ class DrawList : public SmartCtor<DrawList> {
    * @param flags Additional Flags (Close for go back to starting point)
    * @param thickness Thickness of the Line
    */
-  void AddPolyLine(const std::vector<vec2>& points, const UI7Color& clr,
+  void AddPolyLine(const Vec<fvec2>& points, const UI7Color& clr,
                    UI7DrawFlags flags = 0, int thickness = 1);
   /**
    * Take a List ofpoints and display it as Filled Shape
@@ -138,24 +140,18 @@ class DrawList : public SmartCtor<DrawList> {
    * @param points List of Points
    * @param clr Color of the shape
    */
-  void AddConvexPolyFilled(const std::vector<vec2>& points,
-                           const UI7Color& clr);
+  void AddConvexPolyFilled(const Vec<fvec2>& points, const UI7Color& clr);
 
   /** Clear the Drawlist */
   void Clear();
   /** Process [Render] the Drawlist */
-  void Process();
+  void Process(LI::DrawList::Ref d);
 
   /** Push a Clip Rect */
-  void PushClipRect(const vec4& v) { clip_rects.push(v); }
+  void PushClipRect(const fvec4& v) { pClipRects.Push(v); }
 
   /** Revert Last Clip Rect */
-  void PopClipRect() { clip_rects.pop(); }
-
-  /** Getter for the Layer */
-  int Layer() const { return layer; }
-  /** Setter fot the Layer */
-  void Layer(int v) { layer = v; }
+  void PopClipRect() { pClipRects.Pop(); }
 
   /** Path API */
 
@@ -165,20 +161,20 @@ class DrawList : public SmartCtor<DrawList> {
    * @param num_points Number of Positions you want to add
    */
   void PathReserve(size_t num_points) {
-    Path.reserve(Path.size() + num_points);
+    Path.Reserve(Path.Size() + num_points);
   }
   /**
    * Clear current Path
    * @note PathStroke and PathFill will automatically clear
    */
-  void PathClear() { Path.clear(); }
+  void PathClear() { Path.Clear(); }
   /**
    * Add a Point to the Path
    * @note Keep in mind that this function is used for
    * setting the starting point
    * @param v Position to add
    */
-  void PathNext(const vec2& v) { Path.push_back(v); }
+  void PathNext(const fvec2& v) { Path.Add(v); }
   /**
    * Path Stroke Create Line from point to point
    * @note For Primitives like Rect or Triangle mak sure to use
@@ -190,7 +186,7 @@ class DrawList : public SmartCtor<DrawList> {
   void PathStroke(const UI7Color& clr, int thickness = 1,
                   UI7DrawFlags flags = 0) {
     AddPolyLine(Path, clr, flags, thickness);
-    Path.clear();
+    Path.Clear();
   }
   /**
    * Fill a Path with a Color
@@ -200,39 +196,41 @@ class DrawList : public SmartCtor<DrawList> {
    */
   void PathFill(const UI7Color& clr) {
     AddConvexPolyFilled(Path, clr);
-    Path.clear();
+    Path.Clear();
   }
 
-  void PathArcToN(const vec2& c, float radius, float a_min, float a_max,
+  void PathArcToN(const fvec2& c, float radius, float a_min, float a_max,
                   int segments);
   /// @brief Create a Path Rect (uses to Positions instead of Pos/Size)
   /// @param a Top Left Position
   /// @param b Bottom Right Position
   /// @param rounding rounding
   /// @param flags DrawFlags (for special rounding rules)
-  void PathRect(vec2 a, vec2 b, float rounding = 0.f, UI7DrawFlags flags = 0);
+  void PathRect(fvec2 a, fvec2 b, float rounding = 0.f, UI7DrawFlags flags = 0);
+
+  int Layer;                    ///< Layer
+  int Base;                     ///< Base Layer
+  Stack<fvec4> pClipRects;      ///< ClipRects
+  u32 NumVertices;              ///< Num vertices
+  u32 NumIndices;               ///< Num Indices
+  UI7::IO* pIO;                 ///< IO Reference
+  LI::Texture::Ref CurrentTex;  ///< Current Texture
 
  private:
-  /** Base Layer offset (Internal Used) */
-  int BaseLayer() const { return base; }
-  /** Base Layer offset (Internal Used) */
-  void BaseLayer(int v) { base = v; }
+  /**
+   * One liner to setup command cliprect
+   */
+  void ClipCmd(LI::Command::Ref cmd);
 
   // Set friendclass here to not expose private functions as public
   friend class Menu;
   friend class Context;
 
-  int layer;                    ///< Current Layer
-  int base;                     ///< Base Layer
-  LI::Renderer::Ref ren;        ///< Renderer Reference
-  std::stack<vec4> clip_rects;  ///< Stack containing Scissor Areas
-  u32 num_vertices;             ///< Number of Vertices
-  u32 num_indices;              ///< Number of Indices
-  std::vector<vec2> Path;
+  Vec<fvec2> Path;
   // Map for Auto Static Text
-  std::unordered_map<u32, LI::StaticText::Ref> static_text;
+  // std::unordered_map<u32, LI::StaticText::Ref> static_text;
   // List of Drawcommands generated
-  std::vector<std::pair<bool, LI::Command::Ref>> commands;
+  Vec<LI::Command::Ref> Commands;
 };
 }  // namespace UI7
 }  // namespace PD

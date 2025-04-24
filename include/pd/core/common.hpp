@@ -38,6 +38,17 @@ SOFTWARE.
 #include <string>
 #include <vector>
 
+// Platform API
+#include <pd/core/pd_p_api.hpp>
+
+// Legacy Smart Pointer
+#define PD_SMART_CTOR(x)                                      \
+  using Ref = std::shared_ptr<x>;                             \
+  template <typename... args>                                 \
+  static Ref New(args&&... cargs) {                           \
+    return std::make_shared<x>(std::forward<args>(cargs)...); \
+  }
+
 namespace PD {
 /**
  * SmartCtor (std::shared_ptr) Template class for Smart Pointers
@@ -90,31 +101,31 @@ namespace LibInfo {
  * Get the Compiler Name and Version the lib got Compiled with
  * @return Compiler Name / Version
  */
-const std::string CompiledWith();
+PD_CORE_API const std::string CompiledWith();
 /**
  * Get the C++ Version used to compile the lib
  * @return C++ Version (__cplusplus)
  */
-const std::string CxxVersion();
+PD_CORE_API const std::string CxxVersion();
 /**
  * Get the Buildtime of the Library
  * @return Build Time
  */
-const std::string BuildTime();
+PD_CORE_API const std::string BuildTime();
 /**
  * Get the Library Version
  * @return Library Version String
  */
-const std::string Version();
+PD_CORE_API const std::string Version();
 /**
  * Get the Git Commit the Lib got compiled in
  * @return Git Commit 7digit short hash
  */
-const std::string Commit();
+PD_CORE_API const std::string Commit();
 /**
  * Get the Git Branch which was active when compiling the lib
  * @return Git Branch
  */
-const std::string Branch();
+PD_CORE_API const std::string Branch();
 }  // namespace LibInfo
 }  // namespace PD

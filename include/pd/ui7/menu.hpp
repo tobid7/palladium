@@ -23,8 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/core/tween.hpp>
-#include <pd/drivers/hid.hpp>
+#include <pd/core/core.hpp>
 #include <pd/ui7/containers.hpp>
 #include <pd/ui7/drawlist.hpp>
 #include <pd/ui7/flags.hpp>
@@ -35,7 +34,7 @@ SOFTWARE.
 namespace PD {
 namespace UI7 {
 /** Menu Class for UI7 */
-class Menu : public SmartCtor<Menu> {
+class PD_UI7_API Menu : public SmartCtor<Menu> {
  public:
   /**
    * Menu COnstructor (Unly used by UI7::Context)
@@ -80,7 +79,7 @@ class Menu : public SmartCtor<Menu> {
    * @param img Texture reference of the image
    * @param size a Custom Size if needed
    */
-  void Image(Texture::Ref img, vec2 size = 0.f, LI::Rect uv = vec4(0));
+  void Image(LI::Texture::Ref img, fvec2 size = 0.f, LI::Rect uv = fvec4(0));
 
   /**
    * Color Edit Object that opens a popup editor if clicked
@@ -95,7 +94,7 @@ class Menu : public SmartCtor<Menu> {
                 T min = std::numeric_limits<T>::min(),
                 T max = std::numeric_limits<T>::max(), T step = 1,
                 int precision = 1) {
-    u32 id = Strings::FastHash("drd" + label + std::to_string((u32)data));
+    u32 id = Strings::FastHash("drd" + label + std::to_string((uintptr_t)data));
     Container::Ref r = Layout->FindObject(id);
     if (!r) {
       r = PD::New<UI7::DragData<T>>(label, data, num_elms, io, min, max, step,
@@ -189,7 +188,7 @@ class Menu : public SmartCtor<Menu> {
    * Animated Scroll to Position
    * @param pos Destination Position
    */
-  void ScrollTo(vec2 pos) {
+  void ScrollTo(fvec2 pos) {
     scroll_anim.From(Layout->ScrollOffset)
         .To(pos)
         .In(1.f)
@@ -256,6 +255,8 @@ class Menu : public SmartCtor<Menu> {
   void CollapseHandler();
   /** Scroll Handler (Includes Slider Drag) */
   void PostScrollHandler();
+  /** Handler to Set menu focused or not */
+  void MenuFocusHandler();
 
   // This ability is crazy useful
   friend class Context;
@@ -286,13 +287,14 @@ class Menu : public SmartCtor<Menu> {
 
   // Animations System
 
-  Tween<vec2> scroll_anim;  ///< for Scroll to Animation
+  Tween<fvec2> scroll_anim;  ///< for Scroll to Animation
 
   // Layout API
   PD::UI7::Layout::Ref Layout;
 
   UI7Color clr_close_btn = UI7Color_FrameBackground;
   UI7Color clr_collapse_tri = UI7Color_FrameBackground;
+  UI7Color header = UI7Color_HeaderDead;
 };
 }  // namespace UI7
 }  // namespace PD

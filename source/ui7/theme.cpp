@@ -21,12 +21,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/core/color.hpp>
+#include <pd/core/core.hpp>
 #include <pd/ui7/theme.hpp>
 
 namespace PD {
 namespace UI7 {
-void Theme::Default(Theme& theme) {
+PD_UI7_API void Theme::Default(Theme& theme) {
   theme.Set(UI7Color_Text, Color("#FFFFFFFF"));
   theme.Set(UI7Color_TextDead, Color("#AAAAAAFF"));
   theme.Set(UI7Color_Background, Color("#222222ff"));
@@ -46,7 +46,7 @@ void Theme::Default(Theme& theme) {
   theme.Set(UI7Color_ListOdd, Color("#BBBBBBFF"));
 }
 
-void Theme::Flashbang(Theme& theme) {
+PD_UI7_API void Theme::Flashbang(Theme& theme) {
   theme.Set(UI7Color_Text, Color("#000000FF"));
   theme.Set(UI7Color_TextDead, Color("#333333FF"));
   theme.Set(UI7Color_Background, Color("#eeeeeeFF"));

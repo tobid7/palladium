@@ -25,49 +25,70 @@ SOFTWARE.
 
 namespace PD {
 namespace UI7 {
-void Layout::CursorInit() { Cursor = WorkRect.xy(); }
+PD_UI7_API void Layout::CursorInit() { Cursor = fvec2(WorkRect.x, WorkRect.y); }
 
-void Layout::SameLine() {
+PD_UI7_API void Layout::SameLine() {
   BackupCursor = LastObjSize;
   Cursor = SamelineCursor;
 }
 
-void Layout::CursorMove(const vec2& size) {
+PD_UI7_API void Layout::CursorMove(const fvec2& size) {
   LastObjSize = size;
-  SamelineCursor = Cursor + vec2(size[0] + IO->ItemSpace[0], 0);
-  if (BeforeSameLine[1]) {
-    Cursor = vec2(IO->MenuPadding[0],
-                  Cursor[1] + BeforeSameLine[1] + IO->ItemSpace[1]);
+  SamelineCursor = Cursor + fvec2(size.x + IO->ItemSpace.x, 0);
+  if (BeforeSameLine.y) {
+    Cursor =
+        fvec2(IO->MenuPadding.x, Cursor.y + BeforeSameLine.y + IO->ItemSpace.y);
     BeforeSameLine = 0.f;
   } else {
-    Cursor = vec2(IO->MenuPadding[0] + InitialCursorOffset[0],
-                  Cursor[1] + size[1] + IO->ItemSpace[1]);
+    Cursor = fvec2(IO->MenuPadding.x + InitialCursorOffset.x,
+                   Cursor.y + size.y + IO->ItemSpace.y);
   }
   // Logical Issue here as x should use a max check
-  MaxPosition = vec2(std::max(MaxPosition[0], SamelineCursor[0]), Cursor[1]);
+  MaxPosition = fvec2(std::max(MaxPosition.x, SamelineCursor.x), Cursor.y);
 }
 
-bool Layout::ObjectWorkPos(vec2& movpos) {
+PD_UI7_API bool Layout::ObjectWorkPos(fvec2& movpos) {
   if (Scrolling[1]) {
-    movpos[1] -= ScrollOffset[1];
+    movpos.y -= ScrollOffset.y;
     if (!IO->Ren->InBox(movpos, LastObjSize,
-                        vec4(WorkRect.xy(), WorkRect.xy() + WorkRect.zw()))) {
+                        fvec4(WorkRect.x, WorkRect.y, WorkRect.x + WorkRect.z,
+                              WorkRect.y + WorkRect.w))) {
       return true;
     }
   }
   return false;
 }
 
-void Layout::AddObject(Container::Ref obj) {
+PD_UI7_API void Layout::AddObject(Container::Ref obj) {
   obj->Init(IO, DrawList);
   obj->SetPos(AlignPosition(Cursor, obj->GetSize(), WorkRect, GetAlignment()));
   obj->Update();
   CursorMove(obj->GetSize());
   obj->HandleScrolling(ScrollOffset, WorkRect);
-  Objects.push_back(obj);
+  Objects.PushBack(obj);
 }
 
-Container::Ref Layout::FindObject(u32 id) {
+PD_UI7_API void Layout::AddObjectEx(Container::Ref obj, u32 flags) {
+  obj->Init(IO, DrawList);
+  if (!(flags & 1)) {
+    obj->SetPos(
+        AlignPosition(Cursor, obj->GetSize(), WorkRect, GetAlignment()));
+  }
+  obj->Update();
+  if (!(flags & 1)) {
+    CursorMove(obj->GetSize());
+  }
+  if (!(flags & 2)) {
+    obj->HandleScrolling(ScrollOffset, WorkRect);
+  }
+  if (!(flags & 4)) {
+    Objects.PushFront(obj);
+  } else {
+    Objects.PushBack(obj);
+  }
+}
+
+PD_UI7_API Container::Ref Layout::FindObject(u32 id) {
   for (auto& it : IDObjects) {
     if (it->GetID() == id) {
       return it;
@@ -76,20 +97,21 @@ Container::Ref Layout::FindObject(u32 id) {
   return nullptr;
 }
 
-vec2 Layout::AlignPosition(vec2 pos, vec2 size, vec4 area, UI7Align alignment) {
+PD_UI7_API fvec2 Layout::AlignPosition(fvec2 pos, fvec2 size, fvec4 area,
+                                       UI7Align alignment) {
   vec2 p = pos;
   if (alignment & UI7Align_Center) {
-    p[0] = (area[0] + area[2]) * 0.5 - (pos[0] - area[0] + size[0] * 0.5);
+    p.x = (area.x + area.z) * 0.5 - (pos.x - area.x + size.x * 0.5);
   } else if (alignment & UI7Align_Right) {
   }
   if (alignment & UI7Align_Mid) {
-    p[1] = (area[1] + area[3]) * 0.5 - (pos[1] - area[1] + size[1] * 0.5);
+    p.y = (area.y + area.w) * 0.5 - (pos.y - area.y + size.y * 0.5);
   } else if (alignment & UI7Align_Bottom) {
   }
   return p;
 }
 
-void Layout::Update() {
+PD_UI7_API void Layout::Update() {
   for (auto& it : Objects) {
     if (it->GetID() != 0 && !FindObject(it->GetID())) {
       IDObjects.push_back(it);
@@ -110,8 +132,8 @@ void Layout::Update() {
   for (auto& it : tbr) {
     IDObjects.erase(IDObjects.begin() + it);
   }
-  Objects.clear();
-  WorkRect = vec4(WorkRect.xy(), Size - IO->MenuPadding);
+  Objects.Clear();
+  WorkRect = fvec4(fvec2(WorkRect.x, WorkRect.y), Size - IO->MenuPadding);
   CursorInit();
 }
 }  // namespace UI7

@@ -23,8 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/core/tween.hpp>
-#include <pd/drivers/hid.hpp>
+#include <pd/core/core.hpp>
 #include <pd/overlays/overlay.hpp>
 
 namespace PD {
@@ -153,11 +152,11 @@ class Keyboard : public Overlay {
   static int too;
 
   // Tween for selector Movement
-  Tween<vec2> selector;
+  Tween<fvec2> selector;
   // Tween for Selector Size
-  Tween<vec2> sel_szs;
+  Tween<fvec2> sel_szs;
   // Current Cell size
-  vec2 cselszs;
+  fvec2 cselszs;
   // selector index
   int raw_sel;
 
@@ -169,9 +168,9 @@ class Keyboard : public Overlay {
   // Remove Animation
   bool rem = false;
   /// Probably a float would've done the job as well ;)
-  Tween<vec2> flymgr;
+  Tween<fvec2> flymgr;
   // Secode Flymanager
-  Tween<vec2> chflymgr;
+  Tween<fvec2> chflymgr;
   // Show Help
   bool show_help = true;
 };

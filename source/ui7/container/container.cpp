@@ -21,19 +21,24 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/core/sys.hpp>
 #include <pd/ui7/container/container.hpp>
 
 namespace PD {
 namespace UI7 {
-void Container::HandleScrolling(vec2 scrolling, vec4 viewport) {
+PD_UI7_API void Container::HandleScrolling(fvec2 scrolling, fvec4 viewport) {
   if (last_use != 0 && Sys::GetTime() - last_use > 5000) {
     rem = true;
   }
   last_use = Sys::GetTime();
-  pos -= vec2(0, scrolling.y());
+  pos -= fvec2(0, scrolling.y);
   skippable = !LI::Renderer::InBox(
-      pos, size, vec4(viewport.xy(), viewport.xy() + viewport.zw()));
+      pos, size,
+      fvec4(viewport.x, viewport.y, viewport.x + viewport.z,
+            viewport.y + viewport.w));
+}
+
+PD_UI7_API void Container::HandleInternalInput() {
+  /** Requires Handle Scrolling First */
 }
 }  // namespace UI7
 }  // namespace PD

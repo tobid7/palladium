@@ -24,8 +24,8 @@ SOFTWARE.
 #include <pd/core/bit_util.hpp>
 
 namespace PD::BitUtil {
-bool IsSingleBit(u32 v) { return v && !(v & (v - 1)); }
-u32 GetPow2(u32 v) {
+PD_CORE_API bool IsSingleBit(u32 v) { return v && !(v & (v - 1)); }
+PD_CORE_API u32 GetPow2(u32 v) {
   v--;
   v |= v >> 1;
   v |= v >> 2;

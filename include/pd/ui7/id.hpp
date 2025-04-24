@@ -23,8 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/core/common.hpp>
-#include <pd/core/strings.hpp>
+#include <pd/core/core.hpp>
 
 namespace PD {
 namespace UI7 {

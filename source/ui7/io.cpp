@@ -21,22 +21,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/core/timetrace.hpp>
+#include <pd/core/core.hpp>
 #include <pd/ui7/io.hpp>
 
 namespace PD {
-void UI7::IO::Update() {
+PD_UI7_API void UI7::IO::Update() {
   u64 current = Sys::GetNanoTime();
   Delta = static_cast<float>(current - LastTime) / 1000000.f;
   LastTime = current;
   DeltaStats->Add(Delta * 1000);
   Time->Update();
-  DragTime->Update();
-  DragReleased = false;
-  DragReleasedAW = false;
-  DragDoubleRelease = false;
+  InputHandler->Update();
   Framerate = 1000.f / Delta;
-  DrawListRegestry.clear();
-  RegisterDrawList("CtxBackList", Back);
+  DrawListRegestry.Clear();
+  DrawListRegestry.PushFront(Pair<UI7::ID, DrawList::Ref>("CtxBackList", Back));
+  // RegisterDrawList("CtxBackList", Back);
 }
 }  // namespace PD

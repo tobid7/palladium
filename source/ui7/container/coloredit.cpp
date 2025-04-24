@@ -26,40 +26,40 @@ SOFTWARE.
 
 namespace PD {
 namespace UI7 {
-void ColorEdit::HandleInput() {
+PD_UI7_API void ColorEdit::HandleInput() {
   /// Ensure to only check input once
   if (inp_done) {
     return;
   }
-  Assert(screen.get(), "Screen is not set up!");
-  if (screen->ScreenType() == Screen::Bottom) {
-    if (io->DragObject(this->GetID(), vec4(FinalPos(), size))) {
-      if (io->DragReleased) {
-        is_shown = !is_shown;
-      }
+  // Assert(screen.get(), "Screen is not set up!");
+  // if (screen->ScreenType() == Screen::Bottom) {
+  if (io->InputHandler->DragObject(this->GetID(), vec4(FinalPos(), size))) {
+    if (io->InputHandler->DragReleased) {
+      is_shown = !is_shown;
     }
   }
+  //}
   inp_done = true;
 }
-void ColorEdit::Draw() {
-  Assert(io.get() && list.get(), "Did you run Container::Init correctly?");
-  io->Ren->OnScreen(screen);
-  list->AddRectangle(FinalPos(), vec2(20, 20), *color_ref);
-  list->AddText(FinalPos() + vec2(io->ItemSpace.x() + 20, 0), label,
+PD_UI7_API void ColorEdit::Draw() {
+  // Assert(io.get() && list.get(), "Did you run Container::Init correctly?");
+  // io->Ren->OnScreen(screen);
+  list->AddRectangle(FinalPos(), fvec2(20, 20), *color_ref);
+  list->AddText(FinalPos() + fvec2(io->ItemSpace.x + 20, 0), label,
                 io->Theme->Get(UI7Color_Text));
   if (is_shown) {
     if (!layout) {
       layout = Layout::New(GetID(), io);
     }
-    layout->AddObject(PD::New<Label>("Hello World!", io->Ren));
+    layout->AddObject(PD::New<Label>("Hello World!", io));
     layout->Update();
     io->RegisterDrawList(GetID(), layout->GetDrawList());
   }
 }
 
-void ColorEdit::Update() {
-  Assert(io.get(), "Did you run Container::Init correctly?");
-  this->SetSize(vec2(tdim.x() + io->ItemSpace.x() + 20, 20));
+PD_UI7_API void ColorEdit::Update() {
+  // Assert(io.get(), "Did you run Container::Init correctly?");
+  this->SetSize(fvec2(tdim.x + io->ItemSpace.x + 20, 20));
 }
 }  // namespace UI7
 }  // namespace PD

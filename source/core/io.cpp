@@ -25,7 +25,7 @@ SOFTWARE.
 
 namespace PD {
 namespace IO {
-std::vector<u8> LoadFile2Mem(const std::string& path) {
+PD_CORE_API std::vector<u8> LoadFile2Mem(const std::string& path) {
   std::ifstream iff(path, std::ios::binary);
   if (!iff) {
     return std::vector<u8>();
@@ -38,7 +38,7 @@ std::vector<u8> LoadFile2Mem(const std::string& path) {
   iff.close();
   return res;
 }
-u32 HashMemory(const std::vector<u8>& data) {
+PD_CORE_API u32 HashMemory(const std::vector<u8>& data) {
   u32 hash = 4477;
   for (auto& it : data) {
     hash = (hash * 33) + it;

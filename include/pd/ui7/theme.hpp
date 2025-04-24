@@ -23,7 +23,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/core/common.hpp>
+#include <pd/core/core.hpp>
+#include <pd/ui7/pd_p_api.hpp>
 
 /**
  *  Using this to support 32bit color values as well as
@@ -55,7 +56,7 @@ enum UI7Color_ {
 namespace PD {
 namespace UI7 {
 /** Theme Class */
-class Theme : public SmartCtor<Theme> {
+class PD_UI7_API Theme : public SmartCtor<Theme> {
  public:
   /**
    * Default Constructor Setting up the Default theme

@@ -25,47 +25,27 @@ SOFTWARE.
  */
 
 // Core
-#include <pd/core/bit_util.hpp>
-#include <pd/core/color.hpp>
-#include <pd/core/common.hpp>
-#include <pd/core/io.hpp>
-#include <pd/core/strings.hpp>
-#include <pd/core/sys.hpp>
-#include <pd/core/timer.hpp>
-#include <pd/core/timetrace.hpp>
-#include <pd/core/vec.hpp>
-// Graphics
-#include <pd/lithium/renderer.hpp>
-#include <pd/lithium/spritesheet.hpp>
+#include <pd/core/core.hpp>
 // Image
 #include <pd/image/image.hpp>
 #include <pd/image/img_blur.hpp>
 #include <pd/image/img_convert.hpp>
-// Drivers
-#include <pd/drivers/hid.hpp>
-// Overlays
-#include <pd/overlays/keyboard.hpp>
-#include <pd/overlays/message_mgr.hpp>
-#include <pd/overlays/overlay_mgr.hpp>
-#include <pd/overlays/performance.hpp>
-#include <pd/overlays/settings.hpp>
-// UI7
 #include <pd/ui7/ui7.hpp>
-// Lib3ds
-#include <pd/lib3ds/hwinfo.hpp>
-#include <pd/lib3ds/memory.hpp>
-#include <pd/lib3ds/os.hpp>
-#include <pd/lib3ds/result_decoder.hpp>
-// App
-#include <pd/app/app.hpp>
-#include <pd/app/error.hpp>
-#include <pd/app/lang.hpp>
+// Net
+#include <pd/net/backend.hpp>
+#include <pd/net/socket.hpp>
 
 /// Setup these as non Namespaced access by default
 #ifndef PD_MATH_NAMESPACED
-using vec2 = PD::vec2;
-using vec3 = PD::vec3;
-using vec4 = PD::vec4;
+using fvec2 = PD::fvec2;
+using fvec3 = PD::fvec3;
+using fvec4 = PD::fvec4;
+using dvec2 = PD::dvec2;
+using dvec3 = PD::dvec3;
+using dvec4 = PD::dvec4;
+using ivec2 = PD::ivec2;
+using ivec3 = PD::ivec3;
+using ivec4 = PD::ivec4;
 #endif
 
 // namespace Palladium = PD;

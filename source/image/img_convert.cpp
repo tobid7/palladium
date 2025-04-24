@@ -24,8 +24,9 @@ SOFTWARE.
 #include <pd/image/img_convert.hpp>
 
 namespace PD::ImgConvert {
-void RGB24toRGBA32(std::vector<u8> &out, const std::vector<u8> &in,
-                   const int &w, const int &h) {
+
+PD_IMAGE_API void RGB24toRGBA32(std::vector<u8> &out, const std::vector<u8> &in,
+                                const int &w, const int &h) {
   // Converts RGB24 to RGBA32
   for (int y = 0; y < h; y++) {
     for (int x = 0; x < w; x++) {
@@ -38,7 +39,22 @@ void RGB24toRGBA32(std::vector<u8> &out, const std::vector<u8> &in,
     }
   }
 }
-void Reverse32(std::vector<u8> &buf, const int &w, const int &h) {
+
+PD_IMAGE_API void RGB32toRGBA24(std::vector<u8> &out, const std::vector<u8> &in,
+                                const int &w, const int &h) {
+  // Converts RGB24 to RGBA32
+  for (int y = 0; y < h; y++) {
+    for (int x = 0; x < w; x++) {
+      int src = (y * w + x) * 4;
+      int dst = (y * w + x) * 3;
+      out[dst + 0] = in[src + 0];
+      out[dst + 1] = in[src + 1];
+      out[dst + 2] = in[src + 2];
+    }
+  }
+}
+
+PD_IMAGE_API void Reverse32(std::vector<u8> &buf, const int &w, const int &h) {
   for (int x = 0; x < w; x++) {
     for (int y = 0; y < h; y++) {
       int i = y * w + x;
@@ -48,6 +64,73 @@ void Reverse32(std::vector<u8> &buf, const int &w, const int &h) {
       buf[i + 1] = buf[i + 2];
       buf[i + 3] = t0;
       buf[i + 2] = t1;
+    }
+  }
+}
+
+PD_IMAGE_API void ReverseBuf(std::vector<u8> &buf, size_t bpp, int w, int h) {
+  std::vector<u8> cpy = buf;
+  for (int x = 0; x < w; x++) {
+    for (int y = 0; y < h; y++) {
+      int pos = (y * w + x) * bpp;
+      for (size_t i = 0; i < bpp; i++) {
+        buf[pos + bpp - 1 - i] = cpy[pos + i];
+      }
+    }
+  }
+}
+
+PD_IMAGE_API void RGB24toRGBA32(PD::Vec<u8> &out, const PD::Vec<u8> &in,
+                                const int &w, const int &h) {
+  // Converts RGB24 to RGBA32
+  for (int y = 0; y < h; y++) {
+    for (int x = 0; x < w; x++) {
+      int src = (y * w + x) * 3;
+      int dst = (y * w + x) * 4;
+      out[dst + 0] = in[src + 0];
+      out[dst + 1] = in[src + 1];
+      out[dst + 2] = in[src + 2];
+      out[dst + 3] = 255;
+    }
+  }
+}
+
+PD_IMAGE_API void RGB32toRGBA24(PD::Vec<u8> &out, const PD::Vec<u8> &in,
+                                const int &w, const int &h) {
+  // Converts RGB24 to RGBA32
+  for (int y = 0; y < h; y++) {
+    for (int x = 0; x < w; x++) {
+      int src = (y * w + x) * 4;
+      int dst = (y * w + x) * 3;
+      out[dst + 0] = in[src + 0];
+      out[dst + 1] = in[src + 1];
+      out[dst + 2] = in[src + 2];
+    }
+  }
+}
+
+PD_IMAGE_API void Reverse32(PD::Vec<u8> &buf, const int &w, const int &h) {
+  for (int x = 0; x < w; x++) {
+    for (int y = 0; y < h; y++) {
+      int i = y * w + x;
+      u8 t0 = buf[i + 0];
+      u8 t1 = buf[i + 1];
+      buf[i + 0] = buf[i + 3];
+      buf[i + 1] = buf[i + 2];
+      buf[i + 3] = t0;
+      buf[i + 2] = t1;
+    }
+  }
+}
+
+PD_IMAGE_API void ReverseBuf(PD::Vec<u8> &buf, size_t bpp, int w, int h) {
+  PD::Vec<u8> cpy = buf;
+  for (int x = 0; x < w; x++) {
+    for (int y = 0; y < h; y++) {
+      int pos = (y * w + x) * bpp;
+      for (size_t i = 0; i < bpp; i++) {
+        buf[pos + bpp - 1 - i] = cpy[pos + i];
+      }
     }
   }
 }

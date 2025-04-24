@@ -30,21 +30,21 @@ namespace UI7 {
 /**
  * Image Object
  */
-class Image : public Container {
+class PD_UI7_API Image : public Container {
  public:
   /**
    * Constructor for the Image Object
    * @param img Image Texture Reference
    * @param size Custom Size of the Image
    */
-  Image(Texture::Ref img, vec2 size = 0.f, LI::Rect uv = vec4(0.f)) {
+  Image(LI::Texture::Ref img, fvec2 size = 0.f, LI::Rect uv = vec4(0.f)) {
     this->img = img;
     this->newsize = size;
     this->cuv = uv;
-    if (size.x() != 0 || size.y() != 0) {
+    if (size.x != 0 || size.y != 0) {
       this->SetSize(size);
     } else {
-      this->SetSize(img->GetSize());
+      this->SetSize(fvec2(img->GetSize().x, img->GetSize().y));
     }
   }
   ~Image() = default;
@@ -56,9 +56,9 @@ class Image : public Container {
   void Draw() override;
 
  private:
-  Texture::Ref img;    ///< Texture reference to the Image
-  vec2 newsize = 0.f;  ///< New Size
-  LI::Rect cuv;        ///< Custom UV
+  LI::Texture::Ref img;  ///< Texture reference to the Image
+  fvec2 newsize = 0.f;   ///< New Size
+  LI::Rect cuv;          ///< Custom UV
 };
 }  // namespace UI7
 }  // namespace PD

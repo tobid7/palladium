@@ -25,9 +25,9 @@ SOFTWARE.
 
 namespace PD {
 namespace UI7 {
-void Label::Draw() {
-  Assert(io.get() && list.get(), "Did you run Container::Init correctly?");
-  io->Ren->OnScreen(screen);
+PD_UI7_API void Label::Draw() {
+  // Assert(io.get() && list.get(), "Did you run Container::Init correctly?");
+  // io->Ren->OnScreen(screen);
   list->AddText(FinalPos(), label, io->Theme->Get(UI7Color_Text));
 }
 }  // namespace UI7

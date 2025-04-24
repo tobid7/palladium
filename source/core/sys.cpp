@@ -26,17 +26,17 @@ SOFTWARE.
 
 namespace PD::Sys {
 TraceMap pd_sys_tm;
-u64 GetTime() {
+PD_CORE_API u64 GetTime() {
   return std::chrono::duration_cast<std::chrono::milliseconds>(
              std::chrono::steady_clock::now().time_since_epoch())
       .count();
 }
-u64 GetNanoTime() {
+PD_CORE_API u64 GetNanoTime() {
   return std::chrono::duration_cast<std::chrono::nanoseconds>(
              std::chrono::steady_clock::now().time_since_epoch())
       .count();
 }
-TT::Res::Ref& GetTraceRef(const std::string& id) {
+PD_CORE_API TT::Res::Ref& GetTraceRef(const std::string& id) {
   // Auto Generate a New if doesnt exist
   if (pd_sys_tm.find(id) == pd_sys_tm.end()) {
     pd_sys_tm[id] = TT::Res::New();
@@ -44,8 +44,8 @@ TT::Res::Ref& GetTraceRef(const std::string& id) {
   }
   return pd_sys_tm[id];
 }
-bool TraceExist(const std::string& id) {
+PD_CORE_API bool TraceExist(const std::string& id) {
   return pd_sys_tm.find(id) != pd_sys_tm.end();
 }
-TraceMap& GetTraceMap() { return pd_sys_tm; }
+PD_CORE_API TraceMap& GetTraceMap() { return pd_sys_tm; }
 }  // namespace PD::Sys

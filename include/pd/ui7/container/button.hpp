@@ -35,7 +35,7 @@ namespace UI7 {
  * This only means that InPressed is responding the info in
  * the next frame
  */
-class Button : public Container {
+class PD_UI7_API Button : public Container {
  public:
   /**
    * Button Object constructor
@@ -45,7 +45,7 @@ class Button : public Container {
    */
   Button(const std::string& label, UI7::IO::Ref io) {
     this->label = label;
-    this->tdim = io->Ren->GetTextDimensions(label);
+    this->tdim = io->Font->GetTextBounds(label, io->FontScale);
   }
   ~Button() = default;
 
@@ -66,7 +66,7 @@ class Button : public Container {
   void Update() override;
 
  private:
-  vec2 tdim;                         ///< Text size
+  fvec2 tdim;                        ///< Text size
   UI7Color color = UI7Color_Button;  ///< current button color
   std::string label;                 ///< Label of the Button
   bool pressed = false;              ///< ispressed value

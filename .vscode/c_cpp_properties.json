@@ -10,7 +10,8 @@
                 "C:/devkitpro/portlibs/3ds/include/**"
             ],
             "defines": [
-                "BUILD_CTR"
+                "BUILD_CTR",
+                "__3DS__"
             ],
             "compilerPath": "C:/devkitPro/devkitARM/bin/arm-none-eabi-g++.exe",
             "intelliSenseMode": "gcc-arm",

@@ -21,21 +21,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <3ds.h>
+#ifdef PD_LITHIUM_BUILD_SHARED
+#define STB_TRUETYPE_IMPLEMENTATION
+#endif
 #include <pd/external/stb_truetype.h>
 
-#include <pd/core/bit_util.hpp>
-#include <pd/core/io.hpp>
-#include <pd/core/strings.hpp>
-#include <pd/core/sys.hpp>
 #include <pd/lithium/font.hpp>
+#include <pd/lithium/renderer.hpp>
 
 namespace PD {
 namespace LI {
-void Font::LoadTTF(const std::string &path, int height) {
-  sysfont = false;  // Not using System Font
+PD_LITHIUM_API void Font::LoadTTF(const std::string &path, int height) {
   TT::Scope st("LI_LoadTTF_" + path);
-  pixel_height = height;  // Set internel pixel height
+  PixelHeight = height;  // Set internel pixel height
   // Use NextPow2 to be able to use sizes between for example 16 and 32
   // before it only was possible to use 8, 16, 32, 64 as size
   int texszs = BitUtil::GetPow2(height * 16);
@@ -50,8 +48,11 @@ void Font::LoadTTF(const std::string &path, int height) {
   loader.read(reinterpret_cast<char *>(buffer), len);
   loader.close();
   stbtt_InitFont(&inf, buffer, 0);
-  std::vector<unsigned char> font_tex(texszs * texszs);  // Create font Texture
-  float scale = stbtt_ScaleForPixelHeight(&inf, pixel_height);
+  // clang-format off
+  // Disable clang here cause dont want a garbage looking line
+  std::vector<PD::u8> font_tex(texszs * texszs * 4);  // Create font Texture
+  // clang-format on
+  float scale = stbtt_ScaleForPixelHeight(&inf, PixelHeight);
 
   int ascent, descent, lineGap;
   stbtt_GetFontVMetrics(&inf, &ascent, &descent, &lineGap);
@@ -61,7 +62,7 @@ void Font::LoadTTF(const std::string &path, int height) {
 
   /// Load Codepoints
   auto tex = Texture::New();
-  vec2 off;
+  fvec2 off;
   for (u32 ii = 0x0000; ii < 0xFFFF; ii++) {
     int i = stbtt_FindGlyphIndex(&inf, ii);
     if (i == 0) {
@@ -83,156 +84,194 @@ void Font::LoadTTF(const std::string &path, int height) {
     u32 hashed_map = IO::HashMemory(std::vector<u8>(bitmap, bitmap + (w * h)));
     if (buf_cache.find(hashed_map) != buf_cache.end()) {
       c = GetCodepoint(buf_cache[hashed_map]);
-      c.cp(i);
-      cpmap[i] = c;
+      c.pCodepoint = i;
+      CodeMap[i] = c;
       free(bitmap);
       continue;
     } else {
       buf_cache[hashed_map] = i;
     }
 
-    if (off[0] + w > texszs) {
-      off[1] += pixel_height;
-      off[0] = 0;
+    if (off.x + w > texszs) {
+      off.y += PixelHeight;
+      off.x = 0;
     }
 
     // Set UV Data
-    vec4 uvs;
-    uvs[0] = static_cast<float>(off.x() / (float)texszs);
-    uvs[1] = static_cast<float>(1.f - (off.y() / (float)texszs));
-    uvs[2] = static_cast<float>((float)(off.x() + w) / (float)texszs);
-    uvs[3] = static_cast<float>(1.f - (float)(off.y() + h) / (float)texszs);
-    c.uv(uvs);
-
-    c.tex(tex);
-    c.size(vec2(w, h));
-    c.off(baseline + yo);
+    fvec4 uvs;
+    uvs.x = static_cast<float>(off.x) / texszs;
+    uvs.y = static_cast<float>(off.y) / texszs;
+    uvs.z = static_cast<float>((off.x + w) / texszs);
+    uvs.w = static_cast<float>((off.y + h) / texszs);
+    if (pBackend->Flags & LIBackendFlags_FlipUV_Y) {
+      uvs.y = 1.f - uvs.y;
+      uvs.w = 1.f - uvs.w;
+    }
+    c.SimpleUV = uvs;
+    c.Tex = tex;
+    c.Size = fvec2(w, h);
+    c.Offset = baseline + yo;
 
     // Render glyph
     for (int y = 0; y < h; ++y) {
       for (int x = 0; x < w; ++x) {
-        int map_pos = ((off[1] + y) * texszs + (off[0] + x));
-        font_tex[map_pos] = bitmap[x + y * w];
+        int map_pos = (((off.y + y) * texszs + (off.x + x))) * 4;
+        font_tex[map_pos + 0] = 255;
+        font_tex[map_pos + 1] = 255;
+        font_tex[map_pos + 2] = 255;
+        font_tex[map_pos + 3] = bitmap[x + y * w];
       }
     }
 
     free(bitmap);
-    cpmap[i] = c;
+    CodeMap[i] = c;
 
     // Small Patch to avoid some possible artifacts
-    off[0] += w + 1;
-    if (off[0] + w > texszs) {
-      off[1] += pixel_height;
-      if (off[1] + pixel_height > texszs) {
+    off.x += w + 1;
+    if (off.x + w > texszs) {
+      off.y += PixelHeight;
+      if (off.y + PixelHeight > texszs) {
         break;
       }
-      off[0] = 0;
+      off.x = 0;
     }
   }
   // Load the Texture and append to list
-  tex->LoadPixels(font_tex, texszs, texszs, Texture::A8, Texture::LINEAR);
-  textures.push_back(tex);
+  {
+    auto t = pBackend->LoadTexture(font_tex, texszs, texszs, Texture::RGBA32,
+                                   Texture::LINEAR);
+    tex->CopyOther(t);
+  }
+  Textures.push_back(tex);
 }
 
-Font::Codepoint &Font::GetCodepoint(u32 cp) {
+PD_LITHIUM_API Font::Codepoint &Font::GetCodepoint(u32 cp) {
   // Check if codepoijt exist or return a static invalid one
-  auto res = cpmap.find(cp);
-  if (res == cpmap.end()) {
+  auto res = CodeMap.find(cp);
+  if (res == CodeMap.end()) {
     static Codepoint invalid;
-    return invalid.invalid(true);
+    invalid.pInvalid = true;
+    return invalid;
   }
   return res->second;
 }
 
-void Font::LoadSystemFont() {
-  TT::Scope st("LI_SystemFont");  // Trace loading time
-  sysfont = true;                 // Set as System Font
-  fontEnsureMapped();             // Call this to be sure the font is mapped
-  // Get some const references for system font loading
-  const auto fnt = fontGetSystemFont();
-  const auto fnt_info = fontGetInfo(fnt);
-  const auto glyph_info = fontGetGlyphInfo(fnt);
-  // Resize the Texture list by the num of sysfont textures
-  this->textures.resize(glyph_info->nSheets + 1);
-  /// Modify the Pixel Height by 1.1f to fit the
-  /// Size og ttf font Rendering
-  pixel_height = glyph_info->cellHeight * 1.1f;
-  // Load the Textures and make sure they don't auto unload
-  for (size_t i = 0; i < glyph_info->nSheets; i++) {
-    auto stex = Texture::New();
-    auto tx = new C3D_Tex;
-    tx->data = fontGetGlyphSheetTex(fnt, i);
-    tx->fmt = (GPU_TEXCOLOR)glyph_info->sheetFmt;
-    tx->size = glyph_info->sheetSize;
-    tx->width = glyph_info->sheetWidth;
-    tx->height = glyph_info->sheetHeight;
-    tx->param = GPU_TEXTURE_MAG_FILTER(GPU_LINEAR) |
-                GPU_TEXTURE_MIN_FILTER(GPU_LINEAR) |
-                GPU_TEXTURE_WRAP_S(GPU_REPEAT) | GPU_TEXTURE_WRAP_T(GPU_REPEAT);
-    tx->border = 0xffffffff;
-    tx->lodParam = 0;
-    stex->LoadExternal(tx, vec2(tx->width, tx->height), vec4(0, 1, 1, 0));
-    stex->AutoUnLoad(false);
-    textures[i] = stex;
-  }
-  std::vector<unsigned int> charSet;
-  // Write the Charset into a vector
-  for (auto cmap = fnt_info->cmap; cmap; cmap = cmap->next) {
-    if (cmap->mappingMethod == CMAP_TYPE_DIRECT) {
-      if (cmap->codeEnd >= cmap->codeBegin) {
-        charSet.reserve(charSet.size() + cmap->codeEnd - cmap->codeBegin + 1);
-        for (auto i = cmap->codeBegin; i <= cmap->codeEnd; ++i) {
-          if (cmap->indexOffset + (i - cmap->codeBegin) == 0xFFFF) break;
-          charSet.emplace_back(i);
-        }
-      }
-    } else if (cmap->mappingMethod == CMAP_TYPE_TABLE) {
-      if (cmap->codeEnd >= cmap->codeBegin) {
-        charSet.reserve(charSet.size() + cmap->codeEnd - cmap->codeBegin + 1);
-        for (auto i = cmap->codeBegin; i <= cmap->codeEnd; ++i) {
-          if (cmap->indexTable[i - cmap->codeBegin] == 0xFFFF) continue;
-          charSet.emplace_back(i);
-        }
-      }
-    } else if (cmap->mappingMethod == CMAP_TYPE_SCAN) {
-      charSet.reserve(charSet.size() + cmap->nScanEntries);
-      for (unsigned i = 0; i < cmap->nScanEntries; ++i) {
-        if (cmap->scanEntries[i].code >= cmap->codeBegin &&
-            cmap->scanEntries[i].code <= cmap->codeEnd) {
-          if (cmap->scanEntries[i].glyphIndex != 0xFFFF) {
-            charSet.emplace_back(cmap->scanEntries[i].code);
-          }
-        }
-      }
-    } else {
+PD_LITHIUM_API fvec2 Font::GetTextBounds(const std::string &text, float scale) {
+  // Use wstring for exemple for german äöü
+  auto wtext = Strings::MakeWstring(text);
+  // Create a temp position and offset as [0, 0]
+  fvec2 res;
+  float x = 0;
+  // Curent Font Scale
+  float cfs = (DefaultPixelHeight * scale) / (float)PixelHeight;
+  float lh = (float)PixelHeight * cfs;
+  size_t index = 0;
+  for (auto &it : wtext) {
+    if (it == '\0') {
+      break;
+    }
+    index++;
+    auto cp = GetCodepoint(it);
+    if (cp.pInvalid && it != '\n' && it != '\t' && it != ' ') {
       continue;
     }
+    switch (it) {
+      case '\n':
+        res.y += lh;
+        res.x = std::max(res.x, x);
+        x = 0.f;
+        break;
+      case '\t':
+        x += 16 * cfs;
+        break;
+      case ' ':
+        x += 2 * cfs;
+      // Fall trough here to get the same result as in
+      // TextCommand if/else Section
+      default:
+        x += cp.Size.x * cfs;
+        if (index != wtext.size()) {
+          x += 2 * cfs;
+        }
+        break;
+    }
+  }
+  res.x = std::max(res.x, x);
+  res.y += lh;
+  return res;
+}
+
+PD_LITHIUM_API void Font::CmdTextEx(Vec<Command::Ref> &cmds, const fvec2 &pos,
+                                    u32 color, float scale,
+                                    const std::string &text, LITextFlags flags,
+                                    const fvec2 &box) {
+  fvec2 off;
+  float cfs = (DefaultPixelHeight * scale) / (float)PixelHeight;
+  float lh = (float)PixelHeight * cfs;
+  fvec2 td;
+  fvec2 rpos = pos;
+  fvec2 rbox = box;
+  if (flags & (LITextFlags_AlignMid | LITextFlags_AlignRight)) {
+    td = GetTextBounds(text, scale);
+  }
+  if (flags & LITextFlags_AlignMid) {
+    rpos = rbox * 0.5 - td * 0.5 + pos;
+  }
+  if (flags & LITextFlags_AlignRight) {
+    rpos.x = rpos.x - td.x;
   }
 
-  // Sort the charset and make sure all values are unique
-  std::sort(charSet.begin(), charSet.end());
-  charSet.erase(std::unique(charSet.begin(), charSet.end()));
+  std::vector<std::string> lines;
+  std::istringstream iss(text);
+  std::string tmp;
+  while (std::getline(iss, tmp)) {
+    lines.push_back(tmp);
+  }
 
-  // Setup the Codepoint map by the charset
-  for (auto cp : charSet) {
-    int gidx = fontGlyphIndexFromCodePoint(fnt, cp);
-    if (gidx >= 0xFFFF) continue;
-    Codepoint codepoint;
-    fontGlyphPos_s dat;
-    fontCalcGlyphPos(&dat, fnt, gidx, GLYPH_POS_CALC_VTXCOORD, 1.f, 1.f);
-
-    codepoint.cp(cp);
-    codepoint.uv(vec4(dat.texcoord.left, dat.texcoord.top, dat.texcoord.right,
-                      dat.texcoord.bottom));
-
-    if (dat.sheetIndex < (int)textures.size()) {
-      codepoint.tex(textures[dat.sheetIndex]);
-    } else {
-      codepoint.invalid(true);
+  for (auto &it : lines) {
+    /*if (flags & LITextFlags_Short) {
+      fvec2 tmp_dim;
+      it = ShortText(it, box.x() - pos.x(), tmp_dim);
+    }*/
+    auto wline = Strings::MakeWstring(it);
+    auto cmd = Command::New();
+    auto Tex = GetCodepoint(wline[0]).Tex;
+    cmd->Tex = Tex;
+    for (auto &jt : wline) {
+      auto cp = GetCodepoint(jt);
+      if (cp.pInvalid && jt != '\n' && jt != '\t') {
+        continue;
+      }
+      if (Tex != cp.Tex) {
+        cmds.Add(cmd);
+        cmd = Command::New();
+        Tex = cp.Tex;
+        cmd->Tex = Tex;
+      }
+      if (jt == '\t') {
+        off.x += 16 * cfs;
+      } else {
+        if (jt != ' ') {
+          if (flags & LITextFlags_Shaddow) {
+            // Draw
+            Rect rec = Renderer::PrimRect(
+                rpos + vec2(off.x + 1, off.x + (cp.Offset * cfs)) + 1,
+                cp.Size * cfs, 0.f);
+            Renderer::CmdQuad(cmd, rec, cp.SimpleUV, 0xff111111);
+          }
+          // Draw
+          Rect rec = Renderer::PrimRect(
+              rpos + off + fvec2(0, (cp.Offset * cfs)), cp.Size * cfs, 0.f);
+          Renderer::CmdQuad(cmd, rec, cp.SimpleUV, color);
+        } else {
+          off.x += 2 * cfs;
+        }
+        off.x += cp.Size.x * cfs + 2 * cfs;
+      }
     }
-    codepoint.size(vec2(dat.vtxcoord.right, dat.vtxcoord.bottom));
-    codepoint.off(0);
-    cpmap[cp] = codepoint;
+    cmds.Add(cmd);
+    off.y += lh;
+    off.x = 0;
   }
 }
 }  // namespace LI

@@ -24,39 +24,25 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/core/common.hpp>
-#include <pd/core/vec.hpp>
+#include <pd/core/core.hpp>
 
 namespace PD {
 namespace LI {
 class Vertex {
  public:
   Vertex() {}
-  Vertex(const vec2& p, const vec2& u, u32 c) {
-    pos[0] = p[0];
-    pos[1] = p[1];
-    uv = u;
-    color = c;
+  Vertex(const fvec2& p, const fvec2& u, u32 c) {
+    Pos.x = p.x;
+    Pos.y = p.y;
+    UV = u;
+    Color = c;
   }
   ~Vertex() {}
 
-  Vertex& Pos(const vec2& v) {
-    pos = v;
-    return *this;
-  }
-  Vertex& Uv(const vec2& v) {
-    uv = v;
-    return *this;
-  }
-  Vertex& Color(u32 v) {
-    color = v;
-    return *this;
-  }
-
   // private:
-  vec2 pos;
-  vec2 uv;
-  u32 color;
+  fvec2 Pos;
+  fvec2 UV;
+  u32 Color;
 };
 }  // namespace LI
 }  // namespace PD

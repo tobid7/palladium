@@ -30,7 +30,7 @@ namespace PD {
 /**
  * Timer class
  */
-class Timer : public SmartCtor<Timer> {
+class PD_CORE_API Timer : public SmartCtor<Timer> {
  public:
   /**
    * Constructor

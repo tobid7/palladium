@@ -32,7 +32,7 @@ namespace UI7 {
 /**
  * Color Editor (Creating a PopUP when clicking)
  */
-class ColorEdit : public Container {
+class PD_UI7_API ColorEdit : public Container {
  public:
   /**
    * Constructor
@@ -41,11 +41,11 @@ class ColorEdit : public Container {
    * @param lr Reference to the Renderer
    */
   ColorEdit(const std::string& label, u32* color, UI7::IO::Ref io) {
-    PD::Assert(color != nullptr, "Input Color Address is null!");
+   // PD::Assert(color != nullptr, "Input Color Address is null!");
     this->label = label;
     this->color_ref = color;
     this->initial_color = *color;
-    this->tdim = io->Ren->GetTextDimensions(label);
+    this->tdim = io->Font->GetTextBounds(label, io->FontScale);
   }
   ~ColorEdit() = default;
 
@@ -64,7 +64,7 @@ class ColorEdit : public Container {
   void Update() override;
 
  private:
-  vec2 tdim;                 ///< Text size
+  fvec2 tdim;                 ///< Text size
   u32* color_ref = nullptr;  ///< Color Reference
   u32 initial_color;         ///< Initial Color
   std::string label;         ///< Label of the Button

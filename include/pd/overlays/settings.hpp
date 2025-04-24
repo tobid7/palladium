@@ -23,8 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/core/tween.hpp>
-#include <pd/drivers/hid.hpp>
+#include <pd/core/core.hpp>
 #include <pd/overlays/overlay.hpp>
 #include <pd/ui7/ui7.hpp>
 
@@ -68,7 +67,7 @@ class SettingsMenu : public Overlay {
 
   // Some Animation
   bool rem = false;
-  Tween<vec2> flymgr;
+  Tween<fvec2> flymgr;
 
   // Custom UI7 Context
   UI7::Context::Ref ctx;

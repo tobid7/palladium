@@ -33,7 +33,7 @@ namespace UI7 {
  * Context::Update while the visual update is done
  * during the Update
  */
-class Checkbox : public Container {
+class PD_UI7_API Checkbox : public Container {
  public:
   /**
    * Constructor for Checkbox Object
@@ -44,7 +44,7 @@ class Checkbox : public Container {
   Checkbox(const std::string& label, bool& usr_ref, UI7::IO::Ref io)
       : usr_ref(usr_ref) {
     this->label = label;
-    this->tdim = io->Ren->GetTextDimensions(label);
+    this->tdim = io->Font->GetTextBounds(label, io->FontScale);
   }
   ~Checkbox() = default;
   /**
@@ -62,8 +62,8 @@ class Checkbox : public Container {
   void Update() override;
 
  private:
-  vec2 tdim;                                  ///< Text Size
-  vec2 cbs = vec2(18);                        ///< Checkbox size
+  fvec2 tdim;                                 ///< Text Size
+  fvec2 cbs = fvec2(18);                      ///< Checkbox size
   UI7Color color = UI7Color_FrameBackground;  ///< Checkbox background Color
   std::string label;                          ///< Checkbox Label
   bool& usr_ref;                              ///< User bool reference

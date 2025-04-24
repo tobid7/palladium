@@ -21,23 +21,28 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/core/timetrace.hpp>
+#include <pd/core/core.hpp>
 #include <pd/ui7/ui7.hpp>
 
 // Helpers
 
-#define UI7DV4(x)                                                           \
-  std::format("{}: [{:.2f}, {:.2f}, {:.2f}, {:.2f}]", #x, x[0], x[1], x[2], \
-              x[3])
-#define UI7DV4N(x) \
-  std::format("[{:.2f}, {:.2f}, {:.2f}, {:.2f}]", x[0], x[1], x[2], x[3])
-#define UI7DV2(x) std::format("{}: [{:.2f}, {:.2f}]", #x, x[0], x[1])
-#define UI7DV2N(x) std::format("[{:.2f}, {:.2f}]", x[0], x[1])
+std::string _UI7DV4(PD::vec4<float> v) {
+  return std::format("[{:.2f}, {:.2f}, {:.2f}, {:.2f}]", v.x, v.y, v.z, v.w);
+}
+
+std::string _UI7DV2(PD::vec2<float> v) {
+  return std::format("[{:.2f}, {:.2f}]", v.x, v.y);
+}
+
+#define UI7DV4(x) #x ": " + _UI7DV4(x)
+#define UI7DV4N(x) _UI7DV4(x)
+#define UI7DV2(x) #x ": " + _UI7DV2(x)
+#define UI7DV2N(x) _UI7DV2(x)
 #define UI7DHX32(x) std::format("{}: {:#08x}", #x, x)
 #define UI7DTF(x) PD::Strings::FormatNanos(x)
 
 namespace PD {
-std::string UI7::GetVersion(bool show_build) {
+PD_UI7_API std::string UI7::GetVersion(bool show_build) {
   std::stringstream s;
   s << ((UI7_VERSION >> 24) & 0xFF) << ".";
   s << ((UI7_VERSION >> 16) & 0xFF) << ".";
@@ -45,15 +50,17 @@ std::string UI7::GetVersion(bool show_build) {
   if (show_build) s << "-" << ((UI7_VERSION) & 0xFF);
   return s.str();
 }
-bool UI7::Context::BeginMenu(const ID& id, UI7MenuFlags flags, bool* show) {
-  Assert(!this->current, "You are already in another Menu!");
-  Assert(std::find(amenus.begin(), amenus.end(), (u32)id) == amenus.end(),
-         "Menu Name Already used or\nContext::Update not called!");
+
+PD_UI7_API bool UI7::Context::BeginMenu(const ID& id, UI7MenuFlags flags,
+                                        bool* show) {
+  // Assert(!this->current, "You are already in another Menu!");
+  // Assert(std::find(amenus.begin(), amenus.end(), (u32)id) == amenus.end(),
+  //        "Menu Name Already used or\nContext::Update not called!");
   if (show != nullptr) {
     if (!(*show)) {
-      if (io->FocusedMenu == id) {
-        io->FocusedMenu = 0;
-        io->FocusedMenuRect = 0;
+      if (io->InputHandler->FocusedMenu == id) {
+        io->InputHandler->FocusedMenu = 0;
+        io->InputHandler->FocusedMenuRect = 0;
       }
       return false;
     }
@@ -61,12 +68,12 @@ bool UI7::Context::BeginMenu(const ID& id, UI7MenuFlags flags, bool* show) {
   auto menu = this->menus.find(id);
   if (menu == this->menus.end()) {
     this->menus[id] = Menu::New(id, io);
-    this->menus[id]->Layout->SetSize(io->Ren->GetViewport().zw());
+    // this->menus[id]->Layout->SetSize(io->Ren->GetViewport().zw());
     menu = this->menus.find(id);
   }
   this->current = menu->second;
   this->current->is_shown = show;
-  this->io->CurrentMenu = this->current->id;
+  this->io->InputHandler->CurrentMenu = this->current->id;
   io->RegisterDrawList(id, this->current->Layout->GetDrawList());
   this->current->PreHandler(flags);
   amenus.push_back(this->current->GetID());
@@ -76,12 +83,12 @@ bool UI7::Context::BeginMenu(const ID& id, UI7MenuFlags flags, bool* show) {
   return this->current != nullptr;
 }
 
-UI7::Menu::Ref UI7::Context::GetCurrentMenu() {
-  Assert(current != nullptr, "Not in a Menu!");
+PD_UI7_API UI7::Menu::Ref UI7::Context::GetCurrentMenu() {
+  // Assert(current != nullptr, "Not in a Menu!");
   return current;
 }
 
-UI7::Menu::Ref UI7::Context::FindMenu(const ID& id) {
+PD_UI7_API UI7::Menu::Ref UI7::Context::FindMenu(const ID& id) {
   auto e = this->menus.find(id);
   if (e != this->menus.end()) {
     return e->second;
@@ -89,54 +96,92 @@ UI7::Menu::Ref UI7::Context::FindMenu(const ID& id) {
   return nullptr;
 }
 
-void UI7::Context::EndMenu() {
+PD_UI7_API void UI7::Context::EndMenu() {
   this->current->PostHandler();
   this->current = nullptr;
-  this->io->CurrentMenu = 0;
+  this->io->InputHandler->CurrentMenu = 0;
 }
 
-void UI7::Context::Update(float) {
+PD_UI7_API bool UI7::Context::DoMenuEx(
+    const UI7::ID& id, UI7MenuFlags flags,
+    std::function<void(UI7::ReMenu::Ref m)> f) {
+  if (!Current) {
+    Current = ReMenu::New(id, io);
+  }
+  // Current->pIsShown = show;
+  io->InputHandler->CurrentMenu = Current->pID;
+  io->RegisterDrawList(id, Current->pLayout->GetDrawList());
+  if (Current->pIsOpen) {
+    f(Current);
+  }
+  return Current != nullptr;
+}
+
+PD_UI7_API void UI7::Context::Update(float) {
   TT::Scope st("UI7_Update");
-  Assert(current == nullptr, "Still in a Menu!");
+  // Assert(current == nullptr, "Still in a Menu!");
+  if (!io->InputHandler->FocusedMenu && amenus.size() > 0) {
+    io->InputHandler->FocusedMenu = amenus[amenus.size() - 1];
+  }
   bool focused_exist = false;
-  for (auto it : amenus) {
+  if (aml.size() == 0) {
+    aml = amenus;
+  } else {
+    std::vector<size_t> tbr;
+    for (size_t i = 0; i < aml.size(); i++) {
+      if (std::find(amenus.begin(), amenus.end(), aml[i]) == amenus.end()) {
+        tbr.push_back(i);
+      }
+    }
+    for (auto& it : tbr) {
+      aml.erase(aml.begin() + it);
+    }
+  }
+  for (auto& it : amenus) {
+    if (std::find(aml.begin(), aml.end(), it) == aml.end()) {
+      aml.push_back(it);
+    }
+  }
+  auto ptf = std::find(aml.begin(), aml.end(), io->InputHandler->FocusedMenu);
+  if (ptf != aml.end() && ptf != aml.begin()) {
+    std::rotate(aml.begin(), ptf, ptf + 1);
+  }
+  for (auto it : aml) {
     auto m = menus[it];
-    io->CurrentMenu = m->id;
+    io->InputHandler->CurrentMenu = m->id;
     m->Update(io->Delta);
-    io->CurrentMenu = 0;
-    if (it == io->FocusedMenu) {
+    io->InputHandler->CurrentMenu = 0;
+    if (it == io->InputHandler->FocusedMenu) {
       focused_exist = true;
     }
   }
-  if (!focused_exist) {
+  io->InputHandler->CurrentMenu = Current->pID;
+  Current->Update();
+  /*if (!focused_exist && io->CurrentMenu != Current->pID) {
     io->FocusedMenu = 0;
     io->FocusedMenuRect = 0;
-  }
+  }*/
   int list = 0;
   u32 vtx_counter = 0;
   u32 idx_counter = 0;
-  // Render the Focused Menu Last
-  std::sort(io->DrawListRegestry.begin(), io->DrawListRegestry.end(),
-            [&](const auto& a, const auto& b) {
-              return (a.first == io->FocusedMenu) <
-                     (b.first == io->FocusedMenu);
-            });
   // Register Front List as last element
   io->RegisterDrawList("CtxFrontList", io->Front);
+  // io->DrawListRegestry.Reverse();
   for (auto it : io->DrawListRegestry) {
-    it.second->BaseLayer(list * 30);
-    it.second->Process();
-    vtx_counter += it.second->num_vertices;
-    idx_counter += it.second->num_indices;
+    it.Second->Base = list * 30;
+    it.Second->Process(io->pRDL);
+    vtx_counter += it.Second->NumVertices;
+    idx_counter += it.Second->NumIndices;
     list++;
   }
+  io->Ren->RegisterDrawList(io->pRDL);
   io->NumIndices = idx_counter;
   io->NumVertices = vtx_counter;
   this->amenus.clear();
   this->io->Update();
 }
 
-void UI7::Context::AboutMenu(bool* show) {
+PD_UI7_API void UI7::Context::AboutMenu(bool* show) {
   if (this->BeginMenu("About UI7", UI7MenuFlags_Scrolling, show)) {
     auto m = this->GetCurrentMenu();
 
@@ -159,7 +204,7 @@ void UI7::Context::AboutMenu(bool* show) {
   }
 }
 
-void UI7::Context::MetricsMenu(bool* show) {
+PD_UI7_API void UI7::Context::MetricsMenu(bool* show) {
   if (this->BeginMenu("UI7 Metrics", UI7MenuFlags_Scrolling, show)) {
     auto m = this->GetCurrentMenu();
 
@@ -173,7 +218,7 @@ void UI7::Context::MetricsMenu(bool* show) {
     m->Label(std::format("NumIndices: {} -> {} Tris", io->NumIndices,
                          io->NumIndices / 3));
     m->Label("Menus: " + std::to_string(menus.size()));
-    if (m->BeginTreeNode("Font")) {
+    /*if (m->BeginTreeNode("Font")) {
       for (u32 i = 0; i <= 0x00ff; i++) {
         auto& c = io->Ren->Font()->GetCodepoint(i);
         if (!c.invalid()) {
@@ -184,7 +229,7 @@ void UI7::Context::MetricsMenu(bool* show) {
         }
       }
       m->EndTreeNode();
-    }
+    }*/
     m->SeparatorText("TimeTrace");
     if (m->BeginTreeNode("Traces (" +
                          std::to_string(Sys::GetTraceMap().size()) + ")")) {
@@ -207,10 +252,10 @@ void UI7::Context::MetricsMenu(bool* show) {
       for (auto& it : menus) {
         if (m->BeginTreeNode(it.second->name)) {
           m->Label("Name: " + it.second->name);
-          m->Label("Pos: " + UI7DV2N(it.second->Layout->GetPosition()));
+          /*m->Label("Pos: " + UI7DV2N(it.second->Layout->GetPosition()));
           m->Label("Size: " + UI7DV2N(it.second->Layout->GetSize()));
           m->Label("Work Rect: " + UI7DV4N(it.second->Layout->WorkRect));
-          m->Label("Cursor: " + UI7DV2N(it.second->Layout->Cursor));
+          m->Label("Cursor: " + UI7DV2N(it.second->Layout->Cursor));*/
           if (m->BeginTreeNode(
                   "ID Objects (" +
                   std::to_string(it.second->Layout->IDObjects.size()) + ")")) {
@@ -224,13 +269,34 @@ void UI7::Context::MetricsMenu(bool* show) {
       }
       m->EndTreeNode();
     }
+    if (m->BeginTreeNode("Active Menus (" + std::to_string(aml.size()) + ")")) {
+      for (auto& it : aml) {
+        if (m->BeginTreeNode(menus[it]->name)) {
+          m->Label("Name: " + menus[it]->name);
+          /*m->Label("Pos: " + UI7DV2N(it.second->Layout->Pos));
+          m->Label("Size: " + UI7DV2N(it.second->Layout->GetSize()));
+          m->Label("Work Rect: " + UI7DV4N(it.second->Layout->WorkRect));
+          m->Label("Cursor: " + UI7DV2N(it.second->Layout->Cursor));*/
+          if (m->BeginTreeNode(
+                  "ID Objects (" +
+                  std::to_string(menus[it]->Layout->IDObjects.size()) + ")")) {
+            for (auto& jt : menus[it]->Layout->IDObjects) {
+              m->Label(UI7DHX32(jt->GetID()));
+            }
+            m->EndTreeNode();
+          }
+          m->EndTreeNode();
+        }
+      }
+      m->EndTreeNode();
+    }
     if (m->BeginTreeNode("DrawLists (" +
-                         std::to_string(io->DrawListRegestry.size()) + ")")) {
+                         std::to_string(io->DrawListRegestry.Size()) + ")")) {
       for (auto& it : io->DrawListRegestry) {
-        if (m->BeginTreeNode(it.first.GetName())) {
-          m->Label("Vertices: " + std::to_string(it.second->num_vertices));
-          m->Label("Indices: " + std::to_string(it.second->num_indices));
-          m->Label("Base Layer: " + std::to_string(it.second->base));
+        if (m->BeginTreeNode(it.First.GetName())) {
+          m->Label("Vertices: " + std::to_string(it.Second->NumVertices));
+          m->Label("Indices: " + std::to_string(it.Second->NumIndices));
+          m->Label("Base Layer: " + std::to_string(it.Second->Base));
           m->EndTreeNode();
         }
       }
@@ -239,18 +305,19 @@ void UI7::Context::MetricsMenu(bool* show) {
     m->Label("io->Time: " + Strings::FormatMillis(io->Time->Get()));
     m->Label(std::format("io->Delta: {:.3f}", io->Delta));
     m->Label(std::format("io->Framerate: {:.2f}", io->Framerate));
-    m->Label(UI7DHX32(io->FocusedMenu));
-    m->Label(UI7DHX32(io->DraggedObject));
-    m->Label(std::format("io->DragTime: {:.2f}s", io->DragTime->GetSeconds()));
-    m->Label(UI7DV4(io->DragDestination));
-    m->Label(UI7DV2(io->DragSourcePos));
-    m->Label(UI7DV2(io->DragPosition));
-    m->Label(UI7DV2(io->DragLastPosition));
+    m->Label(UI7DHX32(io->InputHandler->FocusedMenu));
+    m->Label(UI7DHX32(io->InputHandler->DraggedObject));
+    m->Label(std::format("io->DragTime: {:.2f}s",
+                         io->InputHandler->DragTime->GetSeconds()));
+    m->Label(UI7DV4(io->InputHandler->DragDestination));
+    m->Label(UI7DV2(io->InputHandler->DragSourcePos));
+    m->Label(UI7DV2(io->InputHandler->DragPosition));
+    m->Label(UI7DV2(io->InputHandler->DragLastPosition));
     this->EndMenu();
   }
 }
 
-void UI7::Context::StyleEditor(bool* show) {
+PD_UI7_API void UI7::Context::StyleEditor(bool* show) {
   if (this->BeginMenu("UI7 Style Editor", UI7MenuFlags_Scrolling, show)) {
     auto m = this->GetCurrentMenu();
 

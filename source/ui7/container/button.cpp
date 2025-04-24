@@ -25,7 +25,7 @@ SOFTWARE.
 
 namespace PD {
 namespace UI7 {
-void Button::HandleInput() {
+PD_UI7_API void Button::HandleInput() {
   /// Ensure to only check input once
   if (inp_done) {
     return;
@@ -33,31 +33,31 @@ void Button::HandleInput() {
   /// Ensure it gets sed to false and stays if not pressed
   pressed = false;
   color = UI7Color_Button;
-  Assert(screen.get(), "Screen is not set up!");
-  if (screen->ScreenType() == Screen::Bottom) {
-    if (io->DragObject(this->GetID(), vec4(FinalPos(), size))) {
-      if (io->DragReleased) {
-        color = UI7Color_ButtonActive;
-        pressed = true;
-      } else {
-        color = UI7Color_ButtonHovered;
-      }
+  // Assert(screen.get(), "Screen is not set up!");
+  // if (screen->ScreenType() == Screen::Bottom) {
+  if (io->InputHandler->DragObject(this->GetID(), vec4(FinalPos(), size))) {
+    if (io->InputHandler->DragReleased) {
+      color = UI7Color_ButtonActive;
+      pressed = true;
+    } else {
+      color = UI7Color_ButtonHovered;
     }
   }
+  //}
   inp_done = true;
 }
-void Button::Draw() {
-  Assert(io.get() && list.get(), "Did you run Container::Init correctly?");
-  io->Ren->OnScreen(screen);
+PD_UI7_API void Button::Draw() {
+  // Assert(io.get() && list.get(), "Did you run Container::Init correctly?");
+  // io->Ren->OnScreen(screen);
   list->AddRectangle(FinalPos(), size, io->Theme->Get(color));
-  list->Layer(list->Layer() + 1);
+  list->Layer++;
   list->AddText(FinalPos() + size * 0.5 - tdim * 0.5, label,
                 io->Theme->Get(UI7Color_Text));
-  list->Layer(list->Layer() - 1);
+  list->Layer--;
 }
 
-void Button::Update() {
-  Assert(io.get(), "Did you run Container::Init correctly?");
+PD_UI7_API void Button::Update() {
+  // Assert(io.get(), "Did you run Container::Init correctly?");
   this->SetSize(tdim + io->FramePadding);
 }
 }  // namespace UI7

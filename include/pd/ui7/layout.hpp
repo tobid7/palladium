@@ -23,49 +23,62 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/core/common.hpp>
+#include <pd/core/core.hpp>
 #include <pd/ui7/container/container.hpp>
 #include <pd/ui7/drawlist.hpp>
 #include <pd/ui7/flags.hpp>
 #include <pd/ui7/io.hpp>
+#include <pd/ui7/pd_p_api.hpp>
 
 namespace PD {
 namespace UI7 {
-class Layout : public PD::SmartCtor<Layout> {
+class PD_UI7_API Layout : public PD::SmartCtor<Layout> {
  public:
   Layout(const ID& id, IO::Ref io) : ID(id) {
     this->IO = io;
-    DrawList = UI7::DrawList::New(io->Ren);
+    DrawList = UI7::DrawList::New(io.get());
     Scrolling[0] = false;
     Scrolling[1] = false;
     CursorInit();
-    Pos = vec2(0, 0);
-    Size = vec2(320, 240);
-    WorkRect = vec4(IO->MenuPadding, Size - (vec2(2) * IO->MenuPadding));
+    Pos = fvec2(0, 0);
+    Size = fvec2(320, 240);
+    WorkRect = fvec4(IO->MenuPadding, Size - (fvec2(2) * IO->MenuPadding));
   }
   ~Layout() = default;
 
   const std::string& GetName() const { return ID.GetName(); }
   const UI7::ID& GetID() const { return this->ID; }
 
-  const vec2& GetPosition() const { return Pos; }
-  void SetPosition(const vec2& v) { Pos = v; }
-  const vec2& GetSize() const { return Size; }
-  void SetSize(const vec2& v) { Size = v; }
+  const fvec2& GetPosition() const { return Pos; }
+  void SetPosition(const fvec2& v) { Pos = v; }
+  const fvec2& GetSize() const { return Size; }
+  void SetSize(const fvec2& v) { Size = v; }
 
   UI7::DrawList::Ref GetDrawList() { return DrawList; }
 
   void CursorInit();
   void SameLine();
-  void CursorMove(const vec2& size);
+  void CursorMove(const fvec2& size);
 
-  bool ObjectWorkPos(vec2& movpos);
+  bool ObjectWorkPos(fvec2& movpos);
 
+  /**
+   * Extended Object Add Func to Add Object in Front or disable
+   * Position by cursor as well as cursor update...
+   * Should only be used in special cases as the
+   * AddObject function is faster
+   * Using Flags for its features cause dont want to have too much args
+   */
+  void AddObjectEx(Container::Ref obj, u32 Flags);
+  /**
+   * Fast Function to Add Object in Layout SPace like
+   * button Label images etc
+   */
   void AddObject(Container::Ref obj);
   Container::Ref FindObject(u32 id);
   void ClearIDObjects() { IDObjects.clear(); }
 
-  vec2 AlignPosition(vec2 pos, vec2 size, vec4 area, UI7Align alignment);
+  fvec2 AlignPosition(fvec2 pos, fvec2 size, fvec4 area, UI7Align alignment);
 
   /** Get the Alignment for Current State */
   UI7Align GetAlignment() {
@@ -87,33 +100,34 @@ class Layout : public PD::SmartCtor<Layout> {
  private:
   friend class Menu;
   friend class Context;
+  friend class ReMenu;
   // Base Components
   UI7::ID ID;
   UI7::IO::Ref IO;
   UI7::DrawList::Ref DrawList;
 
   // Positioning
-  vec2 Pos;
-  vec2 Size;
+  fvec2 Pos;
+  fvec2 Size;
   UI7Align Alignment = UI7Align_Default;
   UI7Align TempAlign;
 
   // Cursor
-  vec2 Cursor;
-  vec2 InitialCursorOffset;
-  vec2 BackupCursor;
-  vec2 SamelineCursor;
-  vec2 BeforeSameLine;
-  vec2 LastObjSize;
-  vec2 MaxPosition;
-  vec4 WorkRect;
+  fvec2 Cursor;
+  fvec2 InitialCursorOffset;
+  fvec2 BackupCursor;
+  fvec2 SamelineCursor;
+  fvec2 BeforeSameLine;
+  fvec2 LastObjSize;
+  fvec2 MaxPosition;
+  fvec4 WorkRect;
 
   // Scrolling
-  vec2 ScrollOffset;
+  fvec2 ScrollOffset;
   bool Scrolling[2];
 
   // Objects
-  std::vector<Container::Ref> Objects;
+  PD::List<Container::Ref> Objects;
   std::vector<Container::Ref> IDObjects;
 };
 }  // namespace UI7

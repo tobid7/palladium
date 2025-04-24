@@ -23,13 +23,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/core/timetrace.hpp>
-#include <pd/drivers/hid.hpp>
+#include <pd/core/core.hpp>
 #include <pd/ui7/drawlist.hpp>
 #include <pd/ui7/flags.hpp>
 #include <pd/ui7/id.hpp>
 #include <pd/ui7/io.hpp>
 #include <pd/ui7/menu.hpp>
+#include <pd/ui7/remenu.hpp>
 #include <pd/ui7/theme.hpp>
 /**
  * Declare UI7 Version
@@ -37,7 +37,7 @@ SOFTWARE.
  *         Major Minor Patch Build
  * 0x01010000 -> 1.1.0-0
  */
-#define UI7_VERSION 0x00030200
+#define UI7_VERSION 0x00040000
 
 namespace PD {
 namespace UI7 {
@@ -46,9 +46,9 @@ namespace UI7 {
  * @param show_build Ahow build num (mostly unused)
  * @return Version String (1.0.0-1 for example)
  */
-std::string GetVersion(bool show_build = false);
+PD_UI7_API std::string GetVersion(bool show_build = false);
 /** Base Context for UI7 */
-class Context : public SmartCtor<Context> {
+class PD_UI7_API Context : public SmartCtor<Context> {
  public:
   /**
    * Constructor for UI7 Context
@@ -69,6 +69,8 @@ class Context : public SmartCtor<Context> {
    * (useless as false results in an error screen)
    */
   bool BeginMenu(const ID& id, UI7MenuFlags flags = 0, bool* show = nullptr);
+  bool DoMenuEx(const ID& id, UI7MenuFlags flags,
+                std::function<void(ReMenu::Ref m)> f);
   /**
    * Get the Current Menu
    * for example for auto m = ctx->GetCurrentMenu
@@ -140,7 +142,9 @@ class Context : public SmartCtor<Context> {
   // Map of The Menus by ID
   std::unordered_map<u32, Menu::Ref> menus;
   std::vector<u32> amenus;  ///< Active ones
+  std::vector<u32> aml;     ///< Copy of Active Menus
   Menu::Ref current;        ///< Current Menu
+  ReMenu::Ref Current;
   // IO
   IO::Ref io;
 };

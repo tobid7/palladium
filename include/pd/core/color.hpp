@@ -36,7 +36,7 @@ namespace PD {
  * - Supports 32Bit input color
  * @note Safetey checks are disabled for maximum performance
  */
-class Color {
+class PD_CORE_API Color {
  public:
   /**
    * Default Constructor (all variables are set to 0)

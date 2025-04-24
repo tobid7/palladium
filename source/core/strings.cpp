@@ -24,8 +24,8 @@ SOFTWARE.
 #include <pd/core/strings.hpp>
 
 namespace PD::Strings {
-bool StringEndsWith(const std::string& str,
-                    const std::vector<std::string>& exts) {
+PD_CORE_API bool StringEndsWith(const std::string& str,
+                                const std::vector<std::string>& exts) {
   // Changed order to not do an substr on empty string
   if (str.empty()) {
     return false;
@@ -44,13 +44,48 @@ bool StringEndsWith(const std::string& str,
   return false;
 }
 
-std::wstring MakeWstring(const std::string& s) {
-  // As std::wstring(s.begin(), s.end()); doesn't convert it
-  // Normally this should not be done like this but it works
-  return std::filesystem::path(s).wstring();
+PD_CORE_API std::wstring MakeWstring(const std::string& s) {
+  // Manually convert to wstring as they removed wstring_convert :(
+  std::wstring result;
+  size_t i = 0;
+  while (i < s.size()) {
+    uint8_t ch = static_cast<uint8_t>(s[i]);
+    if (ch < 0x80) {  // 1-byte chsr
+      result += static_cast<wchar_t>(ch);
+      i++;
+    } else if ((ch >> 5) == 0b110) {  // 2-byte char
+      if (i + 1 >= s.size()) {
+        return L"";  // return empty if error
+      }
+      wchar_t wc = ((ch & 0x1F) << 6) | (s[i + 1] & 0x3F);
+      result += wc;
+      i += 2;
+    } else if ((ch >> 4) == 0b1110) {  // 3-byte char
+      if (i + 2 >= s.size()) {
+        return L"";  // return empty if error
+      }
+      wchar_t wc =
+          ((ch & 0x0F) << 12) | ((s[i + 1] & 0x3F) << 6) | (s[i + 2] & 0x3F);
+      result += wc;
+      i += 3;
+    } else if ((ch >> 3) == 0b11110) {  // 4-byte char
+      if (i + 3 >= s.size()) {
+        return L"";  // return empty if error
+      }
+      uint32_t codepoint = ((ch & 0x07) << 18) | ((s[i + 1] & 0x3F) << 12) |
+                           ((s[i + 2] & 0x3F) << 6) | (s[i + 3] & 0x3F);
+      codepoint -= 0x10000;
+      result += static_cast<wchar_t>(0xD800 + (codepoint >> 10));
+      result += static_cast<wchar_t>(0xDC00 + (codepoint & 0x3FF));
+      i += 4;
+    } else {
+      return L"";
+    }
+  }
+  return result;
 }
 
-const std::string FormatNanos(unsigned long long nanos) {
+PD_CORE_API const std::string FormatNanos(unsigned long long nanos) {
   // Based on some code of my minecraft plugins
   if (nanos < 1000) {
     return std::format("{}ns", nanos);
@@ -71,7 +106,7 @@ const std::string FormatNanos(unsigned long long nanos) {
   return "";
 }
 
-const std::string FormatMillis(unsigned long long millis) {
+PD_CORE_API const std::string FormatMillis(unsigned long long millis) {
   // Original Code can be found in some of my mv plugins
   if (millis < 1000) {
     return std::format("{}ms", millis);
@@ -86,7 +121,7 @@ const std::string FormatMillis(unsigned long long millis) {
   return "";
 }
 
-const std::string FormatBytes(unsigned long long bytes) {
+PD_CORE_API const std::string FormatBytes(unsigned long long bytes) {
   static const std::vector<std::string> endings = {
       "B", "KB", "MB", "GB", "TB", "Unk",
   };
@@ -102,8 +137,8 @@ const std::string FormatBytes(unsigned long long bytes) {
   return std::format("{:.1f} {}", b, endings[i]);
 }
 
-const std::string GetFileName(const std::string& path,
-                              const std::string& saperators) {
+PD_CORE_API const std::string GetFileName(const std::string& path,
+                                          const std::string& saperators) {
   auto pos = path.find_last_of(saperators);
   if (pos != path.npos) {
     return path.substr(pos + 1);
@@ -112,7 +147,7 @@ const std::string GetFileName(const std::string& path,
   return path;
 }
 
-const std::string PathRemoveExtension(const std::string& path) {
+PD_CORE_API const std::string PathRemoveExtension(const std::string& path) {
   auto pos = path.find_last_of('.');
   if (pos != path.npos) {
     return path.substr(0, pos);
@@ -121,7 +156,7 @@ const std::string PathRemoveExtension(const std::string& path) {
   return path;
 }
 
-u32 FastHash(const std::string& s) {
+PD_CORE_API u32 FastHash(const std::string& s) {
   u32 hash = 5381;
   for (auto& it : s) {
     hash = (hash * 33) + static_cast<u8>(it);

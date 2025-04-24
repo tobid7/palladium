@@ -24,122 +24,38 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/core/common.hpp>
-#include <pd/core/vec.hpp>
+#include <pd/core/core.hpp>
+#include <pd/lithium/backend.hpp>
+#include <pd/lithium/pd_p_api.hpp>
 #include <pd/lithium/rect.hpp>
 #include <pd/lithium/texture.hpp>
+
+using LITextFlags = PD::u32;
+enum LITextFlags_ {
+  LITextFlags_None = 0,             ///< Do nothing
+  LITextFlags_AlignRight = 1 << 0,  ///< Align Right of position
+  LITextFlags_AlignMid = 1 << 1,    ///< Align in the middle of pos and box
+  LITextFlags_Shaddow = 1 << 2,     ///< Draws the text twice to create shaddow
+  LITextFlags_Wrap = 1 << 3,        ///< Wrap Text: May be runs better with TMS
+  LITextFlags_Short = 1 << 4,       ///< Short Text: May be runs better with TMS
+  LITextFlags_Scroll = 1 << 5,      ///< Not implemented [scoll text if to long]
+};
 
 namespace PD {
 namespace LI {
 /** Font Loader for Lithium */
-class Font : public SmartCtor<Font> {
+class PD_LITHIUM_API Font : public SmartCtor<Font> {
  public:
   /** Codepoint Data holder */
-  class Codepoint {
-   public:
-    Codepoint() = default;
-    ~Codepoint() = default;
-
-    /**
-     * Codepoint ID Getter
-     * @return 32Bit codepoint value
-     */
-    u32 cp() const { return m_cp; }
-    /**
-     * Codepoint ID Setter
-     * @param v codepoint id
-     * @return DataHolder reference
-     */
-    Codepoint& cp(u32 v) {
-      m_cp = v;
-      return *this;
-    }
-    /**
-     * Getter for the UV Coords
-     * @return uv coords
-     */
-    vec4 uv() const { return m_uv; }
-    /**
-     * Setter for the UV Coords
-     * @param v uv coords
-     * @return DataHolder Reference
-     */
-    Codepoint& uv(const vec4& v) {
-      m_uv = v;
-      return *this;
-    }
-    /**
-     * Getter for the Texture reference
-     * @return Texture Reference
-     */
-    Texture::Ref tex() const { return m_tex; }
-    /**
-     * Setter for the Texture Reference
-     * @param v Texture Reference
-     * @return DataHolder Reference
-     */
-    Codepoint& tex(Texture::Ref v) {
-      m_tex = v;
-      return *this;
-    }
-    /**
-     * Getter for the size
-     * @return Size
-     */
-    vec2 size() const { return m_size; }
-    /**
-     * Setter for the Size
-     * @param v size
-     * @return DataHolder Reference
-     */
-    Codepoint& size(const vec2& v) {
-      m_size = v;
-      return *this;
-    }
-    /**
-     * Getter for the Position offset
-     * @return offset
-     */
-    float off() const { return m_off; }
-    /**
-     * Setter for the Render Offset
-     * @param v offset
-     * @return DataHolder Reference
-     */
-    Codepoint& off(float v) {
-      m_off = v;
-      return *this;
-    }
-    /**
-     * Getter to check if Codepoint is invalid
-     * @return true if invalid
-     */
-    bool invalid() const { return m_invalid; }
-    /**
-     * Setter for invald state
-     * @param v true or false
-     * @return DataHolder Reference
-     */
-    Codepoint& invalid(bool v) {
-      m_invalid = v;
-      return *this;
-    }
-
-   private:
-    /** 32Bit Codepoint ID */
-    u32 m_cp = 0;
-    /** UvMap */
-    vec4 m_uv;
-    /** Texture Reference */
-    Texture::Ref m_tex = nullptr;
-    /** Codepoint Size */
-    vec2 m_size;
-    /** Render Position Offset */
-    float m_off = 0;
-    /** Invalid check (for skip in renderer) */
-    bool m_invalid = false;
+  struct Codepoint {
+    u32 pCodepoint = 0;
+    fvec4 SimpleUV;
+    Texture::Ref Tex;
+    fvec2 Size;
+    float Offset = 0.f;
+    bool pInvalid = false;
   };
-  Font() = default;
+  Font(Backend::Ref backend) { pBackend = backend; };
   ~Font() = default;
   /**
    * Load a TTF File
@@ -148,34 +64,32 @@ class Font : public SmartCtor<Font> {
    */
   void LoadTTF(const std::string& path, int px_height = 32);
   /**
-   * Load 3DS System Font
-   */
-  void LoadSystemFont();
-  /**
-   * Getter for PixelHeight
-   * @return pixelheigt
-   */
-  int PixelHeight() const { return pixel_height; }
-  /**
    * Getter for Codepoint reference
    * @return codepoint dataholder reference
    */
   Codepoint& GetCodepoint(u32 c);
+
   /**
-   * Check if Systemfont is used
-   * @return true if is system font
+   * Get Text Bounding Box
    */
-  bool SystemFont() const { return sysfont; }
+  fvec2 GetTextBounds(const std::string& text, float scale);
+  /**
+   * Extended Draw Text Function that vreates a Command List
+   */
+  void CmdTextEx(Vec<Command::Ref>& cmds, const fvec2& pos, u32 color,
+                 float scale, const std::string& text, LITextFlags flags = 0,
+                 const fvec2& box = 0);
+
+  /** Pixelheight */
+  int PixelHeight;
+  int DefaultPixelHeight = 24;
 
  private:
-  /** sysfont set to true if LoadSystemFont got called */
-  bool sysfont;
-  /** Pixelheight */
-  int pixel_height;
   /** List of textures (codepoints are using) */
-  std::vector<Texture::Ref> textures;
+  std::vector<Texture::Ref> Textures;
   /** 32Bit Codepoint Dataholder Reference Map */
-  std::map<u32, Codepoint> cpmap;
+  std::map<u32, Codepoint> CodeMap;
+  Backend::Ref pBackend = nullptr;
 };
 }  // namespace LI
 }  // namespace PD

@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/drivers/hid.hpp>
+#include <pd/core/core.hpp>
 #include <pd/overlays/overlay.hpp>
 
 namespace PD {
@@ -74,7 +74,7 @@ class Performance : public Overlay {
    * @param text Text to Show
    * @param ren Renderer Reference
    */
-  void Line(vec2& pos, const std::string& text, LI::Renderer::Ref ren);
+  void Line(fvec2& pos, const std::string& text, LI::Renderer::Ref ren);
   // Trace String Average
   std::string TSA(const std::string& id);
   // Described in Keyboard

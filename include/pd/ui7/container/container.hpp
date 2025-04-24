@@ -23,12 +23,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/core/common.hpp>
-#include <pd/core/strings.hpp>
-#include <pd/core/vec.hpp>
-#include <pd/drivers/hid.hpp>
+#include <pd/core/core.hpp>
 #include <pd/ui7/drawlist.hpp>
 #include <pd/ui7/io.hpp>
+#include <pd/ui7/pd_p_api.hpp>
 
 namespace PD {
 namespace UI7 {
@@ -36,7 +34,7 @@ namespace UI7 {
  * Container base class all Objects are based on
  * @note this class can be used to create custom Objects as well
  */
-class Container : public SmartCtor<Container> {
+class PD_UI7_API Container : public SmartCtor<Container> {
  public:
   Container() = default;
   /**
@@ -44,12 +42,13 @@ class Container : public SmartCtor<Container> {
    * @param pos Container Position
    * @param size Container Size
    */
-  Container(const vec2& pos, const vec2& size) : pos(pos), size(size) {}
+  Container(const fvec2& pos, const fvec2& size) : pos(pos), size(size) {}
   /**
    * Constructor by a vec4 box
    * @param box Box containing top left and bottom right coords
    */
-  Container(const vec4& box) : pos(box.xy()), size(box.zw() - box.xy()) {}
+  Container(const fvec4& box)
+      : pos(fvec2(box.x, box.y)), size(fvec2(box.z - box.x, box.w - box.y)) {}
   ~Container() = default;
 
   /**
@@ -61,22 +60,22 @@ class Container : public SmartCtor<Container> {
   void Init(UI7::IO::Ref io, UI7::DrawList::Ref l) {
     list = l;
     this->io = io;
-    this->screen = io->Ren->CurrentScreen();
+    // this->screen = io->Ren->CurrentScreen();
   }
 
   /** Setter for Position */
-  void SetPos(const vec2& pos) { this->pos = pos; }
+  void SetPos(const fvec2& pos) { this->pos = pos; }
   /** Setter for Size */
-  void SetSize(const vec2& size) { this->size = size; }
+  void SetSize(const fvec2& size) { this->size = size; }
   /** Getter for Position */
-  vec2 GetPos() { return pos; }
+  fvec2 GetPos() { return pos; }
   /** Getter for Size */
-  vec2 GetSize() { return size; }
+  fvec2 GetSize() { return size; }
   /**
    * Get the Containers Final Position
    * for Rendering and Input (if it has a parent Object)
    */
-  vec2 FinalPos() {
+  fvec2 FinalPos() {
     vec2 res = pos;
     if (parent) {
       /// Probably should use parant->FinalPos here
@@ -101,13 +100,16 @@ class Container : public SmartCtor<Container> {
    * @param scrolling Scrolling Position
    * @param viewport Viewport to check if the Object is skippable
    */
-  void HandleScrolling(vec2 scrolling, vec4 viewport);
+  void HandleScrolling(fvec2 scrolling, fvec4 viewport);
   /** Template function for Input Handling */
   virtual void HandleInput() {}
   /** Tamplate function for Object rendering */
   virtual void Draw() {}
   /** Template function to update internal data (if needed) */
   virtual void Update() {}
+
+  /** Internal Input Handler */
+  void HandleInternalInput();
 
   /**
    * Function to unlock Input after Rendering is done in
@@ -125,6 +127,9 @@ class Container : public SmartCtor<Container> {
    */
   void SetID(u32 id) { this->id = id; }
 
+  /** Get a reference to IO */
+  UI7::IO::Ref GetIO() { return io; }
+
  protected:
   /** used to skip Input/Render preocessing ot not*/
   bool skippable = false;
@@ -135,11 +140,11 @@ class Container : public SmartCtor<Container> {
   /** Input done or not for current frame*/
   bool inp_done = false;
   /** Reference to the Screen to draw the Object on*/
-  Screen::Ref screen;
+  // Screen::Ref screen;
   /** Container Position*/
-  vec2 pos;
+  fvec2 pos;
   /** Container Size*/
-  vec2 size;
+  fvec2 size;
   /** Reference to the Drawlist to Draw to*/
   UI7::DrawList::Ref list;
   /** IO Reference for Renderer and Theme */
@@ -148,6 +153,14 @@ class Container : public SmartCtor<Container> {
   Container::Ref parent;
   /** Object ID (0 if unused)*/
   u32 id = 0;
+  /** Internal Flags */
+  u32 pFlags = 0;
+  /** Is Selected? */
+  bool pSelected = false;
+  /** Was Pressed */
+  bool pPressed = false;
+  /** Was Pressed Twice */
+  bool pPressedTwice = false;
 };
 }  // namespace UI7
 }  // namespace PD

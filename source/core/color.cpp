@@ -33,7 +33,7 @@ static const std::map<char, int> HEX_DEC = {
     {'c', 12}, {'d', 13}, {'e', 14}, {'f', 15}, {'A', 10}, {'B', 11},
     {'C', 12}, {'D', 13}, {'E', 14}, {'F', 15}};
 
-Color& Color::Hex(const std::string& hex) {
+PD_CORE_API Color& Color::Hex(const std::string& hex) {
 #ifdef PD_NO_SAFE_CODE
   /// Safetey check (not required if you programm well xd)
   if (hex.length() != 7 || hex.length() != 9 || hex.length() != 6 ||
@@ -58,7 +58,7 @@ Color& Color::Hex(const std::string& hex) {
   return *this;
 }
 
-std::string Color::Hex(bool rgba) const {
+PD_CORE_API std::string Color::Hex(bool rgba) const {
   std::stringstream s;
   s << "#";
   s << std::hex << std::setw(2) << std::setfill('0') << m_r;

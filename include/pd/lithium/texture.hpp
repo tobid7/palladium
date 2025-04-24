@@ -24,15 +24,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <citro3d.h>
-
-#include <pd/core/common.hpp>
-#include <pd/core/vec.hpp>
+#include <pd/core/core.hpp>
 #include <pd/lithium/rect.hpp>
 
 namespace PD {
+namespace LI {
+using TexAddress = uintptr_t;
 /**
- * Lithium Texture Loader / DataHolder
+ * Lithium Texture Data Holder
+ * Memory management is handled by backend
  */
 class Texture : public SmartCtor<Texture> {
  public:
@@ -48,106 +48,29 @@ class Texture : public SmartCtor<Texture> {
     LINEAR,   ///< Linear
   };
   /** Default constructor */
-  Texture() : uv(0.f, 1.f, 1.f, 0.f) {}
-  /**
-   * Load file Constructor
-   * @param path path to file
-   * @param t3x set true if file is a t3x file
-   */
-  Texture(const std::string& path, bool t3x = false) : uv(0.f, 1.f, 1.f, 0.f) {
-    if (t3x) {
-      this->LoadT3X(path);
-    } else {
-      this->LoadFile(path);
-    }
-  }
-  /**
-   * Load Memory constructor
-   * @param data File Data reference
-   */
-  Texture(const std::vector<u8>& data) : uv(0.f, 1.f, 1.f, 0.f) {
-    this->LoadMemory(data);
-  }
-  /**
-   * Load Pixels constructor
-   * @param data Pixel Buffer reference
-   * @param w width
-   * @param h height
-   * @param type Buffer Type [Default RGBA32]
-   * @param filter Filter [DEFAULT NEAREST]
-   */
-  Texture(const std::vector<u8>& data, int w, int h, Type type = RGBA32,
-          Filter filter = NEAREST)
-      : uv(0.f, 1.f, 1.f, 0.f) {
-    this->LoadPixels(data, w, h, type, filter);
-  }
-  /** Deconstructor (aka auto delete) */
-  ~Texture() {
-    if (autounload) {
-      Delete();
-    }
+  Texture() : UV(0.f, 0.f, 1.f, 1.f) {}
+  Texture(TexAddress addr, ivec2 size,
+          LI::Rect uv = fvec4(0.f, 0.f, 1.f, 1.f)) {
+    Address = addr;
+    Size = size;
+    UV = uv;
   }
 
-  /// @brief Deletes image (if not already unloaded)
-  void Delete();
-
-  /// @brief Load a png/jpg/bmp from fs into a gpu tex
-  /// @param path path to image file
-  void LoadFile(const std::string& path);
-  /// @brief Load a png/jpg/bmp from memory
-  /// @param data reference to data buffer of the file
-  void LoadMemory(const std::vector<u8>& data);
-  /// @brief Create Texture out of Pixel Data
-  /// @param data Data reference
-  /// @param w width
-  /// @param h heigt
-  /// @param type Type of the databuffer
-  /// @param filter Filter (NEAREST OR LINEAR)
-  void LoadPixels(const std::vector<u8>& data, int w, int h, Type type = RGBA32,
-                  Filter filter = NEAREST);
-
-  /// @brief Load a texture of a T3X File
-  /// @note This is used for single texture T3X
-  /// Not for SpriteSheets
-  /// @param path path to .t3x file
-  void LoadT3X(const std::string& path);
-
-  /// @brief Input a Texture that you had set up on your own
-  /// @param tex Texture reference (deletes itself)
-  /// @param rszs The size of the source image
-  /// @param uvs Your uv Setup
-  void LoadExternal(C3D_Tex* tex, vec2 rszs, LI::Rect uvs) {
-    this->Delete();
-    this->tex = tex;
-    this->size = rszs;
-    this->uv = uvs;
+  void CopyOther(Texture::Ref tex) {
+    Address = tex->Address;
+    Size = tex->Size;
+    UV = tex->UV;
   }
 
-  vec2 GetRealSize() {
-    if (!tex) {
-      return vec2();
-    }
-    return vec2(tex->width, tex->height);
-  }
-  vec2 GetSize() const { return size; }
-  C3D_Tex* GetTex() const { return tex; }
-  LI::Rect GetUV() const { return uv; }
-  bool IsValid() const { return tex != 0; }
+  ivec2 GetSize() const { return Size; }
+  LI::Rect GetUV() const { return UV; }
 
-  bool AutoUnLoad() const { return autounload; }
-  void AutoUnLoad(bool v) { autounload = v; }
+  operator ivec2() const { return Size; }
+  operator LI::Rect() const { return UV; }
 
-  operator C3D_Tex*() const { return tex; }
-  operator vec2() const { return size; }
-  operator LI::Rect() const { return uv; }
-  operator bool() const { return tex != 0; }
-
- private:
-  void MakeTex(std::vector<u8>& buf, int w, int h, Type type = RGBA32,
-               Filter filter = NEAREST);
-  vec2 size;
-  LI::Rect uv;
-  C3D_Tex* tex = nullptr;
-  bool autounload = true;
+  TexAddress Address;
+  ivec2 Size;
+  LI::Rect UV;
 };
+}  // namespace LI
 }  // namespace PD

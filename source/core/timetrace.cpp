@@ -25,12 +25,12 @@ SOFTWARE.
 #include <pd/core/timetrace.hpp>
 
 namespace PD::TT {
-void Beg(const std::string& id) {
+PD_CORE_API void Beg(const std::string& id) {
   auto trace = Sys::GetTraceRef(id);
   trace->SetStart(PD::Sys::GetNanoTime());
 }
 
-void End(const std::string& id) {
+PD_CORE_API void End(const std::string& id) {
   auto trace = Sys::GetTraceRef(id);
   trace->SetEnd(PD::Sys::GetNanoTime());
 }

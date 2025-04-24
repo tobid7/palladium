@@ -25,42 +25,42 @@ SOFTWARE.
 
 namespace PD {
 namespace UI7 {
-void Checkbox::HandleInput() {
+PD_UI7_API void Checkbox::HandleInput() {
   /// Ensure to only check input once
   if (inp_done) {
     return;
   }
   color = UI7Color_FrameBackground;
   /// Ensure it gets sed to false and stays if not pressed
-  Assert(screen.get(), "Screen is not set up!");
-  if (screen->ScreenType() == Screen::Bottom) {
-    if (io->DragObject(this->GetID(), vec4(FinalPos(), size))) {
-      if (io->DragReleased) {
-        color = UI7Color_FrameBackgroundHovered;
-        usr_ref = !usr_ref;
-      } else {
-        color = UI7Color_FrameBackgroundHovered;
-      }
+  // Assert(screen.get(), "Screen is not set up!");
+  // if (screen->ScreenType() == Screen::Bottom) {
+  if (io->InputHandler->DragObject(this->GetID(), vec4(FinalPos(), size))) {
+    if (io->InputHandler->DragReleased) {
+      color = UI7Color_FrameBackgroundHovered;
+      usr_ref = !usr_ref;
+    } else {
+      color = UI7Color_FrameBackgroundHovered;
     }
   }
+  //}
   inp_done = true;
 }
-void Checkbox::Draw() {
-  Assert(list.get() && io.get(), "Did you run Container::Init correctly?");
-  io->Ren->OnScreen(screen);
+PD_UI7_API void Checkbox::Draw() {
+  // Assert(list.get() && io.get(), "Did you run Container::Init correctly?");
+  // io->Ren->OnScreen(screen);
   list->AddRectangle(FinalPos(), cbs, io->Theme->Get(color));
   if (usr_ref) {
     list->AddRectangle(FinalPos() + 2, cbs - 4,
                        io->Theme->Get(UI7Color_Checkmark));
   }
-  list->AddText(FinalPos() + vec2(cbs.x() + io->ItemSpace.x(),
-                                  cbs.y() * 0.5 - tdim.y() * 0.5),
-                label, io->Theme->Get(UI7Color_Text));
+  list->AddText(
+      FinalPos() + fvec2(cbs.x + io->ItemSpace.x, cbs.y * 0.5 - tdim.y * 0.5),
+      label, io->Theme->Get(UI7Color_Text));
 }
 
-void Checkbox::Update() {
-  Assert(io.get(), "Did you run Container::Init correctly?");
-  this->SetSize(cbs + vec2(tdim.x() + io->ItemSpace.x(), 0));
+PD_UI7_API void Checkbox::Update() {
+  // Assert(io.get(), "Did you run Container::Init correctly?");
+  this->SetSize(cbs + fvec2(tdim.x + io->ItemSpace.x, 0));
 }
 }  // namespace UI7
 }  // namespace PD

@@ -82,3 +82,18 @@ enum UI7Align_ {
   // Default Horizontal and Vertical Alignment
   UI7Align_Default = UI7Align_Left | UI7Align_Top,
 };
+
+/** Special flags for Layout::AddObjectEx */
+enum UI7LytAdd_ {
+  UI7LytAdd_None = 0,                 ///< Also known as default or ->AddObject
+  UI7LytAdd_NoCursorUpdate = 1 << 0,  ///< Add without cursor alignment
+  UI7LytAdd_NoScrollHandle = 1 << 1,  ///< Skip HandleScrolling
+  UI7LytAdd_Front = 1 << 2,           ///< Add in front of the list
+};
+
+enum UI7ContainerFlags_ {
+  UI7ContainerFlags_None = 0,
+  UI7ContainerFlags_EnableInternalInput = 1 << 0,
+  UI7ContainerFlags_Selectable = 1 << 1,
+  UI7ContainerFlags_OutlineSelected = 1 << 2,
+};

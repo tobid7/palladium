@@ -25,25 +25,25 @@ SOFTWARE.
 #include <pd/core/timer.hpp>
 
 namespace PD {
-Timer::Timer(bool autostart) {
+PD_CORE_API Timer::Timer(bool autostart) {
   is_running = autostart;
   Reset();
 }
 
-void Timer::Reset() {
+PD_CORE_API void Timer::Reset() {
   start = Sys::GetTime();
   now = start;
 }
 
-void Timer::Update() {
+PD_CORE_API void Timer::Update() {
   if (is_running) {
     now = Sys::GetTime();
   }
 }
 
-void Timer::Pause() { is_running = false; }
-void Timer::Rseume() { is_running = true; }
-bool Timer::IsRunning() const { return is_running; }
-u64 Timer::Get() { return now - start; }
-double Timer::GetSeconds() { return double(Get()) / 1000.0; }
+PD_CORE_API void Timer::Pause() { is_running = false; }
+PD_CORE_API void Timer::Rseume() { is_running = true; }
+PD_CORE_API bool Timer::IsRunning() const { return is_running; }
+PD_CORE_API u64 Timer::Get() { return now - start; }
+PD_CORE_API double Timer::GetSeconds() { return double(Get()) / 1000.0; }
 }  // namespace PD

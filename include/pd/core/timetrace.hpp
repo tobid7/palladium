@@ -211,12 +211,12 @@ class Res : public SmartCtor<Res> {
  * Begin a Trace
  * @param id Name of the Trace
  */
-void Beg(const std::string &id);
+PD_CORE_API void Beg(const std::string &id);
 /**
  * End a Trace
  * @param id Name of the Trace
  */
-void End(const std::string &id);
+PD_CORE_API void End(const std::string &id);
 /**
  * Collect Start end end of the trace by tracking
  * when the Scope object goes out of scope

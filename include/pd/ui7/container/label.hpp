@@ -30,16 +30,16 @@ namespace UI7 {
 /**
  * Label [Text] Object
  */
-class Label : public Container {
+class PD_UI7_API Label : public Container {
  public:
   /**
    * Constructor for Label Object
    * @param label Label [Text] to Draw
    * @param lr Renderer Reference
    */
-  Label(const std::string& label, LI::Renderer::Ref lr) {
+  Label(const std::string& label, IO::Ref io) {
     this->label = label;
-    this->tdim = lr->GetTextDimensions(label);
+    this->tdim = io->Font->GetTextBounds(label, io->FontScale);
     this->SetSize(tdim);
   }
   ~Label() = default;
@@ -51,7 +51,7 @@ class Label : public Container {
   void Draw() override;
 
  private:
-  vec2 tdim;                       ///< Text Size
+  fvec2 tdim;                      ///< Text Size
   UI7Color color = UI7Color_Text;  ///< Color
   std::string label;               ///< Text to Render
 };

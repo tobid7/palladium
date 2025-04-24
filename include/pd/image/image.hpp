@@ -24,41 +24,59 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/core/common.hpp>
+#include <pd/core/core.hpp>
+#include <pd/image/pd_p_api.hpp>
 
 namespace PD {
-class Image {
+class PD_IMAGE_API Image : public SmartCtor<Image> {
  public:
+  enum Format {
+    RGBA,    // bpp == 4
+    RGB,     // bpp == 3
+    RGB565,  // bpp == 2 (not supported in laoding)
+    BGR,     // bpp == 3
+    ABGR     // bpp == 4
+  };
   Image() = default;
   Image(const std::string& path) { this->Load(path); }
   Image(const std::vector<u8>& buf) { this->Load(buf); }
-  Image(const std::vector<u8>& buf, int w, int h, int fmt = 4) {
-    this->Copy(buf, w, h, fmt);
+  Image(const std::vector<u8>& buf, int w, int h, int bpp = 4) {
+    this->Copy(buf, w, h, bpp);
   }
   ~Image() = default;
 
   void Load(const std::string& path);
   void Load(const std::vector<u8>& buf);
-  void Copy(const std::vector<u8>& buf, int w, int h, int fmt = 4);
+  void Copy(const std::vector<u8>& buf, int w, int h, int bpp = 4);
 
-  std::vector<u8>& GetBuffer() { return buffer; }
-  std::vector<u8> GetBuffer() const { return buffer; }
+  std::vector<PD::u8>& GetBuffer() { return pBuffer; }
+  std::vector<PD::u8> GetBuffer() const { return pBuffer; }
 
-  int Width() const { return w; }
-  int Height() const { return h; }
+  int Width() const { return pWidth; }
+  int Height() const { return pHeight; }
+  Format Fmt() const { return pFmt; }
 
-  u8& operator[](int idx) { return buffer[idx]; }
-  u8 operator[](int idx) const { return buffer[idx]; }
+  u8& operator[](int idx) { return pBuffer[idx]; }
+  u8 operator[](int idx) const { return pBuffer[idx]; }
 
   // Probably these make th eabove ones useless
 
-  operator std::vector<u8>&() { return buffer; }
-  operator std::vector<u8>() const { return buffer; }
+  operator std::vector<PD::u8>&() { return pBuffer; }
+  operator std::vector<PD::u8>() const { return pBuffer; }
+
+  static void Convert(Image::Ref img, Image::Format dst);
+  static void ReTile(Image::Ref img,
+                     std::function<u32(int x, int y, int w)> src,
+                     std::function<u32(int x, int y, int w)> dst);
+  static int Fmt2Bpp(Format fmt);
+
+  std::vector<PD::u8> pBuffer;
+  int pWidth;
+  int pHeight;
+  Format pFmt = Format::RGBA;
 
  private:
-  std::vector<u8> buffer;
-  int w = 0;
-  int h = 0;
+  /** Leftover variable used for stbi_load */
   int fmt = 0;
 };
 }  // namespace PD
