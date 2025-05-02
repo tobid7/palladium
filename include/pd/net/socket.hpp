@@ -46,6 +46,7 @@ class PD_NET_API Socket {
   bool Create();
   bool Bind(u16 port);
   bool Listen(int backlog = 5);
+  bool WaitForRead(int timeout_ms);
   bool Accept(Socket::Ref client);
   bool Connect(const std::string& ip, u16 port);
   int Send(const std::string& data);

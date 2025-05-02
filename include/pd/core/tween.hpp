@@ -150,11 +150,7 @@ class Tween {
     return *this;
   }
 
-  /**
-   * Operator that returns the current value calculated
-   * by time and effect
-   */
-  operator T() {
+  T Get() const {
     float t = 0.f;
     switch (effect) {
       case EaseInQuad:
@@ -202,6 +198,12 @@ class Tween {
         break;
     }
   }
+
+  /**
+   * Operator that returns the current value calculated
+   * by time and effect
+   */
+  operator T() const { return Get(); }
 
  private:
   /** Animation Effect */

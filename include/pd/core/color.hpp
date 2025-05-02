@@ -37,16 +37,28 @@ namespace PD {
  * @note Safetey checks are disabled for maximum performance
  */
 class PD_CORE_API Color {
+ private:
+  /** Red Value */
+  u8 m_r;
+  /** Green Value */
+  u8 m_g;
+  /** Blue Value */
+  u8 m_b;
+  /** Alpha Value */
+  u8 m_a;
+
  public:
   /**
    * Default Constructor (all variables are set to 0)
    */
-  Color() : m_r(0), m_g(0), m_b(0), m_a(0) {}
+  // Color() : m_r(0), m_g(0), m_b(0), m_a(0) {}
+  constexpr Color() : m_r(0), m_g(0), m_b(0), m_a(0) {}
+  constexpr ~Color() {}
   /**
    * Constructor for 32Bit Color Input
    * @param color 32Bit Color value
    */
-  Color(u32 color) {
+  constexpr Color(u32 color) {
     m_a = (color >> 24) & 0xff;
     m_b = (color >> 16) & 0xff;
     m_g = (color >> 8) & 0xff;
@@ -59,7 +71,7 @@ class PD_CORE_API Color {
    * @param b Blue Value
    * @param a Optional Alpha Value (Defaults to 255)
    */
-  Color(u8 r, u8 g, u8 b, u8 a = 255) {
+  constexpr Color(int r, int g, int b, int a = 255) {
     m_r = r;
     m_g = g;
     m_b = b;
@@ -73,7 +85,7 @@ class PD_CORE_API Color {
    * @param a Optional Alpha Value (Defaults to 1.0f)
    * @note There is no Check if the number is between 0.0 and 1.0
    */
-  Color(float r, float g, float b, float a = 1.f) {
+  constexpr Color(float r, float g, float b, float a = 1.f) {
     m_r = static_cast<u8>(255.f * r);
     m_g = static_cast<u8>(255.f * g);
     m_b = static_cast<u8>(255.f * b);
@@ -87,7 +99,7 @@ class PD_CORE_API Color {
   /**
    * Unused Deconstructor
    */
-  ~Color() {}
+  // ~Color() {}
 
   /**
    * Create Color Object by Hex String
@@ -196,15 +208,24 @@ class PD_CORE_API Color {
    * @return 32Bit Color Value
    */
   operator u32() const { return Get(); }
-
- private:
-  /** Red Value */
-  u8 m_r;
-  /** Green Value */
-  u8 m_g;
-  /** Blue Value */
-  u8 m_b;
-  /** Alpha Value */
-  u8 m_a;
 };
+namespace Colors {
+constexpr Color White = Color(1.f, 1.f, 1.f, 1.f);
+constexpr Color Black = Color(0.f, 0.f, 0.f, 1.f);
+constexpr Color Red = Color(1.f, 0.f, 0.f, 1.f);
+constexpr Color Green = Color(0.f, 1.f, 0.f, 1.f);
+constexpr Color Blue = Color(0.f, 0.f, 1.f, 1.f);
+constexpr Color Yellow = Color(1.f, 1.f, 0.f, 1.f);
+constexpr Color Cyan = Color(0.f, 1.f, 1.f, 1.f);
+constexpr Color Magenta = Color(1.f, 0.f, 1.f, 1.f);
+constexpr Color Gray = Color(0.5f, 0.5f, 0.5f, 1.f);
+constexpr Color LightGray = Color(0.75f, 0.75f, 0.75f, 1.f);
+constexpr Color DarkGray = Color(0.25f, 0.25f, 0.25f, 1.f);
+constexpr Color Orange = Color(1.f, 0.65f, 0.f, 1.f);
+constexpr Color Pink = Color(1.f, 0.75f, 0.8f, 1.f);
+constexpr Color Brown = Color(0.6f, 0.4f, 0.2f, 1.f);
+constexpr Color Purple = Color(0.5f, 0.f, 0.5f, 1.f);
+constexpr Color Teal = Color(0.f, 0.5f, 0.5f, 1.f);
+constexpr Color Transparent = Color(0.f, 0.f, 0.f, 0.f);
+}  // namespace Colors
 }  // namespace PD

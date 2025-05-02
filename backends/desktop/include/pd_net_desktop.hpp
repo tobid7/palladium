@@ -33,6 +33,7 @@ SOFTWARE.
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
+#include <unistd.h>
 #endif
 
 #include <pd/net/backend.hpp>
@@ -76,17 +77,31 @@ class NetBackendDesktop : public PD::Net::Backend {
 #endif
   }
 
-  bool Bind(int sock_id, u16 port) {
+  bool Bind(int sock_id, u16 port) override {
     sockaddr_in addr{};
     addr.sin_family = AF_INET;
     addr.sin_port = htons(port);
     addr.sin_addr.s_addr = INADDR_ANY;
     return bind(sock_id, (sockaddr*)&addr, sizeof(addr)) != -1;
   }
-  bool Listen(int sock_id, int backlog = 5) {
+  bool Listen(int sock_id, int backlog = 5) override {
     return listen(sock_id, backlog) != -1;
   }
-  bool Accept(int sock_id, Net::Socket::Ref client) {
+
+  bool WaitForRead(int sock_id, int timeout_ms) override {
+    fd_set set;
+    FD_ZERO(&set);
+    FD_SET(sock_id, &set);
+
+    timeval timeout{};
+    timeout.tv_sec = timeout_ms / 1000;
+    timeout.tv_usec = (timeout_ms % 1000) * 1000;
+
+    int result = select(sock_id + 1, &set, nullptr, nullptr, &timeout);
+    return (result > 0 && FD_ISSET(sock_id, &set));
+  }
+
+  bool Accept(int sock_id, Net::Socket::Ref client) override {
     int client_soc = accept(sock_id, nullptr, nullptr);
     if (client_soc == GetInvalidRef()) {
       return false;
@@ -94,17 +109,17 @@ class NetBackendDesktop : public PD::Net::Backend {
     client->pSocket = client_soc;
     return true;
   }
-  bool Connect(int sock_id, const std::string& ip, u16 port) {
+  bool Connect(int sock_id, const std::string& ip, u16 port) override {
     sockaddr_in addr{};
     addr.sin_family = AF_INET;
     addr.sin_port = htons(port);
     inet_pton(AF_INET, ip.c_str(), &addr.sin_addr);
     return connect(sock_id, (sockaddr*)&addr, sizeof(addr)) != -1;
   }
-  int Send(int sock_id, const std::string& data) {
+  int Send(int sock_id, const std::string& data) override {
     return send(sock_id, data.c_str(), static_cast<int>(data.size()), 0);
   }
-  int Receive(int sock_id, std::string& data, int size = 1024) {
+  int Receive(int sock_id, std::string& data, int size = 1024) override {
     char* tmp = new char[size];
     int res = recv(sock_id, tmp, size, 0);
     if (res > 0) {

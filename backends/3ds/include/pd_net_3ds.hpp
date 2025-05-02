@@ -66,6 +66,20 @@ class NetBackend3DS : public Net::Backend {
   bool Listen(int sock_id, int backlog = 5) {
     return listen(sock_id, backlog) != -1;
   }
+
+  bool WaitForRead(int sock_id, int timeout_ms) override {
+    fd_set set;
+    FD_ZERO(&set);
+    FD_SET(sock_id, &set);
+
+    timeval timeout{};
+    timeout.tv_sec = timeout_ms / 1000;
+    timeout.tv_usec = (timeout_ms % 1000) * 1000;
+
+    int result = select(sock_id + 1, &set, nullptr, nullptr, &timeout);
+    return (result > 0 && FD_ISSET(sock_id, &set));
+  }
+
   bool Accept(int sock_id, Net::Socket::Ref client) {
     int client_soc = accept(sock_id, nullptr, nullptr);
     if (client_soc == -1) {

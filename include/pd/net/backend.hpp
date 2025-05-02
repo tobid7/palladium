@@ -40,6 +40,7 @@ class Backend {
   virtual int GetInvalidRef() const = 0;
   virtual bool Bind(int sock_id, u16 port) = 0;
   virtual bool Listen(int sock_id, int backlog = 5) = 0;
+  virtual bool WaitForRead(int sock_id, int timeout_ms) = 0;
   virtual bool Accept(int sock_id, Socket::Ref client) = 0;
   virtual bool Connect(int sock_id, const std::string& ip, u16 port) = 0;
   virtual int Send(int sock_id, const std::string& data) = 0;

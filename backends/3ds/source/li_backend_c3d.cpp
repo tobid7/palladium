@@ -44,7 +44,6 @@ unsigned char li_shader[] = {
   };
 // clang-format on
 size_t li_shader_size = 0x124;
-
 namespace PD {
 namespace LI {
 GPU_TEXCOLOR GetTexFmt(Texture::Type type) {
@@ -170,6 +169,9 @@ PD::LI::Texture::Ref Backend_C3D::LoadTexture(const std::vector<PD::u8>& pixels,
                                               PD::LI::Texture::Type type,
                                               PD::LI::Texture::Filter filter) {
   std::cout << "Loading Tex " << std::format("[{}, {}]", w, h) << std::endl;
+  if (w > 1024 || h > 1024) {
+    return nullptr;
+  }
   // Don't check here as check done before
   PD::LI::Texture::Ref res = PD::LI::Texture::New();
   int bpp = GetBPP(type);

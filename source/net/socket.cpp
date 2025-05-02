@@ -38,6 +38,10 @@ PD_NET_API bool Socket::Listen(int backlog) {
   return backend->Listen(pSocket, backlog);
 }
 
+PD_NET_API bool Socket::WaitForRead(int timeout_ms) {
+  return backend->WaitForRead(pSocket, timeout_ms);
+}
+
 PD_NET_API bool Socket::Accept(Socket::Ref client) {
   return backend->Accept(pSocket, client);
 }

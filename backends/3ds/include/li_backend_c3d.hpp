@@ -39,7 +39,8 @@ class LinearAlloc : public Allocator<T> {
   LinearAlloc() = default;
   ~LinearAlloc() = default;
 
-  T* Allocate(size_t n) override { return (T*)linearAlloc(n); }
+  /** Never forget the sizeof(T) again (most painful bug i created) */
+  T* Allocate(size_t n) override { return (T*)linearAlloc(n * sizeof(T)); }
   void Deallocate(T* ptr) { linearFree(ptr); }
 };
 namespace LI {

@@ -239,7 +239,7 @@ PD_LITHIUM_API void Font::CmdTextEx(Vec<Command::Ref> &cmds, const fvec2 &pos,
     cmd->Tex = Tex;
     for (auto &jt : wline) {
       auto cp = GetCodepoint(jt);
-      if (cp.pInvalid && jt != '\n' && jt != '\t') {
+      if ((cp.pInvalid && jt != '\n' && jt != '\t') && jt != '\r') {
         continue;
       }
       if (Tex != cp.Tex) {
