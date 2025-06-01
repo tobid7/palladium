@@ -141,7 +141,7 @@ class PD_CORE_API Color {
    * Getter for Green
    * @return Green Value
    */
-  u8 g() const { return m_r; }
+  u8 g() const { return m_g; }
   /**
    * Setter for Blue
    * @param v value
@@ -155,7 +155,7 @@ class PD_CORE_API Color {
    * Getter for Blue
    * @return Blue Value
    */
-  u8 b() const { return m_r; }
+  u8 b() const { return m_b; }
   /**
    * Setter for Alpha
    * @param v value
@@ -169,7 +169,7 @@ class PD_CORE_API Color {
    * Getter for Alpha
    * @return Alpha Value
    */
-  u8 a() const { return m_r; }
+  u8 a() const { return m_a; }
 
   /**
    * Fade from Current to another Color

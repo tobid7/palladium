@@ -59,13 +59,14 @@ PD_CORE_API Color& Color::Hex(const std::string& hex) {
 }
 
 PD_CORE_API std::string Color::Hex(bool rgba) const {
+  /** Need to int cast (so it is used as num and not char...) */
   std::stringstream s;
   s << "#";
-  s << std::hex << std::setw(2) << std::setfill('0') << m_r;
-  s << std::hex << std::setw(2) << std::setfill('0') << m_g;
-  s << std::hex << std::setw(2) << std::setfill('0') << m_b;
+  s << std::hex << std::setw(2) << std::setfill('0') << (int)m_r;
+  s << std::hex << std::setw(2) << std::setfill('0') << (int)m_g;
+  s << std::hex << std::setw(2) << std::setfill('0') << (int)m_b;
   if (rgba) {
-    s << std::hex << std::setw(2) << std::setfill('0') << m_a;
+    s << std::hex << std::setw(2) << std::setfill('0') << (int)m_a;
   }
   return s.str();
 }
