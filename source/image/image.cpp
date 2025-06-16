@@ -78,22 +78,25 @@ PD_IMAGE_API void Image::Copy(const std::vector<u8>& buf, int w, int h,
 }
 
 PD_IMAGE_API void Image::Convert(Image::Ref img, Image::Format dst) {
-  if (img->Fmt() == dst) {
+  if (img->pFmt == dst) {
     return;
-  } else if (img->Fmt() == Image::RGB && dst == Image::BGR) {
+  } else if (img->pFmt == Image::RGB && dst == Image::BGR) {
     ImgConvert::ReverseBuf(img->pBuffer, 3, img->pWidth, img->pHeight);
-  } else if (img->Fmt() == Image::RGB && dst == Image::RGBA) {
+    img->pFmt = BGR;
+  } else if (img->pFmt == Image::RGB && dst == Image::RGBA) {
     std::vector<PD::u8> cpy = img->pBuffer;
     img->pBuffer.resize(img->pWidth * img->pHeight * 4);
     ImgConvert::RGB24toRGBA32(img->pBuffer, cpy, img->pWidth, img->pHeight);
-  } else if (img->Fmt() == Image::RGBA && dst == Image::RGB) {
+    img->pFmt = RGBA;
+  } else if (img->pFmt == Image::RGBA && dst == Image::RGB) {
     std::vector<PD::u8> cpy = img->pBuffer;
     img->pBuffer.resize(img->pWidth * img->pHeight * 3);
     ImgConvert::RGB32toRGBA24(img->pBuffer, cpy, img->pWidth, img->pHeight);
-  } else if (img->Fmt() == Image::RGBA && dst == Image::RGB565) {
+    img->pFmt = RGB;
+  } else if (img->pFmt == Image::RGBA && dst == Image::RGB565) {
     Convert(img, Image::RGB);
     Convert(img, Image::RGB565);
-  } else if (img->Fmt() == Image::RGB && dst == Image::RGB565) {
+  } else if (img->pFmt == Image::RGB && dst == Image::RGB565) {
     auto f = [](u8 r, u8 g, u8 b) -> u16 {
       u16 _r = (r >> 3);
       u16 _g = (g >> 2);
@@ -111,6 +114,7 @@ PD_IMAGE_API void Image::Convert(Image::Ref img, Image::Format dst) {
         img->pBuffer[dst + 1] = new_px & 0xff;
       }
     }
+    img->pFmt = RGB565;
   }
 }
 
