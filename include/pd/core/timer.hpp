@@ -24,13 +24,12 @@ SOFTWARE.
  */
 
 #include <pd/core/common.hpp>
-#include <pd/core/sys.hpp>
 
 namespace PD {
 /**
  * Timer class
  */
-class PD_CORE_API Timer : public SmartCtor<Timer> {
+class PD_CORE_API Timer {
  public:
   /**
    * Constructor
@@ -41,6 +40,9 @@ class PD_CORE_API Timer : public SmartCtor<Timer> {
    * Unused Deconstructor
    */
   ~Timer() {}
+
+  PD_SHARED(Timer);
+
   /**
    * Resume Timer if Paused
    */
@@ -73,12 +75,11 @@ class PD_CORE_API Timer : public SmartCtor<Timer> {
    */
   double GetSeconds();
 
- private:
   /** Start of the Timer */
-  u64 start;
+  u64 pStart;
   /** Current Time */
-  u64 now;
+  u64 pNow;
   /** Is Running */
-  bool is_running = false;
+  bool pIsRunning = false;
 };
 }  // namespace PD

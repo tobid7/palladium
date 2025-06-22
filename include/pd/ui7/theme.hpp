@@ -55,16 +55,16 @@ enum UI7Color_ {
 
 namespace PD {
 namespace UI7 {
-/** Theme Class */
-class PD_UI7_API Theme : public SmartCtor<Theme> {
+class PD_UI7_API Theme {
  public:
   /**
    * Default Constructor Setting up the Default theme
-   * @note if using SmartCtor Reference you probably need to do
+   * @note if using Shared Reference you probably need to do
    * Theme::Default(*theme.get());
    */
   Theme() { Default(*this); }
-  ~Theme() = default;
+  ~Theme() {}
+  PD_SHARED(Theme);
 
   /**
    * Simple static Loader for the Default Theme
@@ -79,9 +79,9 @@ class PD_UI7_API Theme : public SmartCtor<Theme> {
 
   /** Revert the last Color Change */
   Theme& Pop() {
-    theme[changes[changes.size() - 1].first] =
-        changes[changes.size() - 1].second;
-    changes.pop_back();
+    pTheme[pChanges[pChanges.size() - 1].first] =
+        pChanges[pChanges.size() - 1].second;
+    pChanges.pop_back();
     return *this;
   }
 
@@ -90,10 +90,10 @@ class PD_UI7_API Theme : public SmartCtor<Theme> {
    * @param c Color to revert change from
    */
   Theme& Pop(UI7Color c) {
-    for (size_t i = changes.size() - 1; i > 0; i--) {
-      if (changes[i].first == c) {
-        theme[c] = changes[i].second;
-        changes.erase(changes.begin() + i);
+    for (size_t i = pChanges.size() - 1; i > 0; i--) {
+      if (pChanges[i].first == c) {
+        pTheme[c] = pChanges[i].second;
+        pChanges.erase(pChanges.begin() + i);
         break;
       }
     }
@@ -106,11 +106,11 @@ class PD_UI7_API Theme : public SmartCtor<Theme> {
    * @param color Color to change to
    */
   Theme& Change(UI7Color tc, u32 color) {
-    if (theme.find(tc) == theme.end()) {
+    if (pTheme.find(tc) == pTheme.end()) {
       return *this;
     }
-    changes.push_back(std::make_pair(tc, theme[tc]));
-    theme[tc] = color;
+    pChanges.push_back(std::make_pair(tc, pTheme[tc]));
+    pTheme[tc] = color;
     return *this;
   }
 
@@ -119,8 +119,8 @@ class PD_UI7_API Theme : public SmartCtor<Theme> {
    * @param c ReferenceID
    */
   u32 Get(UI7Color c) const {
-    auto e = theme.find(c);
-    if (e == theme.end()) {
+    auto e = pTheme.find(c);
+    if (e == pTheme.end()) {
       return 0x00000000;
     }
     return e->second;
@@ -132,8 +132,8 @@ class PD_UI7_API Theme : public SmartCtor<Theme> {
    * @param c ReferenceID
    */
   u32& GetRef(UI7Color c) {
-    auto e = theme.find(c);
-    if (e == theme.end()) {
+    auto e = pTheme.find(c);
+    if (e == pTheme.end()) {
       static u32 noclr = 0x00000000;
       return noclr;
     }
@@ -151,11 +151,10 @@ class PD_UI7_API Theme : public SmartCtor<Theme> {
    * @param tc Color ID (Can be self creeated ones as well)
    * @param clr Color it should be set to
    */
-  void Set(UI7Color tc, u32 clr) { theme[tc] = clr; }
+  void Set(UI7Color tc, u32 clr) { pTheme[tc] = clr; }
 
- private:
-  std::unordered_map<u32, u32> theme;             ///< Theme Data
-  std::vector<std::pair<UI7Color, u32>> changes;  ///< List of Changes
+  std::unordered_map<u32, u32> pTheme;             ///< Theme Data
+  std::vector<std::pair<UI7Color, u32>> pChanges;  ///< List of Changes
 };
 }  // namespace UI7
 }  // namespace PD

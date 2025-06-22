@@ -28,7 +28,7 @@ SOFTWARE.
 #include <pd/image/pd_p_api.hpp>
 
 namespace PD {
-class PD_IMAGE_API Image : public SmartCtor<Image> {
+class PD_IMAGE_API Image {
  public:
   enum Format {
     RGBA,    // bpp == 4
@@ -44,6 +44,8 @@ class PD_IMAGE_API Image : public SmartCtor<Image> {
     this->Copy(buf, w, h, bpp);
   }
   ~Image() = default;
+
+  PD_SHARED(Image)
 
   void Load(const std::string& path);
   void Load(const std::vector<u8>& buf);

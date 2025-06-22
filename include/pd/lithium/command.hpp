@@ -2,8 +2,7 @@
 
 /*
 MIT License
-
-Copyright (c) 2024 - 2025 tobid7
+Copyright (c) 2024 - 2025 René Amthor (tobid7)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -25,38 +24,35 @@ SOFTWARE.
  */
 
 #include <pd/core/core.hpp>
-// #include <pd/lithium/flags.hpp>
 #include <pd/lithium/texture.hpp>
 #include <pd/lithium/vertex.hpp>
 
 namespace PD {
-namespace LI {
-/**
- * Lithium Draw Command (containing a list of vertex and index data
- * only for this specific command itself)
- */
-class Command : public SmartCtor<Command> {
+namespace Li {
+class Command {
  public:
   Command() = default;
   ~Command() = default;
 
-  Command& AppendIndex(u16 idx) {
+  PD_UNIQUE(Command);
+
+  Command& AddIdx(const u16& idx) {
     IndexBuffer.Add(VertexBuffer.Size() + idx);
     return *this;
   }
 
-  Command& AppendVertex(const Vertex& v) {
-    VertexBuffer.Add(v);
+  Command& AddVtx(const Vertex& v) {
+    VertexBuffer.Add(std::move(v));
     return *this;
   }
 
-  Vec<Vertex> VertexBuffer;
-  Vec<u16> IndexBuffer;
+  PD::Vec<Vertex> VertexBuffer;
+  PD::Vec<u16> IndexBuffer;
   ivec4 ScissorRect;
-  bool ScissorEnabled = false;
+  bool ScissorOn = false;
   int Layer;
   int Index;
   Texture::Ref Tex;
 };
-}  // namespace LI
+}  // namespace Li
 }  // namespace PD

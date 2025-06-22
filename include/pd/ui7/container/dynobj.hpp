@@ -44,11 +44,13 @@ class PD_UI7_API DynObj : public Container {
    * @param pos Base Position
    * @param lr Reference to the Renderer
    */
-  DynObj(std::function<void(UI7::IO::Ref, UI7::DrawList::Ref, Container*)>
+  DynObj(std::function<void(UI7::IO::Ref, Li::DrawList::Ref, Container*)>
              RenderFunc) {
     pRenFun = RenderFunc;
   }
   ~DynObj() = default;
+
+  PD_SHARED(DynObj);
 
   /** Return true if butten is pressed*/
   bool IsPressed() { return pressed; }
@@ -69,7 +71,7 @@ class PD_UI7_API DynObj : public Container {
  private:
   UI7Color color = UI7Color_Button;  ///< current button color
   bool pressed = false;              ///< ispressed value
-  std::function<void(UI7::IO::Ref, UI7::DrawList::Ref, Container*)> pRenFun;
+  std::function<void(UI7::IO::Ref, Li::DrawList::Ref, Container*)> pRenFun;
 };
 }  // namespace UI7
 }  // namespace PD

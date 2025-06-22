@@ -2,8 +2,7 @@
 
 /*
 MIT License
-
-Copyright (c) 2024 - 2025 tobid7
+Copyright (c) 2024 - 2025 René Amthor (tobid7)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -28,49 +27,49 @@ SOFTWARE.
 #include <pd/lithium/rect.hpp>
 
 namespace PD {
-namespace LI {
+namespace Li {
+/** Use so address type for TexAddress */
 using TexAddress = uintptr_t;
-/**
- * Lithium Texture Data Holder
- * Memory management is handled by backend
- */
-class Texture : public SmartCtor<Texture> {
+class Texture {
  public:
-  /** Texture Type */
+  /** Texture Types */
   enum Type {
-    RGBA32,  ///< RGBA 32
-    RGB24,   ///< RGB24
-    A8,      ///< A8
+    RGBA32,  ///< Rgba 32Bit
+    RGB24,   ///< Rgb 24 Bit
+    A8,      ///< A8 8Bit alpha
   };
   /** Texture Filters */
   enum Filter {
     NEAREST,  ///< Nearest
     LINEAR,   ///< Linear
   };
-  /** Default constructor */
-  Texture() : UV(0.f, 0.f, 1.f, 1.f) {}
+  /** Constructor */
+  Texture() : Address(0), Size(0), UV(fvec4(0.f, 0.f, 1.f, 1.f)) {}
   Texture(TexAddress addr, ivec2 size,
-          LI::Rect uv = fvec4(0.f, 0.f, 1.f, 1.f)) {
+          Li::Rect uv = fvec4(0.f, 0.f, 1.f, 1.f)) {
     Address = addr;
     Size = size;
     UV = uv;
   }
 
-  void CopyOther(Texture::Ref tex) {
+  PD_SHARED(Texture);
+
+  void CopyFrom(Texture::Ref tex) {
     Address = tex->Address;
     Size = tex->Size;
     UV = tex->UV;
   }
 
+  /** Left in Code getter (should be remoevd) */
   ivec2 GetSize() const { return Size; }
-  LI::Rect GetUV() const { return UV; }
+  Li::Rect GetUV() const { return UV; }
 
   operator ivec2() const { return Size; }
-  operator LI::Rect() const { return UV; }
+  operator Li::Rect() const { return UV; }
 
   TexAddress Address;
   ivec2 Size;
-  LI::Rect UV;
+  Li::Rect UV;
 };
-}  // namespace LI
+}  // namespace Li
 }  // namespace PD

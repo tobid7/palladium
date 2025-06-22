@@ -37,8 +37,8 @@ class ID {
    * @param text Input String
    */
   ID(const std::string& text) {
-    id = PD::Strings::FastHash(text);
-    name = text;
+    pID = PD::Strings::FastHash(text);
+    pName = text;
   }
   /**
    * Constructor used for const char* which is automatically
@@ -46,27 +46,26 @@ class ID {
    * @param text Input String
    */
   ID(const char* text) {
-    id = PD::Strings::FastHash(text);
-    name = text;
+    pID = PD::Strings::FastHash(text);
+    pName = text;
   }
   /**
    * Use an ID as Input
    */
-  ID(u32 id) { this->id = id; }
+  ID(u32 id) { pID = id; }
   ~ID() = default;
 
   /** Get The ID Initial Name */
-  const std::string& GetName() const { return name; }
+  const std::string& GetName() const { return pName; }
 
   /** Getter for the raw 32bit int id */
-  const u32& RawID() const { return id; }
+  const u32& RawID() const { return pID; }
 
   /** Return the ID when casting to u32 */
-  operator u32() const { return id; }
+  operator u32() const { return pID; }
 
- private:
-  u32 id;            ///< Hash of the name
-  std::string name;  ///< Name
+  u32 pID;            ///< Hash of the name
+  std::string pName;  ///< Name
 };
 }  // namespace UI7
 }  // namespace PD

@@ -2,7 +2,8 @@
 
 /*
 MIT License
-Copyright (c) 2024 - 2025 René Amthor (tobid7)
+
+Copyright (c) 2024 - 2025 tobid7
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -24,18 +25,18 @@ SOFTWARE.
  */
 
 #include <pd/core/core.hpp>
-#include <pd/lithium/renderer.hpp>
+#include <pd/lithium/lithium.hpp>
 #include <pd/ui7/id.hpp>
+#include <pd/ui7/pd_p_api.hpp>
 
 namespace PD {
 namespace UI7 {
-class InputHandler : public SmartCtor<InputHandler> {
+class InputHandler {
  public:
-  InputHandler(Hid::Ref inp_drv) {
-    DragTime = Timer::New(false);
-    Inp = inp_drv;
-  }
+  InputHandler() { DragTime = Timer::New(false); }
   ~InputHandler() = default;
+
+  PD_SHARED(InputHandler);
 
   /**
    * Function to Check if current Object is dragged
@@ -55,9 +56,9 @@ class InputHandler : public SmartCtor<InputHandler> {
       }
     }
     // Get a Short define for touch pos
-    vec2 p = Inp->TouchPos();
+    fvec2 p = Hid::MousePos();
     // Check if Drag starts in the area position
-    if (Inp->IsDown(Inp->Touch) && LI::Renderer::InBox(p, area)) {
+    if (Hid::IsDown(Hid::Key::Touch) && Li::Renderer::InBox(p, area)) {
       // Set ID and iniatial Positions
       DraggedObject = id;
       DragSourcePos = p;
@@ -68,22 +69,22 @@ class InputHandler : public SmartCtor<InputHandler> {
       DragTime->Reset();
       DragTime->Rseume();
       return false;  // To make sure the Object is "Dragged"
-    } else if (Inp->IsHeld(Inp->Touch) && IsObjectDragged()) {
+    } else if (Hid::IsHeld(Hid::Key::Touch) && IsObjectDragged()) {
       // Update DragLast and DragPoisition
       DragLastPosition = DragPosition;
       DragPosition = p;
-    } else if (Inp->IsUp(Inp->Touch) && IsObjectDragged()) {
+    } else if (Hid::IsUp(Hid::Key::Touch) && IsObjectDragged()) {
       // Released... Everything gets reset
       DraggedObject = 0;
       DragPosition = 0;
       DragSourcePos = 0;
       DragLastPosition = 0;
-      DragDestination = 0;
+      DragDestination = fvec4(0);
       // Set Drag released to true (only one frame)
       // and Only if still in Box
-      DragReleased = LI::Renderer::InBox(Inp->TouchPosLast(), area);
+      DragReleased = Li::Renderer::InBox(Hid::MousePosLast(), area);
       DragReleasedAW = true;  // Advanced
-      u64 d_rel = Sys::GetTime();
+      u64 d_rel = PD::OS::GetTime();
       if (d_rel - DragLastReleased < DoubleClickTime) {
         DragDoubleRelease = true;
         DragLastReleased = 0;  // Set 0 to prevent double exec
@@ -115,7 +116,8 @@ class InputHandler : public SmartCtor<InputHandler> {
   fvec2 DragSourcePos = 0;
   fvec2 DragPosition = 0;
   fvec2 DragLastPosition = 0;
-  fvec4 DragDestination = 0;
+  /** Fvec4 has an constructor problem currently */
+  fvec4 DragDestination = fvec4(0);
   Timer::Ref DragTime;
   u64 DragLastReleased = 0;
   bool DragReleased = false;       ///< Drag Releaded in Box
@@ -123,8 +125,6 @@ class InputHandler : public SmartCtor<InputHandler> {
   bool DragDoubleRelease = false;  ///< Double Click
   /** Check if an object is Dragged already */
   bool IsObjectDragged() const { return DraggedObject != 0; }
-
-  Hid::Ref Inp;
 };
 }  // namespace UI7
 }  // namespace PD

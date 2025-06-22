@@ -48,6 +48,7 @@ class PD_UI7_API Button : public Container {
     this->tdim = io->Font->GetTextBounds(label, io->FontScale);
   }
   ~Button() = default;
+  PD_SHARED(Button);
 
   /** Return true if butten is pressed*/
   bool IsPressed() { return pressed; }

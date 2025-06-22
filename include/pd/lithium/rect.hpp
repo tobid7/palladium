@@ -26,24 +26,20 @@ SOFTWARE.
 #include <pd/core/core.hpp>
 
 namespace PD {
-namespace LI {
-/**
- * Container that holds position of a rectangle's corners.
- */
+namespace Li {
 class Rect {
  public:
-  Rect() = default;
-
+  Rect() : Top(0), Bot(0) {}
+  ~Rect() = default;
   /**
    * Constructor that initializes the rectangle using top and bottom positions.
    * @param t Top left and right corner positions.
    * @param b Bottom left and right corner positions.
    */
   Rect(const fvec4& t, const fvec4& b) {
-    top = t;
-    bot = b;
+    Top = t;
+    Bot = b;
   }
-
   /**
    * Constructor that initializes the rectangle using individual corner
    * positions.
@@ -53,8 +49,8 @@ class Rect {
    * @param br Bottom right corner position.
    */
   Rect(const fvec2& tl, const fvec2& tr, const fvec2& bl, const fvec2& br) {
-    top = fvec4(tl, tr);
-    bot = fvec4(bl, br);
+    Top = fvec4(tl, tr);
+    Bot = fvec4(bl, br);
   }
 
   /**
@@ -66,67 +62,30 @@ class Rect {
    * @param uv Vec4 UV map.
    */
   Rect(const fvec4& uv) {
-    top = vec4(uv.x, uv.y, uv.z, uv.y);
-    bot = vec4(uv.x, uv.w, uv.z, uv.w);
-  }
-
-  ~Rect() = default;
-
-  /**
-   * Get the top left and right corner positions.
-   * @return Top positions.
-   */
-  fvec4 Top() const { return top; }
-
-  /**
-   * Get the bottom left and right corner positions.
-   * @return Bottom positions.
-   */
-  fvec4 Bot() const { return bot; }
-
-  /**
-   * Set the top left and right corner positions.
-   * @param v New top positions.
-   * @return Reference to the updated Rect.
-   */
-  Rect& Top(const fvec4& v) {
-    top = v;
-    return *this;
-  }
-
-  /**
-   * Set the bottom left and right corner positions.
-   * @param v New bottom positions.
-   * @return Reference to the updated Rect.
-   */
-  Rect& Bot(const fvec4& v) {
-    bot = v;
-    return *this;
+    Top = vec4(uv.x, uv.y, uv.z, uv.y);
+    Bot = vec4(uv.x, uv.w, uv.z, uv.w);
   }
 
   /**
    * Get the top-left corner position.
    * @return Top-left position as vec2.
    */
-  fvec2 TopLeft() const { return vec2(top.x, top.y); }
-
+  fvec2 TopLeft() const { return fvec2(Top.x, Top.y); }
   /**
    * Get the top-right corner position.
    * @return Top-right position as vec2.
    */
-  fvec2 TopRight() const { return vec2(top.z, top.w); }
-
+  fvec2 TopRight() const { return fvec2(Top.z, Top.w); }
   /**
    * Get the bottom-left corner position.
    * @return Bottom-left position as vec2.
    */
-  fvec2 BotLeft() const { return vec2(bot.x, bot.y); }
-
+  fvec2 BotLeft() const { return fvec2(Bot.x, Bot.y); }
   /**
    * Get the bottom-right corner position.
    * @return Bottom-right position as vec2.
    */
-  fvec2 BotRight() const { return vec2(bot.z, bot.w); }
+  fvec2 BotRight() const { return fvec2(Bot.z, Bot.y); }
 
   /**
    * Set the top-left corner position.
@@ -134,8 +93,8 @@ class Rect {
    * @return Reference to the updated Rect.
    */
   Rect& TopLeft(const fvec2& v) {
-    top.x = v.x;
-    top.y = v.y;
+    Top.x = v.x;
+    Top.y = v.y;
     return *this;
   }
 
@@ -145,8 +104,8 @@ class Rect {
    * @return Reference to the updated Rect.
    */
   Rect& TopRight(const fvec2& v) {
-    top.z = v.x;
-    top.w = v.y;
+    Top.z = v.x;
+    Top.w = v.y;
     return *this;
   }
 
@@ -156,8 +115,8 @@ class Rect {
    * @return Reference to the updated Rect.
    */
   Rect& BotLeft(const fvec2& v) {
-    bot.x = v.x;
-    bot.y = v.y;
+    Bot.x = v.x;
+    Bot.y = v.y;
     return *this;
   }
 
@@ -167,26 +126,22 @@ class Rect {
    * @return Reference to the updated Rect.
    */
   Rect& BotRight(const fvec2& v) {
-    bot.z = v.x;
-    bot.w = v.y;
+    Bot.z = v.x;
+    Bot.w = v.y;
     return *this;
   }
 
-  /**
-   * Swap X and Y coordinates for all corners.
-   *
-   * - Used in SpiteSheet for the rotated images.
-   */
   void SwapVec2XY() {
-    top.SwapXY();
-    top.SwapZW();
-    bot.SwapXY();
-    bot.SwapZW();
+    Top.SwapXY();
+    Top.SwapZW();
+    Bot.SwapXY();
+    Bot.SwapZW();
   }
 
- private:
-  fvec4 top;  ///< Top left and right corner positions.
-  fvec4 bot;  ///< Bottom left and right corner positions.
+  /** Data Section */
+
+  fvec4 Top;
+  fvec4 Bot;
 };
-}  // namespace LI
+}  // namespace Li
 }  // namespace PD

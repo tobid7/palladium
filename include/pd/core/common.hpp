@@ -38,94 +38,31 @@ SOFTWARE.
 #include <string>
 #include <vector>
 
-// Platform API
+/** Dynamic Lib loading */
 #include <pd/core/pd_p_api.hpp>
 
-// Legacy Smart Pointer
-#define PD_SMART_CTOR(x)                                      \
-  using Ref = std::shared_ptr<x>;                             \
-  template <typename... args>                                 \
-  static Ref New(args&&... cargs) {                           \
-    return std::make_shared<x>(std::forward<args>(cargs)...); \
+/** Memory Management */
+
+#define PD_SHARED(x)                                         \
+  using Ref = std::shared_ptr<x>;                            \
+  template <typename... Args>                                \
+  static Ref New(Args&&... args) {                           \
+    return std::make_shared<x>(std::forward<Args>(args)...); \
   }
+
+#define PD_UNIQUE(x)                                         \
+  using Ref = std::unique_ptr<x>;                            \
+  template <typename... Args>                                \
+  static Ref New(Args&&... args) {                           \
+    return std::make_unique<x>(std::forward<Args>(args)...); \
+  }
+
+#define PD_BIT(x) (1 << x)
 
 namespace PD {
-/**
- * SmartCtor (std::shared_ptr) Template class for Smart Pointers
- *
- * - Just add : public PD::SmartCtor<YourClass> to your class
- * @tparam T Your Class
- */
-template <typename T>
-class SmartCtor {
- public:
-  /** Reference alias for std::shared_ptr<Type> */
-  using Ref = std::shared_ptr<T>;
-
-  /**
-   * static Function to Create a New Reference
-   * @param args Additional Arguments (Depends on your classes Constructors)
-   * @return New Reference Object
-   */
-  template <typename... Args>
-  static Ref New(Args&&... args) {
-    return std::make_shared<T>(std::forward<Args>(args)...);
-  }
-};
-/**
- * Wrapper for SmartCtor<Type>::New(Args)
- * @tparam T Class Type
- * @param args Arguments
- * @return Type Reference (SmartPointer)
- */
-template <typename T, typename... Args>
-SmartCtor<T>::Ref New(Args&&... args) {
-  return SmartCtor<T>::New(std::forward<Args>(args)...);
-}
-// Defines
-
-/** alias for 64 Bit unsigned integer */
-using u64 = unsigned long long;
-/** alias for 32 Bit unsigned integer */
-using u32 = unsigned int;
-/** alias for 16 Bit unsigned integer */
-using u16 = unsigned short;
-/** alias for 8 Bit unsigned integer */
+/** Types */
 using u8 = unsigned char;
-
-/**
- * LinInfo Compile Information
- */
-namespace LibInfo {
-/**
- * Get the Compiler Name and Version the lib got Compiled with
- * @return Compiler Name / Version
- */
-PD_CORE_API const std::string CompiledWith();
-/**
- * Get the C++ Version used to compile the lib
- * @return C++ Version (__cplusplus)
- */
-PD_CORE_API const std::string CxxVersion();
-/**
- * Get the Buildtime of the Library
- * @return Build Time
- */
-PD_CORE_API const std::string BuildTime();
-/**
- * Get the Library Version
- * @return Library Version String
- */
-PD_CORE_API const std::string Version();
-/**
- * Get the Git Commit the Lib got compiled in
- * @return Git Commit 7digit short hash
- */
-PD_CORE_API const std::string Commit();
-/**
- * Get the Git Branch which was active when compiling the lib
- * @return Git Branch
- */
-PD_CORE_API const std::string Branch();
-}  // namespace LibInfo
+using u16 = unsigned short;
+using u32 = unsigned int;
+using u64 = unsigned long long;
 }  // namespace PD

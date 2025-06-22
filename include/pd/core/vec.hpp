@@ -2,7 +2,8 @@
 
 /*
 MIT License
-Copyright (c) 2024 - 2025 René Amthor (tobid7)
+
+Copyright (c) 2024 - 2025 tobid7
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +24,37 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
+#include <pd/core/common.hpp>
 #include <pd/core/vec2.hpp>
 #include <pd/core/vec3.hpp>
 #include <pd/core/vec4.hpp>
+
+/** Define Formatters for C++ 20 */
+
+/**
+ * WHY DOES MSVC ALWAYS NEED THESE EXTRA THINGS
+ */
+
+template <typename T, typename CharT>
+struct std::formatter<PD::vec2<T>, CharT> : std::formatter<T, CharT> {
+  template <typename FormatContext>
+  auto format(const PD::vec2<T>& v, FormatContext& ctx) const {
+    return std::format_to(ctx.out(), "({}, {})", v.x, v.y);
+  }
+};
+
+template <typename T, typename CharT>
+struct std::formatter<PD::vec3<T>, CharT> : std::formatter<T, CharT> {
+  template <typename FormatContext>
+  auto format(const PD::vec3<T>& v, FormatContext& ctx) const {
+    return std::format_to(ctx.out(), "({}, {}, {})", v.x, v.y, v.z);
+  }
+};
+
+template <typename T, typename CharT>
+struct std::formatter<PD::vec4<T>, CharT> : std::formatter<T, CharT> {
+  template <typename FormatContext>
+  auto format(const PD::vec4<T>& v, FormatContext& ctx) const {
+    return std::format_to(ctx.out(), "({}, {}, {}, {})", v.x, v.y, v.z, v.w);
+  }
+};

@@ -25,26 +25,25 @@ SOFTWARE.
  */
 
 #include <pd/core/core.hpp>
-#include <pd/lithium/backend.hpp>
+#include <pd/lithium/command.hpp>
 #include <pd/lithium/pd_p_api.hpp>
 #include <pd/lithium/rect.hpp>
 #include <pd/lithium/texture.hpp>
 
-using LITextFlags = PD::u32;
-enum LITextFlags_ {
-  LITextFlags_None = 0,             ///< Do nothing
-  LITextFlags_AlignRight = 1 << 0,  ///< Align Right of position
-  LITextFlags_AlignMid = 1 << 1,    ///< Align in the middle of pos and box
-  LITextFlags_Shaddow = 1 << 2,     ///< Draws the text twice to create shaddow
-  LITextFlags_Wrap = 1 << 3,        ///< Wrap Text: May be runs better with TMS
-  LITextFlags_Short = 1 << 4,       ///< Short Text: May be runs better with TMS
-  LITextFlags_Scroll = 1 << 5,      ///< Not implemented [scoll text if to long]
+using LiTextFlags = PD::u32;
+enum LiTextFlags_ {
+  LiTextFlags_None = 0,             ///< Do nothing
+  LiTextFlags_AlignRight = 1 << 0,  ///< Align Right of position
+  LiTextFlags_AlignMid = 1 << 1,    ///< Align in the middle of pos and box
+  LiTextFlags_Shaddow = 1 << 2,     ///< Draws the text twice to create shaddow
+  LiTextFlags_Wrap = 1 << 3,        ///< Wrap Text: May be runs better with TMS
+  LiTextFlags_Short = 1 << 4,       ///< Short Text: May be runs better with TMS
+  LiTextFlags_Scroll = 1 << 5,      ///< Not implemented [scoll text if to long]
 };
 
 namespace PD {
-namespace LI {
-/** Font Loader for Lithium */
-class PD_LITHIUM_API Font : public SmartCtor<Font> {
+namespace Li {
+class PD_LITHIUM_API Font {
  public:
   /** Codepoint Data holder */
   struct Codepoint {
@@ -55,8 +54,13 @@ class PD_LITHIUM_API Font : public SmartCtor<Font> {
     float Offset = 0.f;
     bool pInvalid = false;
   };
-  Font(Backend::Ref backend) { pBackend = backend; };
+
+  /** Constructore doesnt need Backand anymore */
+  Font() = default;
   ~Font() = default;
+
+  PD_SHARED(Font);
+
   /**
    * Load a TTF File
    * @param path Path to the TTF file
@@ -76,20 +80,19 @@ class PD_LITHIUM_API Font : public SmartCtor<Font> {
   /**
    * Extended Draw Text Function that vreates a Command List
    */
-  void CmdTextEx(Vec<Command::Ref>& cmds, const fvec2& pos, u32 color,
-                 float scale, const std::string& text, LITextFlags flags = 0,
+  void CmdTextEx(std::vector<Command::Ref>& cmds, const fvec2& pos, u32 color,
+                 float scale, const std::string& text, LiTextFlags flags = 0,
                  const fvec2& box = 0);
 
-  /** Pixelheight */
+  /** Data Section */
   int PixelHeight;
   int DefaultPixelHeight = 24;
-
- private:
-  /** List of textures (codepoints are using) */
   std::vector<Texture::Ref> Textures;
-  /** 32Bit Codepoint Dataholder Reference Map */
-  std::map<u32, Codepoint> CodeMap;
-  Backend::Ref pBackend = nullptr;
+  /**
+   * 32Bit Codepoint Dataholder reference map
+   * **Now using unordered map**
+   */
+  std::unordered_map<u32, Codepoint> CodeMap;
 };
-}  // namespace LI
+}  // namespace Li
 }  // namespace PD

@@ -1,18 +1,13 @@
 cmake_minimum_required(VERSION 3.22)
 
-# Make sure to use 3ds toolschain for 3ds build :)
-if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
-    if(DEFINED ENV{DEVKITPRO})
-        set(CMAKE_TOOLCHAIN_FILE "$ENV{DEVKITPRO}/cmake/3DS.cmake" CACHE PATH "toolchain file")
-    else()
-        message(FATAL_ERROR "Please define DEVKITPRO to point to your SDK path!")
-    endif()
-endif()
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wno-psabi -O3")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_C_FLAGS} -fno-rtti -fno-exceptions")
+project(pd-3ds LANGUAGES CXX VERSION 0.5.0)
 
-add_library(pd-backend-3ds STATIC
-source/li_backend_c3d.cpp
-source/pd_hid_3ds.cpp)
-target_include_directories(pd-backend-3ds PUBLIC include)
-target_link_libraries(pd-backend-3ds PUBLIC palladium)
+set(SRC
+    source/bknd-gfx.cpp
+    source/bknd-hid.cpp
+    source/pd-3ds.cpp
+)
+
+pd_add_lib(pd-3ds SRC_FILES ${SRC})
+target_include_directories(pd-3ds PUBLIC include)
+target_link_libraries(pd-3ds PUBLIC m palladium ctru citro3d)

@@ -29,7 +29,7 @@ namespace PD {
 /**
  * Class to calculate Maximum/Minimum and Average Timings
  */
-class TimeStats : public SmartCtor<TimeStats> {
+class TimeStats {
  public:
   /**
    * Constructor taking a lengh for the List
@@ -37,6 +37,8 @@ class TimeStats : public SmartCtor<TimeStats> {
    */
   TimeStats(int l) : len(l), val(l, 0) {}
   ~TimeStats() = default;
+
+  PD_SHARED(TimeStats);
 
   /**
    * Add a New Value to the list
@@ -146,11 +148,13 @@ namespace TT {
 /**
  * Data Structure for a TimeTrace Result
  */
-class Res : public SmartCtor<Res> {
+class Res {
  public:
   /** Constructore that Inits a protocol at size of 60 frames */
-  Res() { protocol = TimeStats::New(60); }
+  Res(): start(0), end(0) { protocol = TimeStats::New(60); }
   ~Res() = default;
+
+  PD_SHARED(Res);
 
   /**
    * Setter for the ID (Name)
@@ -239,17 +243,17 @@ class Scope {
    * @param id Name of the Trace
    */
   Scope(const std::string &id) {
-    this->id = id;
+    this->ID = id;
     Beg(id);
   }
   /**
    * Deconstructor getting the end time when going out of scope
    */
-  ~Scope() { End(id); }
+  ~Scope() { End(ID); }
 
  private:
   /** Trace Name/ID */
-  std::string id;
+  std::string ID;
 };
 }  // namespace TT
 }  // namespace PD

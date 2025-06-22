@@ -47,6 +47,7 @@ class PD_UI7_API Checkbox : public Container {
     this->tdim = io->Font->GetTextBounds(label, io->FontScale);
   }
   ~Checkbox() = default;
+  PD_SHARED(Checkbox);
   /**
    * Override for the Input Handler
    * @note This function is usally called by Menu::Update

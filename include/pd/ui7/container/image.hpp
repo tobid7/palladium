@@ -37,7 +37,7 @@ class PD_UI7_API Image : public Container {
    * @param img Image Texture Reference
    * @param size Custom Size of the Image
    */
-  Image(LI::Texture::Ref img, fvec2 size = 0.f, LI::Rect uv = vec4(0.f)) {
+  Image(Li::Texture::Ref img, fvec2 size = 0.f, Li::Rect uv = fvec4(0.f)) {
     this->img = img;
     this->newsize = size;
     this->cuv = uv;
@@ -49,6 +49,8 @@ class PD_UI7_API Image : public Container {
   }
   ~Image() = default;
 
+  PD_SHARED(Image);
+
   /**
    * Override for the Rendering Handler
    * @note This function is usally called by Menu::Update
@@ -56,9 +58,9 @@ class PD_UI7_API Image : public Container {
   void Draw() override;
 
  private:
-  LI::Texture::Ref img;  ///< Texture reference to the Image
+  Li::Texture::Ref img;  ///< Texture reference to the Image
   fvec2 newsize = 0.f;   ///< New Size
-  LI::Rect cuv;          ///< Custom UV
+  Li::Rect cuv;          ///< Custom UV
 };
 }  // namespace UI7
 }  // namespace PD

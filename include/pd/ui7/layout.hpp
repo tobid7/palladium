@@ -2,7 +2,8 @@
 
 /*
 MIT License
-Copyright (c) 2024 - 2025 René Amthor (tobid7)
+
+Copyright (c) 2024 - 2025 tobid7
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -25,26 +26,29 @@ SOFTWARE.
 
 #include <pd/core/core.hpp>
 #include <pd/ui7/container/container.hpp>
-#include <pd/ui7/drawlist.hpp>
 #include <pd/ui7/flags.hpp>
-#include <pd/ui7/io.hpp>
+#include <pd/ui7/input_api.hpp>
 #include <pd/ui7/pd_p_api.hpp>
+#include <pd/ui7/theme.hpp>
 
 namespace PD {
 namespace UI7 {
-class PD_UI7_API Layout : public PD::SmartCtor<Layout> {
+class PD_UI7_API Layout {
  public:
   Layout(const ID& id, IO::Ref io) : ID(id) {
     this->IO = io;
-    DrawList = UI7::DrawList::New(io.get());
+    DrawList = Li::DrawList::New();
+    DrawList->SetFont(IO->Font);
     Scrolling[0] = false;
     Scrolling[1] = false;
     CursorInit();
     Pos = fvec2(0, 0);
-    Size = fvec2(320, 240);
+    Size = fvec2(io->CurrentViewPort.z, io->CurrentViewPort.w);
     WorkRect = fvec4(IO->MenuPadding, Size - (fvec2(2) * IO->MenuPadding));
   }
   ~Layout() = default;
+
+  PD_SHARED(Layout);
 
   const std::string& GetName() const { return ID.GetName(); }
   const UI7::ID& GetID() const { return this->ID; }
@@ -54,7 +58,7 @@ class PD_UI7_API Layout : public PD::SmartCtor<Layout> {
   const fvec2& GetSize() const { return Size; }
   void SetSize(const fvec2& v) { Size = v; }
 
-  UI7::DrawList::Ref GetDrawList() { return DrawList; }
+  Li::DrawList::Ref GetDrawList() { return DrawList; }
 
   void CursorInit();
   void SameLine();
@@ -104,7 +108,7 @@ class PD_UI7_API Layout : public PD::SmartCtor<Layout> {
   // Base Components
   UI7::ID ID;
   UI7::IO::Ref IO;
-  UI7::DrawList::Ref DrawList;
+  Li::DrawList::Ref DrawList;
 
   // Positioning
   fvec2 Pos;

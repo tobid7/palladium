@@ -2,7 +2,8 @@
 
 /*
 MIT License
-Copyright (c) 2024 - 2025 René Amthor (tobid7)
+
+Copyright (c) 2024 - 2025 tobid7
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -24,53 +25,43 @@ SOFTWARE.
  */
 
 #include <pd/core/core.hpp>
-#include <pd/ui7/drawlist.hpp>
-#include <pd/ui7/flags.hpp>
-#include <pd/ui7/id.hpp>
 #include <pd/ui7/input_api.hpp>
 #include <pd/ui7/pd_p_api.hpp>
 #include <pd/ui7/theme.hpp>
+#include <pd/ui7/viewport.hpp>
 
 namespace PD {
 namespace UI7 {
-/**
- * Shared Configuration and Runtime Data for a UI7 Context
- */
-class PD_UI7_API IO : public SmartCtor<IO> {
+class PD_UI7_API IO {
  public:
-  /**
-   * IO Constructor setting UP References
-   */
-  IO(Hid::Ref input_driver, LI::Renderer::Ref ren) {
+  IO() {
     Time = Timer::New();
-    InputHandler = UI7::InputHandler::New(input_driver);
+    InputHandler = InputHandler::New();
     Theme = UI7::Theme::New();
-    Inp = input_driver;
-    Ren = ren;
-    Back = UI7::DrawList::New(this);
-    Front = UI7::DrawList::New(this);
-    pRDL = LI::DrawList::New(Ren->WhitePixel);
-    DrawListRegestry.PushFront(
-        Pair<UI7::ID, DrawList::Ref>("CtxBackList", Back));
-    // RegisterDrawList("CtxBackList", Back);
+    Back = Li::DrawList::New();
+    Front = Li::DrawList::New();
     DeltaStats = TimeStats::New(60);
-  };
-  ~IO() = default;
+    /** Probably not the best solution i guess */
+    CurrentViewPort.z = PD::Li::Gfx::pGfx->ViewPort.x;
+    CurrentViewPort.w = PD::Li::Gfx::pGfx->ViewPort.y;
+  }
+  ~IO() {}
+
+  PD_SHARED(IO);
 
   /**
    * IO Update Internal Variables
    */
   void Update();
 
+  ivec4 CurrentViewPort = ivec4(0, 0, 0, 0);
+  std::unordered_map<u32, ViewPort::Ref> ViewPorts;
   float Framerate = 0.f;
   float Delta = 0.f;
   u64 LastTime = 0;
   TimeStats::Ref DeltaStats;
   Timer::Ref Time;
-  Hid::Ref Inp;
-  LI::Renderer::Ref Ren;
-  LI::DrawList::Ref pRDL;
-  LI::Font::Ref Font;
+  Li::Font::Ref Font;
   float FontScale = 0.7f;
   UI7::Theme::Ref Theme;
   fvec2 MenuPadding = 5.f;
@@ -81,19 +72,26 @@ class PD_UI7_API IO : public SmartCtor<IO> {
   bool ShowFrameBorder = false;  // not implemented yet
   float OverScrollMod = 0.15f;
   u64 DoubleClickTime = 500;  // Milliseconds
-  PD::List<Pair<UI7::ID, DrawList::Ref>> DrawListRegestry;
+  PD::List<Pair<UI7::ID, Li::DrawList::Ref>> DrawListRegestry;
   // Short define for DrawKistRegestryLast
-  PD::List<Pair<UI7::ID, DrawList::Ref>> pDLRL;
-  // std::vector<std::pair<UI7::ID, DrawList::Ref>> DrawListRegestry;
-  DrawList::Ref Back;
-  DrawList::Ref Front;
+  PD::List<Pair<UI7::ID, Li::DrawList::Ref>> pDLRL;
+  // std::vector<std::pair<UI7::ID, Li::DrawList::Ref>> DrawListRegestry;
+  Li::DrawList::Ref Back;
+  Li::DrawList::Ref Front;
   u32 NumVertices = 0;  ///< Debug Vertices Num
   u32 NumIndices = 0;   ///< Debug Indices Num
   Vec<u32> MenuOrder;
 
   // DrawListApi
-  void RegisterDrawList(const UI7::ID& id, DrawList::Ref v) {
+  void RegisterDrawList(const UI7::ID& id, Li::DrawList::Ref v) {
     DrawListRegestry.PushBack(Pair(id, v));
+  }
+
+  void AddViewPort(const ID& id, const ivec4& size) {
+    if (ViewPorts.count(id)) {
+      return;
+    }
+    ViewPorts[id] = ViewPort::New(id, size);
   }
 
   UI7::InputHandler::Ref InputHandler;

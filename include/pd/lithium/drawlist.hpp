@@ -28,24 +28,47 @@ SOFTWARE.
 #include <pd/lithium/font.hpp>
 #include <pd/lithium/pd_p_api.hpp>
 
+/** Path Rect Flags */
+using LiPathRectFlags = PD::u32;
+
+/** Setup for everything (oder so) */
+enum LiPathRectFlags_ : PD::u32 {
+  LiPathRectFlags_None = 0,
+  LiPathRectFlags_KeepTopLeft = PD_BIT(0),
+  LiPathRectFlags_KeepTopRight = PD_BIT(1),
+  LiPathRectFlags_KeepBotRight = PD_BIT(2),
+  LiPathRectFlags_KeepBotLeft = PD_BIT(3),
+  LiPathRectFlags_KeepTop = PD_BIT(0) | PD_BIT(1),
+  LiPathRectFlags_KeepBot = PD_BIT(2) | PD_BIT(3),
+  LiPathRectFlags_KeepLeft = PD_BIT(0) | PD_BIT(3),
+  LiPathRectFlags_KeepRight = PD_BIT(1) | PD_BIT(2),
+};
+
 namespace PD {
-namespace LI {
-class PD_LITHIUM_API DrawList : public SmartCtor<DrawList> {
+namespace Li {
+class PD_LITHIUM_API DrawList {
  public:
-  DrawList(Texture::Ref solid) {
-    WhitePixel = solid;
-    CurrentTex = solid;
-  }
-  ~DrawList() {}
+  DrawList() { DrawSolid(); }
+  ~DrawList() { pDrawList.clear(); }
+
+  /** Require Copy and Move Constructors */
+
+  DrawList(const DrawList&) = delete;
+  DrawList& operator=(const DrawList&) = delete;
+
+  DrawList(DrawList&&) noexcept = default;
+  DrawList& operator=(DrawList&&) noexcept = default;
+
+  PD_SHARED(DrawList);
 
   Command::Ref PreGenerateCmd();
-  void AddCommand(Command::Ref v) { pDrawList.Add(v); }
-  void Clear() { pDrawList.Clear(); }
+  void AddCommand(Command::Ref v) { pDrawList.push_back(std::move(v)); }
+  void Clear() { pDrawList.clear(); }
 
   void SetFont(Font::Ref font) { pCurrentFont = font; }
   void SetFontScale(float scale) { pFontScale = scale; }
 
-  void DrawSolid() { CurrentTex = WhitePixel; }
+  void DrawSolid();
   void DrawTexture(Texture::Ref tex) { CurrentTex = tex; }
 
   // SECTION: Draw API //
@@ -62,7 +85,12 @@ class PD_LITHIUM_API DrawList : public SmartCtor<DrawList> {
   void DrawCircleFilled(const fvec2& center, float rad, u32 color,
                         int num_segments);
   void DrawText(const fvec2& p, const std::string& text, u32 color);
-
+  /**
+   * Extended Draw Text Function
+   */
+  void DrawTextEx(const fvec2& p, const std::string& text, u32 color,
+                  LiTextFlags flags, fvec2 box = fvec2(0.f));
+  void DrawLine(const fvec2& a, const fvec2& b, u32 color, int t = 1);
   /**
    * Take list of points and display it as a line on screen
    * @param points List of Positions
@@ -126,20 +154,38 @@ class PD_LITHIUM_API DrawList : public SmartCtor<DrawList> {
   }
   void PathArcToN(const fvec2& c, float radius, float a_min, float a_max,
                   int segments);
+  void PathFastArcToN(const fvec2& c, float r, float amin, float amax, int s);
+  /// @brief Create a Path Rect (uses to Positions instead of Pos/Size)
+  /// @param a Top Left Position
+  /// @param b Bottom Right Position
+  /// @param rounding rounding
+  void PathRect(fvec2 a, fvec2 b, float rounding = 0.f);
   /// @brief Create a Path Rect (uses to Positions instead of Pos/Size)
   /// @param a Top Left Position
   /// @param b Bottom Right Position
   /// @param rounding rounding
   /// @param flags DrawFlags (for special rounding rules)
-  void PathRect(fvec2 a, fvec2 b, float rounding = 0.f, u32 flags = 0);
+  void PathRectEx(fvec2 a, fvec2 b, float rounding = 0.f, u32 flags = 0);
 
-  int Layer = 0;
+  void PushClipRect(const fvec4& cr) { pClipRects.Push(cr); }
+  void PopClipRect() {
+    if (pClipRects.IsEmpty()) {
+      return;
+    }
+    pClipRects.Pop();
+  }
+  /** One linear Clip rect Setup */
+  void pClipCmd(Command* cmd);
+
+  /** Data Section */
+
+  Stack<fvec4> pClipRects;
+  int Layer;
   float pFontScale = 0.7f;
-  Font::Ref pCurrentFont = nullptr;
-  Texture::Ref CurrentTex = nullptr;
-  Texture::Ref WhitePixel = nullptr;
-  PD::Vec<Command::Ref> pDrawList;
+  Font::Ref pCurrentFont;
+  Texture::Ref CurrentTex;
+  std::vector<Command::Ref> pDrawList;
   PD::Vec<fvec2> pPath;
 };
-}  // namespace LI
+}  // namespace Li
 }  // namespace PD

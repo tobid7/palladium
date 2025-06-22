@@ -62,6 +62,8 @@ class PD_UI7_API DragData : public Container {
   }
   ~DragData() = default;
 
+  /** Als ob das funktioniert... */
+  PD_SHARED(DragData<T>);
   /**
    * Override for the Input Handler
    * @note This function is usally called by Menu::Update

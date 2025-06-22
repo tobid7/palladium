@@ -24,7 +24,6 @@ SOFTWARE.
  */
 
 #include <pd/core/core.hpp>
-#include <pd/ui7/drawlist.hpp>
 #include <pd/ui7/io.hpp>
 #include <pd/ui7/pd_p_api.hpp>
 
@@ -34,7 +33,7 @@ namespace UI7 {
  * Container base class all Objects are based on
  * @note this class can be used to create custom Objects as well
  */
-class PD_UI7_API Container : public SmartCtor<Container> {
+class PD_UI7_API Container {
  public:
   Container() = default;
   /**
@@ -51,13 +50,14 @@ class PD_UI7_API Container : public SmartCtor<Container> {
       : pos(fvec2(box.x, box.y)), size(fvec2(box.z - box.x, box.w - box.y)) {}
   ~Container() = default;
 
+  PD_SHARED(Container);
   /**
    * Init Function Required by every Object that uses
    * Render or Input functions
    * @param io IO Reference
    * @param l DrawList Reference
    */
-  void Init(UI7::IO::Ref io, UI7::DrawList::Ref l) {
+  void Init(UI7::IO::Ref io, Li::DrawList::Ref l) {
     list = l;
     this->io = io;
     // this->screen = io->Ren->CurrentScreen();
@@ -146,7 +146,7 @@ class PD_UI7_API Container : public SmartCtor<Container> {
   /** Container Size*/
   fvec2 size;
   /** Reference to the Drawlist to Draw to*/
-  UI7::DrawList::Ref list;
+  Li::DrawList::Ref list;
   /** IO Reference for Renderer and Theme */
   UI7::IO::Ref io;
   /** Reference to the parent container*/

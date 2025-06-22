@@ -44,6 +44,8 @@ class PD_UI7_API Label : public Container {
   }
   ~Label() = default;
 
+  PD_SHARED(Label);
+
   /**
    * Override for the Rendering Handler
    * @note This function is usally called by Menu::Update

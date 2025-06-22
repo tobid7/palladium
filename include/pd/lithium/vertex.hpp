@@ -2,8 +2,7 @@
 
 /*
 MIT License
-
-Copyright (c) 2024 - 2025 tobid7
+Copyright (c) 2024 - 2025 René Amthor (tobid7)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +26,7 @@ SOFTWARE.
 #include <pd/core/core.hpp>
 
 namespace PD {
-namespace LI {
+namespace Li {
 class Vertex {
  public:
   Vertex() {}
@@ -40,9 +39,12 @@ class Vertex {
   ~Vertex() {}
 
   // private:
+
+  /** Open Access Data Section */
+
   fvec2 Pos;
   fvec2 UV;
   u32 Color;
 };
-}  // namespace LI
+}  // namespace Li
 }  // namespace PD

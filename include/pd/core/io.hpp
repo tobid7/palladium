@@ -30,12 +30,6 @@ namespace PD {
  * Set of File Functions
  */
 namespace IO {
-enum RleFmt {
-  Default = 0,
-  _16 = 1 << 0,
-  _32 = 1 << 1,
-  _64 = 1 << 2,
-};
 /**
  * Load a File into an 8Bit Memory Buffer
  * @param path Path to the File
@@ -54,19 +48,9 @@ PD_CORE_API u32 HashMemory(const std::vector<u8>& data);
  */
 PD_CORE_API void DecompressRLE(std::vector<u8>& data);
 /**
- * Function to decrompress Extended RLE Buffer
- * @param data Data buffer to decompress
- */
-PD_CORE_API void DecompressRLE_Ex(std::vector<u8>& data);
-/**
  * Function to compress data with RLE Algorithm
  * @param data Data buf
  */
 PD_CORE_API void CompressRLE(std::vector<u8>& data);
-/**
- * Extended RLE Compress function (slower cause searches best format)
- * @param data Data buf
- */
-PD_CORE_API void CompressRLE_Ex(std::vector<u8>& data);
 }  // namespace IO
 }  // namespace PD
