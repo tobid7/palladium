@@ -24,16 +24,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include "pd/ui7/container/dragdata.hpp"
 #include <pd/core/core.hpp>
 #include <pd/ui7/io.hpp>
 #include <pd/ui7/layout.hpp>
 #include <pd/ui7/pd_p_api.hpp>
 
+#include "pd/ui7/container/dragdata.hpp"
+
 namespace PD {
 namespace UI7 {
 class PD_UI7_API Menu {
-public:
+ public:
   Menu(const UI7::ID &id, UI7::IO::Ref pIO);
   ~Menu() {}
 
@@ -87,9 +88,11 @@ public:
     }
     pLayout->AddObject(r);
   }
-  void Sameline() { pLayout->SameLine(); }
+  void SameLine() { pLayout->SameLine(); }
   void Separator();
   void SeparatorText(const std::string &label);
+  bool BeginTreeNode(const ID &id);
+  void EndTreeNode();
 
   void HandleFocus();
   void HandleScrolling();
@@ -106,8 +109,9 @@ public:
   ID pID;
   bool *pIsShown = nullptr;
   bool pIsOpen = true;
+  std::unordered_map<u32, bool> pTreeNodes;
 
   float TitleBarHeight = 0.f;
 };
-} // namespace UI7
-} // namespace PD
+}  // namespace UI7
+}  // namespace PD

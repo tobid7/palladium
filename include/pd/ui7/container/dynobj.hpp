@@ -52,6 +52,10 @@ class PD_UI7_API DynObj : public Container {
 
   PD_SHARED(DynObj);
 
+  void AddInputHandler(std::function<void(UI7::IO::Ref, Container*)> inp) {
+    pInp = inp;
+  }
+
   /** Return true if butten is pressed*/
   bool IsPressed() { return pressed; }
   /**
@@ -72,6 +76,7 @@ class PD_UI7_API DynObj : public Container {
   UI7Color color = UI7Color_Button;  ///< current button color
   bool pressed = false;              ///< ispressed value
   std::function<void(UI7::IO::Ref, Li::DrawList::Ref, Container*)> pRenFun;
+  std::function<void(UI7::IO::Ref, Container*)> pInp;
 };
 }  // namespace UI7
 }  // namespace PD

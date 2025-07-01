@@ -61,6 +61,14 @@ class PD_LITHIUM_API DrawList {
 
   PD_SHARED(DrawList);
 
+  /**
+   * Append an input drawlist on top of this one
+   * This Function will clear the Input list to make sure
+   * THat the moved memory blocks don't get used
+   * @param list DrawList to move into current
+   */
+  void Merge(DrawList::Ref list);
+
   Command::Ref PreGenerateCmd();
   void AddCommand(Command::Ref v) { pDrawList.push_back(std::move(v)); }
   void Clear() { pDrawList.clear(); }

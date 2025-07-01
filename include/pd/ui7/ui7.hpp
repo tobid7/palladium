@@ -24,11 +24,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include "pd/ui7/flags.hpp"
 #include <pd/core/core.hpp>
 #include <pd/ui7/io.hpp>
 #include <pd/ui7/menu.hpp>
 #include <pd/ui7/pd_p_api.hpp>
+
+#include "pd/ui7/flags.hpp"
 
 /**
  * Declare UI7 Version
@@ -48,7 +49,7 @@ namespace UI7 {
 PD_UI7_API std::string GetVersion(bool show_build = false);
 /** Base Context for UI7 */
 class PD_UI7_API Context {
-public:
+ public:
   Context() { pIO = IO::New(); }
   ~Context() = default;
 
@@ -57,8 +58,13 @@ public:
   void AddViewPort(const ID &id, const ivec4 &vp);
   void UseViewPort(const ID &id);
   void Update();
-  bool BeginMenu(const ID &id, UI7MenuFlags flags, bool *pShow = nullptr);
+  bool BeginMenu(const ID &id, UI7MenuFlags flags = 0, bool *pShow = nullptr);
   void EndMenu();
+  void AboutMenu(bool *show = nullptr);
+  void MetricsMenu(bool *show = nullptr);
+  void StyleEditor(bool *show = nullptr);
+
+  Li::DrawList::Ref GetDrawData() { return pIO->FDL; }
 
   Menu::Ref pGetOrCreateMenu(const ID &id) {
     auto menu = pMenus.find(id);
@@ -73,7 +79,8 @@ public:
   /** Current Menu */
   Menu::Ref pCurrent = nullptr;
   std::vector<u32> pCurrentMenus;
+  std::vector<u32> pDFO; /** Debug Final Order */
   std::unordered_map<u32, Menu::Ref> pMenus;
 };
-} // namespace UI7
-} // namespace PD
+}  // namespace UI7
+}  // namespace PD

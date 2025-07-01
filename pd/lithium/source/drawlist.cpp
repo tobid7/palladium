@@ -33,13 +33,21 @@ namespace PD {
 namespace Li {
 PD_LITHIUM_API void DrawList::DrawSolid() { CurrentTex = Gfx::GetSolidTex(); }
 
+PD_LITHIUM_API void DrawList::Merge(DrawList::Ref list) {
+  for (size_t i = 0; i < list->pDrawList.size(); i++) {
+    pDrawList.push_back(std::move(list->pDrawList[i]));
+  }
+  /** Make sure The list gets cleared */
+  list->Clear();
+}
+
 PD_LITHIUM_API Command::Ref DrawList::PreGenerateCmd() {
   Command::Ref cmd = Command::New();
   cmd->Layer = Layer;
   cmd->Index = pDrawList.size();
   cmd->Tex = CurrentTex;
   pClipCmd(cmd.get());
-  return std::move(cmd);
+  return cmd;
 }
 
 PD_LITHIUM_API void DrawList::pClipCmd(Command *cmd) {
@@ -193,7 +201,7 @@ PD_LITHIUM_API void DrawList::DrawCircle(const fvec2 &center, float rad,
     float am = (M_PI * 2.0f) * ((float)num_segments) / (float)num_segments;
     PathArcToN(center, rad, 0.f, am, num_segments);
   }
-  DrawSolid(); // Only Solid Color Supported
+  DrawSolid();  // Only Solid Color Supported
   PathStroke(color, thickness, (1 << 0));
 }
 
@@ -234,7 +242,7 @@ PD_LITHIUM_API void DrawList::DrawPolyLine(const Vec<fvec2> &points, u32 clr,
 PD_LITHIUM_API void DrawList::DrawConvexPolyFilled(const Vec<fvec2> &points,
                                                    u32 clr) {
   if (points.Size() < 3) {
-    return; // Need at least three points
+    return;  // Need at least three points
   }
   auto cmd = PreGenerateCmd();
   Renderer::CmdConvexPolyFilled(cmd.get(), points, clr, CurrentTex);
@@ -276,5 +284,5 @@ PD_LITHIUM_API void DrawList::DrawLine(const fvec2 &a, const fvec2 &b,
   PathAdd(b);
   PathStroke(color, t);
 }
-} // namespace Li
-} // namespace PD
+}  // namespace Li
+}  // namespace PD

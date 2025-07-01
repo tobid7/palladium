@@ -40,6 +40,7 @@ class PD_UI7_API IO {
     Theme = UI7::Theme::New();
     Back = Li::DrawList::New();
     Front = Li::DrawList::New();
+    FDL = Li::DrawList::New();
     DeltaStats = TimeStats::New(60);
     /** Probably not the best solution i guess */
     CurrentViewPort.z = PD::Li::Gfx::pGfx->ViewPort.x;
@@ -54,6 +55,12 @@ class PD_UI7_API IO {
    */
   void Update();
 
+  /**
+   * Final Draw List for PD::Li::Gfx::RednerDrawData
+   *
+   * Possible thanks to the DrawList::Merge Feature
+   */
+  Li::DrawList::Ref FDL = nullptr;
   ivec4 CurrentViewPort = ivec4(0, 0, 0, 0);
   std::unordered_map<u32, ViewPort::Ref> ViewPorts;
   float Framerate = 0.f;
@@ -92,6 +99,13 @@ class PD_UI7_API IO {
       return;
     }
     ViewPorts[id] = ViewPort::New(id, size);
+  }
+
+  ViewPort::Ref GetViewPort(const ID& id) {
+    if (ViewPorts.count(id)) {
+      return nullptr;
+    }
+    return ViewPorts[id];
   }
 
   UI7::InputHandler::Ref InputHandler;

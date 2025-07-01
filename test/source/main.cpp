@@ -17,6 +17,8 @@ void RoundedRect(PD::Li::DrawList::Ref l, PD::fvec2 p, PD::fvec2 s, PD::u32 clr,
 }
 
 int v = 20;
+int TheScale = 1;
+bool AboutOderSo = true;
 
 int main() {
   void *PD_INIT_DATA = nullptr;
@@ -63,9 +65,6 @@ int main() {
   ui7->AddViewPort(VpTop, PD::ivec4(0, 0, 400, 240));
   ui7->UseViewPort(VpTop);
   ui7->pIO->Font = font;
-  PD::UI7::Menu::Ref menu = PD::UI7::Menu::New("Test", ui7->pIO);
-  bool open_haxx = true;
-  menu->pIsShown = &open_haxx;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /** MainLoop */
 #ifndef __3DS__
@@ -81,6 +80,7 @@ int main() {
     int wx, wy;
     glfwGetWindowSize(win, &wx, &wy);
     PD::Li::Gfx::pGfx->ViewPort = PD::ivec2(wx, wy);
+    // ui7->pIO->GetViewPort(VpTop)->pSize = PD::ivec4(0, 0, wx, wy);
 #endif
     /** Rendering some stuff */
     List->DrawSolid();
@@ -90,7 +90,10 @@ int main() {
     RoundedRect(List, PD::fvec2(200, 50), 100, 0xffffffff,
                 ((1 + std::sin(PD::OS::GetTime() / 1000.f)) * 0.5f) * 100.f);
     List->DrawText(PD::fvec2(50, 190), "OK", 0xffffffff);
-    List->DrawLine(PD::fvec2(0), PD::fvec2(1000, 600), 0xffffffff);
+    // List->DrawLine(PD::fvec2(0), PD::fvec2(1000, 600), 0xffffffff);
+    List->PathAdd(500);
+    List->PathAdd(550);
+    List->PathStroke(0xff00ffff, TheScale);
     // List->DrawRectFilled(PD::fvec2(10, 10), PD::fvec2(1260, 700),
     // 0xffffffff);
     /** Draw text */
@@ -103,10 +106,12 @@ int main() {
                         PD::Hid::MousePos()) +
             "\nUI7 Version: " + PD::UI7::GetVersion(),
         0xff000000);
-    ui7->pIO->InputHandler->CurrentMenu = menu->pID;
-    if (menu->pIsOpen) {
+    if (ui7->BeginMenu("Test")) {
+      auto menu = ui7->pCurrent;
       menu->Label("Hello");
       menu->Label("World!");
+      menu->Checkbox("About Menu", AboutOderSo);
+      menu->DragData("Line", &TheScale);
       if (menu->Button("Test")) {
         break;
       }
@@ -117,9 +122,50 @@ int main() {
       menu->Label(
           std::format("Left: {}", PD::Hid::IsHeld(PD::Hid::Key::Touch)));
       menu->DragData("Value", &v, 1);
+      ui7->EndMenu();
     }
-    menu->Update();
+    if (ui7->BeginMenu("Yet another Window")) {
+      auto menu = ui7->pCurrent;
+      menu->Label(std::format("this->Pos: {}", menu->pLayout->GetPosition()));
+      menu->Label(
+          std::format("Vertices: {}", PD::Li::Gfx::pGfx->VertexCounter));
+      menu->Label(std::format("Indices: {}", PD::Li::Gfx::pGfx->IndexCounter));
+      ui7->EndMenu();
+    }
+    if (ui7->BeginMenu("#Debug (UI7)")) {
+      auto menu = ui7->pCurrent;
+      menu->Label(std::format("Framerate: {:.1f} [{:.2f}]", ui7->pIO->Framerate,
+                              ui7->pIO->Delta));
+      menu->SeparatorText("Input");
+      menu->Label(std::format("FocusedMenu: #{:08X}",
+                              ui7->pIO->InputHandler->FocusedMenu));
+      menu->Label(std::format("FocusedMenuRect: {}",
+                              ui7->pIO->InputHandler->FocusedMenuRect));
+      menu->SeparatorText("Menu Order");
+      for (auto &it : ui7->pDFO) {
+        menu->Label(std::format("{}", ui7->pMenus[it]->pID.GetName()));
+      }
+      ui7->EndMenu();
+    }
+    if (ui7->BeginMenu("NoDebug")) {
+      auto m = ui7->pCurrent;
+      if (m->BeginTreeNode("Test")) {
+        m->Label("Hello World!");
+        if (m->BeginTreeNode("AnotherNode")) {
+          m->Label("Another Label!");
+          m->EndTreeNode();
+        }
+        m->EndTreeNode();
+      }
+      m->Label("Yes another Label!");
+      ui7->EndMenu();
+    }
+    ui7->AboutMenu(&AboutOderSo);
+    ui7->MetricsMenu();
+    ui7->StyleEditor();
+    PD::TT::Beg("ui7->Update");
     ui7->Update();
+    PD::TT::End("ui7->Update");
 /** Render DrawData */
 #ifdef __3DS__
     C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
@@ -129,10 +175,9 @@ int main() {
     PD::TT::Beg("REN");
     PD::Li::Gfx::NewFrame();
     PD::Li::Gfx::RenderDrawData(List->pDrawList);
-    PD::Li::Gfx::RenderDrawData(menu->pLayout->GetDrawList()->pDrawList);
+    PD::Li::Gfx::RenderDrawData(ui7->GetDrawData()->pDrawList);
     /** Clear The List */
     List->Clear();
-    menu->pLayout->GetDrawList()->pDrawList.clear();
     PD::TT::End("REN");
 #ifndef __3DS__
     /** Do OS Specifc Stuff (swapp buffers / window buttan events) */

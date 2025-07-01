@@ -126,7 +126,8 @@ class PD_UI7_API Layout {
   fvec2 MaxPosition;
   fvec4 WorkRect;
 
-  // Scrolling
+  // Scrolling (Only theoretical)
+  // Rendering must be done by the Objective that uses the Lyt
   fvec2 ScrollOffset;
   bool Scrolling[2];
 

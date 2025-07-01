@@ -27,7 +27,13 @@ SOFTWARE.
 namespace PD {
 namespace UI7 {
 PD_UI7_API void DynObj::Draw() { pRenFun(io, list, this); }
-PD_UI7_API void DynObj::HandleInput() {}
+
+PD_UI7_API void DynObj::HandleInput() {
+  if (pInp) {
+    pInp(io, this);
+  }
+}
+
 PD_UI7_API void DynObj::Update() {}
 }  // namespace UI7
 }  // namespace PD

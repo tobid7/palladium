@@ -31,8 +31,6 @@ using UI7Align = unsigned int;
 using UI7IOFlags = unsigned int;
 /** 32Bit Value for Layout Flags */
 using UI7LayoutFlags = unsigned int;
-/** 32Bit value for DrawFlags */
-using UI7DrawFlags = unsigned int;
 
 /** Menu Flags */
 enum UI7MenuFlags_ {
@@ -48,6 +46,9 @@ enum UI7MenuFlags_ {
   UI7MenuFlags_NoResize = 1 << 8,      ///< Disable Menu Resize
   UI7MenuFlags_NoClose = 1 << 9,       ///< Disable Close Button
   UI7MenuFlags_NoScrollbar = 1 << 10,  ///< Hide the Scrollbar
+  // POC
+  UI7MenuFlags_Maximize = 1 << 11,  ///< Add a Maximize Button
+  UI7MenuFlags_Minimize = 1 << 12,  ///< Add a Minimize Button
   // Enable Horizontal and Vertical Scrolling
   UI7MenuFlags_Scrolling = UI7MenuFlags_HzScrolling | UI7MenuFlags_VtScrolling,
 };
@@ -56,12 +57,6 @@ enum UI7MenuFlags_ {
 enum UI7LayoutFlags_ {
   UI7LayoutFlags_None = 0,              ///< No Flags used
   UI7LayoutFlags_UseClipRect = 1 << 0,  ///< Enable ClipRect
-};
-
-enum UI7DrawFlags_ {
-  UI7DrawFlags_None = 0,
-  UI7DrawFlags_Close = 1 << 0,    ///< Close a PolyLine
-  UI7DrawFlags_AALines = 1 << 1,  ///< Anti aliased Lines
 };
 
 /** UI7 Context Flags */
@@ -91,6 +86,11 @@ enum UI7LytAdd_ {
   UI7LytAdd_Front = 1 << 2,           ///< Add in front of the list
 };
 
+/**
+ * Todo: Look at this
+ * Maybe proof of concept ???
+ * Didnt remember that this exists
+ */
 enum UI7ContainerFlags_ {
   UI7ContainerFlags_None = 0,
   UI7ContainerFlags_EnableInternalInput = 1 << 0,

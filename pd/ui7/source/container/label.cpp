@@ -28,7 +28,13 @@ namespace UI7 {
 PD_UI7_API void Label::Draw() {
   // Assert(io.get() && list.get(), "Did you run Container::Init correctly?");
   // io->Ren->OnScreen(screen);
+  if (pCLipRectUsed) {
+    list->PushClipRect(pClipRect);
+  }
   list->DrawText(FinalPos(), label, io->Theme->Get(UI7Color_Text));
+  if (pCLipRectUsed) {
+    list->PopClipRect();
+  }
 }
 }  // namespace UI7
 }  // namespace PD

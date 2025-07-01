@@ -37,6 +37,7 @@ Menu::Menu(const ID &id, IO::Ref io) : pIO(io), pID(id) {
 PD_UI7_API void Menu::Label(const std::string &label) {
   // Layout API
   auto r = Label::New(label, pIO);
+  r->SetClipRect(fvec4(pLayout->GetPosition(), pLayout->GetSize()));
   pLayout->AddObject(r);
 }
 
@@ -128,7 +129,10 @@ PD_UI7_API void Menu::HandleFocus() {
     pIO->InputHandler->FocusedMenuRect = newarea;
   }
 }
+
+/** Todo: (func name is self describing) */
 PD_UI7_API void Menu::HandleScrolling() {}
+
 PD_UI7_API void Menu::HandleTitlebarActions() {
   // Collapse
   if (!(Flags & UI7MenuFlags_NoCollapse)) {
@@ -157,6 +161,21 @@ PD_UI7_API void Menu::HandleTitlebarActions() {
       // clr_close_btn = UI7Color_FrameBackgroundHovered;
     }
   }
+  // Resize logic
+  if (!(Flags & UI7MenuFlags_NoResize)) {
+    vec2 cpos = pLayout->Pos + pLayout->Size - fvec2(20);
+
+    // clr_close_btn = UI7Color_FrameBackground;
+    if (pIO->InputHandler->DragObject(UI7::ID(pID.GetName() + "rszs"),
+                                      fvec4(cpos, fvec2(20)))) {
+      fvec2 szs = pLayout->Size + (pIO->InputHandler->DragPosition -
+                                   pIO->InputHandler->DragLastPosition);
+      if (szs.x < 30) szs.x = 30;
+      if (szs.y < 30) szs.y = 30;
+      pLayout->Size = szs;
+      // clr_close_btn = UI7Color_FrameBackgroundHovered;
+    }
+  }
   // Menu Movement
   if (!(Flags & UI7MenuFlags_NoMove)) {
     if (pIO->InputHandler->DragObject(
@@ -167,13 +186,35 @@ PD_UI7_API void Menu::HandleTitlebarActions() {
       }
       pLayout->Pos = pLayout->Pos + (pIO->InputHandler->DragPosition -
                                      pIO->InputHandler->DragLastPosition);
-      // Have no ViewPort Yet :(
-      // pLayout->Pos = std::clamp(pLayout->Pos, fvec2(10), fvec2(1270, 710));
+      // Keep Window In Viewport
+      // Maybe i need to add some operators to vec
+      pLayout->Pos.x = std::clamp<float>(pLayout->Pos.x, -pLayout->Size.x + 10,
+                                         pIO->CurrentViewPort.z - 10);
+      pLayout->Pos.y =
+          std::clamp<float>(pLayout->Pos.y, 0.f, pIO->CurrentViewPort.w - 10);
     }
   }
 }
 PD_UI7_API void Menu::DrawBaseLayout() {
   if (pIsOpen) {
+    /** Resize Sym (Render on Top of Everything) */
+    if (!(Flags & UI7MenuFlags_NoResize)) {
+      Container::Ref r = DynObj::New(
+          [](IO::Ref io, Li::DrawList::Ref l, UI7::Container *self) {
+            l->Layer = 1;
+            l->PathAdd(self->FinalPos() + self->GetSize() - fvec2(0, 20));
+            l->PathAdd(self->FinalPos() + self->GetSize());
+            l->PathAdd(self->FinalPos() + self->GetSize() - fvec2(20, 0));
+            l->PathFill(io->Theme->Get(UI7Color_Button));
+          });
+      r->SetSize(
+          fvec2(pLayout->GetSize().x, pLayout->GetSize().y - TitleBarHeight));
+      r->SetPos(fvec2(0, TitleBarHeight));
+      pLayout->AddObjectEx(r,
+                           UI7LytAdd_NoCursorUpdate | UI7LytAdd_NoScrollHandle);
+    }
+
+    /** Background */
     Container::Ref r = DynObj::New([](IO::Ref io, Li::DrawList::Ref l,
                                       UI7::Container *self) {
       l->Layer = 0;
@@ -237,7 +278,7 @@ PD_UI7_API void Menu::DrawBaseLayout() {
     }
     /** Close Sym (only shown if pIsShown is not nullptr) */
     if (!(Flags & UI7MenuFlags_NoClose) && pIsShown) {
-      fvec2 size = TitleBarHeight - pIO->FramePadding.y * 2; // Fixed quad size
+      fvec2 size = TitleBarHeight - pIO->FramePadding.y * 2;  // Fixed quad size
       // Need to clamp this way as the math lib lacks a less and greater
       // operator in vec2 (don't checked if it would make sense yet)
       size.x = std::clamp(size.x, 5.f, std::numeric_limits<float>::max());
@@ -254,6 +295,7 @@ PD_UI7_API void Menu::DrawBaseLayout() {
     }
   }
 }
+
 PD_UI7_API void Menu::Update() {
   HandleFocus();
   if (!(Flags & UI7MenuFlags_NoTitlebar)) {
@@ -262,5 +304,62 @@ PD_UI7_API void Menu::Update() {
   DrawBaseLayout();
   pLayout->Update();
 }
-} // namespace UI7
-} // namespace PD
+
+PD_UI7_API bool Menu::BeginTreeNode(const ID &id) {
+  // As of some notes this should work:
+  auto n = pTreeNodes.find(id);
+  if (n == pTreeNodes.end()) {
+    pTreeNodes[id] = false;
+    n = pTreeNodes.find(id);
+  }
+  fvec2 pos = pLayout->Cursor;
+  fvec2 tdim = pIO->Font->GetTextBounds(id.GetName(), pIO->FontScale);
+  fvec2 szs = tdim + fvec2(pIO->ItemSpace.x + 10, 0);
+
+  if (n->second) {
+    pLayout->InitialCursorOffset += 10.f;
+  }
+
+  // Object
+  auto r =
+      DynObj::New([=, this](IO::Ref io, Li::DrawList::Ref l, Container *self) {
+        fvec2 ts = self->FinalPos() + fvec2(0, 7);
+        fvec2 pl[2] = {fvec2(10, 5), fvec2(0, 10)};
+        if (n->second) {
+          float t = pl[0].y;
+          pl[0].y = pl[1].x;
+          pl[1].x = t;
+        }
+        l->DrawTriangleFilled(ts, ts + pl[0], ts + pl[1],
+                              io->Theme->Get(UI7Color_FrameBackground));
+
+        l->DrawText(self->FinalPos() + fvec2(10 + io->ItemSpace.x, 0),
+                    id.GetName(), io->Theme->Get(UI7Color_Text));
+      });
+  /** Yes this new function handler was created for tree nodes */
+  r->AddInputHandler([=, this](IO::Ref io, Container *self) {
+    if (io->InputHandler->DragObject(
+            ID(pID.GetName() + id.GetName()),
+            fvec4(self->FinalPos(), self->GetSize()))) {
+      if (io->InputHandler->DragReleased) {
+        n->second = !n->second;
+      }
+    }
+  });
+  r->SetPos(pos);
+  r->SetSize(szs);
+  /** Use Add Object as it is faster */
+  pLayout->AddObject(r);
+
+  return n->second;
+}
+
+PD_UI7_API void UI7::Menu::EndTreeNode() {
+  pLayout->InitialCursorOffset.x -= 10.f;
+  pLayout->Cursor.x -= 10.f;
+  if (pLayout->InitialCursorOffset.x < 0.f) {
+    pLayout->InitialCursorOffset.x = 0.f;
+  }
+}
+}  // namespace UI7
+}  // namespace PD

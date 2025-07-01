@@ -28,7 +28,9 @@ SOFTWARE.
 #include <iostream>
 #include <string>
 
-const char* license_text = R"(/*
+constexpr std::string_view ppa_text = R"(#pragma once
+
+/*
 MIT License
 Copyright (c) 2024 - 2025 René Amthor (tobid7)
 
@@ -50,35 +52,34 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
-)";
 
-constexpr std::string_view ppa_text =
-    "#pragma once\n\n{0}\n"
-    "/** Generated with ppam */\n\n"
-    "#ifdef _WIN32  // Windows (MSVC Tested)\n"
-    "#ifdef {1}_BUILD_SHARED\n"
-    "#define {1}_API __declspec(dllexport)\n"
-    "#else\n"
-    "#define {1}_API __declspec(dllimport)\n"
-    "#endif\n"
-    "#elif defined(__APPLE__)  // macOS (untested yet)\n"
-    "#ifdef {1}_BUILD_SHARED\n"
-    "#define {1}_API __attribute__((visibility(\"default\")))\n"
-    "#else\n"
-    "#define {1}_API\n"
-    "#endif\n"
-    "#elif defined(__linux__)  // Linux (untested yet)\n"
-    "#ifdef {1}_BUILD_SHARED\n"
-    "#define {1}_API __attribute__((visibility(\"default\")))\n"
-    "#else\n"
-    "#define {1}_API\n"
-    "#endif\n"
-    "#elif defined(__3DS__)  // 3ds Specific\n"
-    "// Only Static supported\n"
-    "#define {1}_API\n"
-    "#else\n"
-    "#define {1}_API\n"
-    "#endif\n";
+/** Generated with ppam */
+
+#ifdef _WIN32  // Windows (MSVC Tested)
+#ifdef {0}_BUILD_SHARED
+#define {0}_API __declspec(dllexport)
+#else
+#define {0}_API __declspec(dllimport)
+#endif
+#elif defined(__APPLE__)  // macOS (untested yet)
+#ifdef {0}_BUILD_SHARED
+#define {0}_API __attribute__((visibility("default")))
+#else
+#define {0}_API
+#endif
+#elif defined(__linux__)  // Linux (untested yet)
+#ifdef {0}_BUILD_SHARED
+#define {0}_API __attribute__((visibility("default")))
+#else
+#define {0}_API
+#endif
+#elif defined(__3DS__)  // 3ds Specific
+// Only Static supported
+#define {0}_API
+#else
+#define {0}_API
+#endif
+)";
 
 /**
  * Tool to generate the `pd_p_api.hpp` (Palladium Platform Api)
@@ -91,7 +92,7 @@ int main(int argc, char* argv[]) {
     return 0;
   }
   std::fstream off("pd_p_api.hpp", std::ios::out);
-  off << std::format(ppa_text, license_text, argv[1]);
+  off << std::format(ppa_text, argv[1]);
   off.close();
   return 0;
 }

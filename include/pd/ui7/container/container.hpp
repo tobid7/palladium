@@ -63,6 +63,11 @@ class PD_UI7_API Container {
     // this->screen = io->Ren->CurrentScreen();
   }
 
+  void SetClipRect(fvec4 clip) {
+    pClipRect = clip;
+    pCLipRectUsed = true;
+  }
+
   /** Setter for Position */
   void SetPos(const fvec2& pos) { this->pos = pos; }
   /** Setter for Size */
@@ -161,6 +166,10 @@ class PD_UI7_API Container {
   bool pPressed = false;
   /** Was Pressed Twice */
   bool pPressedTwice = false;
+  /** ClipRect */
+  fvec4 pClipRect;
+  /** Clip Rect used */
+  bool pCLipRectUsed = false;
 };
 }  // namespace UI7
 }  // namespace PD

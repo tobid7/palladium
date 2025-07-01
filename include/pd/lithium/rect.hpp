@@ -85,7 +85,7 @@ class Rect {
    * Get the bottom-right corner position.
    * @return Bottom-right position as vec2.
    */
-  fvec2 BotRight() const { return fvec2(Bot.z, Bot.y); }
+  fvec2 BotRight() const { return fvec2(Bot.z, Bot.w); }
 
   /**
    * Set the top-left corner position.

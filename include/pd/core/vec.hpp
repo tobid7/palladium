@@ -39,7 +39,7 @@ template <typename T, typename CharT>
 struct std::formatter<PD::vec2<T>, CharT> : std::formatter<T, CharT> {
   template <typename FormatContext>
   auto format(const PD::vec2<T>& v, FormatContext& ctx) const {
-    return std::format_to(ctx.out(), "({}, {})", v.x, v.y);
+    return std::format_to(ctx.out(), "{}, {}", v.x, v.y);
   }
 };
 
@@ -47,7 +47,7 @@ template <typename T, typename CharT>
 struct std::formatter<PD::vec3<T>, CharT> : std::formatter<T, CharT> {
   template <typename FormatContext>
   auto format(const PD::vec3<T>& v, FormatContext& ctx) const {
-    return std::format_to(ctx.out(), "({}, {}, {})", v.x, v.y, v.z);
+    return std::format_to(ctx.out(), "{}, {}, {}", v.x, v.y, v.z);
   }
 };
 
@@ -55,6 +55,6 @@ template <typename T, typename CharT>
 struct std::formatter<PD::vec4<T>, CharT> : std::formatter<T, CharT> {
   template <typename FormatContext>
   auto format(const PD::vec4<T>& v, FormatContext& ctx) const {
-    return std::format_to(ctx.out(), "({}, {}, {}, {})", v.x, v.y, v.z, v.w);
+    return std::format_to(ctx.out(), "{}, {}, {}, {}", v.x, v.y, v.z, v.w);
   }
 };
