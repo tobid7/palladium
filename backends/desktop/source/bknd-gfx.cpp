@@ -36,7 +36,7 @@ const char* vertex_shader = R"(
   varying vec2 oUV;
   varying vec4 oColor;
   
-  // Probably forgot about this matric and
+  // Probably forgot about this matrix and
   // searched hours for why the rendering isn't working :/
   uniform mat4 projection;
   
@@ -103,17 +103,7 @@ GLuint createShaderProgram(const std::string& vertexShaderSource,
   return shaderProgram;
 }
 
-/** Actual Backend */
-
-void GfxGL2::Init() {
-  VertexBuffer.Resize(4 * 8192);
-  IndexBuffer.Resize(6 * 8192);
-  Shader = createShaderProgram(vertex_shader, frag_shader);
-  glUseProgram(Shader);
-
-  glGenBuffers(1, &VBO);
-  glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
+void SetupShaderAttribs(GLuint Shader) {
   GLint _pos = glGetAttribLocation(Shader, "pos");
   GLint _uv = glGetAttribLocation(Shader, "uv");
   GLint _color = glGetAttribLocation(Shader, "color");
@@ -129,6 +119,21 @@ void GfxGL2::Init() {
                         sizeof(PD::Li::Vertex),
                         (void*)offsetof(PD::Li::Vertex, Color));
   glEnableVertexAttribArray(_color);
+}
+
+/** Actual Backend */
+
+void GfxGL2::Init() {
+  VertexBuffer.Resize(4 * 8192);
+  IndexBuffer.Resize(6 * 8192);
+  Shader = createShaderProgram(vertex_shader, frag_shader);
+  glUseProgram(Shader);
+
+  glGenBuffers(1, &VBO);
+  glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+  // Attribs Setup
+  SetupShaderAttribs(Shader);
 
   glGenBuffers(1, &IBO);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
@@ -146,11 +151,14 @@ void GfxGL2::Deinit() {
 }
 
 void GfxGL2::NewFrame() {
+  /*
   glViewport(0, 0, ViewPort.x, ViewPort.y);
   glClearColor(ClearColor.x, ClearColor.y, ClearColor.z, ClearColor.w);
   glClear(GL_COLOR_BUFFER_BIT);
-  Projection.Ortho(0.f, ViewPort.x, ViewPort.y, 0.f, -1.f, 1.f);
-  glUniformMatrix4fv(pLocProjection, 1, GL_TRUE, Projection.m);
+  */
+  Projection = Mat4::Ortho(0.f, ViewPort.x, ViewPort.y, 0.f, -1.f, 1.f);
+  glUseProgram(Shader);
+  glUniformMatrix4fv(pLocProjection, 1, GL_FALSE, Projection.m.data());
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   CurrentIndex = 0;
@@ -170,7 +178,6 @@ void GfxGL2::BindTex(PD::Li::TexAddress addr) {
 }
 
 void GfxGL2::RenderDrawData(const std::vector<PD::Li::Command::Ref>& Commands) {
-  glUseProgram(Shader);
   size_t index = 0;
   while (index < Commands.size()) {
     PD::Li::Texture::Ref Tex = Commands[index]->Tex;
@@ -207,6 +214,9 @@ void GfxGL2::RenderDrawData(const std::vector<PD::Li::Command::Ref>& Commands) {
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, CurrentVertex * sizeof(PD::Li::Vertex),
                  &VertexBuffer[0], GL_DYNAMIC_DRAW);
+    // For some reason we need to set these every frame for every buffer
+    // Found that out when creating My 3d Engine
+    SetupShaderAttribs(Shader);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, CurrentIndex * sizeof(PD::u16),

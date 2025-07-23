@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
+#include <array>
 #include <chrono>
 #include <cinttypes>
 #include <cmath>
@@ -33,6 +34,7 @@ SOFTWARE.
 #include <iostream>
 #include <map>
 #include <memory>
+#include <numbers>
 #include <sstream>
 #include <stack>
 #include <string>

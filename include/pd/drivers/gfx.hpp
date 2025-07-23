@@ -52,6 +52,8 @@ class GfxDriver {
 
   virtual void RenderDrawData(const std::vector<Command::Ref>& Commands) {}
 
+  void SetViewPort(const ivec2& vp) { ViewPort = vp; }
+
   virtual Texture::Ref LoadTex(
       const std::vector<u8>& pixels, int w, int h,
       Texture::Type type = Texture::Type::RGBA32,
@@ -90,6 +92,7 @@ class Gfx {
   static void NewFrame() { pGfx->NewFrame(); }
 
   static void BindTex(TexAddress addr) { pGfx->BindTex(addr); }
+  static void SetViewPort(const ivec2& vp) { pGfx->SetViewPort(vp); }
 
   static void RenderDrawData(const std::vector<Command::Ref>& Commands) {
     pGfx->RenderDrawData(Commands);

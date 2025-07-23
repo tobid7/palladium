@@ -37,9 +37,36 @@ class HidGLFW : public HidDriver {
   PD_SHARED(HidGLFW);
 
   void Update() override;
+  void GetInputStr(std::string& str) override;
+  void HandleTextOps();
+  bool pTimedHeld(KbKey k) {
+    if (pTimings.count(k)) {
+      if (IsEvent(Event_Up, k)) {
+        pTimings.erase(k);
+        return false;
+      }
+      return (PD::OS::GetTime() - pTimings[k]) > 50;
+    }
+    if (!IsEvent(Event_Held, k)) {
+      if (pTimings.count(k)) {
+        pTimings.erase(k);
+        return false;
+      }
+    }
+    if (IsEvent(Event_Held, k)) {
+      pTimings[k] = PD::OS::GetTime();
+      return true;
+    }
+    return false;
+  }
 
   /** Data section */
   GLFWwindow* Window;
   int PrevState;
+  std::unordered_map<int, int> PrevStates;
+  static std::string* pText;
+  bool pInTextMode = false;
+  PD::u64 pLastUpdate = 0;
+  std::unordered_map<KbKey, u64> pTimings;
 };
 }  // namespace PD

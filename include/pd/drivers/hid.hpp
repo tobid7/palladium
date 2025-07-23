@@ -28,6 +28,14 @@ SOFTWARE.
 namespace PD {
 class HidDriver {
  public:
+  enum Flags : u32 {
+    Flags_None,
+    FLags_HasGamepad,
+    Flags_HasKeyboard,
+    Flags_HasTouch,
+    Flags_HasMouse,
+  };
+  // Todo: Name to GpKey (GamepadKey)
   /** Key [Controller] */
   enum Key : u32 {
     No = 0,                    ///< No Key
@@ -60,8 +68,68 @@ class HidDriver {
     Right = DRight | CPRight,  ///< DPad or CPad Right
   };
 
+  // Dont want to use some hardcoded bitset
+  // so lets use just numbers
+  enum KbKey : u8 {
+    Kb_No = 0,
+    Kb_Escape = 1,
+    Kb_Q = 2,
+    Kb_W = 3,
+    Kb_E = 4,
+    Kb_R = 5,
+    Kb_T = 6,
+    // Yes i use QWERTZ Keyboard
+    Kb_Z = 7,
+    Kb_U = 8,
+    Kb_I = 9,
+    Kb_O = 10,
+    Kb_P = 11,
+    Kb_A = 12,
+    Kb_S = 13,
+    Kb_D = 14,
+    Kb_F = 15,
+    Kb_G = 16,
+    Kb_H = 17,
+    Kb_J = 18,
+    Kb_K = 19,
+    Kb_L = 20,
+    Kb_Y = 21,
+    Kb_X = 22,
+    Kb_C = 23,
+    Kb_V = 24,
+    Kb_B = 25,
+    Kb_N = 26,
+    Kb_M = 27,
+    Kb_LShift = 28,
+    Kb_F1 = 29,
+    Kb_F2 = 30,
+    Kb_F3 = 31,
+    Kb_F4 = 32,
+    Kb_F5 = 33,
+    Kb_F6 = 34,
+    Kb_F7 = 35,
+    Kb_F8 = 36,
+    Kb_F9 = 37,
+    Kb_F10 = 38,
+    Kb_F11 = 39,
+    Kb_F12 = 40,
+    Kb_1 = 41,
+    Kb_2 = 42,
+    Kb_3 = 43,
+    Kb_4 = 44,
+    Kb_5 = 45,
+    Kb_6 = 46,
+    Kb_7 = 47,
+    Kb_8 = 48,
+    Kb_9 = 49,
+    Kb_0 = 50,
+    Kb_Backspace = 51,
+    Kb_Enter = 52,
+  };
+
   /** Event */
   enum Event {
+    Event_Null,
     Event_Down,  ///< Key Pressed
     Event_Held,  ///< Key Held
     Event_Up,    ///< Key released
@@ -90,6 +158,7 @@ class HidDriver {
    * @return if key(s) doing the requiested event
    */
   bool IsEvent(Event e, Key keys);
+  bool IsEvent(Event e, KbKey key);
   /**
    * Check for Key Press Event
    * @param keys set of keys
@@ -160,11 +229,18 @@ class HidDriver {
    * Template Update Function for a device specific driver
    */
   virtual void Update() {}
+  /**
+   * Get Text from Keyboard
+   */
+  virtual void GetInputStr(std::string& str) {}
 
   /** Data Section */
 
   /** Backend Identification Name */
   const std::string pName;
+
+  /** Flags */
+  u32 Flags = 0;
 
   /** Key Binds Map */
   std::unordered_map<u32, u32> pBinds;
@@ -176,6 +252,8 @@ class HidDriver {
   bool pLocked = false;
   /** Key Event Table Setup */
   std::unordered_map<Event, u32> KeyEvents[2];
+  /** Keyboard Key Event Table Setup */
+  std::unordered_map<u32, Event> KbKeyEvents[2];
 };
 
 /** Static Hid Controller */
@@ -186,6 +264,7 @@ class Hid {
 
   /** Referenec to Drivers enums */
   using Key = HidDriver::Key;
+  using KbKey = HidDriver::KbKey;
   using Event = HidDriver::Event;
 
   static void Init(HidDriver::Ref v = nullptr) {
@@ -197,6 +276,7 @@ class Hid {
   }
 
   static bool IsEvent(Event e, Key keys) { return pHid->IsEvent(e, keys); }
+  static bool IsEvent(Event e, KbKey key) { return pHid->IsEvent(e, key); }
   static bool IsDown(Key keys) { return pHid->IsDown(keys); }
   static bool IsUp(Key keys) { return pHid->IsUp(keys); }
   static bool IsHeld(Key keys) { return pHid->IsHeld(keys); }
@@ -208,6 +288,8 @@ class Hid {
   static void Unlock() { pHid->Unlock(); }
   static bool Locked() { return pHid->Locked(); }
   static void Update() { pHid->Update(); }
+  static u32 GetFlags() { return pHid->Flags; }
+  static void GetStrInput(std::string& str) { pHid->GetInputStr(str); }
 
   static HidDriver::Ref pHid;
 };

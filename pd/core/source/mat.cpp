@@ -25,32 +25,98 @@ SOFTWARE.
 #include <pd/core/mat.hpp>
 
 namespace PD {
-PD_CORE_API void Mat4::Zeros() {
-  for (int i = 0; i < 16; i++) {
-    m[i] = 0.0f;
-  }
+PD_CORE_API Mat4 Mat4::RotateX(float a) {
+  float c = std::cos(a);
+  float s = std::sin(a);
+  Mat4 ret = Identity();
+  ret(1, 1) = c;
+  ret(1, 2) = -s;
+  ret(2, 1) = s;
+  ret(2, 2) = c;
+  return ret;
 }
 
-PD_CORE_API void Mat4::Ortho(float left, float right, float bottom, float top,
-                             float near, float far) {
-  m[0] = 2.0f / (right - left);
-  m[1] = 0.0f;
-  m[2] = 0.0f;
-  m[3] = -(right + left) / (right - left);
+PD_CORE_API Mat4 Mat4::RotateY(float a) {
+  float c = std::cos(a);
+  float s = std::sin(a);
+  Mat4 ret = Identity();
+  ret(0, 0) = c;
+  ret(0, 2) = s;
+  ret(2, 0) = -s;
+  ret(2, 2) = c;
+  return ret;
+}
 
-  m[4] = 0.0f;
-  m[5] = 2.0f / (top - bottom);
-  m[6] = 0.0f;
-  m[7] = -(top + bottom) / (top - bottom);
+PD_CORE_API Mat4 Mat4::RotateZ(float a) {
+  float c = std::cos(a);
+  float s = std::sin(a);
+  Mat4 ret = Identity();
+  ret(0, 0) = c;
+  ret(0, 1) = -s;
+  ret(1, 0) = s;
+  ret(1, 1) = c;
+  return ret;
+}
 
-  m[8] = 0.0f;
-  m[9] = 0.0f;
-  m[10] = -2.0f / (far - near);
-  m[11] = -(far + near) / (far - near);
+PD_CORE_API Mat4 Mat4::Rotate(fvec3 axis, float a) {
+  float s = std::sin(a);
+  float c = std::cos(a);
+  float t = 1.f - c;
+  axis = axis.Normalize();
+  float x = axis.x;
+  float y = axis.y;
+  float z = axis.z;
+  Mat4 ret = Identity();
+  ret(0, 0) = t * x * x + c;
+  ret(0, 1) = t * x * y - z * s;
+  ret(0, 2) = t * x * z + y * s;
 
-  m[12] = 0.0f;
-  m[13] = 0.0f;
-  m[14] = 0.0f;
-  m[15] = 1.0f;
+  ret(1, 0) = t * x * y + z * s;
+  ret(1, 1) = t * y * y + c;
+  ret(1, 2) = t * y * z - x * s;
+
+  ret(2, 0) = t * x * z - y * s;
+  ret(2, 1) = t * y * z + x * s;
+  ret(2, 2) = t * z * z + c;
+  return ret;
+}
+
+PD_CORE_API Mat4 Mat4::Perspective(float fov, float aspect, float n, float f) {
+  float _fov = std::tan(fov / 2.f);
+  Mat4 ret;
+  ret(0, 0) = 1.f / (aspect * _fov);
+  ret(1, 1) = 1.f / _fov;
+#ifdef __3DS__
+  ret(2, 3) = f * n / (n - f);
+  ret(2, 2) = -(-1.f) * n / (n - f);
+#else
+  ret(2, 2) = -(f + n) / (f - n);
+  ret(2, 3) = -(2.f * f * n) / (f - n);
+#endif
+  ret(3, 2) = -1.f;
+  ret(3, 3) = 0.0f;
+  return ret;
+}
+
+PD_CORE_API Mat4 Mat4::LookAt(const fvec3& pos, const fvec3& center,
+                              const fvec3& up) {
+  auto f = fvec3(center - pos).Normalize();
+  auto s = f.Cross(up).Normalize();
+  auto u = s.Cross(f);
+
+  Mat4 ret = Identity();
+  ret(0, 0) = s.x;
+  ret(0, 1) = s.y;
+  ret(0, 2) = s.z;
+  ret(1, 0) = u.x;
+  ret(1, 1) = u.y;
+  ret(1, 2) = u.z;
+  ret(2, 0) = -f.x;
+  ret(2, 1) = -f.y;
+  ret(2, 2) = -f.z;
+  ret(0, 3) = -s.Dot(pos);
+  ret(1, 3) = -u.Dot(pos);
+  ret(2, 3) = f.Dot(pos);
+  return ret;
 }
 }  // namespace PD

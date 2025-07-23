@@ -58,6 +58,9 @@ class PD_IMAGE_API Image {
   int Height() const { return pHeight; }
   Format Fmt() const { return pFmt; }
 
+  void FlipVertical();
+  void FlipHorizontal();
+
   u8& operator[](int idx) { return pBuffer[idx]; }
   u8 operator[](int idx) const { return pBuffer[idx]; }
 

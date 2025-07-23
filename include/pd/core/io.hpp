@@ -37,6 +37,12 @@ namespace IO {
  */
 PD_CORE_API std::vector<u8> LoadFile2Mem(const std::string& path);
 /**
+ * Load a File into a std::string
+ * @param path Path to the File
+ * @return std::string file content
+ */
+PD_CORE_API std::string LoadFile2Str(const std::string& path);
+/**
  * Hash a 8Bit Memory Buffer
  * @param data 8Bit input Buffer
  * @return 32Bit Hash

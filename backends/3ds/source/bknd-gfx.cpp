@@ -130,11 +130,14 @@ void GfxC3D::BindTex(PD::Li::TexAddress addr) {
 }
 
 void GfxC3D::RenderDrawData(const std::vector<PD::Li::Command::Ref>& Commands) {
-  C3D_BindProgram(&Shader);
+  // C3D_BindProgram(&Shader);
+  shaderProgramUse(&Shader);
   C3D_SetAttrInfo(&ShaderInfo);
   C3D_Mtx proj;
   Mtx_OrthoTilt(&proj, 0.f, ViewPort.x, ViewPort.y, 0.f, 1.f, -1.f, false);
   C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, pLocProjection, &proj);
+  // Mat4 proj = Mat4::Ortho(0.f, ViewPort.x, ViewPort.y, 0.f, 1.f, -1.f);
+  // C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, pLocProjection, (C3D_Mtx*)&proj);
   C3D_DepthTest(false, GPU_GREATER, GPU_WRITE_ALL);
   C3D_TexEnv* env = C3D_GetTexEnv(0);
   C3D_TexEnvInit(env);

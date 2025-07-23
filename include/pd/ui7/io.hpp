@@ -102,7 +102,7 @@ class PD_UI7_API IO {
   }
 
   ViewPort::Ref GetViewPort(const ID& id) {
-    if (ViewPorts.count(id)) {
+    if (!ViewPorts.count(id)) {
       return nullptr;
     }
     return ViewPorts[id];

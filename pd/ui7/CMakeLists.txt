@@ -25,4 +25,4 @@ else()
     pd_add_lib(pd-ui7 SRC_FILES ${SRC})
 endif()
 
-target_link_libraries(pd-ui7 PUBLIC pd-core)
+target_link_libraries(pd-ui7 PUBLIC pd-lithium pd-core)

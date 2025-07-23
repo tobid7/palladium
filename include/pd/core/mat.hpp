@@ -25,17 +25,118 @@ SOFTWARE.
 */
 
 #include <pd/core/common.hpp>
+#include <pd/core/vec3.hpp>
 
 namespace PD {
-class PD_CORE_API Mat4 {
- public:
-  Mat4() { Zeros(); }
-  ~Mat4() = default;
+namespace Numbers {
+constexpr float Tau = std::numbers::pi * 2.f;
+}
+constexpr float Radians(float v) { return v * (Numbers::Tau / 360.0f); }
+/**
+ * Minimal Mtx4 Lib that precomputes
+ * basic stuff stuff at compiletime
+ *
+ * This Lib includes Patches for work with Citro3D as well
+ *
+ * @note That this is not a full Matrix Library
+ */
 
-  void Zeros();
-  void Ortho(float left, float right, float bottom, float top, float near,
-             float far);
+struct PD_CORE_API Mat4 {
+  std::array<float, 16> m;
+  constexpr Mat4() : m{} {}
+  constexpr static Mat4 Diagonal(float x, float y, float z, float w) {
+    Mat4 ret;
+    ret(0, 0) = x;
+    ret(1, 1) = y;
+    ret(2, 2) = z;
+    ret(3, 3) = w;
+    return ret;
+  }
+  constexpr static Mat4 Identity() { return Diagonal(1, 1, 1, 1); }
 
-  float m[16];
+  constexpr float* Ptr() { return m.data(); }
+  constexpr const float* Ptr() const { return m.data(); }
+
+  constexpr float& operator()(int row, int col) {
+#ifdef __3DS__
+    // 3ds is full reverse order iirc
+    return m[row * 4 + (3 - col)];
+#else
+    return m[col * 4 + row];
+#endif
+  }
+  constexpr float operator()(int row, int col) const {
+#ifdef __3DS__
+    // 3ds is full reverse order iirc
+    return m[row * 4 + (3 - col)];
+#else
+    return m[col * 4 + row];
+#endif
+  }
+
+  constexpr Mat4 operator*(const Mat4& v) const {
+    Mat4 ret;
+    for (int i = 0; i < 4; i++) {
+      for (int j = 0; j < 4; j++) {
+        float t = 0.f;
+        for (int k = 0; k < 4; k++) {
+          t += (*this)(i, k) * v(k, j);
+        }
+        ret(i, j) = t;
+      }
+    }
+    return ret;
+  }
+
+  constexpr Mat4& operator*=(const Mat4& v) {
+    *this = *this * v;
+    return *this;
+  }
+
+  constexpr static Mat4 Translate(float x, float y, float z) {
+    Mat4 ret = Identity();
+    ret(0, 3) = x;
+    ret(1, 3) = y;
+    ret(2, 3) = z;
+    return ret;
+  }
+
+  constexpr static Mat4 Scale(float x, float y, float z) {
+    Mat4 ret;
+    ret(0, 0) = x;
+    ret(1, 1) = y;
+    ret(2, 2) = z;
+    ret(3, 3) = 1.f;
+    return ret;
+  }
+
+  constexpr static Mat4 Ortho(float l, float r, float b, float t, float n,
+                              float f) {
+    Mat4 ret;
+#ifdef __3DS__  // Patch to rotate the Matrix correctly
+    ret(0, 1) = 2.f / (t - b);
+    ret(0, 3) = (b + t) / (b - t);
+    ret(1, 0) = 2.f / (l - r);
+    ret(1, 3) = (l + r) / (r - l);
+    ret(2, 2) = 1.f / (n - f);
+    ret(2, 3) = 0.5f * (n + f) / (n - f) - 0.5f;
+#else
+    ret(0, 0) = 2.0f / (r - l);
+    ret(0, 3) = -(r + l) / (r - l);
+    ret(1, 1) = 2.0f / (t - b);
+    ret(1, 3) = -(t + b) / (t - b);
+    ret(2, 2) = -2.0f / (f - n);
+    ret(2, 3) = -(f + n) / (f - n);
+#endif
+    ret(3, 3) = 1.f;
+    return ret;
+  }
+
+  static Mat4 Rotate(fvec3 axis, float a);
+  static Mat4 RotateX(float a);
+  static Mat4 RotateY(float a);
+  static Mat4 RotateZ(float a);
+  static Mat4 Perspective(float fov, float aspect, float n, float f);
+  static Mat4 LookAt(const fvec3& pos, const fvec3& center, const fvec3& up);
 };
 }  // namespace PD

@@ -39,6 +39,20 @@ PD_CORE_API std::vector<u8> LoadFile2Mem(const std::string& path) {
   return res;
 }
 
+PD_CORE_API std::string LoadFile2Str(const std::string& path) {
+  std::ifstream iff(path, std::ios::binary);
+  if (!iff) {
+    return "";
+  }
+  std::string ret;
+  std::string line;
+  while (std::getline(iff, line)) {
+    ret += line;
+  }
+  iff.close();
+  return ret;
+}
+
 PD_CORE_API u32 HashMemory(const std::vector<u8>& data) {
   u32 hash = 4477;
   for (auto& it : data) {

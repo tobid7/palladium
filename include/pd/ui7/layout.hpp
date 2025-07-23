@@ -39,6 +39,7 @@ class PD_UI7_API Layout {
     this->IO = io;
     DrawList = Li::DrawList::New();
     DrawList->SetFont(IO->Font);
+    DrawList->SetFontScale(io->FontScale);
     Scrolling[0] = false;
     Scrolling[1] = false;
     CursorInit();

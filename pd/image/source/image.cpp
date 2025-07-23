@@ -77,6 +77,46 @@ PD_IMAGE_API void Image::Copy(const std::vector<u8>& buf, int w, int h,
   }
 }
 
+PD_IMAGE_API void Image::FlipHorizontal() {
+  /**
+   * Dont know if i am brain dead but i think this code
+   * should Horizpntal flip an image
+   * Probably this needs some optimisation like not always calling
+   * Fmt2Bpp and use `* 0.5` instead of `/ 2` i guess
+   */
+  for (int i = 0; i < pWidth / 2; i++) {
+    for (int j = 0; j < pHeight; j++) {
+      int src = (j * pWidth + i) * Fmt2Bpp(pFmt);
+      int dst = (j * pWidth + (pWidth - 1 - i)) * Fmt2Bpp(pFmt);
+      for (int k = 0; k < Fmt2Bpp(pFmt); k++) {
+        PD::u8 tmp = pBuffer[dst + k];
+        pBuffer[dst + k] = pBuffer[src + k];
+        pBuffer[src + k] = tmp;
+      }
+    }
+  }
+}
+
+PD_IMAGE_API void Image::FlipVertical() {
+  /**
+   * Dont know if i am brain dead but i think this code
+   * should Vertical flip an image
+   * Probably this needs some optimisation like not always calling
+   * Fmt2Bpp and use `* 0.5` instead of `/ 2` i guess
+   */
+  for (int i = 0; i < pWidth; i++) {
+    for (int j = 0; j < pHeight / 2; j++) {
+      int src = (j * pWidth + i) * Fmt2Bpp(pFmt);
+      int dst = ((pHeight - 1 - j) * pWidth + i) * Fmt2Bpp(pFmt);
+      for (int k = 0; k < Fmt2Bpp(pFmt); k++) {
+        PD::u8 tmp = pBuffer[dst + k];
+        pBuffer[dst + k] = pBuffer[src + k];
+        pBuffer[src + k] = tmp;
+      }
+    }
+  }
+}
+
 PD_IMAGE_API void Image::Convert(Image::Ref img, Image::Format dst) {
   if (img->pFmt == dst) {
     return;
