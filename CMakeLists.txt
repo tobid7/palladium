@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.22)
 
 # Set Project
-project(palladium LANGUAGES C CXX VERSION 0.5.0)
+project(palladium LANGUAGES C CXX VERSION 0.5.1)
 
 # Required to add this Variable
 set(PD_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)

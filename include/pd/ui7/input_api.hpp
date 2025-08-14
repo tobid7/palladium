@@ -58,7 +58,9 @@ class InputHandler {
     // Get a Short define for touch pos
     fvec2 p = Hid::MousePos();
     // Check if Drag starts in the area position
-    if (Hid::IsDown(Hid::Key::Touch) && Li::Renderer::InBox(p, area)) {
+    if ((Hid::IsDown(Hid::Key::Touch) ||
+         Hid::IsEvent(PD::Hid::Event::Event_Down, HidKb::Kb_MouseLeft)) &&
+        Li::Renderer::InBox(p, area)) {
       // Set ID and iniatial Positions
       DraggedObject = id;
       DragSourcePos = p;
@@ -69,11 +71,16 @@ class InputHandler {
       DragTime->Reset();
       DragTime->Rseume();
       return false;  // To make sure the Object is "Dragged"
-    } else if (Hid::IsHeld(Hid::Key::Touch) && IsObjectDragged()) {
+    } else if ((Hid::IsHeld(Hid::Key::Touch) ||
+                Hid::IsEvent(PD::Hid::Event::Event_Held,
+                             HidKb::Kb_MouseLeft)) &&
+               IsObjectDragged()) {
       // Update DragLast and DragPoisition
       DragLastPosition = DragPosition;
       DragPosition = p;
-    } else if (Hid::IsUp(Hid::Key::Touch) && IsObjectDragged()) {
+    } else if ((Hid::IsUp(Hid::Key::Touch) ||
+                Hid::IsEvent(PD::Hid::Event::Event_Up, HidKb::Kb_MouseLeft)) &&
+               IsObjectDragged()) {
       // Released... Everything gets reset
       DraggedObject = 0;
       DragPosition = 0;

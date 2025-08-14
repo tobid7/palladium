@@ -30,4 +30,5 @@ SOFTWARE.
 #include <pd/core/sl/pair.hpp>
 #include <pd/core/sl/stack.hpp>
 #include <pd/core/sl/tools.hpp>
+#include <pd/core/sl/u128.hpp>
 #include <pd/core/sl/vector.hpp>

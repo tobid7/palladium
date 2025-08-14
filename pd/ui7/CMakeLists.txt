@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.22)
 
-project(pd-ui7 LANGUAGES CXX VERSION 0.5.0)
+project(pd-ui7 LANGUAGES CXX VERSION 0.5.1)
 
 set(SRC
     source/theme.cpp

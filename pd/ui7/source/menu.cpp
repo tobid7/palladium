@@ -119,7 +119,8 @@ PD_UI7_API void Menu::HandleFocus() {
   if (!pIsOpen) {
     newarea = fvec4(pLayout->Pos, fvec2(pLayout->Size.x, TitleBarHeight));
   }
-  if (Hid::IsDown(Hid::Key::Touch) &&
+  if ((Hid::IsDown(Hid::Key::Touch) ||
+       Hid::IsEvent(Hid::Event::Event_Down, HidKb::Kb_MouseLeft)) &&
       Li::Renderer::InBox(Hid::MousePos(), newarea) &&
       !Li::Renderer::InBox(Hid::MousePos(),
                            pIO->InputHandler->FocusedMenuRect)) {
@@ -190,8 +191,8 @@ PD_UI7_API void Menu::HandleTitlebarActions() {
       // Maybe i need to add some operators to vec
       pLayout->Pos.x = std::clamp<float>(pLayout->Pos.x, -pLayout->Size.x + 10,
                                          pIO->CurrentViewPort.z - 10);
-      pLayout->Pos.y =
-          std::clamp<float>(pLayout->Pos.y, 0.f, pIO->CurrentViewPort.w - 10);
+      pLayout->Pos.y = std::clamp<float>(pLayout->Pos.y, pIO->CurrentViewPort.y,
+                                         pIO->CurrentViewPort.w - 10);
     }
   }
 }

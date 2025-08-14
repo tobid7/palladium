@@ -33,7 +33,6 @@ SOFTWARE.
 #include <pd/lithium/lithium.hpp>
 
 namespace PD {
-namespace Li {
 class GfxGL2 : public GfxDriver {
  public:
   GfxGL2() : GfxDriver("OpenGL2") {}
@@ -53,18 +52,11 @@ class GfxGL2 : public GfxDriver {
       PD::Li::Texture::Filter filter =
           PD::Li::Texture::Filter::LINEAR) override;
 
-  PD::Vec<Vertex> VertexBuffer;
+  PD::Vec<Li::Vertex> VertexBuffer;
   PD::Vec<PD::u16> IndexBuffer;
-  size_t CurrentVertex = 0;
-  size_t CurrentIndex = 0;
   GLuint Shader;
   GLuint pLocProjection;
   GLuint pLocTex;
-  Mat4 Projection;
   GLuint VBO, IBO;
-  // Stats oder so IDNK zu lange her
-  PD::u32 NumVtx;
-  PD::u32 NumIdx;
 };
-}  // namespace Li
 }  // namespace PD

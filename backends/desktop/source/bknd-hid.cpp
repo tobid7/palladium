@@ -40,7 +40,7 @@ HidGLFW::HidGLFW(GLFWwindow* win) : HidDriver("HidGLFW") {
   Flags |= Flags_HasKeyboard;
   Flags |= Flags_HasMouse;
   pBinds[GLFW_MOUSE_BUTTON_LEFT] = Touch;
-  pBinds[GLFW_KEY_F3] = Kb_3;
+  /*pBinds[GLFW_KEY_F3] = Kb_3;
   pBinds[GLFW_KEY_ESCAPE] = Kb_Escape;
   pBinds[GLFW_KEY_F11] = Kb_F11;
   pBinds[GLFW_KEY_ESCAPE] = Kb_Escape;
@@ -94,7 +94,7 @@ HidGLFW::HidGLFW(GLFWwindow* win) : HidDriver("HidGLFW") {
   pBinds[GLFW_KEY_9] = Kb_9;
   pBinds[GLFW_KEY_0] = Kb_0;
   pBinds[GLFW_KEY_BACKSPACE] = Kb_Backspace;
-  pBinds[GLFW_KEY_ENTER] = Kb_Enter;
+  pBinds[GLFW_KEY_ENTER] = Kb_Enter;*/
 }
 
 void HidGLFW::Update() {
@@ -108,7 +108,7 @@ void HidGLFW::Update() {
     }
   }
   // Keyboard Logic
-  for (auto& it : pBinds) {
+  /*for (auto& it : pBinds) {
     int kbstate = glfwGetKey(Window, it.first);
     if (kbstate == GLFW_PRESS) {
       if (PrevStates[it.first] == GLFW_RELEASE) {
@@ -119,7 +119,7 @@ void HidGLFW::Update() {
       KbKeyEvents[0][it.second] = Event_Up;
     }
     PrevStates[it.first] = kbstate;
-  }
+  }*/
   // Mouse Logic (Todo: Support all mouse buttons)
   int state = glfwGetMouseButton(Window, GLFW_MOUSE_BUTTON_LEFT);
   if (state == GLFW_PRESS) {
@@ -155,12 +155,12 @@ void HidGLFW::HandleTextOps() {
   if (!pText) {
     return;
   }
-  if (pTimedHeld(Kb_Backspace)) {
+  /*if (pTimedHeld(Kb_Backspace)) {
     if (!pText->empty()) {
       pText->pop_back();
     }
   } else if (pTimedHeld(Kb_Enter)) {
     *pText += '\n';
-  }
+  }*/
 }
 }  // namespace PD

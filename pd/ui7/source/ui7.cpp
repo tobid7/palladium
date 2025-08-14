@@ -169,7 +169,8 @@ PD_UI7_API void Context::AboutMenu(bool *show) {
       m->Label("sizeof(size_t) -> " + std::to_string(sizeof(size_t)));
       m->Label("sizeof(LI::Vertex) -> " + std::to_string(sizeof(Li::Vertex)));
       m->Label("__cplusplus -> " + std::to_string(__cplusplus));
-      m->Label("Compiler -> (hidden)");  // + LibInfo::CompiledWith());
+      m->Label("Compiler -> " +
+               Strings::GetCompilerVersion());  // + LibInfo::CompiledWith());
     }
     EndMenu();
   }
@@ -203,6 +204,23 @@ PD_UI7_API void Context::MetricsMenu(bool *show) {
           m->Label("Max: " + UI7DTF(it.second->GetProtocol()->GetMax()));
           m->EndTreeNode();
         }
+      }
+      m->EndTreeNode();
+    }
+    m->SeparatorText("Palladium Info");
+    m->Label("Renderer: " + PD::Gfx::pGfx->pName);
+    if (m->BeginTreeNode("Input: " + PD::Hid::pHid->pName)) {
+      if (PD::Hid::GetFlags() & PD::HidDriver::Flags_HasKeyboard) {
+        m->Label("- Keyboard Supported");
+      }
+      if (PD::Hid::GetFlags() & PD::HidDriver::Flags_HasMouse) {
+        m->Label("- Mouse Supported");
+      }
+      if (PD::Hid::GetFlags() & PD::HidDriver::Flags_HasTouch) {
+        m->Label("- Touch Supported");
+      }
+      if (PD::Hid::GetFlags() & PD::HidDriver::FLags_HasGamepad) {
+        m->Label("- Gamepad Supported");
       }
       m->EndTreeNode();
     }

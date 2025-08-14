@@ -70,8 +70,8 @@ class PD_LITHIUM_API DrawList {
   void Merge(DrawList::Ref list);
 
   Command::Ref PreGenerateCmd();
-  void AddCommand(Command::Ref v) { pDrawList.push_back(std::move(v)); }
-  void Clear() { pDrawList.clear(); }
+  void AddCommand(Command::Ref v);
+  void Clear();
 
   void SetFont(Font::Ref font) { pCurrentFont = font; }
   void SetFontScale(float scale) { pFontScale = scale; }
@@ -194,6 +194,8 @@ class PD_LITHIUM_API DrawList {
   Texture::Ref CurrentTex;
   std::vector<Command::Ref> pDrawList;
   PD::Vec<fvec2> pPath;
+  u32 pNumIndices = 0;
+  u32 pNumVertices = 0;
 };
 }  // namespace Li
 }  // namespace PD

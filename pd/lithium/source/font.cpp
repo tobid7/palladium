@@ -32,25 +32,42 @@ SOFTWARE.
 
 #include <pd/lithium/renderer.hpp>
 
+#ifdef PD_LI_INCLUDE_FONTS
+#include <pd/lithium/fonts.hpp>
+#endif
+
 namespace PD {
 namespace Li {
+PD_LITHIUM_API void Font::LoadDefaultFont(int id, int pixel_height) {
+#ifdef PD_LI_INCLUDE_FONTS
+  if (id < pNumFonts) {
+    auto font = pFontData[id];
+    LoadTTF(std::vector<u8>(&pFontsDataRaw[font.StartOff],
+                            &pFontsDataRaw[font.StartOff + font.Size]),
+            pixel_height);
+  }
+#endif
+}
+
 PD_LITHIUM_API void Font::LoadTTF(const std::string &path, int height) {
+  /**
+   * Just use LoadFile2Mem which looks way cleaner
+   * and helps not having the font loading code twice
+   * when adding LoadTTF with mem support
+   */
   TT::Scope st("LI_LoadTTF_" + path);
+  auto font = PD::IO::LoadFile2Mem(path);
+  LoadTTF(font, height);
+}
+
+PD_LITHIUM_API void Font::LoadTTF(const std::vector<u8> &data, int height) {
   PixelHeight = height;  // Set internel pixel height
   // Use NextPow2 to be able to use sizes between for example 16 and 32
   // before it only was possible to use 8, 16, 32, 64 as size
   int texszs = BitUtil::GetPow2(height * 16);
   // Load stbtt
   stbtt_fontinfo inf;
-  std::ifstream loader(path, std::ios::binary);
-  if (!loader.is_open()) return;
-  loader.seekg(0, std::ios::end);
-  size_t len = loader.tellg();
-  loader.seekg(0, std::ios::beg);
-  unsigned char *buffer = new unsigned char[len];
-  loader.read(reinterpret_cast<char *>(buffer), len);
-  loader.close();
-  stbtt_InitFont(&inf, buffer, 0);
+  stbtt_InitFont(&inf, data.data(), 0);
   // clang-format off
   // Disable clang here cause dont want a garbage looking line
   std::vector<PD::u8> font_tex(texszs * texszs * 4);  // Create font Texture

@@ -133,6 +133,12 @@ PD_IMAGE_API void Image::Convert(Image::Ref img, Image::Format dst) {
     img->pBuffer.resize(img->pWidth * img->pHeight * 3);
     ImgConvert::RGB32toRGBA24(img->pBuffer, cpy, img->pWidth, img->pHeight);
     img->pFmt = RGB;
+  } else if (img->pFmt == Image::RGBA && dst == Image::BGRA) {
+    for (int i = 0; i < (img->pWidth * img->pHeight * 4); i += 4) {
+      u8 _tmp = img->pBuffer[i + 0];
+      img->pBuffer[i + 0] = img->pBuffer[i + 2];
+      img->pBuffer[i + 2] = _tmp;
+    }
   } else if (img->pFmt == Image::RGBA && dst == Image::RGB565) {
     Convert(img, Image::RGB);
     Convert(img, Image::RGB565);

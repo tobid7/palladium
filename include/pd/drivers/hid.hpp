@@ -26,14 +26,70 @@ SOFTWARE.
 #include <pd/core/core.hpp>
 
 namespace PD {
+/** Did not found a better solution yet sadly */
+namespace HidKb {
+// Lets use u128 here
+using KbKey = u128;
+constexpr static KbKey Kb_No = 0;
+constexpr static KbKey Kb_Escape = KbKey::Flag(0);
+constexpr static KbKey Kb_Q = KbKey::Flag(1);
+constexpr static KbKey Kb_W = KbKey::Flag(2);
+constexpr static KbKey Kb_E = KbKey::Flag(3);
+constexpr static KbKey Kb_R = KbKey::Flag(4);
+constexpr static KbKey Kb_T = KbKey::Flag(5);
+constexpr static KbKey Kb_Z = KbKey::Flag(6);
+constexpr static KbKey Kb_U = KbKey::Flag(7);
+constexpr static KbKey Kb_I = KbKey::Flag(8);
+constexpr static KbKey Kb_O = KbKey::Flag(9);
+constexpr static KbKey Kb_P = KbKey::Flag(10);
+constexpr static KbKey Kb_A = KbKey::Flag(11);
+constexpr static KbKey Kb_S = KbKey::Flag(12);
+constexpr static KbKey Kb_D = KbKey::Flag(13);
+constexpr static KbKey Kb_F = KbKey::Flag(14);
+constexpr static KbKey Kb_G = KbKey::Flag(15);
+constexpr static KbKey Kb_H = KbKey::Flag(16);
+constexpr static KbKey Kb_J = KbKey::Flag(17);
+constexpr static KbKey Kb_K = KbKey::Flag(18);
+constexpr static KbKey Kb_L = KbKey::Flag(19);
+constexpr static KbKey Kb_Y = KbKey::Flag(20);
+constexpr static KbKey Kb_X = KbKey::Flag(21);
+constexpr static KbKey Kb_C = KbKey::Flag(22);
+constexpr static KbKey Kb_V = KbKey::Flag(23);
+constexpr static KbKey Kb_B = KbKey::Flag(24);
+constexpr static KbKey Kb_N = KbKey::Flag(25);
+constexpr static KbKey Kb_M = KbKey::Flag(26);
+constexpr static KbKey Kb_1 = KbKey::Flag(27);
+constexpr static KbKey Kb_2 = KbKey::Flag(28);
+constexpr static KbKey Kb_3 = KbKey::Flag(29);
+constexpr static KbKey Kb_4 = KbKey::Flag(30);
+constexpr static KbKey Kb_5 = KbKey::Flag(31);
+constexpr static KbKey Kb_6 = KbKey::Flag(32);
+constexpr static KbKey Kb_7 = KbKey::Flag(33);
+constexpr static KbKey Kb_8 = KbKey::Flag(34);
+constexpr static KbKey Kb_9 = KbKey::Flag(35);
+constexpr static KbKey Kb_0 = KbKey::Flag(36);
+constexpr static KbKey Kb_F1 = KbKey::Flag(37);
+constexpr static KbKey Kb_F2 = KbKey::Flag(38);
+constexpr static KbKey Kb_F3 = KbKey::Flag(39);
+constexpr static KbKey Kb_F4 = KbKey::Flag(40);
+constexpr static KbKey Kb_F5 = KbKey::Flag(41);
+constexpr static KbKey Kb_F6 = KbKey::Flag(42);
+constexpr static KbKey Kb_F7 = KbKey::Flag(43);
+constexpr static KbKey Kb_F8 = KbKey::Flag(44);
+constexpr static KbKey Kb_F9 = KbKey::Flag(45);
+constexpr static KbKey Kb_F10 = KbKey::Flag(46);
+constexpr static KbKey Kb_F11 = KbKey::Flag(47);
+constexpr static KbKey Kb_F12 = KbKey::Flag(48);
+constexpr static KbKey Kb_MouseLeft = KbKey::Flag(120);
+}  // namespace HidKb
 class HidDriver {
  public:
   enum Flags : u32 {
-    Flags_None,
-    FLags_HasGamepad,
-    Flags_HasKeyboard,
-    Flags_HasTouch,
-    Flags_HasMouse,
+    Flags_None = 0,
+    FLags_HasGamepad = 1 << 0,
+    Flags_HasKeyboard = 1 << 1,
+    Flags_HasTouch = 1 << 2,
+    Flags_HasMouse = 1 << 3,
   };
   // Todo: Name to GpKey (GamepadKey)
   /** Key [Controller] */
@@ -68,64 +124,7 @@ class HidDriver {
     Right = DRight | CPRight,  ///< DPad or CPad Right
   };
 
-  // Dont want to use some hardcoded bitset
-  // so lets use just numbers
-  enum KbKey : u8 {
-    Kb_No = 0,
-    Kb_Escape = 1,
-    Kb_Q = 2,
-    Kb_W = 3,
-    Kb_E = 4,
-    Kb_R = 5,
-    Kb_T = 6,
-    // Yes i use QWERTZ Keyboard
-    Kb_Z = 7,
-    Kb_U = 8,
-    Kb_I = 9,
-    Kb_O = 10,
-    Kb_P = 11,
-    Kb_A = 12,
-    Kb_S = 13,
-    Kb_D = 14,
-    Kb_F = 15,
-    Kb_G = 16,
-    Kb_H = 17,
-    Kb_J = 18,
-    Kb_K = 19,
-    Kb_L = 20,
-    Kb_Y = 21,
-    Kb_X = 22,
-    Kb_C = 23,
-    Kb_V = 24,
-    Kb_B = 25,
-    Kb_N = 26,
-    Kb_M = 27,
-    Kb_LShift = 28,
-    Kb_F1 = 29,
-    Kb_F2 = 30,
-    Kb_F3 = 31,
-    Kb_F4 = 32,
-    Kb_F5 = 33,
-    Kb_F6 = 34,
-    Kb_F7 = 35,
-    Kb_F8 = 36,
-    Kb_F9 = 37,
-    Kb_F10 = 38,
-    Kb_F11 = 39,
-    Kb_F12 = 40,
-    Kb_1 = 41,
-    Kb_2 = 42,
-    Kb_3 = 43,
-    Kb_4 = 44,
-    Kb_5 = 45,
-    Kb_6 = 46,
-    Kb_7 = 47,
-    Kb_8 = 48,
-    Kb_9 = 49,
-    Kb_0 = 50,
-    Kb_Backspace = 51,
-    Kb_Enter = 52,
-  };
+  using KbKey = HidKb::KbKey;
 
   /** Event */
   enum Event {
@@ -228,7 +227,7 @@ class HidDriver {
   /**
    * Template Update Function for a device specific driver
    */
-  virtual void Update() {}
+  virtual void Update();
   /**
    * Get Text from Keyboard
    */
@@ -244,6 +243,7 @@ class HidDriver {
 
   /** Key Binds Map */
   std::unordered_map<u32, u32> pBinds;
+  std::unordered_map<u128, u128> pKbBinds;
   /** Swap Tabe Function */
   void SwapTab();
   /** Using 2 Positions for Current and Last */
@@ -253,7 +253,7 @@ class HidDriver {
   /** Key Event Table Setup */
   std::unordered_map<Event, u32> KeyEvents[2];
   /** Keyboard Key Event Table Setup */
-  std::unordered_map<u32, Event> KbKeyEvents[2];
+  std::unordered_map<Event, u128> KbKeyEvents[2];
 };
 
 /** Static Hid Controller */
@@ -264,7 +264,7 @@ class Hid {
 
   /** Referenec to Drivers enums */
   using Key = HidDriver::Key;
-  using KbKey = HidDriver::KbKey;
+  using KbKey = HidKb::KbKey;
   using Event = HidDriver::Event;
 
   static void Init(HidDriver::Ref v = nullptr) {

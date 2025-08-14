@@ -1,0 +1,167 @@
+/*
+MIT License
+Copyright (c) 2024 - 2025 René Amthor (tobid7)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+ */
+
+// C++ 20 capable compiler required (eg. force use
+// self compiled clang on debian based systems)
+#include <filesystem>
+#include <format>
+#include <fstream>
+#include <iostream>
+#include <string>
+#include <vector>
+
+constexpr std::string_view pdfh_text = R"(#pragma once
+
+/*
+MIT License
+Copyright (c) 2024 - 2025 René Amthor (tobid7)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+ */
+
+#ifdef PD_LI_INCLUDE_FONTS
+
+#include <pd/core/common.hpp>
+
+/** Generated with pdfm */
+namespace PD {
+struct FontFileData {
+  std::string Name;
+  u32 StartOff;
+  u32 Size;
+};
+extern FontFileData pFontData[];
+extern size_t pNumFonts;
+extern PD::u8 pFontsDataRaw[];
+}   // namespace PD
+#endif
+)";
+
+constexpr std::string_view pdfs_text = R"(/*
+MIT License
+Copyright (c) 2024 - 2025 René Amthor (tobid7)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+ */
+
+#ifdef PD_LI_INCLUDE_FONTS
+#include <pd/lithium/fonts.hpp>
+
+/** Generated with pdfm */
+namespace PD {{
+FontFileData pFontData[] = {{{0}
+}};
+size_t pNumFonts = {1};
+// clang-format off
+PD::u8 pFontsDataRaw[] = {{
+{2}
+}};
+// clang-format on
+}}   // namespace PD
+#endif
+)";
+
+std::string File2HexSequence(const std::string& path) {
+  std::string ret;
+  std::ifstream iff(path, std::ios::binary);
+  std::vector<unsigned char> buffer(std::istreambuf_iterator<char>(iff), {});
+  iff.close();
+  for (size_t i = 0; i < buffer.size(); i++) {
+    ret += std::format("0x{:x},", (int)buffer[i]);
+    if ((i % 100) == 0 && i != 0) {
+      ret += '\n';
+    }
+  }
+  return ret;
+}
+
+std::string MakeEntry(const std::string& name, unsigned int off,
+                      unsigned int size) {
+  std::string ret = "\n  {\n";
+  ret += "    \"" + name + "\",\n";
+  ret += "    " + std::to_string(off) + ",\n";
+  ret += "    " + std::to_string(size) + ",\n";
+  ret += "  },";
+  return ret;
+}
+
+/**
+ * Tool to create in code embeded fonts
+ */
+
+int main(int argc, char* argv[]) {
+  if (argc < 2) {
+    std::cout << argv[0] << " <file1> <file2>..." << std::endl;
+    return 0;
+  }
+  std::string entries;
+  std::string filez;
+  unsigned int pNumEntries = 0;
+  for (int i = 1; i < argc; i++) {
+    size_t off = filez.size();
+    std::string t = File2HexSequence(argv[i]);
+    filez += t;
+    entries += MakeEntry(std::filesystem::path(argv[i]).filename().string(),
+                         off, t.size());
+    pNumEntries++;
+  }
+  std::fstream off("fonts.hpp", std::ios::out);
+  off << pdfh_text;
+  off.close();
+  off.open("fonts.cpp", std::ios::out);
+  off << std::format(pdfs_text, entries, pNumEntries, filez);
+  off.close();
+  return 0;
+}

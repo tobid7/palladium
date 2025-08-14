@@ -30,7 +30,7 @@ void Init(void* data) {
   // Dekstop Init Stage
   // First use default OS Driver
   PD::OS::Init();
-  PD::Li::Gfx::Init(PD::Li::GfxC3D::New());
+  PD::Gfx::Init(PD::GfxC3D::New());
   PD::Hid::Init(PD::Hid3DS::New());
 }
 }  // namespace PD

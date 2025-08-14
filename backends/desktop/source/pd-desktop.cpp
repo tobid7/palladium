@@ -37,7 +37,7 @@ void Init(void* data) {
   // Dekstop Init Stage
   // First use default OS Driver
   PD::OS::Init();
-  PD::Li::Gfx::Init(PD::Li::GfxGL2::New());
+  PD::Gfx::Init(PD::GfxGL2::New());
   PD::Hid::Init(PD::HidGLFW::New(reinterpret_cast<GLFWwindow*>(data)));
 }
 }  // namespace PD

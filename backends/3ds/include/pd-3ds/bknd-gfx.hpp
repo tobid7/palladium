@@ -40,8 +40,6 @@ class LinearAlloc : public Allocator<T> {
   T* Allocate(size_t n) override { return (T*)linearAlloc(n * sizeof(T)); }
   void Deallocate(T* ptr) { linearFree(ptr); }
 };
-
-namespace Li {
 class GfxC3D : public GfxDriver {
  public:
   GfxC3D() : GfxDriver("Citro3D") {}
@@ -63,16 +61,9 @@ class GfxC3D : public GfxDriver {
 
   Vec<Vertex, LinearAlloc<Vertex>> VertexBuffer;
   Vec<u16, LinearAlloc<u16>> IndexBuffer;
-  size_t CurrentVertex = 0;
-  size_t CurrentIndex = 0;
-  Mat4 Projection;
   int pLocProjection = 0;
   DVLB_s* ShaderCode;
   shaderProgram_s Shader;
   C3D_AttrInfo ShaderInfo;
-  // Stats oder so IDNK zu lange her
-  PD::u32 NumVtx;
-  PD::u32 NumIdx;
 };
-}  // namespace Li
 }  // namespace PD

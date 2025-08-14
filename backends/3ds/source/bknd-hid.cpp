@@ -28,6 +28,8 @@ SOFTWARE.
 
 namespace PD {
 Hid3DS::Hid3DS() : HidDriver("Hid3DS") {
+  this->Flags |= Flags_HasTouch;
+  this->Flags |= FLags_HasGamepad;
   pBinds[KEY_A] = A;
   pBinds[KEY_B] = B;
   pBinds[KEY_X] = X;

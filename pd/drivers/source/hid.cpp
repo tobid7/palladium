@@ -5,11 +5,8 @@ namespace PD {
 PD_DEF_EXP(HidDriver::Ref, Hid::pHid);
 
 bool HidDriver::IsEvent(Event e, Key keys) { return KeyEvents[0][e] & keys; }
-bool HidDriver::IsEvent(Event e, KbKey key) {
-  if (!KbKeyEvents[0].count(key)) {
-    return false;
-  }
-  return KbKeyEvents[0][key] == e;
+bool HidDriver::IsEvent(Event e, KbKey keys) {
+  return KbKeyEvents[0][e].Has(keys);
 }
 
 void HidDriver::SwapTab() {
@@ -22,5 +19,21 @@ void HidDriver::SwapTab() {
   KeyEvents[0][Event_Down] = tkd;
   KeyEvents[0][Event_Held] = tkh;
   KeyEvents[0][Event_Up] = tku;
+}
+
+/**
+ * If this func has no verride, still clear the stats
+ * cause if they are empty this leads to a crash
+ */
+void HidDriver::Update() {
+  // Clear States
+  for (int i = 0; i < 2; i++) {
+    KeyEvents[i][Event_Down] = 0;
+    KeyEvents[i][Event_Held] = 0;
+    KeyEvents[i][Event_Up] = 0;
+    for (auto& it : KbKeyEvents[i]) {
+      it.second = Event_Null;
+    }
+  }
 }
 }  // namespace PD

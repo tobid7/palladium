@@ -33,8 +33,22 @@ namespace PD {
 namespace Li {
 PD_LITHIUM_API void DrawList::DrawSolid() { CurrentTex = Gfx::GetSolidTex(); }
 
+PD_LITHIUM_API void DrawList::Clear() {
+  pNumIndices = 0;
+  pNumVertices = 0;
+  pDrawList.clear();
+}
+
+PD_LITHIUM_API void DrawList::AddCommand(Command::Ref v) {
+  pNumIndices += v->IndexBuffer.Size();
+  pNumVertices += v->VertexBuffer.Size();
+  pDrawList.push_back(std::move(v));
+}
+
 PD_LITHIUM_API void DrawList::Merge(DrawList::Ref list) {
   for (size_t i = 0; i < list->pDrawList.size(); i++) {
+    pNumIndices += list->pDrawList[i]->IndexBuffer.Size();
+    pNumVertices += list->pDrawList[i]->VertexBuffer.Size();
     pDrawList.push_back(std::move(list->pDrawList[i]));
   }
   /** Make sure The list gets cleared */

@@ -43,8 +43,8 @@ class PD_UI7_API IO {
     FDL = Li::DrawList::New();
     DeltaStats = TimeStats::New(60);
     /** Probably not the best solution i guess */
-    CurrentViewPort.z = PD::Li::Gfx::pGfx->ViewPort.x;
-    CurrentViewPort.w = PD::Li::Gfx::pGfx->ViewPort.y;
+    CurrentViewPort.z = PD::Gfx::pGfx->ViewPort.x;
+    CurrentViewPort.w = PD::Gfx::pGfx->ViewPort.y;
   }
   ~IO() {}
 

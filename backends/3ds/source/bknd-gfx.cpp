@@ -25,6 +25,9 @@ SOFTWARE.
 #include <pd-3ds/bknd-gfx.hpp>
 
 /// @brief Shader Code (Unused as i dont want to use libpicasso here (yet))
+/// Update: Picasso breaks the linearRam or ram for somereason
+/// as far as i found out loading anything into linear ram after
+/// using libpicasso to compile a shader leads into a system freeze
 const char* LIShaderCTR = R"(
 ; LI7 Shader
 ; Constants
@@ -70,7 +73,6 @@ unsigned char li_shader[] = {
 size_t li_shader_size = 0x124;
 
 namespace PD {
-namespace Li {
 GPU_TEXCOLOR GetTexFmt(Texture::Type type) {
   if (type == Texture::RGBA32)
     return GPU_RGBA8;
@@ -249,5 +251,4 @@ PD::Li::Texture::Ref GfxC3D::LoadTex(const std::vector<PD::u8>& pixels, int w,
             << std::endl;
   return res;
 }
-}  // namespace Li
 }  // namespace PD

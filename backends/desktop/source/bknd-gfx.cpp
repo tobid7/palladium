@@ -25,7 +25,6 @@ SOFTWARE.
 #include <pd-desktop/bknd-gfx.hpp>
 
 namespace PD {
-namespace Li {
 const char* vertex_shader = R"(
   #version 120
   
@@ -161,13 +160,11 @@ void GfxGL2::NewFrame() {
   glUniformMatrix4fv(pLocProjection, 1, GL_FALSE, Projection.m.data());
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  CurrentIndex = 0;
-  CurrentVertex = 0;
   FrameCounter++;
-  VertexCounter = NumVtx;
-  IndexCounter = NumIdx;
-  NumVtx = 0;
-  NumIdx = 0;
+  VertexCounter = CurrentVertex;
+  IndexCounter = CurrentIndex;
+  CurrentVertex = 0;
+  CurrentIndex = 0;
 }
 
 void GfxGL2::BindTex(PD::Li::TexAddress addr) {
@@ -194,11 +191,9 @@ void GfxGL2::RenderDrawData(const std::vector<PD::Li::Command::Ref>& Commands) {
            Commands[index]->ScissorRect == ScissorRect) {
       auto c = Commands[index].get();
       for (size_t i = 0; i < c->IndexBuffer.Size(); i++) {
-        NumIdx++;
         IndexBuffer[CurrentIndex++] = CurrentVertex + c->IndexBuffer.At(i);
       }
       for (size_t i = 0; i < c->VertexBuffer.Size(); i++) {
-        NumVtx++;
         VertexBuffer[CurrentVertex++] = c->VertexBuffer.At(i);
       }
       index++;
@@ -258,5 +253,4 @@ PD::Li::Texture::Ref GfxGL2::LoadTex(const std::vector<PD::u8>& pixels, int w,
   auto res = PD::Li::Texture::New(texID, PD::ivec2(w, h));
   return res;
 }
-}  // namespace Li
 }  // namespace PD

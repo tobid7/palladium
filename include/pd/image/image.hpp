@@ -35,7 +35,8 @@ class PD_IMAGE_API Image {
     RGB,     // bpp == 3
     RGB565,  // bpp == 2 (not supported in laoding)
     BGR,     // bpp == 3
-    ABGR     // bpp == 4
+    ABGR,    // bpp == 4
+    BGRA,    // bpp == 4
   };
   Image() = default;
   Image(const std::string& path) { this->Load(path); }

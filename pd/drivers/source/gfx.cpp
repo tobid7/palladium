@@ -26,7 +26,6 @@ SOFTWARE.
 #include <pd/drivers/pd_p_api.hpp>
 
 namespace PD {
-namespace Li {
 PD_DEF_EXP(GfxDriver::Ref, Gfx::pGfx);
 
 void Gfx::Init(GfxDriver::Ref d) {
@@ -42,5 +41,4 @@ void GfxDriver::PostInit() {
   std::vector<PD::u8> white(16 * 16 * 4, 0xff);
   pSolid = this->LoadTex(white, 16, 16);
 }
-}  // namespace Li
 }  // namespace PD

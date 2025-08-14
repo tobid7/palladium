@@ -34,7 +34,6 @@ enum LiBackendFlags_ {
 };
 
 namespace PD {
-namespace Li {
 class GfxDriver {
  public:
   GfxDriver(const std::string& name = "NullGfx") : pName(name) {};
@@ -48,27 +47,29 @@ class GfxDriver {
   virtual void Deinit() {}
   virtual void NewFrame() {}
 
-  virtual void BindTex(TexAddress addr) {}
+  virtual void BindTex(Li::TexAddress addr) {}
 
-  virtual void RenderDrawData(const std::vector<Command::Ref>& Commands) {}
+  virtual void RenderDrawData(const std::vector<Li::Command::Ref>& Commands) {}
 
   void SetViewPort(const ivec2& vp) { ViewPort = vp; }
 
-  virtual Texture::Ref LoadTex(
+  virtual Li::Texture::Ref LoadTex(
       const std::vector<u8>& pixels, int w, int h,
-      Texture::Type type = Texture::Type::RGBA32,
-      Texture::Filter filter = Texture::Filter::LINEAR) {
+      Li::Texture::Type type = Li::Texture::Type::RGBA32,
+      Li::Texture::Filter filter = Li::Texture::Filter::LINEAR) {
     // Texture loading not supported (when this func not get override)
     return nullptr;
   }
 
-  Texture::Ref GetSolidTex() { return pSolid; }
+  Li::Texture::Ref GetSolidTex() { return pSolid; }
 
   const std::string pName = "NullGfx";
   LiBackendFlags Flags = 0;
   ivec2 ViewPort;
-  fvec4 ClearColor;
-  Texture::Ref pSolid;
+  Mat4 Projection;
+  Li::Texture::Ref pSolid;
+  size_t CurrentVertex = 0;
+  size_t CurrentIndex = 0;
 
   /** Debug Variables */
 
@@ -91,24 +92,23 @@ class Gfx {
   static void Deinit() { pGfx->Deinit(); }
   static void NewFrame() { pGfx->NewFrame(); }
 
-  static void BindTex(TexAddress addr) { pGfx->BindTex(addr); }
+  static void BindTex(Li::TexAddress addr) { pGfx->BindTex(addr); }
   static void SetViewPort(const ivec2& vp) { pGfx->SetViewPort(vp); }
 
-  static void RenderDrawData(const std::vector<Command::Ref>& Commands) {
+  static void RenderDrawData(const std::vector<Li::Command::Ref>& Commands) {
     pGfx->RenderDrawData(Commands);
   }
 
   static LiBackendFlags Flags() { return pGfx->Flags; }
-  static Texture::Ref LoadTex(
+  static Li::Texture::Ref LoadTex(
       const std::vector<u8>& pixels, int w, int h,
-      Texture::Type type = Texture::Type::RGBA32,
-      Texture::Filter filter = Texture::Filter::LINEAR) {
+      Li::Texture::Type type = Li::Texture::Type::RGBA32,
+      Li::Texture::Filter filter = Li::Texture::Filter::LINEAR) {
     return pGfx->LoadTex(pixels, w, h, type, filter);
   }
 
-  static Texture::Ref GetSolidTex() { return pGfx->GetSolidTex(); }
+  static Li::Texture::Ref GetSolidTex() { return pGfx->GetSolidTex(); }
 
   static GfxDriver::Ref pGfx;
 };
-}  // namespace Li
 }  // namespace PD

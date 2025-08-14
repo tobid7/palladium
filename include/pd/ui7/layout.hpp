@@ -43,8 +43,9 @@ class PD_UI7_API Layout {
     Scrolling[0] = false;
     Scrolling[1] = false;
     CursorInit();
-    Pos = fvec2(0, 0);
-    Size = fvec2(io->CurrentViewPort.z, io->CurrentViewPort.w);
+    Pos = fvec2(io->CurrentViewPort.x, io->CurrentViewPort.y);
+    Size = fvec2(io->CurrentViewPort.z - io->CurrentViewPort.x,
+                 io->CurrentViewPort.w - io->CurrentViewPort.y);
     WorkRect = fvec4(IO->MenuPadding, Size - (fvec2(2) * IO->MenuPadding));
   }
   ~Layout() = default;

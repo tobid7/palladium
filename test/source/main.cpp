@@ -57,7 +57,7 @@ int main() {
 #endif
   List->SetFont(font);
   PD::Image::Convert(img, img->RGBA);
-  auto tex = PD::Li::Gfx::LoadTex(img->pBuffer, img->pWidth, img->pHeight);
+  auto tex = PD::Gfx::LoadTex(img->pBuffer, img->pWidth, img->pHeight);
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   auto ui7 = PD::UI7::Context::New();
@@ -71,7 +71,7 @@ int main() {
   font->DefaultPixelHeight = 32;
   while (!glfwWindowShouldClose(win)) {
 #else
-  PD::Li::Gfx::pGfx->ViewPort = PD::ivec2(400, 240);
+  PD::Gfx::pGfx->ViewPort = PD::ivec2(400, 240);
   while (aptMainLoop()) {
 #endif
     PD::Hid::Update();
@@ -79,7 +79,10 @@ int main() {
     /** Auto ViewPort Resize */
     int wx, wy;
     glfwGetWindowSize(win, &wx, &wy);
-    PD::Li::Gfx::pGfx->ViewPort = PD::ivec2(wx, wy);
+    PD::Gfx::pGfx->ViewPort = PD::ivec2(wx, wy);
+    glViewport(0, 0, wx, wy);
+    glClearColor(0, 0, 0, 0);
+    glClear(GL_COLOR_BUFFER_BIT);
     // ui7->pIO->GetViewPort(VpTop)->pSize = PD::ivec4(0, 0, wx, wy);
 #endif
     /** Rendering some stuff */
@@ -127,9 +130,8 @@ int main() {
     if (ui7->BeginMenu("Yet another Window")) {
       auto menu = ui7->pCurrent;
       menu->Label(std::format("this->Pos: {}", menu->pLayout->GetPosition()));
-      menu->Label(
-          std::format("Vertices: {}", PD::Li::Gfx::pGfx->VertexCounter));
-      menu->Label(std::format("Indices: {}", PD::Li::Gfx::pGfx->IndexCounter));
+      menu->Label(std::format("Vertices: {}", PD::Gfx::pGfx->VertexCounter));
+      menu->Label(std::format("Indices: {}", PD::Gfx::pGfx->IndexCounter));
       ui7->EndMenu();
     }
     if (ui7->BeginMenu("#Debug (UI7)")) {
@@ -173,9 +175,9 @@ int main() {
     C3D_RenderTargetClear(Top, C3D_CLEAR_ALL, 0x00000000, 0);
 #endif
     PD::TT::Beg("REN");
-    PD::Li::Gfx::NewFrame();
-    PD::Li::Gfx::RenderDrawData(List->pDrawList);
-    PD::Li::Gfx::RenderDrawData(ui7->GetDrawData()->pDrawList);
+    PD::Gfx::NewFrame();
+    PD::Gfx::RenderDrawData(List->pDrawList);
+    PD::Gfx::RenderDrawData(ui7->GetDrawData()->pDrawList);
     /** Clear The List */
     List->Clear();
     PD::TT::End("REN");
