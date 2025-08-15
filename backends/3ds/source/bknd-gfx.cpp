@@ -73,21 +73,21 @@ unsigned char li_shader[] = {
 size_t li_shader_size = 0x124;
 
 namespace PD {
-GPU_TEXCOLOR GetTexFmt(Texture::Type type) {
-  if (type == Texture::RGBA32)
+GPU_TEXCOLOR GetTexFmt(Li::Texture::Type type) {
+  if (type == Li::Texture::RGBA32)
     return GPU_RGBA8;
-  else if (type == Texture::RGB24)
+  else if (type == Li::Texture::RGB24)
     return GPU_RGB8;
-  else if (type == Texture::A8)
+  else if (type == Li::Texture::A8)
     return GPU_A8;
   return GPU_RGBA8;  // Default
 }
-int GetBPP(Texture::Type type) {
-  if (type == Texture::RGBA32)
+int GetBPP(Li::Texture::Type type) {
+  if (type == Li::Texture::RGBA32)
     return 4;
-  else if (type == Texture::RGB24)
+  else if (type == Li::Texture::RGB24)
     return 3;
-  else if (type == Texture::A8)
+  else if (type == Li::Texture::A8)
     return 1;
   return 0;  // Error
 }
@@ -121,10 +121,9 @@ void GfxC3D::NewFrame() {
   CurrentIndex = 0;
   CurrentVertex = 0;
   FrameCounter++;
-  VertexCounter = NumVtx;
-  IndexCounter = NumIdx;
-  NumVtx = 0;
-  NumIdx = 0;
+  /** Probably completly incorrect but just do it like that */
+  VertexCounter = CurrentVertex;
+  IndexCounter = CurrentIndex;
 }
 
 void GfxC3D::BindTex(PD::Li::TexAddress addr) {
@@ -161,11 +160,9 @@ void GfxC3D::RenderDrawData(const std::vector<PD::Li::Command::Ref>& Commands) {
            Commands[index]->ScissorRect == ScissorRect) {
       auto c = Commands[index].get();
       for (size_t i = 0; i < c->IndexBuffer.Size(); i++) {
-        NumIdx++;
         IndexBuffer[CurrentIndex++] = CurrentVertex + c->IndexBuffer.At(i);
       }
       for (size_t i = 0; i < c->VertexBuffer.Size(); i++) {
-        NumVtx++;
         VertexBuffer[CurrentVertex++] = c->VertexBuffer.At(i);
       }
       index++;
@@ -182,7 +179,7 @@ void GfxC3D::RenderDrawData(const std::vector<PD::Li::Command::Ref>& Commands) {
     BindTex(Tex->Address);
     auto bufInfo = C3D_GetBufInfo();
     BufInfo_Init(bufInfo);
-    BufInfo_Add(bufInfo, VertexBuffer.Data(), sizeof(Vertex), 3, 0x210);
+    BufInfo_Add(bufInfo, VertexBuffer.Data(), sizeof(Li::Vertex), 3, 0x210);
 
     C3D_DrawElements(GPU_TRIANGLES, CurrentIndex - StartIndex,
                      C3D_UNSIGNED_SHORT, IndexBuffer.Data() + StartIndex);
@@ -213,7 +210,7 @@ PD::Li::Texture::Ref GfxC3D::LoadTex(const std::vector<PD::u8>& pixels, int w,
                   1.0 - ((float)h / (float)tex_size.y));
 
   // Texture Setup
-  auto fltr = (filter == Texture::NEAREST ? GPU_NEAREST : GPU_LINEAR);
+  auto fltr = (filter == Li::Texture::NEAREST ? GPU_NEAREST : GPU_LINEAR);
   auto tex_fmt = GetTexFmt(type);
   auto tex = new C3D_Tex;
   C3D_TexInit(tex, (u16)tex_size.x, (u16)tex_size.y, tex_fmt);
@@ -245,9 +242,9 @@ PD::Li::Texture::Ref GfxC3D::LoadTex(const std::vector<PD::u8>& pixels, int w,
 
   tex->border = 0x00000000;
   C3D_TexSetWrap(tex, GPU_REPEAT, GPU_REPEAT);
-  res->Address = (TexAddress)tex;
-  std::cout << std::format("Tex {:#08x} Addr {:#08X}", (TexAddress)res.get(),
-                           res->Address)
+  res->Address = (Li::TexAddress)tex;
+  std::cout << std::format("Tex {:#08x} Addr {:#08X}",
+                           (Li::TexAddress)res.get(), res->Address)
             << std::endl;
   return res;
 }

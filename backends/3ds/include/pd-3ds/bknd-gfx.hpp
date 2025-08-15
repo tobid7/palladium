@@ -59,7 +59,7 @@ class GfxC3D : public GfxDriver {
       PD::Li::Texture::Filter filter =
           PD::Li::Texture::Filter::LINEAR) override;
 
-  Vec<Vertex, LinearAlloc<Vertex>> VertexBuffer;
+  Vec<Li::Vertex, LinearAlloc<Li::Vertex>> VertexBuffer;
   Vec<u16, LinearAlloc<u16>> IndexBuffer;
   int pLocProjection = 0;
   DVLB_s* ShaderCode;
