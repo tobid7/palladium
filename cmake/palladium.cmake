@@ -37,13 +37,18 @@ function(pd_add_lib TARGET_NAME)
         ${PD_INCLUDE_DIR}
         ${DEVKITPRO}/portlibs/3ds/include
     )
-    target_compile_definitions(${TARGET_NAME} PUBLIC
+    target_compile_definitions(${TARGET_NAME} PRIVATE
         -D_GNU_SOURCE=1
         -DPALLADIUM_VERSION="${PROJECT_VERSION}"
         -DPALLADIUM_GIT_COMMIT="${GIT_SHORT_HASH}"
         -DPALLADIUM_GIT_BRANCH="${GIT_BRANCH}"
         -DBUILD_CTR=1
     )
+    if(${CMAKE_SYSTEM_NAME} STREQUAL "Nintendo3DS")
+        target_compile_options(${TARGET_NAME} PRIVATE
+            -Wno-abi
+        )
+    endif()
     ### For the libs that depend on another
     if(ARG_DEPENDS)
         target_link_libraries(${TARGET_NAME} PUBLIC ${ARG_DEPENDS})
