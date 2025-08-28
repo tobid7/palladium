@@ -95,6 +95,12 @@ class PD_LITHIUM_API Font {
   void CmdTextEx(std::vector<Command::Ref>& cmds, const fvec2& pos, u32 color,
                  float scale, const std::string& text, LiTextFlags flags = 0,
                  const fvec2& box = 0);
+  /**
+   * Utility function to create a font atlas
+   * During TTF loading (Internal and should not be called)
+   */
+  void pMakeAtlas(bool final, std::vector<u8>& font_tex, int texszs,
+                  PD::Li::Texture::Ref tex);
 
   /** Data Section */
   int PixelHeight;

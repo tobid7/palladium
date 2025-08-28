@@ -60,69 +60,95 @@ PD_LITHIUM_API void Font::LoadTTF(const std::string &path, int height) {
   LoadTTF(font, height);
 }
 
+PD_LITHIUM_API void Font::pMakeAtlas(bool final, std::vector<u8> &font_tex,
+                                     int texszs, PD::Li::Texture::Ref tex) {
+  auto t =
+      Gfx::LoadTex(font_tex, texszs, texszs, Texture::RGBA32, Texture::LINEAR);
+  tex->CopyFrom(t);
+  Textures.push_back(tex);
+}
+
 PD_LITHIUM_API void Font::LoadTTF(const std::vector<u8> &data, int height) {
-  PixelHeight = height;  // Set internel pixel height
-  // Use NextPow2 to be able to use sizes between for example 16 and 32
-  // before it only was possible to use 8, 16, 32, 64 as size
-  int texszs = BitUtil::GetPow2(height * 16);
-  // Load stbtt
+  /**
+   * Some additional Info:
+   * Removed the stbtt get bitmapbox as we dont need to place
+   * the glyps nicely in the tex. next step would be using the free
+   * space on the y axis to get mor glyphs inside
+   */
+  PixelHeight = height;
+  int texszs = PD::BitUtil::GetPow2(height * 16);
+  if (texszs > 1024) {
+    texszs = 1024;  // Max size
+  }
+
   stbtt_fontinfo inf;
-  stbtt_InitFont(&inf, data.data(), 0);
-  // clang-format off
-  // Disable clang here cause dont want a garbage looking line
-  std::vector<PD::u8> font_tex(texszs * texszs * 4);  // Create font Texture
-  // clang-format on
+  if (!stbtt_InitFont(&inf, data.data(), 0)) {
+    return;
+  }
+
   float scale = stbtt_ScaleForPixelHeight(&inf, PixelHeight);
 
   int ascent, descent, lineGap;
   stbtt_GetFontVMetrics(&inf, &ascent, &descent, &lineGap);
   int baseline = static_cast<int>(ascent * scale);
 
-  std::map<u32, int> buf_cache;  // Cache to not render same codepoint tex twice
+  // Cache to not render same codepoint tex twice
+  std::map<u32, int> buf_cache;
 
-  /// Load Codepoints
+  std::vector<u8> font_tex(texszs * texszs * 4, 0);
   auto tex = Texture::New();
   fvec2 off;
-  for (u32 ii = 0x0000; ii < 0xFFFF; ii++) {
-    int i = stbtt_FindGlyphIndex(&inf, ii);
-    if (i == 0) {
-      continue;
-    }
-    if (stbtt_IsGlyphEmpty(&inf, i)) {
-      continue;
-    }
 
-    Codepoint c;
+  bool empty = true;
+
+  for (u32 ii = 0x0000; ii <= 0xFFFF; ii++) {
+    int gi = stbtt_FindGlyphIndex(&inf, ii);
+    if (gi == 0) continue;
+    if (stbtt_IsGlyphEmpty(&inf, gi)) continue;
+
     int w = 0, h = 0, xo = 0, yo = 0;
     unsigned char *bitmap =
-        stbtt_GetCodepointBitmap(&inf, scale, scale, i, &w, &h, &xo, &yo);
-    int x0, y0, x1, y1;
-    stbtt_GetCodepointBitmapBox(&inf, i, scale, scale, &x0, &y0, &x1, &y1);
+        stbtt_GetCodepointBitmap(&inf, scale, scale, ii, &w, &h, &xo, &yo);
+    if (!bitmap || w <= 0 || h <= 0) {
+      if (bitmap) free(bitmap);
+      continue;
+    }
 
-    // Check if Codepoint exists as hash and if it is use its already written
-    // data
     u32 hashed_map = IO::HashMemory(std::vector<u8>(bitmap, bitmap + (w * h)));
     if (buf_cache.find(hashed_map) != buf_cache.end()) {
-      c = GetCodepoint(buf_cache[hashed_map]);
-      c.pCodepoint = i;
-      CodeMap[i] = c;
+      Codepoint c = GetCodepoint(buf_cache[hashed_map]);
+      c.pCodepoint = ii;
+      CodeMap[ii] = c;
       free(bitmap);
       continue;
     } else {
-      buf_cache[hashed_map] = i;
+      buf_cache[hashed_map] = ii;
     }
 
+    // Next row
     if (off.x + w > texszs) {
       off.y += PixelHeight;
-      off.x = 0;
+      off.x = 0.0f;
+    }
+    // Bake cause we go out of the tex
+    if (off.y + PixelHeight > texszs) {
+      pMakeAtlas(false, font_tex, texszs, tex);
+      tex = Texture::New();
+      off = 0;
+      std::fill(font_tex.begin(), font_tex.end(), 0);
+      empty = true;
     }
 
-    // Set UV Data
+    // UVs & Codepoint
+    Codepoint c;
     fvec4 uvs;
-    uvs.x = static_cast<float>(off.x) / texszs;
-    uvs.y = static_cast<float>(off.y) / texszs;
-    uvs.z = static_cast<float>((off.x + w) / texszs);
-    uvs.w = static_cast<float>((off.y + h) / texszs);
+    // cast the ints to floats and not the floats...
+    // dont know where my mind was when creating the code
+    uvs.x = off.x / static_cast<float>(texszs);
+    uvs.y = off.y / static_cast<float>(texszs);
+    uvs.z = (off.x + w) / static_cast<float>(texszs);
+    uvs.w = (off.y + h) / static_cast<float>(texszs);
+    // Flip if needed
     if (Gfx::Flags() & LiBackendFlags_FlipUV_Y) {
       uvs.y = 1.f - uvs.y;
       uvs.w = 1.f - uvs.w;
@@ -131,11 +157,13 @@ PD_LITHIUM_API void Font::LoadTTF(const std::vector<u8> &data, int height) {
     c.Tex = tex;
     c.Size = fvec2(w, h);
     c.Offset = baseline + yo;
+    c.pCodepoint = ii;
 
-    // Render glyph
     for (int y = 0; y < h; ++y) {
       for (int x = 0; x < w; ++x) {
-        int map_pos = (((off.y + y) * texszs + (off.x + x))) * 4;
+        int map_pos = ((static_cast<int>(off.y) + y) * texszs +
+                       (static_cast<int>(off.x) + x)) *
+                      4;
         font_tex[map_pos + 0] = 255;
         font_tex[map_pos + 1] = 255;
         font_tex[map_pos + 2] = 255;
@@ -143,26 +171,17 @@ PD_LITHIUM_API void Font::LoadTTF(const std::vector<u8> &data, int height) {
       }
     }
 
+    empty = false;
+    CodeMap[ii] = c;
     free(bitmap);
-    CodeMap[i] = c;
 
-    // Small Patch to avoid some possible artifacts
+    // offset by 1 (prevents visual glitches i had)
     off.x += w + 1;
-    if (off.x + w > texszs) {
-      off.y += PixelHeight;
-      if (off.y + PixelHeight > texszs) {
-        break;
-      }
-      off.x = 0;
-    }
   }
-  // Load the Texture and append to list
-  {
-    auto t = Gfx::LoadTex(font_tex, texszs, texszs, Texture::RGBA32,
-                          Texture::LINEAR);
-    tex->CopyFrom(t);
+
+  if (!empty) {
+    pMakeAtlas(true, font_tex, texszs, tex);
   }
-  Textures.push_back(tex);
 }
 
 PD_LITHIUM_API Font::Codepoint &Font::GetCodepoint(u32 cp) {
@@ -187,7 +206,7 @@ PD_LITHIUM_API fvec2 Font::GetTextBounds(const std::string &text, float scale) {
   float lh = (float)PixelHeight * cfs;
   size_t index = 0;
   for (auto &it : wtext) {
-    if (it == '\0') {
+    if (it == L'\0') {
       break;
     }
     index++;
@@ -196,16 +215,16 @@ PD_LITHIUM_API fvec2 Font::GetTextBounds(const std::string &text, float scale) {
       continue;
     }
     switch (it) {
-      case '\n':
+      case L'\n':
         res.y += lh;
         res.x = std::max(res.x, x);
         x = 0.f;
         break;
-      case '\t':
+      case L'\t':
         x += 16 * cfs;
         break;
-      case ' ':
-        x += 2 * cfs;
+      case L' ':
+        x += 16 * cfs;
       // Fall trough here to get the same result as in
       // TextCommand if/else Section
       default:
@@ -259,7 +278,8 @@ PD_LITHIUM_API void Font::CmdTextEx(std::vector<Command::Ref> &cmds,
     cmd->Tex = Tex;
     for (auto &jt : wline) {
       auto cp = GetCodepoint(jt);
-      if ((cp.pInvalid && jt != '\n' && jt != '\t') && jt != '\r') {
+      if ((cp.pInvalid && jt != L' ' && jt != L'\n' && jt != L'\t') &&
+          jt != L'\r') {
         continue;
       }
       if (Tex != cp.Tex) {
@@ -268,14 +288,14 @@ PD_LITHIUM_API void Font::CmdTextEx(std::vector<Command::Ref> &cmds,
         Tex = cp.Tex;
         cmd->Tex = Tex;
       }
-      if (jt == '\t') {
+      if (jt == L'\t') {
         off.x += 16 * cfs;
       } else {
-        if (jt != ' ') {
+        if (jt != L' ') {
           if (flags & LiTextFlags_Shaddow) {
             // Draw
             Rect rec = Renderer::PrimRect(
-                rpos + vec2(off.x + 1, off.x + (cp.Offset * cfs)) + 1,
+                rpos + vec2(off.x + 1, off.y + (cp.Offset * cfs)) + 1,
                 cp.Size * cfs, 0.f);
             Renderer::CmdQuad(cmd.get(), rec, cp.SimpleUV, 0xff111111);
           }
@@ -283,10 +303,10 @@ PD_LITHIUM_API void Font::CmdTextEx(std::vector<Command::Ref> &cmds,
           Rect rec = Renderer::PrimRect(
               rpos + off + fvec2(0, (cp.Offset * cfs)), cp.Size * cfs, 0.f);
           Renderer::CmdQuad(cmd.get(), rec, cp.SimpleUV, color);
+          off.x += cp.Size.x * cfs + 2 * cfs;
         } else {
-          off.x += 2 * cfs;
+          off.x += 16 * cfs;
         }
-        off.x += cp.Size.x * cfs + 2 * cfs;
       }
     }
     cmds.push_back(std::move(cmd));
