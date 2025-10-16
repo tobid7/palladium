@@ -109,7 +109,7 @@ void Backend_C3D::BindTexture(PD::LI::TexAddress addr) {
 
 void Backend_C3D::RenderDrawData(
     const PD::Vec<PD::LI::Command::Ref>& Commands) {
-  C3D_BindProgram(&Shader);
+  shaderProgramUse(&Shader);
   C3D_SetAttrInfo(&ShaderInfo);
   C3D_Mtx proj;
   Mtx_OrthoTilt(&proj, 0.f, ViewPort.x, ViewPort.y, 0.f, 1.f, -1.f, false);
