@@ -46,5 +46,5 @@ PD_CORE_API void Timer::Pause() { pIsRunning = false; }
 PD_CORE_API void Timer::Rseume() { pIsRunning = true; }
 PD_CORE_API bool Timer::IsRunning() const { return pIsRunning; }
 PD_CORE_API u64 Timer::Get() { return pNow - pStart; }
-PD_CORE_API double Timer::GetSeconds() { return double(Get()) / 1000.0; }
+PD_CORE_API double Timer::GetSeconds() { return (double)Get() / 1000.0; }
 }  // namespace PD

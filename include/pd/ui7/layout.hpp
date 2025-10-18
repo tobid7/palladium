@@ -131,6 +131,7 @@ class PD_UI7_API Layout {
   // Scrolling (Only theoretical)
   // Rendering must be done by the Objective that uses the Lyt
   fvec2 ScrollOffset;
+  fvec2 ScrollStart;
   bool Scrolling[2];
 
   // Objects

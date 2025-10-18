@@ -45,6 +45,10 @@ class PD_UI7_API Menu {
    * @param label The text to draw
    */
   void Label(const std::string &label);
+  template <typename... Args>
+  void Label(std::format_string<Args...> s, Args &&...args) {
+    Label(std::format(s, std::forward<Args>(args)...));
+  }
   /**
    * Render a Button
    * @param label The buttons text
@@ -110,6 +114,7 @@ class PD_UI7_API Menu {
   bool *pIsShown = nullptr;
   bool pIsOpen = true;
   std::unordered_map<u32, bool> pTreeNodes;
+  fvec2 TempScrollXY;
 
   float TitleBarHeight = 0.f;
 };

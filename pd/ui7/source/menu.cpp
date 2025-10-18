@@ -132,7 +132,43 @@ PD_UI7_API void Menu::HandleFocus() {
 }
 
 /** Todo: (func name is self describing) */
-PD_UI7_API void Menu::HandleScrolling() {}
+PD_UI7_API void Menu::HandleScrolling() {
+  if (Flags & UI7MenuFlags_VtScrolling) {
+    bool allowed =
+        pLayout->MaxPosition.y > (pLayout->WorkRect.w - pLayout->WorkRect.y);
+    if (allowed) {
+      if (PD::Hid::IsDown(PD::Hid::Key::Touch)) {
+        pLayout->ScrollStart = pLayout->ScrollOffset;
+      }
+      if (pIO->InputHandler->DragObject(
+              "sbg" + pID.pName,
+              fvec4(pLayout->Pos, fvec2(0.f)) + pLayout->WorkRect)) {
+        if (pIO->InputHandler->DragReleasedAW) {
+        } else {
+          pLayout->ScrollOffset.y = std::clamp(
+              pLayout->ScrollStart.y + pIO->InputHandler->DragSourcePos.y -
+                  pIO->InputHandler->DragPosition.y,
+              20.f, pLayout->MaxPosition.y - 220);
+        }
+      }
+    } else {
+      pLayout->ScrollOffset.y = 0.f;
+    }
+
+    if (pLayout->ScrollOffset.y > pLayout->MaxPosition.y - 240) {
+      pLayout->ScrollOffset.y -= 1.5;
+      if (pLayout->ScrollOffset.y < pLayout->MaxPosition.y - 240) {
+        pLayout->ScrollOffset.y = pLayout->MaxPosition.y - 240;
+      }
+    }
+    if (pLayout->ScrollOffset.y < 0) {
+      pLayout->ScrollOffset.y += 1.5;
+      if (pLayout->ScrollOffset.y > 0) {
+        pLayout->ScrollOffset.y = 0;
+      }
+    }
+  }
+}
 
 PD_UI7_API void Menu::HandleTitlebarActions() {
   // Collapse
@@ -196,6 +232,7 @@ PD_UI7_API void Menu::HandleTitlebarActions() {
     }
   }
 }
+
 PD_UI7_API void Menu::DrawBaseLayout() {
   if (pIsOpen) {
     /** Resize Sym (Render on Top of Everything) */
@@ -300,7 +337,15 @@ PD_UI7_API void Menu::DrawBaseLayout() {
 PD_UI7_API void Menu::Update() {
   HandleFocus();
   if (!(Flags & UI7MenuFlags_NoTitlebar)) {
+    TitleBarHeight = pIO->FontScale * 30.f;
+    pLayout->WorkRect.y = 5.f + TitleBarHeight;
     HandleTitlebarActions();
+  } else {
+    TitleBarHeight = 0.f;
+    pLayout->WorkRect.y = 5.f;
+  }
+  if (Flags & UI7MenuFlags_VtScrolling || Flags & UI7MenuFlags_HzScrolling) {
+    HandleScrolling();
   }
   DrawBaseLayout();
   pLayout->Update();
