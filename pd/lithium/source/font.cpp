@@ -224,7 +224,7 @@ PD_LITHIUM_API fvec2 Font::GetTextBounds(const std::string &text, float scale) {
         x += 16 * cfs;
         break;
       case L' ':
-        x += 16 * cfs;
+        x += 4 * cfs;
       // Fall trough here to get the same result as in
       // TextCommand if/else Section
       default:
@@ -305,7 +305,7 @@ PD_LITHIUM_API void Font::CmdTextEx(std::vector<Command::Ref> &cmds,
           Renderer::CmdQuad(cmd.get(), rec, cp.SimpleUV, color);
           off.x += cp.Size.x * cfs + 2 * cfs;
         } else {
-          off.x += 16 * cfs;
+          off.x += 4 * cfs;
         }
       }
     }
