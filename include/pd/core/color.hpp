@@ -59,12 +59,11 @@ class PD_CORE_API Color {
    * @param a Optional Alpha Value (Defaults to 1.0f)
    * @note There is no Check if the number is between 0.0 and 1.0
    */
-  constexpr Color(float r, float g, float b, float a = 1.f) {
-    r = static_cast<u8>(255.f * r);
-    g = static_cast<u8>(255.f * g);
-    b = static_cast<u8>(255.f * b);
-    a = static_cast<u8>(255.f * a);
-  }
+  constexpr Color(float r, float g, float b, float a = 1.f)
+      : r(static_cast<u8>(255.f * r)),
+        g(static_cast<u8>(255.f * g)),
+        b(static_cast<u8>(255.f * b)),
+        a(static_cast<u8>(255.f * a)) {}
   /**
    * Constructor for Hex Input
    * @param hex Hex String in `#ffffff` or `#ffffffff` format
