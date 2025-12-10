@@ -27,21 +27,21 @@ SOFTWARE.
 
 namespace PD {
 namespace UI7 {
-Menu::Menu(const ID &id, IO::Ref io) : pIO(io), pID(id) {
+Menu::Menu(const ID& id, IO::Ref io) : pIO(io), pID(id) {
   pLayout = Layout::New(id, io);
   TitleBarHeight = io->FontScale * 30.f;
   pLayout->WorkRect.y += TitleBarHeight;
   pLayout->CursorInit();
 }
 
-PD_UI7_API void Menu::Label(const std::string &label) {
+PD_UI7_API void Menu::Label(const std::string& label) {
   // Layout API
   auto r = Label::New(label, pIO);
   r->SetClipRect(fvec4(pLayout->GetPosition(), pLayout->GetSize()));
   pLayout->AddObject(r);
 }
 
-PD_UI7_API bool Menu::Button(const std::string &label) {
+PD_UI7_API bool Menu::Button(const std::string& label) {
   bool ret = false;
   u32 id = Strings::FastHash("btn" + label +
                              std::to_string(pLayout->Objects.Size()));
@@ -57,7 +57,7 @@ PD_UI7_API bool Menu::Button(const std::string &label) {
   return ret;
 }
 
-PD_UI7_API void Menu::Checkbox(const std::string &label, bool &v) {
+PD_UI7_API void Menu::Checkbox(const std::string& label, bool& v) {
   u32 id = Strings::FastHash("cbx" + label +
                              std::to_string(pLayout->Objects.Size()));
   Container::Ref r = pLayout->FindObject(id);
@@ -76,7 +76,7 @@ PD_UI7_API void Menu::Image(Li::Texture::Ref img, fvec2 size, Li::Rect uv) {
 PD_UI7_API void Menu::Separator() {
   // Dynamic Objects are very simple...
   Container::Ref r = DynObj::New(
-      [=, this](UI7::IO::Ref io, Li::DrawList::Ref l, UI7::Container *self) {
+      [=, this](UI7::IO::Ref io, Li::DrawList::Ref l, UI7::Container* self) {
         l->DrawRectFilled(self->FinalPos(), self->GetSize(),
                           pIO->Theme->Get(UI7Color_TextDead));
       });
@@ -85,10 +85,10 @@ PD_UI7_API void Menu::Separator() {
   pLayout->AddObject(r);
 }
 
-PD_UI7_API void Menu::SeparatorText(const std::string &label) {
+PD_UI7_API void Menu::SeparatorText(const std::string& label) {
   // Also note to use [=] instead of [&] to not undefined access label
   Container::Ref r = DynObj::New([=, this](UI7::IO::Ref io, Li::DrawList::Ref l,
-                                           UI7::Container *self) {
+                                           UI7::Container* self) {
     fvec2 size = self->GetSize();
     fvec2 tdim = io->Font->GetTextBounds(label, io->FontScale);
     fvec2 pos = self->FinalPos();
@@ -141,7 +141,7 @@ PD_UI7_API void Menu::HandleScrolling() {
         pLayout->ScrollStart = pLayout->ScrollOffset;
       }
       if (pIO->InputHandler->DragObject(
-              "sbg" + pID.pName,
+              "sbg" + pID.GetName(),
               fvec4(pLayout->Pos, fvec2(0.f)) + pLayout->WorkRect)) {
         if (pIO->InputHandler->DragReleasedAW) {
         } else {
@@ -238,7 +238,7 @@ PD_UI7_API void Menu::DrawBaseLayout() {
     /** Resize Sym (Render on Top of Everything) */
     if (!(Flags & UI7MenuFlags_NoResize)) {
       Container::Ref r = DynObj::New(
-          [](IO::Ref io, Li::DrawList::Ref l, UI7::Container *self) {
+          [](IO::Ref io, Li::DrawList::Ref l, UI7::Container* self) {
             l->Layer = 1;
             l->PathAdd(self->FinalPos() + self->GetSize() - fvec2(0, 20));
             l->PathAdd(self->FinalPos() + self->GetSize());
@@ -254,7 +254,7 @@ PD_UI7_API void Menu::DrawBaseLayout() {
 
     /** Background */
     Container::Ref r = DynObj::New([](IO::Ref io, Li::DrawList::Ref l,
-                                      UI7::Container *self) {
+                                      UI7::Container* self) {
       l->Layer = 0;
       l->PathRectEx(self->FinalPos(), self->FinalPos() + self->GetSize(), 10.f,
                     LiPathRectFlags_KeepTop | LiPathRectFlags_KeepBot);
@@ -271,7 +271,7 @@ PD_UI7_API void Menu::DrawBaseLayout() {
   }
   if (!(Flags & UI7MenuFlags_NoTitlebar)) {
     Container::Ref r = DynObj::New(
-        [=, this](UI7::IO::Ref io, Li::DrawList::Ref l, UI7::Container *self) {
+        [=, this](UI7::IO::Ref io, Li::DrawList::Ref l, UI7::Container* self) {
           l->Layer = 20;
           /** Header Bar */
           l->DrawRectFilled(self->FinalPos(), self->GetSize(),
@@ -295,7 +295,7 @@ PD_UI7_API void Menu::DrawBaseLayout() {
     /** Collapse Sym */
     if (!(Flags & UI7MenuFlags_NoCollapse)) {
       r = DynObj::New([=, this](UI7::IO::Ref io, Li::DrawList::Ref l,
-                                UI7::Container *self) {
+                                UI7::Container* self) {
         /** This sym actually requires layer 21 (i dont know why) */
         l->Layer = 21;
         /**
@@ -351,7 +351,7 @@ PD_UI7_API void Menu::Update() {
   pLayout->Update();
 }
 
-PD_UI7_API bool Menu::BeginTreeNode(const ID &id) {
+PD_UI7_API bool Menu::BeginTreeNode(const ID& id) {
   // As of some notes this should work:
   auto n = pTreeNodes.find(id);
   if (n == pTreeNodes.end()) {
@@ -368,7 +368,7 @@ PD_UI7_API bool Menu::BeginTreeNode(const ID &id) {
 
   // Object
   auto r =
-      DynObj::New([=, this](IO::Ref io, Li::DrawList::Ref l, Container *self) {
+      DynObj::New([=, this](IO::Ref io, Li::DrawList::Ref l, Container* self) {
         fvec2 ts = self->FinalPos() + fvec2(0, 7);
         fvec2 pl[2] = {fvec2(10, 5), fvec2(0, 10)};
         if (n->second) {
@@ -383,7 +383,7 @@ PD_UI7_API bool Menu::BeginTreeNode(const ID &id) {
                     id.GetName(), io->Theme->Get(UI7Color_Text));
       });
   /** Yes this new function handler was created for tree nodes */
-  r->AddInputHandler([=, this](IO::Ref io, Container *self) {
+  r->AddInputHandler([=, this](IO::Ref io, Container* self) {
     if (io->InputHandler->DragObject(
             ID(pID.GetName() + id.GetName()),
             fvec4(self->FinalPos(), self->GetSize()))) {

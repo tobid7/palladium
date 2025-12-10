@@ -27,19 +27,10 @@ SOFTWARE.
 #include <3ds.h>
 #include <citro3d.h>
 
+#include <pd-3ds/linearAllocator.hpp>
 #include <pd/lithium/lithium.hpp>
 
 namespace PD {
-template <typename T>
-class LinearAlloc : public Allocator<T> {
- public:
-  LinearAlloc() = default;
-  ~LinearAlloc() = default;
-
-  /** Never forget the sizeof(T) again (most painful bug i created) */
-  T* Allocate(size_t n) override { return (T*)linearAlloc(n * sizeof(T)); }
-  void Deallocate(T* ptr) { linearFree(ptr); }
-};
 class GfxC3D : public GfxDriver {
  public:
   GfxC3D() : GfxDriver("Citro3D") {}
@@ -59,8 +50,8 @@ class GfxC3D : public GfxDriver {
       PD::Li::Texture::Filter filter =
           PD::Li::Texture::Filter::LINEAR) override;
 
-  Vec<Li::Vertex, LinearAlloc<Li::Vertex>> VertexBuffer;
-  Vec<u16, LinearAlloc<u16>> IndexBuffer;
+  std::vector<Li::Vertex, LinearAllocator<Li::Vertex>> VertexBuffer;
+  std::vector<u16, LinearAllocator<u16>> IndexBuffer;
   int pLocProjection = 0;
   DVLB_s* ShaderCode;
   shaderProgram_s Shader;

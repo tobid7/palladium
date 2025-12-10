@@ -25,6 +25,7 @@ SOFTWARE.
 
 #include <pd/core/bit_util.hpp>
 #include <pd/core/color.hpp>
+#include <pd/core/fnv.hpp>
 #include <pd/core/io.hpp>
 #include <pd/core/mat.hpp>
 #include <pd/core/sl/sl.hpp>

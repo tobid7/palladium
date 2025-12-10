@@ -62,6 +62,9 @@ SOFTWARE.
 #define PD_BIT(x) (1 << x)
 
 namespace PD {
+[[noreturn]] inline void Throw(const std::string& str) {
+  throw std::runtime_error("[PD] " + str);
+}
 /** Types */
 using u8 = unsigned char;
 using u16 = unsigned short;

@@ -30,7 +30,7 @@ namespace PD {
  * Class to calculate Maximum/Minimum and Average Timings
  */
 class TimeStats {
- public:
+public:
   /**
    * Constructor taking a lengh for the List
    * @param l Lengh of the data list
@@ -55,7 +55,8 @@ class TimeStats {
    * @return Average
    */
   u64 GetAverage() {
-    if (!num_val) return 0.f;
+    if (!num_val)
+      return 0.f;
     u64 res = 0;
     for (int i = 0; i < num_val; i++) {
       res += val[smart_idx(i)];
@@ -68,7 +69,8 @@ class TimeStats {
    * @return Minimum value
    */
   u64 GetMin() {
-    if (!num_val) return 0.f;
+    if (!num_val)
+      return 0.f;
     u64 res = std::numeric_limits<u64>::max();
     for (int i = 0; i < num_val; i++) {
       res = std::min(val[smart_idx(i)], res);
@@ -81,7 +83,8 @@ class TimeStats {
    * @return Max Value
    */
   u64 GetMax() {
-    if (!num_val) return 0.f;
+    if (!num_val)
+      return 0.f;
     u64 res = 0;
     for (int i = 0; i < num_val; i++) {
       res = std::max(val[smart_idx(i)], res);
@@ -119,7 +122,7 @@ class TimeStats {
    */
   const size_t GetNumValues() { return num_val; }
 
- private:
+private:
   /**
    * Get the Next Position to write to
    * @param c current position
@@ -149,9 +152,9 @@ namespace TT {
  * Data Structure for a TimeTrace Result
  */
 class Res {
- public:
+public:
   /** Constructore that Inits a protocol at size of 60 frames */
-  Res(): start(0), end(0) { protocol = TimeStats::New(60); }
+  Res() : start(0), end(0) { protocol = TimeStats::New(60); }
   ~Res() = default;
 
   PD_SHARED(Res);
@@ -201,7 +204,7 @@ class Res {
    */
   TimeStats::Ref GetProtocol() { return protocol; }
 
- private:
+private:
   /** Trace ID */
   std::string id;
   /** Start time */
@@ -237,7 +240,7 @@ PD_CORE_API void End(const std::string &id);
  * ```
  */
 class Scope {
- public:
+public:
   /**
    * Constructor requiring a Name for the Trace
    * @param id Name of the Trace
@@ -251,9 +254,9 @@ class Scope {
    */
   ~Scope() { End(ID); }
 
- private:
+private:
   /** Trace Name/ID */
   std::string ID;
 };
-}  // namespace TT
-}  // namespace PD
+} // namespace TT
+} // namespace PD

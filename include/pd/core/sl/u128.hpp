@@ -28,18 +28,18 @@ class u128 {
     return u128();
   }
 
-  u128 operator+(const u128& v) const {
+  constexpr u128 operator+(const u128& v) const {
     u128 ret;
     ret.pLow = pLow + v.pLow;
     ret.pHigh = pHigh + v.pHigh + (ret.pLow < pLow);
     return ret;
   }
 
-  u128 operator&(const u128& v) const {
+  constexpr u128 operator&(const u128& v) const {
     return u128(pLow & v.pLow, pHigh & v.pHigh);
   }
 
-  u128 operator<<(u32 s) const {
+  constexpr u128 operator<<(u32 s) const {
     if (s == 0) {
       return *this;
     }
@@ -52,7 +52,7 @@ class u128 {
     return u128(pLow << s, (pHigh << s) | (pLow >> (64 - s)));
   }
 
-  u128 operator>>(u32 s) const {
+  constexpr u128 operator>>(u32 s) const {
     if (s == 0) {
       return *this;
     }
@@ -65,23 +65,23 @@ class u128 {
     return u128((pLow >> s) | (pHigh << (64 - s)), pHigh >> s);
   }
 
-  u128& operator|=(const u128& v) {
+  constexpr u128& operator|=(const u128& v) {
     pLow |= v.pLow;
     pHigh |= v.pHigh;
     return *this;
   }
 
-  u128 operator|(const u128& v) const {
+  constexpr u128 operator|(const u128& v) const {
     return u128(pLow | v.pLow, pHigh | v.pHigh);
   }
 
-  u128& operator&=(const u128& v) {
+  constexpr u128& operator&=(const u128& v) {
     pLow &= v.pLow;
     pHigh &= v.pHigh;
     return *this;
   }
 
-  u128 operator~() const { return u128(~pLow, ~pHigh); }
+  constexpr u128 operator~() const { return u128(~pLow, ~pHigh); }
 
   /**
    * Old why to make if checks possible
@@ -92,7 +92,7 @@ class u128 {
   //   return pLow & v.pLow || pHigh & v.pHigh;
   // }
 
-  bool operator==(const u128& v) const {
+  constexpr bool operator==(const u128& v) const {
     return pLow == v.pLow && pHigh == v.pHigh;
   }
 
@@ -100,12 +100,14 @@ class u128 {
    * Use explicit here to make sure it is only for checking and not for
    * some error leading implicit bool assignments...
    */
-  explicit operator bool() const { return pLow != 0 || pHigh != 0; }
+  constexpr explicit operator bool() const { return pLow != 0 || pHigh != 0; }
 
   /** Deprecated way to handle `flag & SomeFlag` */
-  bool Has(const u128& v) const { return pLow & v.pLow || pHigh & v.pHigh; }
+  constexpr bool Has(const u128& v) const {
+    return pLow & v.pLow || pHigh & v.pHigh;
+  }
 
-  bool operator!=(const u128& v) const { return !(*this == v); }
+  constexpr bool operator!=(const u128& v) const { return !(*this == v); }
 };
 }  // namespace PD
 

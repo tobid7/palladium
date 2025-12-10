@@ -37,7 +37,7 @@ SOFTWARE.
  *         Major Minor Patch Build
  * 0x01010000 -> 1.1.0-0
  */
-#define UI7_VERSION 0x00050100
+#define UI7_VERSION 0x00060000
 
 namespace PD {
 namespace UI7 {
@@ -55,18 +55,18 @@ class PD_UI7_API Context {
 
   PD_SHARED(Context);
 
-  void AddViewPort(const ID &id, const ivec4 &vp);
-  void UseViewPort(const ID &id);
+  void AddViewPort(const ID& id, const ivec4& vp);
+  void UseViewPort(const ID& id);
   void Update();
-  bool BeginMenu(const ID &id, UI7MenuFlags flags = 0, bool *pShow = nullptr);
+  bool BeginMenu(const ID& id, UI7MenuFlags flags = 0, bool* pShow = nullptr);
   void EndMenu();
-  void AboutMenu(bool *show = nullptr);
-  void MetricsMenu(bool *show = nullptr);
-  void StyleEditor(bool *show = nullptr);
+  void AboutMenu(bool* show = nullptr);
+  void MetricsMenu(bool* show = nullptr);
+  void StyleEditor(bool* show = nullptr);
 
   Li::DrawList::Ref GetDrawData() { return pIO->FDL; }
 
-  Menu::Ref pGetOrCreateMenu(const ID &id) {
+  Menu::Ref pGetOrCreateMenu(const ID& id) {
     auto menu = pMenus.find(id);
     if (menu == pMenus.end()) {
       pMenus[id] = Menu::New(id, pIO);

@@ -93,8 +93,8 @@ int GetBPP(Li::Texture::Type type) {
 }
 
 void GfxC3D::Init() {
-  VertexBuffer.Resize(4 * 8192);
-  IndexBuffer.Resize(6 * 8192);
+  VertexBuffer.resize(4 * 8192);
+  IndexBuffer.resize(6 * 8192);
 
   Flags |= LiBackendFlags_FlipUV_Y;
 
@@ -179,10 +179,10 @@ void GfxC3D::RenderDrawData(const std::vector<PD::Li::Command::Ref>& Commands) {
     BindTex(Tex->Address);
     auto bufInfo = C3D_GetBufInfo();
     BufInfo_Init(bufInfo);
-    BufInfo_Add(bufInfo, VertexBuffer.Data(), sizeof(Li::Vertex), 3, 0x210);
+    BufInfo_Add(bufInfo, VertexBuffer.data(), sizeof(Li::Vertex), 3, 0x210);
 
     C3D_DrawElements(GPU_TRIANGLES, CurrentIndex - StartIndex,
-                     C3D_UNSIGNED_SHORT, IndexBuffer.Data() + StartIndex);
+                     C3D_UNSIGNED_SHORT, IndexBuffer.data() + StartIndex);
   }
   C3D_DepthTest(true, GPU_GREATER, GPU_WRITE_ALL);
 }

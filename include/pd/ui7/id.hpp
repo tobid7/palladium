@@ -45,8 +45,8 @@ class ID {
    * used when directly placing a string istead of using ID("")
    * @param text Input String
    */
-  ID(const char* text) {
-    pID = PD::Strings::FastHash(text);
+  constexpr ID(const char* text) {
+    pID = PD::FNV1A32(text);
     pName = text;
   }
   /**
@@ -56,16 +56,17 @@ class ID {
   ~ID() = default;
 
   /** Get The ID Initial Name */
-  const std::string& GetName() const { return pName; }
+  constexpr const std::string_view& GetNameView() const { return pName; }
+  const std::string GetName() const { return std::string(pName); }
 
   /** Getter for the raw 32bit int id */
-  const u32& RawID() const { return pID; }
+  constexpr const u32& RawID() const { return pID; }
 
   /** Return the ID when casting to u32 */
-  operator u32() const { return pID; }
+  constexpr operator u32() const { return pID; }
 
-  u32 pID;            ///< Hash of the name
-  std::string pName;  ///< Name
+  u32 pID;                 ///< Hash of the name
+  std::string_view pName;  ///< Name
 };
 }  // namespace UI7
 }  // namespace PD

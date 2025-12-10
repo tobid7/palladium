@@ -37,6 +37,8 @@ PD_LITHIUM_API void DrawList::Clear() {
   pNumIndices = 0;
   pNumVertices = 0;
   pDrawList.clear();
+  pPath.Clear();
+  pClipRects.Clear();
 }
 
 PD_LITHIUM_API void DrawList::AddCommand(Command::Ref v) {

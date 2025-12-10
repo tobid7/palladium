@@ -24,6 +24,7 @@ SOFTWARE.
  */
 
 #include <pd/core/common.hpp>
+#include <pd/core/strings.hpp>
 
 namespace PD {
 class PD_CORE_API Color {
@@ -65,17 +66,34 @@ class PD_CORE_API Color {
         b(static_cast<u8>(255.f * b)),
         a(static_cast<u8>(255.f * a)) {}
   /**
-   * Constructor for Hex Input
+   * Constructor for Hex Input (is abel to run at compile time xD)
    * @param hex Hex String in `#ffffff` or `#ffffffff` format
    */
-  Color(const std::string& hex) { Hex(hex); }
+  constexpr Color(const std::string_view& hex) { Hex(hex); }
 
   /**
-   * Create Color Object by Hex String
+   * Create Color Object by Hex String (at compile time btw)
    * @param hex Hex String in `#ffffff` or `#ffffffff` format
    * @return Color class itself
    */
-  Color& Hex(const std::string& hex);
+  constexpr Color& Hex(const std::string_view& hex) {
+    if (!(hex.length() == 7 || hex.length() == 9)) {
+      throw "[PD] Color: hex string is not rgb or rgba!";
+    }
+    r = PD::Strings::HexChar2Int(hex[1]) * 16 +
+        PD::Strings::HexChar2Int(hex[2]);
+    g = PD::Strings::HexChar2Int(hex[3]) * 16 +
+        PD::Strings::HexChar2Int(hex[4]);
+    b = PD::Strings::HexChar2Int(hex[5]) * 16 +
+        PD::Strings::HexChar2Int(hex[6]);
+    if (hex.length() == 9) {
+      a = PD::Strings::HexChar2Int(hex[7]) * 16 +
+          PD::Strings::HexChar2Int(hex[8]);
+    } else {
+      a = 255;
+    }
+    return *this;
+  }
   /**
    * Convert this Color Object to Hex string
    * @param rgba [default false] sets if 8 or 6 digit color should be returned
@@ -89,7 +107,7 @@ class PD_CORE_API Color {
    * @param p Amount (supports -1.0 to 1.0 for use of sine)
    * @return Class Reference
    */
-  Color& Fade(const Color& color, float p) {
+  constexpr Color& Fade(const Color& color, float p) {
     a = static_cast<u8>((color.a - a) * ((p + 1.f) / 2));
     b = static_cast<u8>((color.b - b) * ((p + 1.f) / 2));
     g = static_cast<u8>((color.g - g) * ((p + 1.f) / 2));
@@ -101,12 +119,12 @@ class PD_CORE_API Color {
    * Get 32Bit Color Value
    * @return 32Bit Color Value (ABGR iirc)
    */
-  u32 Get() const { return (a << 24) | (b << 16) | (g << 8) | r; }
+  constexpr u32 Get() const { return (a << 24) | (b << 16) | (g << 8) | r; }
   /**
    * Get The Luminance of the Color
    * @return luminance (from 0.0 to 1.0)
    */
-  float Luminance() const {
+  constexpr float Luminance() const {
     // For Reference https://en.wikipedia.org/wiki/HSL_and_HSV#Lightness
     return (0.3 * (r / 255.f) + 0.59 * (g / 255.f) + 0.11 * (b / 255.f));
   }
@@ -114,13 +132,13 @@ class PD_CORE_API Color {
    * Check if the Color is Light or Dark
    * @return true if light
    */
-  bool IsLight() const { return (Luminance() >= 0.5); }
+  constexpr bool IsLight() const { return (Luminance() >= 0.5); }
 
   /**
    * Operator to cast Color to 32Bit Value
    * @return 32Bit Color Value
    */
-  operator u32() const { return Get(); }
+  constexpr operator u32() const { return Get(); }
 
   /** Public Access Data section */
   u8 r;

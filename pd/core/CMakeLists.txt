@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.22)
 
-project(pd-core LANGUAGES CXX VERSION 0.5.1)
+project(pd-core LANGUAGES CXX VERSION 0.6.0)
 
 set(SRC
     source/bit_util.cpp

@@ -30,6 +30,13 @@ namespace PD {
  * Set of String Utillity Functions
  */
 namespace Strings {
+constexpr int HexChar2Int(char c) {
+  /** Imagine mat hat ne lookup table dafür verwendet :/ */
+  if (c >= '0' && c <= '9') return c - '0';
+  if (c >= 'a' && c <= 'f') return 10 + (c - 'a');
+  if (c >= 'A' && c <= 'F') return 10 + (c - 'a');
+  return -1;  // Error
+}
 /**
  * Check if a String ends with a specific extension
  * @param str Input string

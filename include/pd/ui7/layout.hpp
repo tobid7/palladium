@@ -52,7 +52,7 @@ class PD_UI7_API Layout {
 
   PD_SHARED(Layout);
 
-  const std::string& GetName() const { return ID.GetName(); }
+  const std::string GetName() const { return ID.GetName(); }
   const UI7::ID& GetID() const { return this->ID; }
 
   const fvec2& GetPosition() const { return Pos; }
