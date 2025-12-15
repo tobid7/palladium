@@ -60,7 +60,7 @@ class Tween {
    * @param delta deltatime
    */
   void Update(float delta) {
-    time += delta / 1000.f;
+    time += delta * 0.001f;
     if (time > tend) {
       finished = true;
       time = tend;
@@ -162,10 +162,10 @@ class Tween {
         return -(end - start) * t * (t - 2) + start;
         break;
       case EaseInOutQuad:
-        t = time / (tend / 2);
-        if (t < 1) return (end - start) / 2 * t * t + start;
+        t = time / (tend * 0.5f);
+        if (t < 1) return (end - start) * 0.5f * t * t + start;
         t--;
-        return -(end - start) / 2 * (t * (t - 2) - 1) + start;
+        return -(end - start) * 0.5f * (t * (t - 2) - 1) + start;
         break;
       case EaseInCubic:
         t = time / tend;
@@ -177,20 +177,20 @@ class Tween {
         return (end - start) * (t * t * t + 1) + start;
         break;
       // case EaseInOutCubic:
-      //   t = time / (tend / 2);
-      //   if (t < 1) return (end - start) / 2 * t * t * t + start;
+      //   t = time / (tend *0.5f);
+      //   if (t < 1) return (end - start) *0.5f * t * t * t + start;
       //   t--;
-      //   return (end - start) / 2 * (t * t * t * 2) + start;
+      //   return (end - start) *0.5f * (t * t * t * 2) + start;
       //   break;
       case EaseInSine:
-        return -(end - start) * cos(time / tend * (M_PI / 2)) + (end - start) +
-               start;
+        return -(end - start) * cos(time / tend * (M_PI * 0.5f)) +
+               (end - start) + start;
         break;
       case EaseOutSine:
-        return (end - start) * sin(time / tend * (M_PI / 2)) + start;
+        return (end - start) * sin(time / tend * (M_PI * 0.5f)) + start;
         break;
       case EaseInOutSine:
-        return -(end - start) / 2 * (cos(M_PI * time / tend) - 1) + start;
+        return -(end - start) * 0.5f * (cos(M_PI * time / tend) - 1) + start;
         break;
 
       default:  // Linear

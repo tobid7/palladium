@@ -250,6 +250,10 @@ PD_LITHIUM_API void Font::CmdTextEx(std::vector<Command::Ref> &cmds,
   fvec2 td;
   fvec2 rpos = pos;
   fvec2 rbox = box;
+  std::string txt = text;
+  if (flags & LiTextFlags_Wrap) {
+    txt = pWrapText(txt, scale, box, td);
+  }
   if (flags & (LiTextFlags_AlignMid | LiTextFlags_AlignRight)) {
     td = GetTextBounds(text, scale);
   }
@@ -261,7 +265,7 @@ PD_LITHIUM_API void Font::CmdTextEx(std::vector<Command::Ref> &cmds,
   }
 
   std::vector<std::string> lines;
-  std::istringstream iss(text);
+  std::istringstream iss(txt);
   std::string tmp;
   while (std::getline(iss, tmp)) {
     lines.push_back(tmp);
@@ -313,6 +317,31 @@ PD_LITHIUM_API void Font::CmdTextEx(std::vector<Command::Ref> &cmds,
     off.y += lh;
     off.x = 0;
   }
+}
+
+PD_LITHIUM_API std::string Font::pWrapText(const std::string &txt, float scale,
+                                           const PD::fvec2 &max,
+                                           PD::fvec2 &dim) {
+  std::string ret;
+  std::string line;
+  int lx = 0;
+  std::stringstream s(txt);
+  std::string tmp;
+  // Simply go over every word
+  while (s >> tmp) {
+    auto d = GetTextBounds(tmp, scale);
+    if (lx + d.x <= max.x) {
+      line += tmp + ' ';
+      lx += d.x;
+    } else {
+      ret += line + '\n';
+      line = tmp + ' ';
+      lx = GetTextBounds(line, scale).x;
+    }
+  }
+  ret += line;
+  dim = GetTextBounds(ret, scale);
+  return ret;
 }
 
 }  // namespace Li

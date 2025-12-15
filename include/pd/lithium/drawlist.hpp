@@ -97,7 +97,7 @@ class PD_LITHIUM_API DrawList {
    * Extended Draw Text Function
    */
   void DrawTextEx(const fvec2& p, const std::string& text, u32 color,
-                  LiTextFlags flags, fvec2 box = fvec2(0.f));
+                  LiTextFlags flags, const fvec2& box = fvec2(0.f));
   void DrawLine(const fvec2& a, const fvec2& b, u32 color, int t = 1);
   /**
    * Take list of points and display it as a line on screen
@@ -138,6 +138,14 @@ class PD_LITHIUM_API DrawList {
    * @param v Position to add
    */
   void PathAdd(const fvec2& v) { pPath.Add(v); }
+  /**
+   * Add a Point to the Path
+   * @note Keep in mind that this function is used for
+   * setting the starting point
+   * @param x X Position to add
+   * @param y Y Position to add
+   */
+  void PathAdd(float x, float y) { pPath.Add(fvec2(x, y)); }
   /**
    * Path Stroke Create Line from point to point
    * @note For Primitives like Rect or Triangle mak sure to use

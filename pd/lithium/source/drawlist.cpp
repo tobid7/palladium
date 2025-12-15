@@ -281,7 +281,7 @@ PD_LITHIUM_API void DrawList::DrawText(const fvec2 &pos,
 
 PD_LITHIUM_API void DrawList::DrawTextEx(const fvec2 &p,
                                          const std::string &text, u32 color,
-                                         LiTextFlags flags, fvec2 box) {
+                                         LiTextFlags flags, const fvec2 &box) {
   if (!pCurrentFont) {
     return;
   }

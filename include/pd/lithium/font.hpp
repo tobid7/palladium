@@ -101,6 +101,8 @@ class PD_LITHIUM_API Font {
    */
   void pMakeAtlas(bool final, std::vector<u8>& font_tex, int texszs,
                   PD::Li::Texture::Ref tex);
+  std::string pWrapText(const std::string& txt, float scale,
+                        const PD::fvec2& max, PD::fvec2& dim);
 
   /** Data Section */
   int PixelHeight;
