@@ -149,11 +149,11 @@ void GfxC3D::RenderDrawData(const std::vector<PD::Li::Command::Ref>& Commands) {
            Commands[index]->ScissorOn == ScissorEnabled &&
            Commands[index]->ScissorRect == ScissorRect) {
       auto c = Commands[index].get();
-      for (size_t i = 0; i < c->IndexBuffer.Size(); i++) {
-        IndexBuffer[CurrentIndex++] = CurrentVertex + c->IndexBuffer.At(i);
+      for (size_t i = 0; i < c->IndexBuffer.size(); i++) {
+        IndexBuffer[CurrentIndex++] = CurrentVertex + c->IndexBuffer.at(i);
       }
-      for (size_t i = 0; i < c->VertexBuffer.Size(); i++) {
-        VertexBuffer[CurrentVertex++] = c->VertexBuffer.At(i);
+      for (size_t i = 0; i < c->VertexBuffer.size(); i++) {
+        VertexBuffer[CurrentVertex++] = c->VertexBuffer.at(i);
       }
       index++;
     }

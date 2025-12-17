@@ -106,7 +106,7 @@ class PD_LITHIUM_API DrawList {
    * @param flags Additional Flags (Close for go back to starting point)
    * @param thickness Thickness of the Line
    */
-  void DrawPolyLine(const Vec<fvec2>& points, u32 clr, u32 flags = 0,
+  void DrawPolyLine(const std::vector<fvec2>& points, u32 clr, u32 flags = 0,
                     int thickness = 1);
   /**
    * Take a List ofpoints and display it as Filled Shape
@@ -114,7 +114,7 @@ class PD_LITHIUM_API DrawList {
    * @param points List of Points
    * @param clr Color of the shape
    */
-  void DrawConvexPolyFilled(const Vec<fvec2>& points, u32 clr);
+  void DrawConvexPolyFilled(const std::vector<fvec2>& points, u32 clr);
 
   // SECTION: PATH API //
 
@@ -124,20 +124,20 @@ class PD_LITHIUM_API DrawList {
    * @param num_points Number of Positions you want to add
    */
   void PathReserve(size_t num_points) {
-    pPath.Reserve(pPath.Size() + num_points);
+    pPath.reserve(pPath.size() + num_points);
   }
   /**
    * Clear current Path
    * @note PathStroke and PathFill will automatically clear
    */
-  void PathClear() { pPath.Clear(); }
+  void PathClear() { pPath.clear(); }
   /**
    * Add a Point to the Path
    * @note Keep in mind that this function is used for
    * setting the starting point
    * @param v Position to add
    */
-  void PathAdd(const fvec2& v) { pPath.Add(v); }
+  void PathAdd(const fvec2& v) { pPath.push_back(v); }
   /**
    * Add a Point to the Path
    * @note Keep in mind that this function is used for
@@ -145,7 +145,7 @@ class PD_LITHIUM_API DrawList {
    * @param x X Position to add
    * @param y Y Position to add
    */
-  void PathAdd(float x, float y) { pPath.Add(fvec2(x, y)); }
+  void PathAdd(float x, float y) { pPath.push_back(fvec2(x, y)); }
   /**
    * Path Stroke Create Line from point to point
    * @note For Primitives like Rect or Triangle mak sure to use
@@ -156,7 +156,7 @@ class PD_LITHIUM_API DrawList {
    */
   void PathStroke(u32 clr, int thickness = 1, u32 flags = 0) {
     DrawPolyLine(pPath, clr, flags, thickness);
-    pPath.Clear();
+    pPath.clear();
   }
   /**
    * Fill a Path with a Color
@@ -166,7 +166,7 @@ class PD_LITHIUM_API DrawList {
    */
   void PathFill(u32 clr) {
     DrawConvexPolyFilled(pPath, clr);
-    pPath.Clear();
+    pPath.clear();
   }
   void PathArcToN(const fvec2& c, float radius, float a_min, float a_max,
                   int segments);
@@ -183,25 +183,25 @@ class PD_LITHIUM_API DrawList {
   /// @param flags DrawFlags (for special rounding rules)
   void PathRectEx(fvec2 a, fvec2 b, float rounding = 0.f, u32 flags = 0);
 
-  void PushClipRect(const fvec4& cr) { pClipRects.Push(cr); }
+  void PushClipRect(const fvec4& cr) { pClipRects.push(cr); }
   void PopClipRect() {
-    if (pClipRects.IsEmpty()) {
+    if (pClipRects.empty()) {
       return;
     }
-    pClipRects.Pop();
+    pClipRects.pop();
   }
   /** One linear Clip rect Setup */
   void pClipCmd(Command* cmd);
 
   /** Data Section */
 
-  Stack<fvec4> pClipRects;
+  std::stack<fvec4> pClipRects;
   int Layer;
   float pFontScale = 0.7f;
   Font::Ref pCurrentFont;
   Texture::Ref CurrentTex;
   std::vector<Command::Ref> pDrawList;
-  PD::Vec<fvec2> pPath;
+  std::vector<fvec2> pPath;
   u32 pNumIndices = 0;
   u32 pNumVertices = 0;
 };

@@ -66,7 +66,7 @@ PD_UI7_API void Layout::AddObject(Container::Ref obj) {
   obj->Update();
   CursorMove(obj->GetSize());
   obj->HandleScrolling(ScrollOffset, WorkRect);
-  Objects.PushBack(obj);
+  Objects.push_back(obj);
 }
 
 PD_UI7_API void Layout::AddObjectEx(Container::Ref obj, u32 flags) {
@@ -83,9 +83,9 @@ PD_UI7_API void Layout::AddObjectEx(Container::Ref obj, u32 flags) {
     obj->HandleScrolling(ScrollOffset, WorkRect);
   }
   if (flags & UI7LytAdd_Front) {
-    Objects.PushFront(obj);
+    Objects.push_front(obj);
   } else {
-    Objects.PushBack(obj);
+    Objects.push_back(obj);
   }
 }
 
@@ -133,7 +133,7 @@ PD_UI7_API void Layout::Update() {
   for (auto& it : tbr) {
     IDObjects.erase(IDObjects.begin() + it);
   }
-  Objects.Clear();
+  Objects.clear();
   WorkRect = fvec4(fvec2(WorkRect.x, WorkRect.y), Size - IO->MenuPadding);
   CursorInit();
 }

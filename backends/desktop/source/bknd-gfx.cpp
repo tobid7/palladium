@@ -123,8 +123,8 @@ void SetupShaderAttribs(GLuint Shader) {
 /** Actual Backend */
 
 void GfxGL2::Init() {
-  VertexBuffer.Resize(4 * 8192);
-  IndexBuffer.Resize(6 * 8192);
+  VertexBuffer.resize(4 * 8192);
+  IndexBuffer.resize(6 * 8192);
   Shader = createShaderProgram(vertex_shader, frag_shader);
   glUseProgram(Shader);
 
@@ -190,11 +190,11 @@ void GfxGL2::RenderDrawData(const std::vector<PD::Li::Command::Ref>& Commands) {
            Commands[index]->ScissorOn == ScissorOn &&
            Commands[index]->ScissorRect == ScissorRect) {
       auto c = Commands[index].get();
-      for (size_t i = 0; i < c->IndexBuffer.Size(); i++) {
-        IndexBuffer[CurrentIndex++] = CurrentVertex + c->IndexBuffer.At(i);
+      for (size_t i = 0; i < c->IndexBuffer.size(); i++) {
+        IndexBuffer[CurrentIndex++] = CurrentVertex + c->IndexBuffer.at(i);
       }
-      for (size_t i = 0; i < c->VertexBuffer.Size(); i++) {
-        VertexBuffer[CurrentVertex++] = c->VertexBuffer.At(i);
+      for (size_t i = 0; i < c->VertexBuffer.size(); i++) {
+        VertexBuffer[CurrentVertex++] = c->VertexBuffer.at(i);
       }
       index++;
     }

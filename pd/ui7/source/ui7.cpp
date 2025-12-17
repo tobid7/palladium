@@ -272,7 +272,7 @@ PD_UI7_API void Context::MetricsMenu(bool *show) {
     }
     // Well this are Li Drawlists now and they do not count their stats (yet)
     /*if (m->BeginTreeNode("DrawLists (" +
-                         std::to_string(pIO->DrawListRegestry.Size()) + ")")) {
+                         std::to_string(pIO->DrawListRegestry.size()) + ")")) {
       for (auto &it : pIO->DrawListRegestry) {
         if (m->BeginTreeNode(it.First.GetName())) {
           m->Label("Vertices: " + std::to_string(it.Second->NumVertices));

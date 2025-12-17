@@ -44,7 +44,7 @@ PD_UI7_API void Menu::Label(const std::string& label) {
 PD_UI7_API bool Menu::Button(const std::string& label) {
   bool ret = false;
   u32 id = Strings::FastHash("btn" + label +
-                             std::to_string(pLayout->Objects.Size()));
+                             std::to_string(pLayout->Objects.size()));
   Container::Ref r = pLayout->FindObject(id);
   if (!r) {
     r = Button::New(label, pIO);
@@ -59,7 +59,7 @@ PD_UI7_API bool Menu::Button(const std::string& label) {
 
 PD_UI7_API void Menu::Checkbox(const std::string& label, bool& v) {
   u32 id = Strings::FastHash("cbx" + label +
-                             std::to_string(pLayout->Objects.Size()));
+                             std::to_string(pLayout->Objects.size()));
   Container::Ref r = pLayout->FindObject(id);
   if (!r) {
     r = Checkbox::New(label, v, pIO);

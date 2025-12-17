@@ -135,7 +135,7 @@ class PD_UI7_API Layout {
   bool Scrolling[2];
 
   // Objects
-  PD::List<Container::Ref> Objects;
+  std::list<Container::Ref> Objects;
   std::vector<Container::Ref> IDObjects;
 };
 }  // namespace UI7

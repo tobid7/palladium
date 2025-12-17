@@ -55,28 +55,5 @@ void RGB32toRGBA24(std::vector<u8> &out, const std::vector<u8> &in,
  */
 PD_IMAGE_API void Reverse32(std::vector<u8> &buf, const int &w, const int &h);
 PD_IMAGE_API void ReverseBuf(std::vector<u8> &buf, size_t bpp, int w, int h);
-
-/**
- * Convert RGB24 to RGBA32 by adding a 4th alpha value set to 255
- * to every pixel
- * @param out Result List
- * @param in Input Buffer List (rgb24)
- * @param w width of the image
- * @param h height of the image
- */
-PD_IMAGE_API
-void RGB24toRGBA32(PD::Vec<u8> &out, const PD::Vec<u8> &in, const int &w,
-                   const int &h);
-PD_IMAGE_API
-void RGB32toRGBA24(PD::Vec<u8> &out, const PD::Vec<u8> &in, const int &w,
-                   const int &h);
-/**
- * Reverse 32 (RGBA -> ABGR || ABGR -> RGBA)
- * @param buf Buffer to convert
- * @param w width
- * @param h height
- */
-PD_IMAGE_API void Reverse32(PD::Vec<u8> &buf, const int &w, const int &h);
-PD_IMAGE_API void ReverseBuf(PD::Vec<u8> &buf, size_t bpp, int w, int h);
 }  // namespace ImgConvert
 }  // namespace PD

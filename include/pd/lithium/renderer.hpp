@@ -46,10 +46,11 @@ class PD_LITHIUM_API Renderer {
                       u32 color);
   static void CmdTriangle(Command* cmd, const fvec2 a, const fvec2 b,
                           const fvec2 c, u32 clr);
-  static void CmdPolyLine(const Vec<fvec2>& points, u32 clr, u32 flags = 0,
-                          int thickness = 1);
-  static void CmdConvexPolyFilled(Command* cmd, const Vec<fvec2>& points,
-                                  u32 clr, Texture::Ref tex);
+  static void CmdPolyLine(const std::vector<fvec2>& points, u32 clr,
+                          u32 flags = 0, int thickness = 1);
+  static void CmdConvexPolyFilled(Command* cmd,
+                                  const std::vector<fvec2>& points, u32 clr,
+                                  Texture::Ref tex);
 
   // SECTION: InBounds Checks
 

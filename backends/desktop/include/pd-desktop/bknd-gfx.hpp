@@ -52,8 +52,8 @@ class GfxGL2 : public GfxDriver {
       PD::Li::Texture::Filter filter =
           PD::Li::Texture::Filter::LINEAR) override;
 
-  PD::Vec<Li::Vertex> VertexBuffer;
-  PD::Vec<PD::u16> IndexBuffer;
+  std::vector<Li::Vertex> VertexBuffer;
+  std::vector<PD::u16> IndexBuffer;
   GLuint Shader;
   GLuint pLocProjection;
   GLuint pLocTex;

@@ -37,20 +37,22 @@ PD_LITHIUM_API void DrawList::Clear() {
   pNumIndices = 0;
   pNumVertices = 0;
   pDrawList.clear();
-  pPath.Clear();
-  pClipRects.Clear();
+  pPath.clear();
+  while (!pClipRects.empty()) {
+    pClipRects.pop();
+  }
 }
 
 PD_LITHIUM_API void DrawList::AddCommand(Command::Ref v) {
-  pNumIndices += v->IndexBuffer.Size();
-  pNumVertices += v->VertexBuffer.Size();
+  pNumIndices += v->IndexBuffer.size();
+  pNumVertices += v->VertexBuffer.size();
   pDrawList.push_back(std::move(v));
 }
 
 PD_LITHIUM_API void DrawList::Merge(DrawList::Ref list) {
   for (size_t i = 0; i < list->pDrawList.size(); i++) {
-    pNumIndices += list->pDrawList[i]->IndexBuffer.Size();
-    pNumVertices += list->pDrawList[i]->VertexBuffer.Size();
+    pNumIndices += list->pDrawList[i]->IndexBuffer.size();
+    pNumVertices += list->pDrawList[i]->VertexBuffer.size();
     pDrawList.push_back(std::move(list->pDrawList[i]));
   }
   /** Make sure The list gets cleared */
@@ -67,9 +69,9 @@ PD_LITHIUM_API Command::Ref DrawList::PreGenerateCmd() {
 }
 
 PD_LITHIUM_API void DrawList::pClipCmd(Command *cmd) {
-  if (!pClipRects.IsEmpty()) {
+  if (!pClipRects.empty()) {
     cmd->ScissorOn = true;
-    cmd->ScissorRect = ivec4(pClipRects.Top());
+    cmd->ScissorRect = ivec4(pClipRects.top());
   }
 }
 
@@ -233,21 +235,21 @@ PD_LITHIUM_API void DrawList::DrawCircleFilled(const fvec2 &center, float rad,
 }
 
 // TODO: Don't render OOS
-PD_LITHIUM_API void DrawList::DrawPolyLine(const Vec<fvec2> &points, u32 clr,
-                                           u32 flags, int thickness) {
-  if (points.Size() < 2) {
+PD_LITHIUM_API void DrawList::DrawPolyLine(const std::vector<fvec2> &points,
+                                           u32 clr, u32 flags, int thickness) {
+  if (points.size() < 2) {
     return;
   }
   DrawSolid();
   auto cmd = PreGenerateCmd();
   bool close = (flags & (1 << 0));
-  int num_points = close ? (int)points.Size() : (int)points.Size() - 1;
+  int num_points = close ? (int)points.size() : (int)points.size() - 1;
   if (flags & (1 << 1)) {
     // TODO: Find a way to draw less garbage looking lines
   } else {
     // Non antialiased lines look awful when rendering with thickness != 1
     for (int i = 0; i < num_points; i++) {
-      int j = (i + 1) == (int)points.Size() ? 0 : (i + 1);
+      int j = (i + 1) == (int)points.size() ? 0 : (i + 1);
       auto line = Renderer::PrimLine(points[i], points[j], thickness);
       Renderer::CmdQuad(cmd.get(), line, vec4(0.f, 1.f, 1.f, 0.f), clr);
     }
@@ -255,9 +257,9 @@ PD_LITHIUM_API void DrawList::DrawPolyLine(const Vec<fvec2> &points, u32 clr,
   AddCommand(std::move(cmd));
 }
 
-PD_LITHIUM_API void DrawList::DrawConvexPolyFilled(const Vec<fvec2> &points,
-                                                   u32 clr) {
-  if (points.Size() < 3) {
+PD_LITHIUM_API void DrawList::DrawConvexPolyFilled(
+    const std::vector<fvec2> &points, u32 clr) {
+  if (points.size() < 3) {
     return;  // Need at least three points
   }
   auto cmd = PreGenerateCmd();

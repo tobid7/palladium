@@ -37,17 +37,17 @@ class Command {
   PD_UNIQUE(Command);
 
   Command& AddIdx(const u16& idx) {
-    IndexBuffer.Add(VertexBuffer.Size() + idx);
+    IndexBuffer.push_back(VertexBuffer.size() + idx);
     return *this;
   }
 
   Command& AddVtx(const Vertex& v) {
-    VertexBuffer.Add(std::move(v));
+    VertexBuffer.push_back(std::move(v));
     return *this;
   }
 
-  PD::Vec<Vertex> VertexBuffer;
-  PD::Vec<u16> IndexBuffer;
+  std::vector<Vertex> VertexBuffer;
+  std::vector<u16> IndexBuffer;
   ivec4 ScissorRect;
   bool ScissorOn = false;
   int Layer;

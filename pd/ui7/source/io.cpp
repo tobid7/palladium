@@ -34,9 +34,8 @@ PD_UI7_API void UI7::IO::Update() {
   Time->Update();
   InputHandler->Update();
   Framerate = 1000.f / Delta;
-  DrawListRegestry.Clear();
-  DrawListRegestry.PushFront(
-      Pair<UI7::ID, Li::DrawList::Ref>("CtxBackList", Back));
+  DrawListRegestry.clear();
+  DrawListRegestry.push_front(std::make_pair("CtxBackList", Back));
   // RegisterDrawList("CtxBackList", Back);
   NumIndices = FDL->pNumIndices;
   NumVertices = FDL->pNumVertices;

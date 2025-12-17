@@ -110,10 +110,9 @@ PD_LITHIUM_API void Renderer::CmdTriangle(Command* cmd, const fvec2 a,
 // TODO: Don't render OOS (Probably make it with a define as it
 // would probably be faster to render out of screen than checking if
 // it could be skipped)
-PD_LITHIUM_API void Renderer::CmdConvexPolyFilled(Command* cmd,
-                                                  const Vec<fvec2>& points,
-                                                  u32 clr, Texture::Ref tex) {
-  if (points.Size() < 3 || tex == nullptr) {
+PD_LITHIUM_API void Renderer::CmdConvexPolyFilled(
+    Command* cmd, const std::vector<fvec2>& points, u32 clr, Texture::Ref tex) {
+  if (points.size() < 3 || tex == nullptr) {
     return;  // Need at least three points
   }
 
@@ -121,11 +120,11 @@ PD_LITHIUM_API void Renderer::CmdConvexPolyFilled(Command* cmd,
   float minX = points[0].x, minY = points[0].y;
   float maxX = minX, maxY = minY;
   // Check for the max and min Positions
-  for (auto it = points.Begin(); it != points.End(); it++) {
-    if ((*it).x < minX) minX = (*it).x;
-    if ((*it).y < minY) minY = (*it).y;
-    if ((*it).x > maxX) maxX = (*it).x;
-    if ((*it).y > maxY) maxY = (*it).y;
+  for (const auto& it : points) {
+    if (it.x < minX) minX = it.x;
+    if (it.y < minY) minY = it.y;
+    if (it.x > maxX) maxX = it.x;
+    if (it.y > maxY) maxY = it.y;
   }
   // Get Short defines for UV
   // (Bottom Right is not required)
@@ -134,10 +133,10 @@ PD_LITHIUM_API void Renderer::CmdConvexPolyFilled(Command* cmd,
   auto uv_bl = tex->UV.BotLeft();
 
   // Render
-  for (int i = 2; i < (int)points.Size(); i++) {
+  for (int i = 2; i < (int)points.size(); i++) {
     cmd->AddIdx(0).AddIdx(i).AddIdx(i - 1);
   }
-  for (int i = 0; i < (int)points.Size(); i++) {
+  for (int i = 0; i < (int)points.size(); i++) {
     // Calculate U and V coords
     float u =
         uv_tl.x + ((points[i].x - minX) / (maxX - minX)) * (uv_tr.x - uv_tl.x);
