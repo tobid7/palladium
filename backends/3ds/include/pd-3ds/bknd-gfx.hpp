@@ -56,5 +56,6 @@ class GfxC3D : public GfxDriver {
   DVLB_s* ShaderCode;
   shaderProgram_s Shader;
   C3D_AttrInfo ShaderInfo;
+  std::vector<u8> pRawShader;
 };
 }  // namespace PD
