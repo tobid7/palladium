@@ -103,6 +103,8 @@ class PD_LITHIUM_API Font {
                   PD::Li::Texture::Ref tex);
   std::string pWrapText(const std::string& txt, float scale,
                         const PD::fvec2& max, PD::fvec2& dim);
+  std::string pShortText(const std::string& txt, float scale,
+                        const PD::fvec2& max, PD::fvec2& dim);
 
   /** Data Section */
   int PixelHeight;

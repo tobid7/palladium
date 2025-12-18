@@ -272,10 +272,10 @@ PD_LITHIUM_API void Font::CmdTextEx(std::vector<Command::Ref> &cmds,
   }
 
   for (auto &it : lines) {
-    /*if (flags & LITextFlags_Short) {
+    if (flags & LiTextFlags_Short) {
       fvec2 tmp_dim;
-      it = ShortText(it, box.x() - pos.x(), tmp_dim);
-    }*/
+      it = pShortText(it, scale, box - pos, tmp_dim);
+    }
     auto wline = Strings::MakeWstring(it);
     auto cmd = Command::New();
     auto Tex = GetCodepoint(wline[0]).Tex;
@@ -341,6 +341,38 @@ PD_LITHIUM_API std::string Font::pWrapText(const std::string &txt, float scale,
   }
   ret += line;
   dim = GetTextBounds(ret, scale);
+  return ret;
+}
+
+PD_LITHIUM_API std::string Font::pShortText(const std::string &txt, float scale,
+                                            const PD::fvec2 &max,
+                                            PD::fvec2 &dim) {
+  auto test = GetTextBounds(txt, scale);
+  if (test.x < max.x) {
+    return txt;
+  }
+  std::string ext;
+  std::string ph = "(...)";  // placeholder
+  std::string tmp = txt;
+  std::string ret;
+  auto maxlen = max.x;
+  size_t ext_ = tmp.find_last_of('.');
+  if (ext_ != tmp.npos) {
+    ext = tmp.substr(ext_);
+    tmp = tmp.substr(0, ext_);
+  }
+  maxlen -= GetTextBounds(ext, scale).x;
+  maxlen -= GetTextBounds(ph, scale).x;
+
+  for (auto &it : tmp) {
+    if (GetTextBounds(ret, scale).x > maxlen) {
+      ret += ph;
+      ret += ext;
+      dim = GetTextBounds(ret, scale);
+      return ret;
+    }
+    ret += it;
+  }
   return ret;
 }
 
