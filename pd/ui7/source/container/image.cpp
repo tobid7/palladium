@@ -29,11 +29,11 @@ PD_UI7_API void Image::Draw() {
   // Assert(io.get() && list.get(), "Did you run Container::Init correctly?");
   // Assert(img.get(), "Image is nullptr!");
   // io->Ren->OnScreen(screen);
-  list->Layer++;
+  list->pLayer++;
   list->DrawTexture(img);
   list->DrawRectFilled(FinalPos(), newsize, 0xffffffff);
   list->DrawSolid();
-  list->Layer--;
+  list->pLayer--;
 }
 }  // namespace UI7
 }  // namespace PD

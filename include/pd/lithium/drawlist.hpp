@@ -64,14 +64,22 @@ class PD_LITHIUM_API DrawList {
   /**
    * Append an input drawlist on top of this one
    * This Function will clear the Input list to make sure
-   * THat the moved memory blocks don't get used
+   * That the moved memory blocks don't get used
    * @param list DrawList to move into current
    */
   void Merge(DrawList::Ref list);
+  /**
+   * Optimize a Drawlist to a more or less perfect order
+   * to reduce drawcall overhead... This function also uses
+   * the Layersystem to keep specific stuff in the correct order
+   */
+  void Optimize();
 
   Command::Ref PreGenerateCmd();
   void AddCommand(Command::Ref v);
   void Clear();
+  void Layer(int l) { this->pLayer = l; }
+  int Layer() { return this->pLayer; }
 
   void SetFont(Font::Ref font) { pCurrentFont = font; }
   void SetFontScale(float scale) { pFontScale = scale; }
@@ -196,7 +204,7 @@ class PD_LITHIUM_API DrawList {
   /** Data Section */
 
   std::stack<fvec4> pClipRects;
-  int Layer;
+  int pLayer;
   float pFontScale = 0.7f;
   Font::Ref pCurrentFont;
   Texture::Ref CurrentTex;

@@ -32,7 +32,7 @@ PD_CORE_API std::string Color::Hex(bool rgba) const {
   s << std::hex << std::setw(2) << std::setfill('0') << (int)r;
   s << std::hex << std::setw(2) << std::setfill('0') << (int)g;
   s << std::hex << std::setw(2) << std::setfill('0') << (int)b;
-  if (rgba) {
+  if (rgba || a != 255) {  // QoL change btw
     s << std::hex << std::setw(2) << std::setfill('0') << (int)a;
   }
   return s.str();

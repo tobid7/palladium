@@ -59,9 +59,25 @@ PD_LITHIUM_API void DrawList::Merge(DrawList::Ref list) {
   list->Clear();
 }
 
+PD_LITHIUM_API void DrawList::Optimize() {
+#ifndef NDEBUG
+  PD::TT::Scope s("Optimize");
+#endif
+  std::sort(pDrawList.begin(), pDrawList.end(),
+            [](const PD::Li::Command::Ref &a, const PD::Li::Command::Ref &b) {
+              if (a->Layer == b->Layer) {  // Same layer
+                if (a->Tex == b->Tex) {    // same tex
+                  return a->Index < b->Index;
+                }
+                return a->Tex < b->Tex;  // order by address
+              }
+              return a->Layer < b->Layer;  // Order by layer
+            });
+}
+
 PD_LITHIUM_API Command::Ref DrawList::PreGenerateCmd() {
   Command::Ref cmd = Command::New();
-  cmd->Layer = Layer;
+  cmd->Layer = pLayer;
   cmd->Index = pDrawList.size();
   cmd->Tex = CurrentTex;
   pClipCmd(cmd.get());
@@ -275,8 +291,8 @@ PD_LITHIUM_API void DrawList::DrawText(const fvec2 &pos,
   std::vector<Command::Ref> cmds;
   pCurrentFont->CmdTextEx(cmds, pos, color, pFontScale, text);
   for (size_t i = 0; i < cmds.size(); i++) {
-    cmds[i]->Index = pDrawList.size();
-    cmds[i]->Layer = Layer;
+    cmds[i]->Index = pDrawList.size() + i;
+    cmds[i]->Layer = pLayer;
     AddCommand(std::move(cmds[i]));
   }
 }
@@ -290,8 +306,8 @@ PD_LITHIUM_API void DrawList::DrawTextEx(const fvec2 &p,
   std::vector<Command::Ref> cmds;
   pCurrentFont->CmdTextEx(cmds, p, color, pFontScale, text, flags, box);
   for (size_t i = 0; i < cmds.size(); i++) {
-    cmds[i]->Index = pDrawList.size();
-    cmds[i]->Layer = Layer;
+    cmds[i]->Index = pDrawList.size() + i;
+    cmds[i]->Layer = pLayer;
     AddCommand(std::move(cmds[i]));
   }
 }

@@ -83,11 +83,11 @@ PD_UI7_API void DragData<T>::Draw() {
     vec2 td = io->Font->GetTextBounds(p, io->FontScale);
     list->DrawRectFilled(FinalPos() + fvec2(off_x, 0), td + io->FramePadding,
                          io->Theme->Get(UI7Color_Button));
-    list->Layer++;
+    list->pLayer++;
     list->DrawTextEx(FinalPos() + fvec2(off_x, 0), p,
                      io->Theme->Get(UI7Color_Text), LiTextFlags_AlignMid,
                      td + io->FramePadding);
-    list->Layer--;
+    list->pLayer--;
     off_x += td.x + io->ItemSpace.x + io->FramePadding.x;
   }
   list->DrawText(FinalPos() + fvec2(off_x, io->FramePadding.y * 0.5), label,
