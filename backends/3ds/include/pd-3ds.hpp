@@ -28,5 +28,6 @@ SOFTWARE.
 #include <pd-3ds/bknd-hid.hpp>
 
 namespace PD {
+PD::Li::Font::Ref LoadSystemFont();
 void Init(void* data = nullptr);
-}
+}  // namespace PD

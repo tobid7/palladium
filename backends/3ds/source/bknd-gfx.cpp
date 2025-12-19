@@ -82,6 +82,27 @@ int GetBPP(Li::Texture::Type type) {
   return 0;  // Error
 }
 
+void FragCfg(GPU_TEXCOLOR clr) {
+  C3D_DepthTest(false, GPU_GREATER, GPU_WRITE_ALL);
+  C3D_TexEnv* env = C3D_GetTexEnv(0);
+  C3D_TexEnvInit(env);
+  switch (clr) {
+    case GPU_A4:
+    case GPU_A8:
+    case GPU_L4:
+    case GPU_L8:
+      C3D_TexEnvSrc(env, C3D_Alpha, GPU_TEXTURE0);
+      C3D_TexEnvFunc(env, C3D_RGB, GPU_REPLACE);
+      C3D_TexEnvFunc(env, C3D_Alpha, GPU_MODULATE);
+      break;
+
+    default:
+      C3D_TexEnvSrc(env, C3D_Both, GPU_TEXTURE0);
+      C3D_TexEnvFunc(env, C3D_Both, GPU_MODULATE);
+      break;
+  }
+}
+
 void GfxC3D::Init() {
   VertexBuffer.resize(4 * 8192);
   IndexBuffer.resize(6 * 8192);
@@ -129,11 +150,6 @@ void GfxC3D::RenderDrawData(const std::vector<PD::Li::Command::Ref>& Commands) {
   C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, pLocProjection, &proj);
   // Mat4 proj = Mat4::Ortho(0.f, ViewPort.x, ViewPort.y, 0.f, 1.f, -1.f);
   // C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, pLocProjection, (C3D_Mtx*)&proj);
-  C3D_DepthTest(false, GPU_GREATER, GPU_WRITE_ALL);
-  C3D_TexEnv* env = C3D_GetTexEnv(0);
-  C3D_TexEnvInit(env);
-  C3D_TexEnvSrc(env, C3D_Both, GPU_TEXTURE0);
-  C3D_TexEnvFunc(env, C3D_Both, GPU_MODULATE);
   size_t index = 0;
   while (index < Commands.size()) {
     PD::Li::Texture::Ref Tex = Commands[index]->Tex;
@@ -166,6 +182,7 @@ void GfxC3D::RenderDrawData(const std::vector<PD::Li::Command::Ref>& Commands) {
     } else {
       C3D_SetScissor(GPU_SCISSOR_DISABLE, 0, 0, 0, 0);
     }
+    FragCfg(((C3D_Tex*)Tex->Address)->fmt);
     BindTex(Tex->Address);
     auto bufInfo = C3D_GetBufInfo();
     BufInfo_Init(bufInfo);
