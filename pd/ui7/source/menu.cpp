@@ -148,7 +148,7 @@ PD_UI7_API void Menu::HandleScrolling() {
           pLayout->ScrollOffset.y = std::clamp(
               pLayout->ScrollStart.y + pIO->InputHandler->DragSourcePos.y -
                   pIO->InputHandler->DragPosition.y,
-              20.f, pLayout->MaxPosition.y - 220);
+              -20.f, pLayout->MaxPosition.y - 220);
         }
       }
     } else {
@@ -279,12 +279,12 @@ PD_UI7_API void Menu::DrawBaseLayout() {
           l->pLayer = 21;
           /** Inline if statement to shift the Text if collapse sym is shown */
           /** What the hell is this code btw (didn't found a better way) */
-          l->DrawText(self->FinalPos() + fvec2(Flags & UI7MenuFlags_NoClose
-                                                   ? 0
+          l->DrawText(self->FinalPos() + fvec2((Flags & UI7MenuFlags_NoCollapse)
+                                                   ? pIO->FramePadding.x
                                                    : (TitleBarHeight -
                                                       pIO->FramePadding.y * 2 +
                                                       (io->FramePadding.x * 2)),
-                                               0),
+                                               2),
                       pID.GetName(), io->Theme->Get(UI7Color_Text));
         });
     r->SetSize(fvec2(pLayout->GetSize().x, TitleBarHeight));
@@ -344,11 +344,11 @@ PD_UI7_API void Menu::Update() {
     TitleBarHeight = 0.f;
     pLayout->WorkRect.y = 5.f;
   }
+  DrawBaseLayout();
+  pLayout->Update();
   if (Flags & UI7MenuFlags_VtScrolling || Flags & UI7MenuFlags_HzScrolling) {
     HandleScrolling();
   }
-  DrawBaseLayout();
-  pLayout->Update();
 }
 
 PD_UI7_API bool Menu::BeginTreeNode(const ID& id) {

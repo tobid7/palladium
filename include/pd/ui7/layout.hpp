@@ -103,6 +103,8 @@ class PD_UI7_API Layout {
 
   void Update();
 
+  fvec2 DbgScrollOffset() { return ScrollOffset; }
+
  private:
   friend class Menu;
   friend class Context;

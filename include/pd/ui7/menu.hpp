@@ -103,6 +103,11 @@ class PD_UI7_API Menu {
   void HandleTitlebarActions();
   void DrawBaseLayout();
 
+  void AddObject(PD::UI7::Container::Ref obj) { pLayout->AddObject(obj); }
+  void AddObjectEx(PD::UI7::Container::Ref obj, PD::u32 flags) {
+    pLayout->AddObjectEx(obj, flags);
+  }
+
   void Update();
 
   /** Data Section */
