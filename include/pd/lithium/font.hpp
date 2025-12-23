@@ -39,6 +39,7 @@ enum LiTextFlags_ {
   LiTextFlags_Wrap = 1 << 3,        ///< Wrap Text: May be runs better with TMS
   LiTextFlags_Short = 1 << 4,       ///< Short Text: May be runs better with TMS
   LiTextFlags_Scroll = 1 << 5,      ///< Not implemented [scoll text if to long]
+  LiTextFlags_NoOOS = 1 << 6,       ///< No Out of Screen Rendering
 };
 
 namespace PD {
@@ -104,7 +105,7 @@ class PD_LITHIUM_API Font {
   std::string pWrapText(const std::string& txt, float scale,
                         const PD::fvec2& max, PD::fvec2& dim);
   std::string pShortText(const std::string& txt, float scale,
-                        const PD::fvec2& max, PD::fvec2& dim);
+                         const PD::fvec2& max, PD::fvec2& dim);
 
   /** Data Section */
   int PixelHeight;

@@ -31,9 +31,26 @@ PD_UI7_API void Label::Draw() {
   if (pCLipRectUsed) {
     list->PushClipRect(pClipRect);
   }
-  list->DrawText(FinalPos(), label, io->Theme->Get(UI7Color_Text));
+  list->DrawTextEx(FinalPos(), label, io->Theme->Get(UI7Color_Text),
+                   LiTextFlags_NoOOS, PD::fvec2(0, io->CurrentViewPort.w));
   if (pCLipRectUsed) {
     list->PopClipRect();
+  }
+}
+
+PD_UI7_API void Label::Update() {
+  /**
+   * Todo: This is a hacky workaround
+   * Needs proper optimisation
+   * Needs a max size (to support sligning dynaically by the window size)
+   */
+  if (io->WrapLabels) {
+    this->label =
+        io->Font->pWrapText(this->label, io->FontScale,
+                            PD::fvec2(io->CurrentViewPort.z - FinalPos().x * 4,
+                                      io->CurrentViewPort.w),
+                            this->tdim);
+    SetSize(tdim);
   }
 }
 }  // namespace UI7

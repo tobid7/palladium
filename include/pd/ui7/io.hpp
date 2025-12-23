@@ -77,6 +77,7 @@ class PD_UI7_API IO {
   fvec2 MinSliderDragSize = 10.f;  // Min height (Vt) and Min Width (Hz)
   bool ShowMenuBorder = true;
   bool ShowFrameBorder = false;  // not implemented yet
+  bool WrapLabels = false;       // Beta state
   float OverScrollMod = 0.15f;
   u64 DoubleClickTime = 500;  // Milliseconds
   std::list<std::pair<UI7::ID, Li::DrawList::Ref>> DrawListRegestry;

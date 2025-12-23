@@ -272,6 +272,15 @@ PD_LITHIUM_API void Font::CmdTextEx(std::vector<Command::Ref> &cmds,
   }
 
   for (auto &it : lines) {
+    if (flags & LiTextFlags_NoOOS) {
+      if (rpos.y + off.y + lh < 0) {
+        off.y += lh;
+        continue;
+      }
+      if (rpos.y + off.y > box.y && box.y != 0) {
+        break;
+      }
+    }
     if (flags & LiTextFlags_Short) {
       fvec2 tmp_dim;
       it = pShortText(it, scale, box - pos, tmp_dim);

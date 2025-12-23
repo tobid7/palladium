@@ -81,7 +81,9 @@ PD_UI7_API void Menu::Separator() {
                           pIO->Theme->Get(UI7Color_TextDead));
       });
   // Set size before pushing (cause Cursor Move will require it)
-  r->SetSize(fvec2(pLayout->Size.x - 10, 1));
+  r->SetSize(fvec2(
+      pLayout->Size.x - pIO->MenuPadding.x * 2 - pLayout->InitialCursorOffset.x,
+      1));
   pLayout->AddObject(r);
 }
 
@@ -109,8 +111,9 @@ PD_UI7_API void Menu::SeparatorText(const std::string& label) {
                   fvec2(pLayout->Size.x, self->GetSize().y));
   });
   // Set size before pushing (cause Cursor Move will require it)
-  r->SetSize(
-      fvec2(pLayout->Size.x - 10, pIO->Font->PixelHeight * pIO->FontScale));
+  r->SetSize(fvec2(
+      pLayout->Size.x - pIO->MenuPadding.x * 2 - pLayout->InitialCursorOffset.x,
+      pIO->Font->PixelHeight * pIO->FontScale));
   pLayout->AddObject(r);
 }
 PD_UI7_API void Menu::HandleFocus() {

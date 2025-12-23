@@ -51,6 +51,10 @@ class PD_UI7_API Label : public Container {
    * @note This function is usally called by Menu::Update
    * */
   void Draw() override;
+  /**
+   * Override Update func to support Text modifications
+   */
+  void Update() override;
 
  private:
   fvec2 tdim;                      ///< Text Size

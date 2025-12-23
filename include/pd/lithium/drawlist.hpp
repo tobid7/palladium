@@ -198,6 +198,7 @@ class PD_LITHIUM_API DrawList {
     }
     pClipRects.pop();
   }
+  const std::vector<Command::Ref>& Data() const { return pDrawList; }
   /** One linear Clip rect Setup */
   void pClipCmd(Command* cmd);
 
