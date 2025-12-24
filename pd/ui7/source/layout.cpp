@@ -124,15 +124,15 @@ PD_UI7_API void Layout::Update() {
       it->Draw();
     }
   }
-  std::vector<size_t> tbr;
-  for (size_t i = 0; i < IDObjects.size(); i++) {
-    if (IDObjects[i]->Removable()) {
-      tbr.push_back(i);
+
+  for (auto it = IDObjects.begin(); it != IDObjects.end();) {
+    if ((*it)->Removable()) {
+      it = IDObjects.erase(it);
+    } else {
+      it++;
     }
   }
-  for (auto& it : tbr) {
-    IDObjects.erase(IDObjects.begin() + it);
-  }
+
   Objects.clear();
   WorkRect = fvec4(fvec2(WorkRect.x, WorkRect.y), Size - IO->MenuPadding);
   CursorInit();
