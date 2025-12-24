@@ -96,6 +96,11 @@ class PD_LITHIUM_API Font {
   void CmdTextEx(std::vector<Command::Ref>& cmds, const fvec2& pos, u32 color,
                  float scale, const std::string& text, LiTextFlags flags = 0,
                  const fvec2& box = 0);
+
+  /**
+   * Garbage collection for TextMapSystem
+   */
+  void CleanupTMS();
   /**
    * Utility function to create a font atlas
    * During TTF loading (Internal and should not be called)
@@ -116,6 +121,14 @@ class PD_LITHIUM_API Font {
    * **Now using unordered map**
    */
   std::unordered_map<u32, Codepoint> CodeMap;
+  /** TMS */
+  struct TMELEM {
+    PD::u32 ID;
+    PD::fvec2 Size;
+    std::string Text;
+    u64 TimeStamp;
+  };
+  std::unordered_map<u32, TMELEM> pTMS;
 };
 }  // namespace Li
 }  // namespace PD

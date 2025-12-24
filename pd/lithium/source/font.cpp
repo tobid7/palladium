@@ -196,6 +196,11 @@ PD_LITHIUM_API Font::Codepoint &Font::GetCodepoint(u32 cp) {
 }
 
 PD_LITHIUM_API fvec2 Font::GetTextBounds(const std::string &text, float scale) {
+  u32 id = PD::FNV1A32(text);
+  if (pTMS.find(id) != pTMS.end()) {
+    pTMS[id].TimeStamp = PD::OS::GetTime();
+    return pTMS[id].Size;
+  }
   // Use wstring for exemple for german äöü
   auto wtext = Strings::MakeWstring(text);
   // Create a temp position and offset as [0, 0]
@@ -237,6 +242,9 @@ PD_LITHIUM_API fvec2 Font::GetTextBounds(const std::string &text, float scale) {
   }
   res.x = std::max(res.x, x);
   res.y += lh;
+  pTMS[id].ID = id;
+  pTMS[id].Size = res;
+  pTMS[id].TimeStamp = PD::OS::GetTime();
   return res;
 }
 
@@ -331,6 +339,14 @@ PD_LITHIUM_API void Font::CmdTextEx(std::vector<Command::Ref> &cmds,
 PD_LITHIUM_API std::string Font::pWrapText(const std::string &txt, float scale,
                                            const PD::fvec2 &max,
                                            PD::fvec2 &dim) {
+  u32 id = PD::FNV1A32(txt);
+  if (pTMS.find(id) != pTMS.end()) {
+    if (pTMS[id].Text.size()) {
+      dim = pTMS[id].Size;
+      pTMS[id].TimeStamp = PD::OS::GetTime();
+      return pTMS[id].Text;
+    }
+  }
   std::string ret;
   std::string line;
   int lx = 0;
@@ -350,12 +366,24 @@ PD_LITHIUM_API std::string Font::pWrapText(const std::string &txt, float scale,
   }
   ret += line;
   dim = GetTextBounds(ret, scale);
+  pTMS[id].ID = id;
+  pTMS[id].Size = dim;
+  pTMS[id].Text = ret;
+  pTMS[id].TimeStamp = PD::OS::GetTime();
   return ret;
 }
 
 PD_LITHIUM_API std::string Font::pShortText(const std::string &txt, float scale,
                                             const PD::fvec2 &max,
                                             PD::fvec2 &dim) {
+  u32 id = PD::FNV1A32(txt);
+  if (pTMS.find(id) != pTMS.end()) {
+    if (pTMS[id].Text.size()) {
+      dim = pTMS[id].Size;
+      pTMS[id].TimeStamp = PD::OS::GetTime();
+      return pTMS[id].Text;
+    }
+  }
   auto test = GetTextBounds(txt, scale);
   if (test.x < max.x) {
     return txt;
@@ -382,7 +410,22 @@ PD_LITHIUM_API std::string Font::pShortText(const std::string &txt, float scale,
     }
     ret += it;
   }
+  pTMS[id].ID = id;
+  pTMS[id].Size = dim;
+  pTMS[id].Text = ret;
+  pTMS[id].TimeStamp = PD::OS::GetTime();
   return ret;
+}
+
+PD_LITHIUM_API void Font::CleanupTMS() {
+  u64 t = PD::OS::GetTime();
+  for (auto it = pTMS.begin(); it != pTMS.end();) {
+    if (t - it->second.TimeStamp > 1000) {
+      it = pTMS.erase(it);
+    } else {
+      it++;
+    }
+  }
 }
 
 }  // namespace Li

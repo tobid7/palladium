@@ -38,6 +38,9 @@ PD_LITHIUM_API void DrawList::Clear() {
   pNumVertices = 0;
   pDrawList.clear();
   pPath.clear();
+  if (pCurrentFont) {
+    pCurrentFont->CleanupTMS();
+  }
   while (!pClipRects.empty()) {
     pClipRects.pop();
   }
