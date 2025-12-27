@@ -40,6 +40,12 @@ class Command {
     IndexBuffer.push_back(VertexBuffer.size() + idx);
     return *this;
   }
+  Command& AddIdxs(const u16& a, const u16& b, const u16& c) {
+    IndexBuffer.push_back(VertexBuffer.size() + a);
+    IndexBuffer.push_back(VertexBuffer.size() + b);
+    IndexBuffer.push_back(VertexBuffer.size() + c);
+    return *this;
+  }
 
   Command& AddVtx(const Vertex& v) {
     VertexBuffer.push_back(std::move(v));

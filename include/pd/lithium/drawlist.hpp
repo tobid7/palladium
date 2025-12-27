@@ -69,6 +69,12 @@ class PD_LITHIUM_API DrawList {
    */
   void Merge(DrawList::Ref list);
   /**
+   * Copy another drawlist to this drawist.
+   * This is important for static prerendered Drawlists
+   * @param list DrawList Reference to copy from
+   */
+  void Copy(DrawList::Ref list);
+  /**
    * Optimize a Drawlist to a more or less perfect order
    * to reduce drawcall overhead... This function also uses
    * the Layersystem to keep specific stuff in the correct order
@@ -80,6 +86,8 @@ class PD_LITHIUM_API DrawList {
   void Clear();
   void Layer(int l) { this->pLayer = l; }
   int Layer() { return this->pLayer; }
+  void LayerUp() { this->pLayer++; }
+  void LayerDown() { this->pLayer--; }
 
   void SetFont(Font::Ref font) { pCurrentFont = font; }
   void SetFontScale(float scale) { pFontScale = scale; }
