@@ -94,7 +94,7 @@ class Gfx {
 
   static void BindTex(Li::TexAddress addr) { pGfx->BindTex(addr); }
   static void SetViewPort(const ivec2& vp) { pGfx->SetViewPort(vp); }
-  static void SetViewPort(int w, int h) { pGfx->SetViewPort(PD::ivec2(w, h);) }
+  static void SetViewPort(int w, int h) { pGfx->SetViewPort(PD::ivec2(w, h)); }
 
   static void RenderDrawData(const std::vector<Li::Command::Ref>& Commands) {
     pGfx->RenderDrawData(Commands);
