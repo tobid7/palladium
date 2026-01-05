@@ -95,6 +95,11 @@ void FragCfg(GPU_TEXCOLOR clr) {
       C3D_TexEnvFunc(env, C3D_RGB, GPU_REPLACE);
       C3D_TexEnvFunc(env, C3D_Alpha, GPU_MODULATE);
       break;
+    case GPU_RGB565:
+      C3D_TexEnvSrc(env, C3D_Alpha, GPU_TEXTURE0);
+      C3D_TexEnvFunc(env, C3D_RGB, GPU_MODULATE);
+      C3D_TexEnvFunc(env, C3D_Alpha, GPU_REPLACE);
+      break;
 
     default:
       C3D_TexEnvSrc(env, C3D_Both, GPU_TEXTURE0);

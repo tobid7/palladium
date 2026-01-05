@@ -57,6 +57,7 @@ class GfxGL2 : public GfxDriver {
   GLuint Shader;
   GLuint pLocProjection;
   GLuint pLocTex;
+  GLuint pLocAlfa;
   GLuint VBO, IBO;
 };
 }  // namespace PD

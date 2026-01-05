@@ -53,10 +53,15 @@ const char* frag_shader = R"(
   varying vec4 oColor;
   
   uniform sampler2D tex;
+  uniform bool alfa;
       
   void main() {
-      vec4 tc = texture2D(tex, oUV);
-      gl_FragColor = tc*oColor;
+    vec4 tc = texture2D(tex, oUV);
+    if (alfa) {
+      gl_FragColor = vec4(oColor.rgb, tc.a * oColor.a);
+    } else {
+      gl_FragColor = tc * oColor;
+    }
   }
   )";
 
@@ -138,6 +143,7 @@ void GfxGL2::Init() {
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
 
   pLocTex = glGetUniformLocation(Shader, "tex");
+  pLocAlfa = glGetUniformLocation(Shader, "alfa");
   pLocProjection = glGetUniformLocation(Shader, "projection");
 
   glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -172,6 +178,9 @@ void GfxGL2::BindTex(PD::Li::TexAddress addr) {
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, (GLuint)addr);
   glUniform1i(pLocTex, 0);
+  GLint fmt = 0;
+  glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_INTERNAL_FORMAT, &fmt);
+  glUniform1i(pLocAlfa, fmt == GL_ALPHA);
 }
 
 void GfxGL2::RenderDrawData(const std::vector<PD::Li::Command::Ref>& Commands) {

@@ -64,6 +64,7 @@ class HidGLFW : public HidDriver {
   GLFWwindow* Window;
   int PrevState;
   std::unordered_map<int, int> PrevStates;
+  static GLFWcharfun pOldTextCB;
   static std::string* pText;
   bool pInTextMode = false;
   PD::u64 pLastUpdate = 0;

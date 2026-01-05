@@ -24,11 +24,21 @@ SOFTWARE.
 
 #include <pd-desktop/bknd-hid.hpp>
 namespace PD {
-std::string* HidGLFW::pText;
+std::string* HidGLFW::pText = nullptr;
+GLFWcharfun HidGLFW::pOldTextCB = nullptr;
 // Default Call back (If no Text input is requsted)
-void NullTextCB(GLFWwindow* win, unsigned int c) {}
+void NullTextCB(GLFWwindow* win, unsigned int c) {
+  // Chain
+  if (HidGLFW::pOldTextCB) {
+    HidGLFW::pOldTextCB(win, c);
+  }
+}
 // Text callback if requested
 void TextCB(GLFWwindow* win, unsigned int c) {
+  // Chain
+  if (HidGLFW::pOldTextCB) {
+    HidGLFW::pOldTextCB(win, c);
+  }
   if (!HidGLFW::pText) {
     return;
   }
@@ -36,7 +46,7 @@ void TextCB(GLFWwindow* win, unsigned int c) {
 }
 HidGLFW::HidGLFW(GLFWwindow* win) : HidDriver("HidGLFW") {
   Window = win;
-  glfwSetCharCallback(Window, NullTextCB);
+  HidGLFW::pOldTextCB = glfwSetCharCallback(Window, NullTextCB);
   Flags |= Flags_HasKeyboard;
   Flags |= Flags_HasMouse;
   pBinds[GLFW_MOUSE_BUTTON_LEFT] = Touch;
