@@ -31,12 +31,22 @@ SOFTWARE.
 
 namespace PD {
 namespace Li {
+PD_LITHIUM_API DrawList::DrawList(int initial_size) {
+  DrawSolid();
+  pPool.Init(initial_size);
+}
+
+PD_LITHIUM_API DrawList::~DrawList() {
+  Clear();
+  pPool.Deinit();
+}
+
 PD_LITHIUM_API void DrawList::DrawSolid() { CurrentTex = Gfx::GetSolidTex(); }
 
 PD_LITHIUM_API void DrawList::Clear() {
   pNumIndices = 0;
   pNumVertices = 0;
-  pDrawList.clear();
+  pPool.Reset();
   pPath.clear();
   if (pCurrentFont) {
     pCurrentFont->CleanupTMS();
@@ -46,18 +56,14 @@ PD_LITHIUM_API void DrawList::Clear() {
   }
 }
 
-PD_LITHIUM_API void DrawList::AddCommand(Command::Ref v) {
-  pNumIndices += v->IndexBuffer.size();
-  pNumVertices += v->VertexBuffer.size();
-  pDrawList.push_back(std::move(v));
-}
-
 PD_LITHIUM_API void DrawList::Merge(DrawList::Ref list) {
-  for (size_t i = 0; i < list->pDrawList.size(); i++) {
+  pPool.Merge(list->pPool);
+  /*for (size_t i = 0; i < list->pDrawList.size(); i++) {
     pNumIndices += list->pDrawList[i]->IndexBuffer.size();
     pNumVertices += list->pDrawList[i]->VertexBuffer.size();
-    pDrawList.push_back(std::move(list->pDrawList[i]));
-  }
+    auto cmd = pPool.NewCmd();
+    pDrawList.push_back(list->pDrawList[i]);
+  }*/
   /** Make sure The list gets cleared */
   list->Clear();
 }
@@ -66,7 +72,7 @@ PD_LITHIUM_API void DrawList::Optimize() {
 #ifndef NDEBUG
   PD::TT::Scope s("Optimize");
 #endif
-  std::sort(pDrawList.begin(), pDrawList.end(),
+  /*std::sort(pDrawList.begin(), pDrawList.end(),
             [](const PD::Li::Command::Ref &a, const PD::Li::Command::Ref &b) {
               if (a->Layer == b->Layer) {  // Same layer
                 if (a->Tex == b->Tex) {    // same tex
@@ -75,19 +81,19 @@ PD_LITHIUM_API void DrawList::Optimize() {
                 return a->Tex < b->Tex;  // order by address
               }
               return a->Layer < b->Layer;  // Order by layer
-            });
+            });*/
 }
 
-PD_LITHIUM_API Command::Ref DrawList::PreGenerateCmd() {
-  Command::Ref cmd = Command::New();
+PD_LITHIUM_API Command::Ref DrawList::GetNewCmd() {
+  Command::Ref cmd = pPool.NewCmd();
   cmd->Layer = pLayer;
-  cmd->Index = pDrawList.size();
+  cmd->Index = pPool.Size() - 1;
   cmd->Tex = CurrentTex;
-  pClipCmd(cmd.get());
+  pClipCmd(cmd);
   return cmd;
 }
 
-PD_LITHIUM_API void DrawList::pClipCmd(Command *cmd) {
+PD_LITHIUM_API void DrawList::pClipCmd(Command::Ref cmd) {
   if (!pClipRects.empty()) {
     cmd->ScissorOn = true;
     cmd->ScissorRect = ivec4(pClipRects.top());
@@ -260,7 +266,7 @@ PD_LITHIUM_API void DrawList::DrawPolyLine(const std::vector<fvec2> &points,
     return;
   }
   DrawSolid();
-  auto cmd = PreGenerateCmd();
+  auto cmd = GetNewCmd();
   bool close = (flags & (1 << 0));
   int num_points = close ? (int)points.size() : (int)points.size() - 1;
   if (flags & (1 << 1)) {
@@ -270,10 +276,9 @@ PD_LITHIUM_API void DrawList::DrawPolyLine(const std::vector<fvec2> &points,
     for (int i = 0; i < num_points; i++) {
       int j = (i + 1) == (int)points.size() ? 0 : (i + 1);
       auto line = Renderer::PrimLine(points[i], points[j], thickness);
-      Renderer::CmdQuad(cmd.get(), line, vec4(0.f, 1.f, 1.f, 0.f), clr);
+      Renderer::CmdQuad(cmd, line, vec4(0.f, 1.f, 1.f, 0.f), clr);
     }
   }
-  AddCommand(std::move(cmd));
 }
 
 PD_LITHIUM_API void DrawList::DrawConvexPolyFilled(
@@ -281,9 +286,8 @@ PD_LITHIUM_API void DrawList::DrawConvexPolyFilled(
   if (points.size() < 3) {
     return;  // Need at least three points
   }
-  auto cmd = PreGenerateCmd();
-  Renderer::CmdConvexPolyFilled(cmd.get(), points, clr, CurrentTex);
-  AddCommand(std::move(cmd));
+  auto cmd = GetNewCmd();
+  Renderer::CmdConvexPolyFilled(cmd, points, clr, CurrentTex);
 }
 
 PD_LITHIUM_API void DrawList::DrawText(const fvec2 &pos,
@@ -291,13 +295,7 @@ PD_LITHIUM_API void DrawList::DrawText(const fvec2 &pos,
   if (!pCurrentFont) {
     return;
   }
-  std::vector<Command::Ref> cmds;
-  pCurrentFont->CmdTextEx(cmds, pos, color, pFontScale, text);
-  for (size_t i = 0; i < cmds.size(); i++) {
-    cmds[i]->Index = pDrawList.size() + i;
-    cmds[i]->Layer = pLayer;
-    AddCommand(std::move(cmds[i]));
-  }
+  pCurrentFont->CmdTextEx(pPool, pos, color, pFontScale, text);
 }
 
 PD_LITHIUM_API void DrawList::DrawTextEx(const fvec2 &p,
@@ -306,13 +304,7 @@ PD_LITHIUM_API void DrawList::DrawTextEx(const fvec2 &p,
   if (!pCurrentFont) {
     return;
   }
-  std::vector<Command::Ref> cmds;
-  pCurrentFont->CmdTextEx(cmds, p, color, pFontScale, text, flags, box);
-  for (size_t i = 0; i < cmds.size(); i++) {
-    cmds[i]->Index = pDrawList.size() + i;
-    cmds[i]->Layer = pLayer;
-    AddCommand(std::move(cmds[i]));
-  }
+  pCurrentFont->CmdTextEx(pPool, p, color, pFontScale, text, flags, box);
 }
 
 PD_LITHIUM_API void DrawList::DrawLine(const fvec2 &a, const fvec2 &b,

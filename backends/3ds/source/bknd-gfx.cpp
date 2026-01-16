@@ -147,7 +147,7 @@ void GfxC3D::BindTex(PD::Li::TexAddress addr) {
   C3D_TexBind(0, reinterpret_cast<C3D_Tex*>(addr));
 }
 
-void GfxC3D::RenderDrawData(const std::vector<PD::Li::Command::Ref>& Commands) {
+void GfxC3D::RenderDrawData(const PD::Li::CmdPool& Commands) {
   shaderProgramUse(&Shader);
   C3D_SetAttrInfo(&ShaderInfo);
   C3D_Mtx proj;
@@ -156,20 +156,20 @@ void GfxC3D::RenderDrawData(const std::vector<PD::Li::Command::Ref>& Commands) {
   // Mat4 proj = Mat4::Ortho(0.f, ViewPort.x, ViewPort.y, 0.f, 1.f, -1.f);
   // C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, pLocProjection, (C3D_Mtx*)&proj);
   size_t index = 0;
-  while (index < Commands.size()) {
-    PD::Li::Texture::Ref Tex = Commands[index]->Tex;
+  while (index < Commands.Size()) {
+    PD::Li::Texture::Ref Tex = Commands.GetCmd(index)->Tex;
     if (!Tex) {
       index++;
       continue;
     }
-    bool ScissorEnabled = Commands[index]->ScissorOn;
-    ivec4 ScissorRect = Commands[index]->ScissorRect;
+    bool ScissorEnabled = Commands.GetCmd(index)->ScissorOn;
+    ivec4 ScissorRect = Commands.GetCmd(index)->ScissorRect;
     size_t StartIndex = CurrentIndex;
 
-    while (index < Commands.size() && Commands[index]->Tex == Tex &&
-           Commands[index]->ScissorOn == ScissorEnabled &&
-           Commands[index]->ScissorRect == ScissorRect) {
-      auto c = Commands[index].get();
+    while (index < Commands.Size() && Commands.GetCmd(index)->Tex == Tex &&
+           Commands.GetCmd(index)->ScissorOn == ScissorEnabled &&
+           Commands.GetCmd(index)->ScissorRect == ScissorRect) {
+      auto c = Commands.GetCmd(index);
       for (size_t i = 0; i < c->IndexBuffer.size(); i++) {
         IndexBuffer[CurrentIndex++] = CurrentVertex + c->IndexBuffer.at(i);
       }

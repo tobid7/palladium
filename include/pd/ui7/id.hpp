@@ -38,6 +38,7 @@ class ID {
    */
   ID(const std::string& text) {
     pID = PD::Strings::FastHash(text);
+    // pStrName = text;
     pName = text;
   }
   /**
@@ -65,8 +66,9 @@ class ID {
   /** Return the ID when casting to u32 */
   constexpr operator u32() const { return pID; }
 
-  u32 pID;                 ///< Hash of the name
-  std::string_view pName;  ///< Name
+  u32 pID;            ///< Hash of the name
+  std::string pName;  ///< Name
+  // std::string pStrName;    ///< Keep this stringview alive
 };
 }  // namespace UI7
 }  // namespace PD

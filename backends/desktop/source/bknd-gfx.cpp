@@ -183,22 +183,22 @@ void GfxGL2::BindTex(PD::Li::TexAddress addr) {
   glUniform1i(pLocAlfa, fmt == GL_ALPHA);
 }
 
-void GfxGL2::RenderDrawData(const std::vector<PD::Li::Command::Ref>& Commands) {
+void GfxGL2::RenderDrawData(const Li::CmdPool& Commands) {
   size_t index = 0;
-  while (index < Commands.size()) {
-    PD::Li::Texture::Ref Tex = Commands[index]->Tex;
+  while (index < Commands.Size()) {
+    PD::Li::Texture::Ref Tex = Commands.GetCmd(index)->Tex;
     if (!Tex) {
       index++;
       continue;
     }
     size_t StartIndex = CurrentIndex;
-    bool ScissorOn = Commands[index]->ScissorOn;
-    ivec4 ScissorRect = Commands[index]->ScissorRect;
+    bool ScissorOn = Commands.GetCmd(index)->ScissorOn;
+    ivec4 ScissorRect = Commands.GetCmd(index)->ScissorRect;
 
-    while (index < Commands.size() && Commands[index]->Tex == Tex &&
-           Commands[index]->ScissorOn == ScissorOn &&
-           Commands[index]->ScissorRect == ScissorRect) {
-      auto c = Commands[index].get();
+    while (index < Commands.Size() && Commands.GetCmd(index)->Tex == Tex &&
+           Commands.GetCmd(index)->ScissorOn == ScissorOn &&
+           Commands.GetCmd(index)->ScissorRect == ScissorRect) {
+      auto c = Commands.GetCmd(index);
       for (size_t i = 0; i < c->IndexBuffer.size(); i++) {
         IndexBuffer[CurrentIndex++] = CurrentVertex + c->IndexBuffer.at(i);
       }

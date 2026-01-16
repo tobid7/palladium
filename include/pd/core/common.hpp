@@ -53,6 +53,16 @@ SOFTWARE.
     return std::make_shared<x>(std::forward<Args>(args)...); \
   }
 
+#define PD_RAW(x)                           \
+  using Ref = x*;                           \
+  template <typename... Args>               \
+  static Ref New(Args&&... args) {          \
+    x* v = new x;                           \
+    new (v) x(std::forward<Args>(args)...); \
+    return v;                               \
+  }                                         \
+  static void Delete(Ref ref) { delete ref; }
+
 #define PD_UNIQUE(x)                                         \
   using Ref = std::unique_ptr<x>;                            \
   template <typename... Args>                                \

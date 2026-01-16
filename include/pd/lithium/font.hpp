@@ -93,8 +93,8 @@ class PD_LITHIUM_API Font {
   /**
    * Extended Draw Text Function that vreates a Command List
    */
-  void CmdTextEx(std::vector<Command::Ref>& cmds, const fvec2& pos, u32 color,
-                 float scale, const std::string& text, LiTextFlags flags = 0,
+  void CmdTextEx(CmdPool& cmds, const fvec2& pos, u32 color, float scale,
+                 const std::string& text, LiTextFlags flags = 0,
                  const fvec2& box = 0);
 
   /**

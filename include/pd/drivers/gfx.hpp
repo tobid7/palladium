@@ -49,7 +49,7 @@ class GfxDriver {
 
   virtual void BindTex(Li::TexAddress addr) {}
 
-  virtual void RenderDrawData(const std::vector<Li::Command::Ref>& Commands) {}
+  virtual void RenderDrawData(const Li::CmdPool& Commands) {}
 
   void SetViewPort(const ivec2& vp) { ViewPort = vp; }
 
@@ -96,7 +96,7 @@ class Gfx {
   static void SetViewPort(const ivec2& vp) { pGfx->SetViewPort(vp); }
   static void SetViewPort(int w, int h) { pGfx->SetViewPort(PD::ivec2(w, h)); }
 
-  static void RenderDrawData(const std::vector<Li::Command::Ref>& Commands) {
+  static void RenderDrawData(const Li::CmdPool& Commands) {
     pGfx->RenderDrawData(Commands);
   }
 

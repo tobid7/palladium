@@ -88,7 +88,7 @@ PD_LITHIUM_API Rect Renderer::PrimLine(const fvec2& a, const fvec2& b,
   return Rect(a + off, b + off, a - off, b - off);
 }
 
-PD_LITHIUM_API void Renderer::CmdQuad(Command* cmd, const Rect& quad,
+PD_LITHIUM_API void Renderer::CmdQuad(Command::Ref cmd, const Rect& quad,
                                       const Rect& uv, u32 color) {
   cmd->AddIdx(0).AddIdx(1).AddIdx(2);
   cmd->AddIdx(0).AddIdx(2).AddIdx(3);
@@ -98,7 +98,7 @@ PD_LITHIUM_API void Renderer::CmdQuad(Command* cmd, const Rect& quad,
   cmd->AddVtx(Vertex(quad.BotLeft(), uv.BotLeft(), color));
 }
 
-PD_LITHIUM_API void Renderer::CmdTriangle(Command* cmd, const fvec2 a,
+PD_LITHIUM_API void Renderer::CmdTriangle(Command::Ref cmd, const fvec2 a,
                                           const fvec2 b, const fvec2 c,
                                           u32 clr) {
   cmd->AddIdx(2).AddIdx(1).AddIdx(0);
@@ -111,7 +111,8 @@ PD_LITHIUM_API void Renderer::CmdTriangle(Command* cmd, const fvec2 a,
 // would probably be faster to render out of screen than checking if
 // it could be skipped)
 PD_LITHIUM_API void Renderer::CmdConvexPolyFilled(
-    Command* cmd, const std::vector<fvec2>& points, u32 clr, Texture::Ref tex) {
+    Command::Ref cmd, const std::vector<fvec2>& points, u32 clr,
+    Texture::Ref tex) {
   if (points.size() < 3 || tex == nullptr) {
     return;  // Need at least three points
   }

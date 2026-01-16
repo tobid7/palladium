@@ -42,8 +42,7 @@ class GfxC3D : public GfxDriver {
   void Deinit() override;
   void NewFrame() override;
   void BindTex(PD::Li::TexAddress addr) override;
-  void RenderDrawData(
-      const std::vector<PD::Li::Command::Ref>& Commands) override;
+  void RenderDrawData(const PD::Li::CmdPool& Commands) override;
   PD::Li::Texture::Ref LoadTex(
       const std::vector<PD::u8>& pixels, int w, int h,
       PD::Li::Texture::Type type = PD::Li::Texture::Type::RGBA32,

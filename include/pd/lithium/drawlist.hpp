@@ -48,8 +48,8 @@ namespace PD {
 namespace Li {
 class PD_LITHIUM_API DrawList {
  public:
-  DrawList() { DrawSolid(); }
-  ~DrawList() { pDrawList.clear(); }
+  DrawList(int initial_size = 64);
+  ~DrawList();
 
   /** Require Copy and Move Constructors */
 
@@ -81,8 +81,7 @@ class PD_LITHIUM_API DrawList {
    */
   void Optimize();
 
-  Command::Ref PreGenerateCmd();
-  void AddCommand(Command::Ref v);
+  Command::Ref GetNewCmd();
   void Clear();
   void Layer(int l) { this->pLayer = l; }
   int Layer() { return this->pLayer; }
@@ -206,7 +205,7 @@ class PD_LITHIUM_API DrawList {
     }
     pClipRects.pop();
   }
-  const std::vector<Command::Ref>& Data() const { return pDrawList; }
+  const CmdPool& Data() const { return pPool; }
   /** One linear Clip rect Setup */
   void pClipCmd(Command* cmd);
 
@@ -217,7 +216,7 @@ class PD_LITHIUM_API DrawList {
   float pFontScale = 0.7f;
   Font::Ref pCurrentFont;
   Texture::Ref CurrentTex;
-  std::vector<Command::Ref> pDrawList;
+  CmdPool pPool;
   std::vector<fvec2> pPath;
   u32 pNumIndices = 0;
   u32 pNumVertices = 0;

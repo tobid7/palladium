@@ -209,7 +209,7 @@ PD_UI7_API void Context::MetricsMenu(bool *show) {
     }
     m->SeparatorText("Palladium Info");
     m->Label("Renderer: " + PD::Gfx::pGfx->pName);
-    if (m->BeginTreeNode("Input: " + PD::Hid::pHid->pName)) {
+    if (m->BeginTreeNode(std::string("Input: " + PD::Hid::pHid->pName))) {
       if (PD::Hid::GetFlags() & PD::HidDriver::Flags_HasKeyboard) {
         m->Label("- Keyboard Supported");
       }

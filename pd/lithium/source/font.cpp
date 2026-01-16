@@ -248,10 +248,9 @@ PD_LITHIUM_API fvec2 Font::GetTextBounds(const std::string &text, float scale) {
   return res;
 }
 
-PD_LITHIUM_API void Font::CmdTextEx(std::vector<Command::Ref> &cmds,
-                                    const fvec2 &pos, u32 color, float scale,
-                                    const std::string &text, LiTextFlags flags,
-                                    const fvec2 &box) {
+PD_LITHIUM_API void Font::CmdTextEx(CmdPool &cmds, const fvec2 &pos, u32 color,
+                                    float scale, const std::string &text,
+                                    LiTextFlags flags, const fvec2 &box) {
   fvec2 off;
   float cfs = (DefaultPixelHeight * scale) / (float)PixelHeight;
   float lh = (float)PixelHeight * cfs;
@@ -294,7 +293,7 @@ PD_LITHIUM_API void Font::CmdTextEx(std::vector<Command::Ref> &cmds,
       it = pShortText(it, scale, box - pos, tmp_dim);
     }
     auto wline = Strings::MakeWstring(it);
-    auto cmd = Command::New();
+    auto cmd = cmds.NewCmd();
     auto Tex = GetCodepoint(wline[0]).Tex;
     cmd->Tex = Tex;
     for (auto &jt : wline) {
@@ -304,8 +303,7 @@ PD_LITHIUM_API void Font::CmdTextEx(std::vector<Command::Ref> &cmds,
         continue;
       }
       if (Tex != cp.Tex) {
-        cmds.push_back(std::move(cmd));
-        cmd = Command::New();
+        cmd = cmds.NewCmd();
         Tex = cp.Tex;
         cmd->Tex = Tex;
       }
@@ -318,19 +316,18 @@ PD_LITHIUM_API void Font::CmdTextEx(std::vector<Command::Ref> &cmds,
             Rect rec = Renderer::PrimRect(
                 rpos + vec2(off.x + 1, off.y + (cp.Offset * cfs)) + 1,
                 cp.Size * cfs, 0.f);
-            Renderer::CmdQuad(cmd.get(), rec, cp.SimpleUV, 0xff111111);
+            Renderer::CmdQuad(cmd, rec, cp.SimpleUV, 0xff111111);
           }
           // Draw
           Rect rec = Renderer::PrimRect(
               rpos + off + fvec2(0, (cp.Offset * cfs)), cp.Size * cfs, 0.f);
-          Renderer::CmdQuad(cmd.get(), rec, cp.SimpleUV, color);
+          Renderer::CmdQuad(cmd, rec, cp.SimpleUV, color);
           off.x += cp.Size.x * cfs + 2 * cfs;
         } else {
           off.x += 4 * cfs;
         }
       }
     }
-    cmds.push_back(std::move(cmd));
     off.y += lh;
     off.x = 0;
   }
