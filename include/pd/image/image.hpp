@@ -57,6 +57,7 @@ class PD_IMAGE_API Image {
 
   int Width() const { return pWidth; }
   int Height() const { return pHeight; }
+  ivec2 Size() const { return ivec2(pWidth, pHeight); }
   Format Fmt() const { return pFmt; }
 
   void FlipVertical();

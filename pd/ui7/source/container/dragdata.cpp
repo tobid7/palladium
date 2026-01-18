@@ -81,8 +81,9 @@ PD_UI7_API void DragData<T>::Draw() {
       p = std::format("{}", data[i]);
     }
     vec2 td = io->Font->GetTextBounds(p, io->FontScale);
-    list->DrawRectFilled(FinalPos() + fvec2(off_x, 0), td + io->FramePadding,
-                         io->Theme->Get(UI7Color_Button));
+    list->PathRect(FinalPos() + fvec2(off_x, 0),
+                   FinalPos() + td + io->FramePadding, io->FrameRounding);
+    list->PathFill(io->Theme->Get(UI7Color_Button));
     list->pLayer++;
     list->DrawTextEx(FinalPos() + fvec2(off_x, 0), p,
                      io->Theme->Get(UI7Color_Text), LiTextFlags_AlignMid,

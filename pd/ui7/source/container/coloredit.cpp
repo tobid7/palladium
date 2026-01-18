@@ -44,8 +44,9 @@ PD_UI7_API void ColorEdit::HandleInput() {
 PD_UI7_API void ColorEdit::Draw() {
   // Assert(io.get() && list.get(), "Did you run Container::Init correctly?");
   // io->Ren->OnScreen(screen);
-  list->DrawRectFilled(FinalPos(), fvec2(20, 20), *color_ref);
-  list->DrawText(FinalPos() + fvec2(io->ItemSpace.x + 20, 0), label,
+  list->PathRect(FinalPos(), FinalPos() + 18, io->FrameRounding);
+  list->PathFill(*color_ref);
+  list->DrawText(FinalPos() + fvec2(io->ItemSpace.x + 18, 0), label,
                  io->Theme->Get(UI7Color_Text));
   if (is_shown) {
     if (!layout) {
@@ -53,13 +54,14 @@ PD_UI7_API void ColorEdit::Draw() {
     }
     layout->AddObject(Label::New("Hello World!", io));
     layout->Update();
-    io->RegisterDrawList(GetID(), layout->GetDrawList());
+    list->Merge(layout->GetDrawList());
+    // io->RegisterDrawList(GetID(), layout->GetDrawList());
   }
 }
 
 PD_UI7_API void ColorEdit::Update() {
   // Assert(io.get(), "Did you run Container::Init correctly?");
-  this->SetSize(fvec2(tdim.x + io->ItemSpace.x + 20, 20));
+  this->SetSize(fvec2(tdim.x + io->ItemSpace.x + 18, 18));
 }
 }  // namespace UI7
 }  // namespace PD

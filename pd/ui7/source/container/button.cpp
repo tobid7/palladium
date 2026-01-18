@@ -49,7 +49,8 @@ PD_UI7_API void Button::HandleInput() {
 PD_UI7_API void Button::Draw() {
   // Assert(io.get() && list.get(), "Did you run Container::Init correctly?");
   // io->Ren->OnScreen(screen);
-  list->DrawRectFilled(FinalPos(), size, io->Theme->Get(color));
+  list->PathRect(FinalPos(), FinalPos() + size, io->FrameRounding);
+  list->PathFill(io->Theme->Get(color));
   list->pLayer++;
   list->DrawText(FinalPos() + size * 0.5 - tdim * 0.5, label,
                  io->Theme->Get(UI7Color_Text));

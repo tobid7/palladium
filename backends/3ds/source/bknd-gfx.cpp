@@ -260,4 +260,11 @@ PD::Li::Texture::Ref GfxC3D::LoadTex(const std::vector<PD::u8>& pixels, int w,
             << std::endl;
   return res;
 }
+
+void GfxC3D::DestroyTex(PD::Li::Texture::Ref tex) {
+  C3D_Tex* t = reinterpret_cast<C3D_Tex*>(tex->Address);
+  C3D_TexDelete(t);
+  delete t;
+  tex->Address = 0;
+}
 }  // namespace PD

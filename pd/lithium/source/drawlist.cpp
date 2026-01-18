@@ -68,6 +68,10 @@ PD_LITHIUM_API void DrawList::Merge(DrawList::Ref list) {
   list->Clear();
 }
 
+PD_LITHIUM_API void DrawList::Copy(DrawList::Ref list) {
+  pPool.Copy(list->pPool);
+}
+
 PD_LITHIUM_API void DrawList::Optimize() {
 #ifndef NDEBUG
   PD::TT::Scope s("Optimize");

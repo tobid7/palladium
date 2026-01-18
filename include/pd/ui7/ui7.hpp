@@ -59,7 +59,8 @@ class PD_UI7_API Context {
   void AddViewPort(const ID& id, const ivec4& vp);
   void UseViewPort(const ID& id);
   void Update();
-  bool BeginMenu(const ID& id, UI7MenuFlags flags = 0, bool* pShow = nullptr);
+  Menu::Ref BeginMenu(const ID& id, UI7MenuFlags flags = 0,
+                      bool* pShow = nullptr);
   Menu::Ref CurrentMenu() { return pCurrent; }
   void EndMenu();
   void AboutMenu(bool* show = nullptr);

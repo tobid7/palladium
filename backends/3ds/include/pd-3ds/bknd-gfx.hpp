@@ -48,6 +48,7 @@ class GfxC3D : public GfxDriver {
       PD::Li::Texture::Type type = PD::Li::Texture::Type::RGBA32,
       PD::Li::Texture::Filter filter =
           PD::Li::Texture::Filter::LINEAR) override;
+  void DestroyTex(PD::Li::Texture::Ref tex) override;
 
   std::vector<Li::Vertex, LinearAllocator<Li::Vertex>> VertexBuffer;
   std::vector<u16, LinearAllocator<u16>> IndexBuffer;

@@ -120,6 +120,11 @@ class CmdPool {
   size_t Cap() const { return pPool.size(); }
 
   void Merge(CmdPool& p) {
+    Copy(p);
+    p.Reset();
+  }
+
+  void Copy(CmdPool& p) {
     if (pPoolIdx + p.Size() > pPool.size()) {
       Resize(pPoolIdx + p.Size());
     }
@@ -128,7 +133,6 @@ class CmdPool {
       *pPool[idx] = *p.GetCmd(i);
       pPool[idx]->Index = idx;
     }
-    p.Reset();
   }
 
  private:

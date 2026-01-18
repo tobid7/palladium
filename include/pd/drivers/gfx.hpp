@@ -61,6 +61,8 @@ class GfxDriver {
     return nullptr;
   }
 
+  virtual void DestroyTex(PD::Li::Texture::Ref tex) {}
+
   Li::Texture::Ref GetSolidTex() { return pSolid; }
 
   const std::string pName = "NullGfx";
@@ -107,6 +109,8 @@ class Gfx {
       Li::Texture::Filter filter = Li::Texture::Filter::LINEAR) {
     return pGfx->LoadTex(pixels, w, h, type, filter);
   }
+
+  static void DestroyTex(Li::Texture::Ref tex) { pGfx->DestroyTex(tex); }
 
   static Li::Texture::Ref GetSolidTex() { return pGfx->GetSolidTex(); }
 

@@ -57,7 +57,7 @@ class ID {
   ~ID() = default;
 
   /** Get The ID Initial Name */
-  constexpr const std::string_view& GetNameView() const { return pName; }
+  // constexpr const std::string_view& GetNameView() const { return pName; }
   const std::string GetName() const { return std::string(pName); }
 
   /** Getter for the raw 32bit int id */

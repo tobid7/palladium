@@ -51,25 +51,25 @@ PD_UI7_API void Context::UseViewPort(const ID &id) {
   pIO->CurrentViewPort = pIO->ViewPorts[id]->GetSize();
 }
 
-PD_UI7_API bool Context::BeginMenu(const ID &id, UI7MenuFlags flags,
-                                   bool *pShow) {
+PD_UI7_API Menu::Ref Context::BeginMenu(const ID &id, UI7MenuFlags flags,
+                                        bool *pShow) {
   if (pCurrent) {
     std::cout << "[UI7] Error: You are already in " << pCurrent->pID.GetName()
               << " Menu" << std::endl;
-    return false;
+    return nullptr;
   }
   if (std::find(pCurrentMenus.begin(), pCurrentMenus.end(), (u32)id) !=
       pCurrentMenus.end()) {
     std::cout << "[UI7] Error: Menu " << id.GetName() << " already exists!"
               << std::endl;
-    return false;
+    return nullptr;
   }
   pCurrent = pGetOrCreateMenu(id);
   this->pCurrent->pIsShown = pShow;
   if (pCurrent->pIsShown != nullptr) {
     if (!*pCurrent->pIsShown) {
       pCurrent = nullptr;
-      return false;
+      return nullptr;
     }
   }
   /** Probably we dont even need Input Handling in this stage */
@@ -79,7 +79,7 @@ PD_UI7_API bool Context::BeginMenu(const ID &id, UI7MenuFlags flags,
   if (!pCurrent->pIsOpen) {
     pCurrent = nullptr;
   }
-  return pCurrent != nullptr;
+  return pCurrent;
 }
 
 PD_UI7_API void Context::EndMenu() {
@@ -154,8 +154,7 @@ PD_UI7_API void Context::Update() {
 }
 
 PD_UI7_API void Context::AboutMenu(bool *show) {
-  if (BeginMenu("About UI7", UI7MenuFlags_Scrolling, show)) {
-    auto m = pCurrent;
+  if (auto m = BeginMenu("About UI7", UI7MenuFlags_Scrolling, show)) {
     m->Label("Palladium UI7 " + GetVersion());
     m->Separator();
     m->Label("(c) 2023-2025 René Amthor");
@@ -177,8 +176,7 @@ PD_UI7_API void Context::AboutMenu(bool *show) {
 }
 
 PD_UI7_API void Context::MetricsMenu(bool *show) {
-  if (BeginMenu("UI7 Metrics", UI7MenuFlags_Scrolling, show)) {
-    auto m = pCurrent;
+  if (auto m = BeginMenu("UI7 Metrics", UI7MenuFlags_Scrolling, show)) {
     m->Label("Palladium - UI7 " + GetVersion());
     m->Separator();
     m->Label(
@@ -303,9 +301,7 @@ PD_UI7_API void Context::MetricsMenu(bool *show) {
 }
 
 PD_UI7_API void UI7::Context::StyleEditor(bool *show) {
-  if (this->BeginMenu("UI7 Style Editor", UI7MenuFlags_Scrolling, show)) {
-    auto m = pCurrent;
-
+  if (auto m = BeginMenu("UI7 Style Editor", UI7MenuFlags_Scrolling, show)) {
     m->Label("Palladium - UI7 " + GetVersion() + " Style Editor");
     m->Separator();
     m->DragData("MenuPadding", (float *)&pIO->MenuPadding, 2, 0.f, 100.f);

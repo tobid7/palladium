@@ -39,13 +39,14 @@ class PD_UI7_API Image : public Container {
    */
   Image(Li::Texture::Ref img, fvec2 size = 0.f, Li::Rect uv = fvec4(0.f)) {
     this->img = img;
-    this->newsize = size;
-    this->cuv = uv;
-    if (size.x != 0 || size.y != 0) {
-      this->SetSize(size);
-    } else {
-      this->SetSize(fvec2(img->GetSize().x, img->GetSize().y));
+    if (size == fvec2(0.f)) {
+      size = img->GetSize();
     }
+    if (uv == Li::Rect(fvec4(0.f))) {
+      uv = img->GetUV();
+    }
+    this->cuv = uv;
+    this->newsize = size;
   }
   ~Image() = default;
 

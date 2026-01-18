@@ -131,6 +131,8 @@ class Rect {
     return *this;
   }
 
+  bool operator==(Rect& r) { return Top == r.Top && Bot == r.Bot; }
+
   void SwapVec2XY() {
     Top.SwapXY();
     Top.SwapZW();

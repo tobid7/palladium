@@ -48,10 +48,11 @@ PD_UI7_API void Checkbox::HandleInput() {
 PD_UI7_API void Checkbox::Draw() {
   // Assert(list.get() && io.get(), "Did you run Container::Init correctly?");
   // io->Ren->OnScreen(screen);
-  list->DrawRectFilled(FinalPos(), cbs, io->Theme->Get(color));
+  list->PathRect(FinalPos(), FinalPos() + cbs, io->FrameRounding);
+  list->PathFill(io->Theme->Get(color));
   if (usr_ref) {
-    list->DrawRectFilled(FinalPos() + 2, cbs - 4,
-                         io->Theme->Get(UI7Color_Checkmark));
+    list->PathRect(FinalPos() + 2, FinalPos() + cbs - 2, io->FrameRounding);
+    list->PathFill(io->Theme->Get(UI7Color_Checkmark));
   }
   list->DrawText(
       FinalPos() + fvec2(cbs.x + io->ItemSpace.x, cbs.y * 0.5 - tdim.y * 0.5),
