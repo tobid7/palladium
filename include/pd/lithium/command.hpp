@@ -24,6 +24,7 @@ SOFTWARE.
  */
 
 #include <pd/core/core.hpp>
+#include <pd/lithium/pd_p_api.hpp>
 #include <pd/lithium/texture.hpp>
 #include <pd/lithium/vertex.hpp>
 
@@ -71,82 +72,26 @@ class Command {
   Texture::Ref Tex;
 };
 
-class CmdPool {
+class PD_LITHIUM_API CmdPool {
  public:
   CmdPool() {}
   ~CmdPool() {}
 
-  Command::Ref NewCmd() {
-    if (pPoolIdx >= pPool.size()) {
-      Resize(pPool.size() + 128);
-    }
-    Command::Ref nu = pPool[pPoolIdx++];
-    nu->Layer = Layer;
-    nu->Index = pPoolIdx - 1;
-    return nu;
-  }
-
-  void Init(size_t initial_size) { Resize(initial_size); }
-
-  void Deinit() {
-    for (auto it : pPool) {
-      Command::Delete(it);
-    }
-    pPool.clear();
-  }
-
-  void Resize(size_t nulen) {
-    if (nulen <= pPool.size()) {
-      return;  // no idea yet
-    }
-    size_t oldlen = pPool.size();
-    pPool.resize(nulen);
-    for (size_t i = oldlen; i < pPool.size(); i++) {
-      pPool[i] = Command::New();
-    }
-  }
-
-  void Reset() {
-    for (u32 i = 0; i < pPoolIdx; i++) {
-      pPool[i]->Clear();
-    }
-    pPoolIdx = 0;
-  }
-
-  Command::Ref GetCmd(size_t idx) const { return pPool[idx]; }
-  Command::Ref GetCmd(size_t idx) { return pPool[idx]; }
-
-  size_t Size() const { return pPoolIdx; }
-  size_t Cap() const { return pPool.size(); }
-
-  void Merge(CmdPool& p) {
-    Copy(p);
-    p.Reset();
-  }
-
-  void Copy(CmdPool& p) {
-    if (pPoolIdx + p.Size() > pPool.size()) {
-      Resize(pPoolIdx + p.Size());
-    }
-    for (size_t i = 0; i < p.Size(); i++) {
-      size_t idx = pPoolIdx++;
-      *pPool[idx] = *p.GetCmd(i);
-      pPool[idx]->Index = idx;
-      pPool[idx]->Layer += Layer;
-    }
-  }
-
-  void Sort() {
-    std::sort(begin(), end(),
-              [](const Command::Ref& a, const Command::Ref& b) -> bool {
-                if (a->Layer == b->Layer) {
-                  return a->Tex < b->Tex;
-                }
-                return a->Layer < b->Layer;
-              });
-  }
+  Command::Ref NewCmd();
+  void Init(size_t initial_size);
+  void Deinit();
+  void Resize(size_t nulen);
+  void Reset();
+  Command::Ref GetCmd(size_t idx) const;
+  Command::Ref GetCmd(size_t idx);
+  size_t Size() const;
+  size_t Cap() const;
+  void Merge(CmdPool& p);
+  void Copy(CmdPool& p);
+  void Sort();
 
  private:
+  static bool pTheOrder(const Command::Ref& a, const Command::Ref& b);
   friend class DrawList;
   Command::Ref* begin() { return &pPool[0]; }
   Command::Ref* end() { return &pPool[pPoolIdx]; }

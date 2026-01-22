@@ -5,6 +5,7 @@ project(pd-lithium LANGUAGES CXX VERSION 0.6.0)
 option(PD_LI_INCLUDE_FONTS "Include Fonts" OFF)
 
 set(SRC
+    source/command.cpp
     source/drawlist.cpp
     source/font.cpp
     source/fonts.cpp
