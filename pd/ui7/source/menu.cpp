@@ -242,7 +242,7 @@ PD_UI7_API void Menu::DrawBaseLayout() {
     if (!(Flags & UI7MenuFlags_NoResize)) {
       Container::Ref r = DynObj::New(
           [](IO::Ref io, Li::DrawList::Ref l, UI7::Container* self) {
-            l->pLayer = 1;
+            l->Layer(1);
             l->PathAdd(self->FinalPos() + self->GetSize() - fvec2(0, 20));
             l->PathAdd(self->FinalPos() + self->GetSize());
             l->PathAdd(self->FinalPos() + self->GetSize() - fvec2(20, 0));
@@ -258,7 +258,7 @@ PD_UI7_API void Menu::DrawBaseLayout() {
     /** Background */
     Container::Ref r = DynObj::New([](IO::Ref io, Li::DrawList::Ref l,
                                       UI7::Container* self) {
-      l->pLayer = 0;
+      l->Layer(0);
       l->PathRectEx(self->FinalPos(), self->FinalPos() + self->GetSize(), 10.f,
                     LiPathRectFlags_KeepTop | LiPathRectFlags_KeepBot);
       l->PathFill(io->Theme->Get(UI7Color_Background));
@@ -275,11 +275,11 @@ PD_UI7_API void Menu::DrawBaseLayout() {
   if (!(Flags & UI7MenuFlags_NoTitlebar)) {
     Container::Ref r = DynObj::New(
         [=, this](UI7::IO::Ref io, Li::DrawList::Ref l, UI7::Container* self) {
-          l->pLayer = 20;
+          l->Layer(20);
           /** Header Bar */
           l->DrawRectFilled(self->FinalPos(), self->GetSize(),
                             io->Theme->Get(UI7Color_Header));
-          l->pLayer = 21;
+          l->Layer(21);
           /** Inline if statement to shift the Text if collapse sym is shown */
           /** What the hell is this code btw (didn't found a better way) */
           l->DrawText(self->FinalPos() + fvec2((Flags & UI7MenuFlags_NoCollapse)
@@ -300,7 +300,7 @@ PD_UI7_API void Menu::DrawBaseLayout() {
       r = DynObj::New([=, this](UI7::IO::Ref io, Li::DrawList::Ref l,
                                 UI7::Container* self) {
         /** This sym actually requires layer 21 (i dont know why) */
-        l->pLayer = 21;
+        l->Layer(21);
         /**
          * Symbol (Position Swapping set by pIsOpen ? openpos : closepos;)
          */

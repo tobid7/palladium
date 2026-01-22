@@ -132,10 +132,24 @@ class CmdPool {
       size_t idx = pPoolIdx++;
       *pPool[idx] = *p.GetCmd(i);
       pPool[idx]->Index = idx;
+      pPool[idx]->Layer += Layer;
     }
   }
 
+  void Sort() {
+    std::sort(begin(), end(),
+              [](const Command::Ref& a, const Command::Ref& b) -> bool {
+                if (a->Layer == b->Layer) {
+                  return a->Tex < b->Tex;
+                }
+                return a->Layer < b->Layer;
+              });
+  }
+
  private:
+  friend class DrawList;
+  Command::Ref* begin() { return &pPool[0]; }
+  Command::Ref* end() { return &pPool[pPoolIdx]; }
   std::vector<Command::Ref> pPool;
   u32 pPoolIdx = 0;
   int Layer = 0;

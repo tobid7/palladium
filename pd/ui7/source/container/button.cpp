@@ -51,10 +51,10 @@ PD_UI7_API void Button::Draw() {
   // io->Ren->OnScreen(screen);
   list->PathRect(FinalPos(), FinalPos() + size, io->FrameRounding);
   list->PathFill(io->Theme->Get(color));
-  list->pLayer++;
+  list->LayerUp();
   list->DrawText(FinalPos() + size * 0.5 - tdim * 0.5, label,
                  io->Theme->Get(UI7Color_Text));
-  list->pLayer--;
+  list->LayerDown();
 }
 
 PD_UI7_API void Button::Update() {

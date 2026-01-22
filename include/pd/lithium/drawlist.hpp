@@ -83,10 +83,10 @@ class PD_LITHIUM_API DrawList {
 
   Command::Ref GetNewCmd();
   void Clear();
-  void Layer(int l) { this->pLayer = l; }
-  int Layer() { return this->pLayer; }
-  void LayerUp() { this->pLayer++; }
-  void LayerDown() { this->pLayer--; }
+  void Layer(int l) { this->pPool.Layer = l; }
+  int Layer() { return this->pPool.Layer; }
+  void LayerUp() { this->pPool.Layer++; }
+  void LayerDown() { this->pPool.Layer--; }
 
   void SetFont(Font::Ref font) { pCurrentFont = font; }
   void SetFontScale(float scale) { pFontScale = scale; }
@@ -212,7 +212,6 @@ class PD_LITHIUM_API DrawList {
   /** Data Section */
 
   std::stack<fvec4> pClipRects;
-  int pLayer;
   float pFontScale = 0.7f;
   Font::Ref pCurrentFont;
   Texture::Ref CurrentTex;

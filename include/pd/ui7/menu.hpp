@@ -107,6 +107,7 @@ class PD_UI7_API Menu {
   void AddObjectEx(PD::UI7::Container::Ref obj, PD::u32 flags) {
     pLayout->AddObjectEx(obj, flags);
   }
+  Container::Ref FindObject(u32 id) { return pLayout->FindObject(id); }
 
   void Update();
 

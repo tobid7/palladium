@@ -90,7 +90,6 @@ PD_LITHIUM_API void DrawList::Optimize() {
 
 PD_LITHIUM_API Command::Ref DrawList::GetNewCmd() {
   Command::Ref cmd = pPool.NewCmd();
-  cmd->Layer = pLayer;
   cmd->Index = pPool.Size() - 1;
   cmd->Tex = CurrentTex;
   pClipCmd(cmd);
