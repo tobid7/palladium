@@ -30,3 +30,4 @@ SOFTWARE.
 #include <pd/ui7/container/dynobj.hpp>
 #include <pd/ui7/container/image.hpp>
 #include <pd/ui7/container/label.hpp>
+#include <pd/ui7/container/slider.hpp>

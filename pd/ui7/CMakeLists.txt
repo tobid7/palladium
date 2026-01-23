@@ -17,6 +17,7 @@ set(SRC
     source/container/dynobj.cpp
     source/container/image.cpp
     source/container/label.cpp
+    source/container/slider.cpp
 )
 
 if(PD_BUILD_SHARED)

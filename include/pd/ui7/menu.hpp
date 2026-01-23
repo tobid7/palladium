@@ -25,6 +25,7 @@ SOFTWARE.
  */
 
 #include <pd/core/core.hpp>
+#include <pd/ui7/containers.hpp>
 #include <pd/ui7/io.hpp>
 #include <pd/ui7/layout.hpp>
 #include <pd/ui7/pd_p_api.hpp>
@@ -88,6 +89,18 @@ class PD_UI7_API Menu {
       // Isnt This exactly the same line???
       // r = UI7::DragData<T>::New(label, data, num_elms, pIO, min, max, step,
       //                          precision);
+      r->SetID(id);
+    }
+    pLayout->AddObject(r);
+  }
+  template <typename T>
+  void Slider(const std::string &label, T *data,
+              T min = std::numeric_limits<T>::min(),
+              T max = std::numeric_limits<T>::max(), int precision = 1) {
+    u32 id = Strings::FastHash("drd" + label + std::to_string((uintptr_t)data));
+    Container::Ref r = pLayout->FindObject(id);
+    if (!r) {
+      r = UI7::Slider<T>::New(label, data, pIO, min, max, precision);
       r->SetID(id);
     }
     pLayout->AddObject(r);

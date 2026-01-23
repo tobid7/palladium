@@ -80,6 +80,7 @@ int main() {
     int wx, wy;
     glfwGetWindowSize(win, &wx, &wy);
     PD::Gfx::pGfx->ViewPort = PD::ivec2(wx, wy);
+    ui7->GetIO()->CurrentViewPort = PD::ivec4(0, 0, wx, wy);
     glViewport(0, 0, wx, wy);
     glClearColor(0, 0, 0, 0);
     glClear(GL_COLOR_BUFFER_BIT);
@@ -102,15 +103,14 @@ int main() {
     /** Draw text */
     List->DrawText(
         20,
-        "Test String oder So\nPalladium 0.5.0\n" +
+        "Test String oder So\nPalladium 0.6.0\n" +
             std::format("{}\nMousePos: {}",
                         PD::Strings::FormatNanos(
                             PD::OS::GetTraceRef("REN")->GetLastDiff()),
                         PD::Hid::MousePos()) +
             "\nUI7 Version: " + PD::UI7::GetVersion(),
         0xff000000);
-    if (ui7->BeginMenu("Test")) {
-      auto menu = ui7->pCurrent;
+    if (auto menu = ui7->BeginMenu("Test")) {
       menu->Label("Hello");
       menu->Label("World!");
       menu->Checkbox("About Menu", AboutOderSo);
@@ -125,17 +125,16 @@ int main() {
       menu->Label(
           std::format("Left: {}", PD::Hid::IsHeld(PD::Hid::Key::Touch)));
       menu->DragData("Value", &v, 1);
+      menu->Slider("Value 2", &v);
       ui7->EndMenu();
     }
-    if (ui7->BeginMenu("Yet another Window")) {
-      auto menu = ui7->pCurrent;
+    if (auto menu = ui7->BeginMenu("Yet another Window")) {
       menu->Label(std::format("this->Pos: {}", menu->pLayout->GetPosition()));
       menu->Label(std::format("Vertices: {}", PD::Gfx::pGfx->VertexCounter));
       menu->Label(std::format("Indices: {}", PD::Gfx::pGfx->IndexCounter));
       ui7->EndMenu();
     }
-    if (ui7->BeginMenu("#Debug (UI7)")) {
-      auto menu = ui7->pCurrent;
+    if (auto menu = ui7->BeginMenu("#Debug (UI7)")) {
       menu->Label(std::format("Framerate: {:.1f} [{:.2f}]", ui7->pIO->Framerate,
                               ui7->pIO->Delta));
       menu->SeparatorText("Input");
@@ -149,8 +148,7 @@ int main() {
       }
       ui7->EndMenu();
     }
-    if (ui7->BeginMenu("NoDebug")) {
-      auto m = ui7->pCurrent;
+    if (auto m = ui7->BeginMenu("NoDebug")) {
       if (m->BeginTreeNode("Test")) {
         m->Label("Hello World!");
         if (m->BeginTreeNode("AnotherNode")) {
@@ -176,8 +174,8 @@ int main() {
 #endif
     PD::TT::Beg("REN");
     PD::Gfx::NewFrame();
-    PD::Gfx::RenderDrawData(List->pDrawList);
-    PD::Gfx::RenderDrawData(ui7->GetDrawData()->pDrawList);
+    PD::Gfx::RenderDrawData(List->Data());
+    PD::Gfx::RenderDrawData(ui7->GetDrawData()->Data());
     /** Clear The List */
     List->Clear();
     PD::TT::End("REN");
