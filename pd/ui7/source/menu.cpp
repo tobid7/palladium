@@ -37,7 +37,8 @@ Menu::Menu(const ID& id, IO::Ref io) : pIO(io), pID(id) {
 PD_UI7_API void Menu::Label(const std::string& label) {
   // Layout API
   auto r = Label::New(label, pIO);
-  r->SetClipRect(fvec4(pLayout->GetPosition(), pLayout->GetSize()));
+  r->SetClipRect(fvec4(pLayout->GetPosition(),
+                       pLayout->GetPosition() + pLayout->GetSize()));
   pLayout->AddObject(r);
 }
 
@@ -339,8 +340,12 @@ PD_UI7_API void Menu::DrawBaseLayout() {
 
 PD_UI7_API void Menu::Update() {
   HandleFocus();
+  if (pLayout->Size == fvec2(0.f) || Flags & UI7MenuFlags_AlwaysAutoSize) {
+    pLayout->Size = fvec2(pLayout->MaxPosition) + pIO->MenuPadding * 2;
+  }
   if (!(Flags & UI7MenuFlags_NoTitlebar)) {
-    TitleBarHeight = pIO->FontScale * 30.f;
+    TitleBarHeight =
+        pIO->FontScale * pIO->Font->PixelHeight + pIO->MenuPadding.y;
     pLayout->WorkRect.y = 5.f + TitleBarHeight;
     HandleTitlebarActions();
   } else {

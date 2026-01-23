@@ -47,8 +47,9 @@ enum UI7MenuFlags_ {
   UI7MenuFlags_NoClose = 1 << 9,       ///< Disable Close Button
   UI7MenuFlags_NoScrollbar = 1 << 10,  ///< Hide the Scrollbar
   // POC
-  UI7MenuFlags_Maximize = 1 << 11,  ///< Add a Maximize Button
-  UI7MenuFlags_Minimize = 1 << 12,  ///< Add a Minimize Button
+  UI7MenuFlags_Maximize = 1 << 11,        ///< Add a Maximize Button
+  UI7MenuFlags_Minimize = 1 << 12,        ///< Add a Minimize Button
+  UI7MenuFlags_AlwaysAutoSize = 1 << 13,  ///< Always Auto Resize Menu
   // Enable Horizontal and Vertical Scrolling
   UI7MenuFlags_Scrolling = UI7MenuFlags_HzScrolling | UI7MenuFlags_VtScrolling,
 };

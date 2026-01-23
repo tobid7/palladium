@@ -113,6 +113,9 @@ PD_UI7_API fvec2 Layout::AlignPosition(fvec2 pos, fvec2 size, fvec4 area,
 }
 
 PD_UI7_API void Layout::Update() {
+  if (Size == fvec2(0.f)) {
+    Size = fvec2(MaxPosition);
+  }
   for (auto& it : Objects) {
     if (it->GetID() != 0 && !FindObject(it->GetID())) {
       IDObjects.push_back(it);
