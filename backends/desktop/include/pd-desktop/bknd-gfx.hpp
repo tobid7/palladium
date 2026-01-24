@@ -57,6 +57,6 @@ class GfxGL2 : public GfxDriver {
   GLuint pLocProjection;
   GLuint pLocTex;
   GLuint pLocAlfa;
-  GLuint VBO, IBO;
+  GLuint VBO, IBO, VAO;  // vao is only used in > 3.3
 };
 }  // namespace PD

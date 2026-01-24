@@ -25,6 +25,7 @@ SOFTWARE.
 #include <pd-desktop/bknd-gfx.hpp>
 
 namespace PD {
+#if PD_OPENGL >= 21 && PD_OPENGL < 33
 const char* vertex_shader = R"(
   #version 120
   
@@ -64,6 +65,51 @@ const char* frag_shader = R"(
     }
   }
   )";
+#elif PD_OPENGL >= 33
+const char* vertex_shader = R"(
+  #version 330 core
+  
+  layout(location = 0) in vec2 pos;
+  layout(location = 1) in vec2 uv;
+  layout(location = 2) in vec4 color;
+  
+  out vec2 oUV;
+  out vec4 oColor;
+  
+  // Probably forgot about this matrix and
+  // searched hours for why the rendering isn't working :/
+  uniform mat4 projection;
+  
+  void main() {
+      gl_Position = projection*vec4(pos, 0.0, 1.0);
+      oUV = uv;
+      oColor = color;
+  }
+  )";
+
+const char* frag_shader = R"(
+  #version 330 core
+      
+  in vec2 oUV;
+  in vec4 oColor;
+  
+  uniform sampler2D tex;
+  uniform bool alfa;
+
+  out vec4 FragColor;
+      
+  void main() {
+    vec4 tc = texture(tex, oUV);
+    if (alfa) {
+      FragColor = vec4(oColor.rgb, tc.a * oColor.a);
+    } else {
+      FragColor = tc * oColor;
+    }
+  }
+  )";
+#else
+// Need to show error
+#endif
 
 GLuint compileShader(const std::string& source, GLenum type) {
   GLuint shader = glCreateShader(type);
@@ -133,12 +179,27 @@ void GfxGL2::Init() {
   Shader = createShaderProgram(vertex_shader, frag_shader);
   glUseProgram(Shader);
 
+#if PD_OPENGL >= 33
+  glGenVertexArrays(1, &VAO);
+  glBindVertexArray(VAO);
+#endif
+
   glGenBuffers(1, &VBO);
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
-  // Attribs Setup
-  SetupShaderAttribs(Shader);
-
+#if PD_OPENGL < 33
+  SetupShaderAttribs(Shader);  // GL 2.1
+#else
+  glEnableVertexAttribArray(0);
+  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(PD::Li::Vertex),
+                        (void*)offsetof(PD::Li::Vertex, Pos));
+  glEnableVertexAttribArray(1);
+  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(PD::Li::Vertex),
+                        (void*)offsetof(PD::Li::Vertex, UV));
+  glEnableVertexAttribArray(2);
+  glVertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(PD::Li::Vertex),
+                        (void*)offsetof(PD::Li::Vertex, Color));
+#endif
   glGenBuffers(1, &IBO);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
 
@@ -148,11 +209,17 @@ void GfxGL2::Init() {
 
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+#if PD_OPENGL >= 33
+  glBindVertexArray(0);
+#endif
 }
 
 void GfxGL2::Deinit() {
   glDeleteBuffers(1, &VBO);
   glDeleteBuffers(1, &IBO);
+#if PD_OPENGL >= 33
+  glDeleteBuffers(1, &VAO);
+#endif
 }
 
 void GfxGL2::NewFrame() {
@@ -215,12 +282,20 @@ void GfxGL2::RenderDrawData(const Li::CmdPool& Commands) {
       glDisable(GL_SCISSOR_TEST);
     }
     BindTex(Tex->Address);
+
+#if PD_OPENGL >= 33
+    glBindVertexArray(VAO);
+#endif
+
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, CurrentVertex * sizeof(PD::Li::Vertex),
                  &VertexBuffer[0], GL_DYNAMIC_DRAW);
+
+#if PD_OPENGL < 33
     // For some reason we need to set these every frame for every buffer
     // Found that out when creating My 3d Engine
     SetupShaderAttribs(Shader);
+#endif
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, CurrentIndex * sizeof(PD::u16),
@@ -232,6 +307,9 @@ void GfxGL2::RenderDrawData(const Li::CmdPool& Commands) {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     BindTex(0);
+#if PD_OPENGL >= 33
+    glBindVertexArray(0);
+#endif
   }
 }
 

@@ -21,12 +21,18 @@ int TheScale = 1;
 bool AboutOderSo = true;
 
 int main() {
-  void *PD_INIT_DATA = nullptr;
+  void* PD_INIT_DATA = nullptr;
 #ifndef __3DS__
   /** Setup Window and Context */
   glfwInit();
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+#ifdef __APPLE__
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+  glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, 0);
+#else
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+#endif
   glfwWindowHint(GLFW_SAMPLES, 8);
   auto win = glfwCreateWindow(1280, 720, "Test", nullptr, nullptr);
   glfwMakeContextCurrent(win);
@@ -36,9 +42,9 @@ int main() {
   osSetSpeedupEnable(true);
   gfxInitDefault();
   C3D_Init(C3D_DEFAULT_CMDBUF_SIZE * 2);
-  C3D_RenderTarget *Top =
+  C3D_RenderTarget* Top =
       C3D_RenderTargetCreate(240, 400, GPU_RB_RGBA8, GPU_RB_DEPTH24_STENCIL8);
-  C3D_RenderTarget *Bottom =
+  C3D_RenderTarget* Bottom =
       C3D_RenderTargetCreate(240, 320, GPU_RB_RGBA8, GPU_RB_DEPTH24_STENCIL8);
   C3D_RenderTargetSetOutput(Top, GFX_TOP, GFX_LEFT, DisplayTransferFlags);
   C3D_RenderTargetSetOutput(Bottom, GFX_BOTTOM, GFX_LEFT, DisplayTransferFlags);
@@ -82,7 +88,7 @@ int main() {
     PD::Gfx::pGfx->ViewPort = PD::ivec2(wx, wy);
     ui7->GetIO()->CurrentViewPort = PD::ivec4(0, 0, wx, wy);
     glViewport(0, 0, wx, wy);
-    glClearColor(0, 0, 0, 0);
+    glClearColor(0.1, 0.1, 0.1, 1);
     glClear(GL_COLOR_BUFFER_BIT);
     // ui7->pIO->GetViewPort(VpTop)->pSize = PD::ivec4(0, 0, wx, wy);
 #endif
@@ -143,7 +149,7 @@ int main() {
       menu->Label(std::format("FocusedMenuRect: {}",
                               ui7->pIO->InputHandler->FocusedMenuRect));
       menu->SeparatorText("Menu Order");
-      for (auto &it : ui7->pDFO) {
+      for (auto& it : ui7->pDFO) {
         menu->Label(std::format("{}", ui7->pMenus[it]->pID.GetName()));
       }
       ui7->EndMenu();
