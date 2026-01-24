@@ -82,7 +82,8 @@ PD_UI7_API void DragData<T>::Draw() {
     }
     vec2 td = io->Font->GetTextBounds(p, io->FontScale);
     list->PathRect(FinalPos() + fvec2(off_x, 0),
-                   FinalPos() + td + io->FramePadding, io->FrameRounding);
+                   FinalPos() + fvec2(off_x, 0) + td + io->FramePadding,
+                   io->FrameRounding);
     list->PathFill(io->Theme->Get(UI7Color_Button));
     list->LayerUp();
     list->DrawTextEx(FinalPos() + fvec2(off_x, 0), p,

@@ -47,6 +47,7 @@ class PD_UI7_API Image : public Container {
     }
     this->cuv = uv;
     this->newsize = size;
+    SetSize(size);
   }
   ~Image() = default;
 
