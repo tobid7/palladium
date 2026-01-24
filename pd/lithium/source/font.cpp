@@ -49,7 +49,7 @@ PD_LITHIUM_API void Font::LoadDefaultFont(int id, int pixel_height) {
 #endif
 }
 
-PD_LITHIUM_API void Font::LoadTTF(const std::string &path, int height) {
+PD_LITHIUM_API void Font::LoadTTF(const std::string& path, int height) {
   /**
    * Just use LoadFile2Mem which looks way cleaner
    * and helps not having the font loading code twice
@@ -60,7 +60,7 @@ PD_LITHIUM_API void Font::LoadTTF(const std::string &path, int height) {
   LoadTTF(font, height);
 }
 
-PD_LITHIUM_API void Font::pMakeAtlas(bool final, std::vector<u8> &font_tex,
+PD_LITHIUM_API void Font::pMakeAtlas(bool final, std::vector<u8>& font_tex,
                                      int texszs, PD::Li::Texture::Ref tex) {
   auto t =
       Gfx::LoadTex(font_tex, texszs, texszs, Texture::RGBA32, Texture::LINEAR);
@@ -68,7 +68,7 @@ PD_LITHIUM_API void Font::pMakeAtlas(bool final, std::vector<u8> &font_tex,
   Textures.push_back(tex);
 }
 
-PD_LITHIUM_API void Font::LoadTTF(const std::vector<u8> &data, int height) {
+PD_LITHIUM_API void Font::LoadTTF(const std::vector<u8>& data, int height) {
   /**
    * Some additional Info:
    * Removed the stbtt get bitmapbox as we dont need to place
@@ -107,7 +107,7 @@ PD_LITHIUM_API void Font::LoadTTF(const std::vector<u8> &data, int height) {
     if (stbtt_IsGlyphEmpty(&inf, gi)) continue;
 
     int w = 0, h = 0, xo = 0, yo = 0;
-    unsigned char *bitmap =
+    unsigned char* bitmap =
         stbtt_GetCodepointBitmap(&inf, scale, scale, ii, &w, &h, &xo, &yo);
     if (!bitmap || w <= 0 || h <= 0) {
       if (bitmap) free(bitmap);
@@ -184,7 +184,7 @@ PD_LITHIUM_API void Font::LoadTTF(const std::vector<u8> &data, int height) {
   }
 }
 
-PD_LITHIUM_API Font::Codepoint &Font::GetCodepoint(u32 cp) {
+PD_LITHIUM_API Font::Codepoint& Font::GetCodepoint(u32 cp) {
   // Check if codepoijt exist or return a static invalid one
   auto res = CodeMap.find(cp);
   if (res == CodeMap.end()) {
@@ -195,7 +195,7 @@ PD_LITHIUM_API Font::Codepoint &Font::GetCodepoint(u32 cp) {
   return res->second;
 }
 
-PD_LITHIUM_API fvec2 Font::GetTextBounds(const std::string &text, float scale) {
+PD_LITHIUM_API fvec2 Font::GetTextBounds(const std::string& text, float scale) {
   u32 id = PD::FNV1A32(text);
   if (pTMS.find(id) != pTMS.end()) {
     pTMS[id].TimeStamp = PD::OS::GetTime();
@@ -210,7 +210,7 @@ PD_LITHIUM_API fvec2 Font::GetTextBounds(const std::string &text, float scale) {
   float cfs = (DefaultPixelHeight * scale) / (float)PixelHeight;
   float lh = (float)PixelHeight * cfs;
   size_t index = 0;
-  for (auto &it : wtext) {
+  for (auto& it : wtext) {
     if (it == L'\0') {
       break;
     }
@@ -248,9 +248,9 @@ PD_LITHIUM_API fvec2 Font::GetTextBounds(const std::string &text, float scale) {
   return res;
 }
 
-PD_LITHIUM_API void Font::CmdTextEx(CmdPool &cmds, const fvec2 &pos, u32 color,
-                                    float scale, const std::string &text,
-                                    LiTextFlags flags, const fvec2 &box) {
+PD_LITHIUM_API void Font::CmdTextEx(CmdPool& cmds, const fvec2& pos, u32 color,
+                                    float scale, const std::string& text,
+                                    LiTextFlags flags, const fvec2& box) {
   fvec2 off;
   float cfs = (DefaultPixelHeight * scale) / (float)PixelHeight;
   float lh = (float)PixelHeight * cfs;
@@ -278,7 +278,7 @@ PD_LITHIUM_API void Font::CmdTextEx(CmdPool &cmds, const fvec2 &pos, u32 color,
     lines.push_back(tmp);
   }
 
-  for (auto &it : lines) {
+  for (auto& it : lines) {
     if (flags & LiTextFlags_NoOOS) {
       if (rpos.y + off.y + lh < 0) {
         off.y += lh;
@@ -295,8 +295,10 @@ PD_LITHIUM_API void Font::CmdTextEx(CmdPool &cmds, const fvec2 &pos, u32 color,
     auto wline = Strings::MakeWstring(it);
     auto cmd = cmds.NewCmd();
     auto Tex = GetCodepoint(wline[0]).Tex;
-    cmd->Tex = Tex;
-    for (auto &jt : wline) {
+    if (Tex) {
+      cmd->Tex = Tex->Address;
+    }
+    for (auto& jt : wline) {
       auto cp = GetCodepoint(jt);
       if ((cp.pInvalid && jt != L' ' && jt != L'\n' && jt != L'\t') &&
           jt != L'\r') {
@@ -305,7 +307,9 @@ PD_LITHIUM_API void Font::CmdTextEx(CmdPool &cmds, const fvec2 &pos, u32 color,
       if (Tex != cp.Tex) {
         cmd = cmds.NewCmd();
         Tex = cp.Tex;
-        cmd->Tex = Tex;
+        if (Tex) {
+          cmd->Tex = Tex->Address;
+        }
       }
       if (jt == L'\t') {
         off.x += 16 * cfs;
@@ -314,7 +318,7 @@ PD_LITHIUM_API void Font::CmdTextEx(CmdPool &cmds, const fvec2 &pos, u32 color,
           if (flags & LiTextFlags_Shaddow) {
             // Draw
             Rect rec = Renderer::PrimRect(
-                rpos + vec2(off.x + 1, off.y + (cp.Offset * cfs)) + 1,
+                rpos + fvec2(off.x + 1, off.y + (cp.Offset * cfs)) + 1,
                 cp.Size * cfs, 0.f);
             Renderer::CmdQuad(cmd, rec, cp.SimpleUV, 0xff111111);
           }
@@ -333,9 +337,9 @@ PD_LITHIUM_API void Font::CmdTextEx(CmdPool &cmds, const fvec2 &pos, u32 color,
   }
 }
 
-PD_LITHIUM_API std::string Font::pWrapText(const std::string &txt, float scale,
-                                           const PD::fvec2 &max,
-                                           PD::fvec2 &dim) {
+PD_LITHIUM_API std::string Font::pWrapText(const std::string& txt, float scale,
+                                           const PD::fvec2& max,
+                                           PD::fvec2& dim) {
   u32 id = PD::FNV1A32(txt);
   if (pTMS.find(id) != pTMS.end()) {
     if (pTMS[id].Text.size()) {
@@ -370,9 +374,9 @@ PD_LITHIUM_API std::string Font::pWrapText(const std::string &txt, float scale,
   return ret;
 }
 
-PD_LITHIUM_API std::string Font::pShortText(const std::string &txt, float scale,
-                                            const PD::fvec2 &max,
-                                            PD::fvec2 &dim) {
+PD_LITHIUM_API std::string Font::pShortText(const std::string& txt, float scale,
+                                            const PD::fvec2& max,
+                                            PD::fvec2& dim) {
   u32 id = PD::FNV1A32(txt);
   if (pTMS.find(id) != pTMS.end()) {
     if (pTMS[id].Text.size()) {
@@ -398,7 +402,7 @@ PD_LITHIUM_API std::string Font::pShortText(const std::string &txt, float scale,
   maxlen -= GetTextBounds(ext, scale).x;
   maxlen -= GetTextBounds(ph, scale).x;
 
-  for (auto &it : tmp) {
+  for (auto& it : tmp) {
     if (GetTextBounds(ret, scale).x > maxlen) {
       ret += ph;
       ret += ext;

@@ -34,6 +34,31 @@ enum LiBackendFlags_ {
 };
 
 namespace PD {
+// The backend api nobody asked for
+class GfxDriver2 {
+ public:
+  GfxDriver2(const std::string& name = "NullGfx") : pName(name) {};
+  ~GfxDriver2() = default;
+
+  virtual void Init() {}
+  virtual void Deinit() {}
+  virtual void Draw(const PD::Li::CmdPool& pool) {}
+  virtual void TexBind(PD::Li::TexAddress addr) {}
+  virtual PD::Li::TexAddress TexLoad(
+      const std::vector<PD::u8>& pixels, int w, int h,
+      PD::Li::Texture::Type type = PD::Li::Texture::Type::RGBA32,
+      PD::Li::Texture::Filter filter = PD::Li::Texture::Filter::LINEAR) {
+    return 0;
+  }
+  virtual void TexDelete(PD::Li::TexAddress tex) {}
+
+ protected:
+  const std::string pName;
+  LiBackendFlags pFlags = 0;
+  size_t CurrentIndex = 0;
+  size_t CurrentVertex = 0;
+  ivec2 ViewPort;
+};
 class GfxDriver {
  public:
   GfxDriver(const std::string& name = "NullGfx") : pName(name) {};

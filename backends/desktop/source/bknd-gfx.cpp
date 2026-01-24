@@ -253,7 +253,7 @@ void GfxGL2::BindTex(PD::Li::TexAddress addr) {
 void GfxGL2::RenderDrawData(const Li::CmdPool& Commands) {
   size_t index = 0;
   while (index < Commands.Size()) {
-    PD::Li::Texture::Ref Tex = Commands.GetCmd(index)->Tex;
+    PD::Li::TexAddress Tex = Commands.GetCmd(index)->Tex;
     if (!Tex) {
       index++;
       continue;
@@ -281,7 +281,7 @@ void GfxGL2::RenderDrawData(const Li::CmdPool& Commands) {
     } else {
       glDisable(GL_SCISSOR_TEST);
     }
-    BindTex(Tex->Address);
+    BindTex(Tex);
 
 #if PD_OPENGL >= 33
     glBindVertexArray(VAO);
@@ -340,4 +340,161 @@ PD::Li::Texture::Ref GfxGL2::LoadTex(const std::vector<PD::u8>& pixels, int w,
   auto res = PD::Li::Texture::New(texID, PD::ivec2(w, h));
   return res;
 }
+
+void GfxGL3::Init() {
+  VertexBuffer.resize(4 * 8192);
+  IndexBuffer.resize(6 * 8192);
+  Shader = createShaderProgram(vertex_shader, frag_shader);
+  glUseProgram(Shader);
+
+#if PD_OPENGL >= 33
+  glGenVertexArrays(1, &VAO);
+  glBindVertexArray(VAO);
+#endif
+
+  glGenBuffers(1, &VBO);
+  glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+#if PD_OPENGL < 33
+  SetupShaderAttribs(Shader);  // GL 2.1
+#else
+  glEnableVertexAttribArray(0);
+  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(PD::Li::Vertex),
+                        (void*)offsetof(PD::Li::Vertex, Pos));
+  glEnableVertexAttribArray(1);
+  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(PD::Li::Vertex),
+                        (void*)offsetof(PD::Li::Vertex, UV));
+  glEnableVertexAttribArray(2);
+  glVertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(PD::Li::Vertex),
+                        (void*)offsetof(PD::Li::Vertex, Color));
+#endif
+  glGenBuffers(1, &IBO);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+
+  pLocTex = glGetUniformLocation(Shader, "tex");
+  pLocAlfa = glGetUniformLocation(Shader, "alfa");
+  pLocProjection = glGetUniformLocation(Shader, "projection");
+
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+#if PD_OPENGL >= 33
+  glBindVertexArray(0);
+#endif
+}
+
+void GfxGL3::Deinit() {
+  glDeleteBuffers(1, &VBO);
+  glDeleteBuffers(1, &IBO);
+#if PD_OPENGL >= 33
+  glDeleteBuffers(1, &VAO);
+#endif
+}
+
+// void NewFrame()  {
+//}
+
+void GfxGL3::TexBind(PD::Li::TexAddress addr) {
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, (GLuint)addr);
+  glUniform1i(pLocTex, 0);
+  GLint fmt = 0;
+  glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_INTERNAL_FORMAT, &fmt);
+  glUniform1i(pLocAlfa, fmt == GL_ALPHA);
+}
+
+void GfxGL3::Draw(const Li::CmdPool& pool) {
+  size_t index = 0;
+  while (index < pool.Size()) {
+    PD::Li::TexAddress Tex = pool.GetCmd(index)->Tex;
+    if (Tex == 0) {
+      index++;
+      continue;
+    }
+    size_t StartIndex = CurrentIndex;
+    bool ScissorOn = pool.GetCmd(index)->ScissorOn;
+    ivec4 ScissorRect = pool.GetCmd(index)->ScissorRect;
+
+    while (index < pool.Size() && pool.GetCmd(index)->Tex == Tex &&
+           pool.GetCmd(index)->ScissorOn == ScissorOn &&
+           pool.GetCmd(index)->ScissorRect == ScissorRect) {
+      auto c = pool.GetCmd(index);
+      for (size_t i = 0; i < c->IndexBuffer.size(); i++) {
+        IndexBuffer[CurrentIndex++] = CurrentVertex + c->IndexBuffer.at(i);
+      }
+      for (size_t i = 0; i < c->VertexBuffer.size(); i++) {
+        VertexBuffer[CurrentVertex++] = c->VertexBuffer.at(i);
+      }
+      index++;
+    }
+    if (ScissorOn) {
+      glScissor(ScissorRect.x, ViewPort.y - (ScissorRect.y + ScissorRect.w),
+                ScissorRect.z, ScissorRect.w);
+      glEnable(GL_SCISSOR_TEST);
+    } else {
+      glDisable(GL_SCISSOR_TEST);
+    }
+    TexBind(Tex);
+
+#if PD_OPENGL >= 33
+    glBindVertexArray(VAO);
+#endif
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, CurrentVertex * sizeof(PD::Li::Vertex),
+                 &VertexBuffer[0], GL_DYNAMIC_DRAW);
+
+#if PD_OPENGL < 33
+    // For some reason we need to set these every frame for every buffer
+    // Found that out when creating My 3d Engine
+    SetupShaderAttribs(Shader);
+#endif
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, CurrentIndex * sizeof(PD::u16),
+                 &IndexBuffer[0], GL_DYNAMIC_DRAW);
+
+    glDrawElements(GL_TRIANGLES, CurrentIndex - StartIndex, GL_UNSIGNED_SHORT,
+                   (void*)(StartIndex * sizeof(PD::u16)));
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    TexBind(0);
+#if PD_OPENGL >= 33
+    glBindVertexArray(0);
+#endif
+  }
+}
+
+PD::Li::TexAddress GfxGL3::TexLoad(const std::vector<PD::u8>& pixels, int w,
+                                   int h, PD::Li::Texture::Type type,
+                                   PD::Li::Texture::Filter filter) {
+  GLuint texID;
+  glGenTextures(1, &texID);
+  glBindTexture(GL_TEXTURE_2D, texID);
+
+  // Set base format (Always using RGBA as base)
+  GLenum fmt = GL_RGBA;
+  if (type == PD::Li::Texture::Type::RGB24) {
+    fmt = GL_RGB;
+  } else if (type == PD::Li::Texture::Type::A8) {
+    fmt = GL_ALPHA;
+  }
+  glTexImage2D(GL_TEXTURE_2D, 0, fmt, w, h, 0, fmt, GL_UNSIGNED_BYTE,
+               pixels.data());
+  if (filter == PD::Li::Texture::Filter::LINEAR) {
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  } else if (filter == PD::Li::Texture::Filter::NEAREST) {
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  }
+  glBindTexture(GL_TEXTURE_2D, 0);
+  return texID;
+}
+
+void GfxGL3::TexDelete(PD::Li::TexAddress tex) {
+  GLuint tex_ = tex;
+  glDeleteTextures(1, &tex_);
+}
+
 }  // namespace PD

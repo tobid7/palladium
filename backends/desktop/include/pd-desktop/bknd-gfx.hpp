@@ -59,4 +59,32 @@ class GfxGL2 : public GfxDriver {
   GLuint pLocAlfa;
   GLuint VBO, IBO, VAO;  // vao is only used in > 3.3
 };
+
+class GfxGL3 : public GfxDriver2 {
+ public:
+  GfxGL3() : GfxDriver2("OpenGL3") {}
+  ~GfxGL3() = default;
+
+  PD_SHARED(GfxGL3);
+
+  void Init() override;
+  void Deinit() override;
+  // void NewFrame() override;
+  void TexBind(PD::Li::TexAddress addr) override;
+  void Draw(const Li::CmdPool& pool) override;
+  PD::Li::TexAddress TexLoad(
+      const std::vector<PD::u8>& pixels, int w, int h,
+      PD::Li::Texture::Type type = PD::Li::Texture::Type::RGBA32,
+      PD::Li::Texture::Filter filter =
+          PD::Li::Texture::Filter::LINEAR) override;
+  void TexDelete(PD::Li::TexAddress tex) override;
+
+  std::vector<Li::Vertex> VertexBuffer;
+  std::vector<PD::u16> IndexBuffer;
+  GLuint Shader;
+  GLuint pLocProjection;
+  GLuint pLocTex;
+  GLuint pLocAlfa;
+  GLuint VBO, IBO, VAO;  // vao is only used in > 3.3
+};
 }  // namespace PD

@@ -69,7 +69,7 @@ class Command {
   bool ScissorOn = false;
   int Layer = 0;
   int Index = 0;
-  Texture::Ref Tex;
+  TexAddress Tex;
 };
 
 class PD_LITHIUM_API CmdPool {

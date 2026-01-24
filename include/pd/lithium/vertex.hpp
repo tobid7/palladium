@@ -38,6 +38,8 @@ class Vertex {
   }
   ~Vertex() {}
 
+  PD_RAW(Vertex);
+
   // private:
 
   /** Open Access Data Section */

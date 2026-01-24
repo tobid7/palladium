@@ -91,7 +91,7 @@ PD_LITHIUM_API void DrawList::Optimize() {
 PD_LITHIUM_API Command::Ref DrawList::GetNewCmd() {
   Command::Ref cmd = pPool.NewCmd();
   cmd->Index = pPool.Size() - 1;
-  cmd->Tex = CurrentTex;
+  cmd->Tex = CurrentTex->Address;
   pClipCmd(cmd);
   return cmd;
 }
@@ -103,7 +103,7 @@ PD_LITHIUM_API void DrawList::pClipCmd(Command::Ref cmd) {
   }
 }
 
-PD_LITHIUM_API void DrawList::PathArcToN(const fvec2 &c, float radius,
+PD_LITHIUM_API void DrawList::PathArcToN(const fvec2& c, float radius,
                                          float a_min, float a_max,
                                          int segments) {
   // Path.push_back(c);
@@ -114,7 +114,7 @@ PD_LITHIUM_API void DrawList::PathArcToN(const fvec2 &c, float radius,
   }
 }
 
-PD_LITHIUM_API void DrawList::PathFastArcToN(const fvec2 &c, float r,
+PD_LITHIUM_API void DrawList::PathFastArcToN(const fvec2& c, float r,
                                              float amin, float amax, int s) {
   /**
    * Funcion with less division overhead
@@ -210,19 +210,19 @@ PD_LITHIUM_API void DrawList::PathRectEx(fvec2 a, fvec2 b, float rounding,
   }
 }
 
-PD_LITHIUM_API void DrawList::DrawRect(const fvec2 &pos, const fvec2 &size,
+PD_LITHIUM_API void DrawList::DrawRect(const fvec2& pos, const fvec2& size,
                                        u32 color, int thickness) {
   PathRect(pos, pos + size);
   // Flags is currently hardcoded (1 = close)
   PathStroke(color, thickness, 1);
 }
-void DrawList::DrawRectFilled(const fvec2 &pos, const fvec2 &size, u32 color) {
+void DrawList::DrawRectFilled(const fvec2& pos, const fvec2& size, u32 color) {
   PathRect(pos, pos + size);
   PathFill(color);
 }
 
-PD_LITHIUM_API void DrawList::DrawTriangle(const fvec2 &a, const fvec2 &b,
-                                           const fvec2 &c, u32 color,
+PD_LITHIUM_API void DrawList::DrawTriangle(const fvec2& a, const fvec2& b,
+                                           const fvec2& c, u32 color,
                                            int thickness) {
   PathAdd(a);
   PathAdd(b);
@@ -230,15 +230,15 @@ PD_LITHIUM_API void DrawList::DrawTriangle(const fvec2 &a, const fvec2 &b,
   PathStroke(color, thickness, 1);
 }
 
-PD_LITHIUM_API void DrawList::DrawTriangleFilled(const fvec2 &a, const fvec2 &b,
-                                                 const fvec2 &c, u32 color) {
+PD_LITHIUM_API void DrawList::DrawTriangleFilled(const fvec2& a, const fvec2& b,
+                                                 const fvec2& c, u32 color) {
   PathAdd(a);
   PathAdd(b);
   PathAdd(c);
   PathFill(color);
 }
 
-PD_LITHIUM_API void DrawList::DrawCircle(const fvec2 &center, float rad,
+PD_LITHIUM_API void DrawList::DrawCircle(const fvec2& center, float rad,
                                          u32 color, int num_segments,
                                          int thickness) {
   if (num_segments <= 0) {
@@ -251,7 +251,7 @@ PD_LITHIUM_API void DrawList::DrawCircle(const fvec2 &center, float rad,
   PathStroke(color, thickness, (1 << 0));
 }
 
-PD_LITHIUM_API void DrawList::DrawCircleFilled(const fvec2 &center, float rad,
+PD_LITHIUM_API void DrawList::DrawCircleFilled(const fvec2& center, float rad,
                                                u32 color, int num_segments) {
   if (num_segments <= 0) {
     // Auto Segment
@@ -263,7 +263,7 @@ PD_LITHIUM_API void DrawList::DrawCircleFilled(const fvec2 &center, float rad,
 }
 
 // TODO: Don't render OOS
-PD_LITHIUM_API void DrawList::DrawPolyLine(const std::vector<fvec2> &points,
+PD_LITHIUM_API void DrawList::DrawPolyLine(const std::vector<fvec2>& points,
                                            u32 clr, u32 flags, int thickness) {
   if (points.size() < 2) {
     return;
@@ -285,7 +285,7 @@ PD_LITHIUM_API void DrawList::DrawPolyLine(const std::vector<fvec2> &points,
 }
 
 PD_LITHIUM_API void DrawList::DrawConvexPolyFilled(
-    const std::vector<fvec2> &points, u32 clr) {
+    const std::vector<fvec2>& points, u32 clr) {
   if (points.size() < 3) {
     return;  // Need at least three points
   }
@@ -293,24 +293,24 @@ PD_LITHIUM_API void DrawList::DrawConvexPolyFilled(
   Renderer::CmdConvexPolyFilled(cmd, points, clr, CurrentTex);
 }
 
-PD_LITHIUM_API void DrawList::DrawText(const fvec2 &pos,
-                                       const std::string &text, u32 color) {
+PD_LITHIUM_API void DrawList::DrawText(const fvec2& pos,
+                                       const std::string& text, u32 color) {
   if (!pCurrentFont) {
     return;
   }
   pCurrentFont->CmdTextEx(pPool, pos, color, pFontScale, text);
 }
 
-PD_LITHIUM_API void DrawList::DrawTextEx(const fvec2 &p,
-                                         const std::string &text, u32 color,
-                                         LiTextFlags flags, const fvec2 &box) {
+PD_LITHIUM_API void DrawList::DrawTextEx(const fvec2& p,
+                                         const std::string& text, u32 color,
+                                         LiTextFlags flags, const fvec2& box) {
   if (!pCurrentFont) {
     return;
   }
   pCurrentFont->CmdTextEx(pPool, p, color, pFontScale, text, flags, box);
 }
 
-PD_LITHIUM_API void DrawList::DrawLine(const fvec2 &a, const fvec2 &b,
+PD_LITHIUM_API void DrawList::DrawLine(const fvec2& a, const fvec2& b,
                                        u32 color, int t) {
   PathAdd(a);
   PathAdd(b);
