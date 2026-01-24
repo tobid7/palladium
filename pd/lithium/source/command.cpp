@@ -65,6 +65,7 @@ PD_LITHIUM_API void PD::Li::CmdPool::Copy(CmdPool& p) {
 }
 
 PD_LITHIUM_API void PD::Li::CmdPool::Sort() {
+  if (pPoolIdx < 2) return;
   std::sort(begin(), end(), pTheOrder);
 }
 

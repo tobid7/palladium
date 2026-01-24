@@ -67,8 +67,8 @@ class Command {
   std::vector<u16> IndexBuffer;
   ivec4 ScissorRect;
   bool ScissorOn = false;
-  int Layer;
-  int Index;
+  int Layer = 0;
+  int Index = 0;
   Texture::Ref Tex;
 };
 
@@ -94,7 +94,7 @@ class PD_LITHIUM_API CmdPool {
   static bool pTheOrder(const Command::Ref& a, const Command::Ref& b);
   friend class DrawList;
   Command::Ref* begin() { return &pPool[0]; }
-  Command::Ref* end() { return &pPool[pPoolIdx]; }
+  Command::Ref* end() { return &pPool[pPoolIdx - 1]; }
   std::vector<Command::Ref> pPool;
   u32 pPoolIdx = 0;
   int Layer = 0;

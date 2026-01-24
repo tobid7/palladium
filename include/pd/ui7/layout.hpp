@@ -26,6 +26,8 @@ SOFTWARE.
 
 #include <pd/core/core.hpp>
 #include <pd/ui7/container/container.hpp>
+#include <pd/ui7/container/dragdata.hpp>
+#include <pd/ui7/container/slider.hpp>
 #include <pd/ui7/flags.hpp>
 #include <pd/ui7/input_api.hpp>
 #include <pd/ui7/pd_p_api.hpp>
@@ -35,7 +37,7 @@ namespace PD {
 namespace UI7 {
 class PD_UI7_API Layout {
  public:
-  Layout(const ID& id, IO::Ref io) : ID(id) {
+  Layout(const ID &id, IO::Ref io) : ID(id) {
     this->IO = io;
     DrawList = Li::DrawList::New();
     DrawList->SetFont(IO->Font);
@@ -51,21 +53,86 @@ class PD_UI7_API Layout {
 
   PD_SHARED(Layout);
 
-  const std::string GetName() const { return ID.GetName(); }
-  const UI7::ID& GetID() const { return this->ID; }
+  /** SECTION CONTAINERS */
+  /**
+   * Render a Simple Label
+   * @param label The text to draw
+   */
+  void Label(const std::string &label);
+  template <typename... Args>
+  void Label(std::format_string<Args...> s, Args &&...args) {
+    Label(std::format(s, std::forward<Args>(args)...));
+  }
+  /**
+   * Render a Button
+   * @param label The buttons text
+   * @return if the button was pressed
+   */
+  bool Button(const std::string &label);
+  /**
+   * Render a Checkbox
+   * @param label Label of the Checkbox
+   * @param v A value to update
+   */
+  void Checkbox(const std::string &label, bool &v);
+  /**
+   * Render an Image
+   * @param img Texture reference of the image
+   * @param size a Custom Size if needed
+   */
+  void Image(Li::Texture::Ref img, fvec2 size = 0.f, Li::Rect uv = fvec4(0));
+  /**
+   * Render a Drag Object witth any supported type:
+   * [`int`, `float`, `double`, `u8`, `u16`, `u32`]
+   * @param label Name of the Drag
+   * @param data Reference to Data Object (can be multiple as well)
+   * @param num_elements Defien the number of Elements in the Data addr
+   * @param precission Difine the Format string len for float/double
+   */
+  template <typename T>
+  void DragData(const std::string &label, T *data, size_t num_elms = 1,
+                T min = std::numeric_limits<T>::min(),
+                T max = std::numeric_limits<T>::max(), T step = 1,
+                int precision = 1) {
+    u32 id = Strings::FastHash("drd" + label + std::to_string((uintptr_t)data));
+    Container::Ref r = FindObject(id);
+    if (!r) {
+      r = UI7::DragData<T>::New(label, data, num_elms, this->IO, min, max, step,
+                                precision);
+      r->SetID(id);
+    }
+    AddObject(r);
+  }
+  template <typename T>
+  void Slider(const std::string &label, T *data,
+              T min = std::numeric_limits<T>::min(),
+              T max = std::numeric_limits<T>::max(), int precision = 1) {
+    u32 id = Strings::FastHash("drd" + label + std::to_string((uintptr_t)data));
+    Container::Ref r = FindObject(id);
+    if (!r) {
+      r = UI7::Slider<T>::New(label, data, this->IO, min, max, precision);
+      r->SetID(id);
+    }
+    AddObject(r);
+  }
 
-  const fvec2& GetPosition() const { return Pos; }
-  void SetPosition(const fvec2& v) { Pos = v; }
-  const fvec2& GetSize() const { return Size; }
-  void SetSize(const fvec2& v) { Size = v; }
+  /** SECTION OTHERSTUFF */
+
+  const std::string GetName() const { return ID.GetName(); }
+  const UI7::ID &GetID() const { return this->ID; }
+
+  const fvec2 &GetPosition() const { return Pos; }
+  void SetPosition(const fvec2 &v) { Pos = v; }
+  const fvec2 &GetSize() const { return Size; }
+  void SetSize(const fvec2 &v) { Size = v; }
 
   Li::DrawList::Ref GetDrawList() { return DrawList; }
 
   void CursorInit();
   void SameLine();
-  void CursorMove(const fvec2& size);
+  void CursorMove(const fvec2 &size);
 
-  bool ObjectWorkPos(fvec2& movpos);
+  bool ObjectWorkPos(fvec2 &movpos);
 
   /**
    * Extended Object Add Func to Add Object in Front or disable

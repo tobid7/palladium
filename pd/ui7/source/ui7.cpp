@@ -151,6 +151,7 @@ PD_UI7_API void Context::Update() {
   }
   pCurrentMenus.clear();
   pIO->Update();
+  pIO->FDL->pPool.Sort();
 }
 
 PD_UI7_API void Context::AboutMenu(bool *show) {
@@ -322,27 +323,27 @@ PD_UI7_API void UI7::Context::StyleEditor(bool *show) {
       UI7::Theme::Flashbang(*pIO->Theme.get());
     }
     /// Small trick to print without prefix
-#define ts(x) m->ColorEdit(std::string(#x).substr(9), &pIO->Theme->GetRef(x));
+#define ts(x) m->ColorEdit(std::string(#x).substr(9), pIO->Theme->GetRef(x));
 #define ts2(x)                                                            \
   m->DragData(std::string(#x).substr(9), (u8 *)&pIO->Theme->GetRef(x), 4, \
               (u8)0, (u8)255);
-    ts2(UI7Color_Background);
-    ts2(UI7Color_Border);
-    ts2(UI7Color_Button);
-    ts2(UI7Color_ButtonDead);
-    ts2(UI7Color_ButtonActive);
-    ts2(UI7Color_ButtonHovered);
-    ts2(UI7Color_Text);
-    ts2(UI7Color_TextDead);
-    ts2(UI7Color_Header);
-    ts2(UI7Color_HeaderDead);
-    ts2(UI7Color_Selector);
-    ts2(UI7Color_Checkmark);
-    ts2(UI7Color_FrameBackground);
-    ts2(UI7Color_FrameBackgroundHovered);
-    ts2(UI7Color_Progressbar);
-    ts2(UI7Color_ListEven);
-    ts2(UI7Color_ListOdd);
+    ts(UI7Color_Background);
+    ts(UI7Color_Border);
+    ts(UI7Color_Button);
+    ts(UI7Color_ButtonDead);
+    ts(UI7Color_ButtonActive);
+    ts(UI7Color_ButtonHovered);
+    ts(UI7Color_Text);
+    ts(UI7Color_TextDead);
+    ts(UI7Color_Header);
+    ts(UI7Color_HeaderDead);
+    ts(UI7Color_Selector);
+    ts(UI7Color_Checkmark);
+    ts(UI7Color_FrameBackground);
+    ts(UI7Color_FrameBackgroundHovered);
+    ts(UI7Color_Progressbar);
+    ts(UI7Color_ListEven);
+    ts(UI7Color_ListOdd);
     this->EndMenu();
   }
 }

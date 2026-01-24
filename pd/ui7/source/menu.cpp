@@ -29,7 +29,7 @@ namespace PD {
 namespace UI7 {
 Menu::Menu(const ID& id, IO::Ref io) : pIO(io), pID(id) {
   pLayout = Layout::New(id, io);
-  TitleBarHeight = io->FontScale * 30.f;
+  TitleBarHeight = pIO->FontScale * pIO->Font->PixelHeight + pIO->MenuPadding.y;
   pLayout->WorkRect.y += TitleBarHeight;
   pLayout->CursorInit();
 }
@@ -71,6 +71,16 @@ PD_UI7_API void Menu::Checkbox(const std::string& label, bool& v) {
 
 PD_UI7_API void Menu::Image(Li::Texture::Ref img, fvec2 size, Li::Rect uv) {
   Container::Ref r = Image::New(img, size, uv);
+  pLayout->AddObject(r);
+}
+
+PD_UI7_API void Menu::ColorEdit(const std::string& label, u32& clr) {
+  u32 id = Strings::FastHash("drd" + label);
+  Container::Ref r = pLayout->FindObject(id);
+  if (!r) {
+    r = UI7::ColorEdit::New(label, &clr, pIO);
+    r->SetID(id);
+  }
   pLayout->AddObject(r);
 }
 

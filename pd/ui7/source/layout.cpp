@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
+#include <pd/ui7/containers.hpp>
 #include <pd/ui7/layout.hpp>
 
 namespace PD {
@@ -114,7 +115,7 @@ PD_UI7_API fvec2 Layout::AlignPosition(fvec2 pos, fvec2 size, fvec4 area,
 
 PD_UI7_API void Layout::Update() {
   if (Size == fvec2(0.f)) {
-    Size = fvec2(MaxPosition);
+    Size = fvec2(MaxPosition) + IO->MenuPadding * 2;
   }
   for (auto& it : Objects) {
     if (it->GetID() != 0 && !FindObject(it->GetID())) {
@@ -140,5 +141,45 @@ PD_UI7_API void Layout::Update() {
   WorkRect = fvec4(fvec2(WorkRect.x, WorkRect.y), Size - IO->MenuPadding);
   CursorInit();
 }
+
+/** SECTION CONTAINERS (STOLEN FROM FORMER MENU) */
+
+PD_UI7_API void Layout::Label(const std::string& label) {
+  // Layout API
+  auto r = Label::New(label, IO);
+  r->SetClipRect(fvec4(GetPosition(), GetPosition() + GetSize()));
+  AddObject(r);
+}
+
+PD_UI7_API bool Layout::Button(const std::string& label) {
+  bool ret = false;
+  u32 id = Strings::FastHash("btn" + label + std::to_string(Objects.size()));
+  Container::Ref r = FindObject(id);
+  if (!r) {
+    r = Button::New(label, IO);
+    r->SetID(id);
+  }
+  AddObject(r);
+  if (!r->Skippable()) {
+    ret = std::static_pointer_cast<UI7::Button>(r)->IsPressed();
+  }
+  return ret;
+}
+
+PD_UI7_API void Layout::Checkbox(const std::string& label, bool& v) {
+  u32 id = Strings::FastHash("cbx" + label + std::to_string(Objects.size()));
+  Container::Ref r = FindObject(id);
+  if (!r) {
+    r = Checkbox::New(label, v, IO);
+    r->SetID(id);
+  }
+  AddObject(r);
+}
+
+PD_UI7_API void Layout::Image(Li::Texture::Ref img, fvec2 size, Li::Rect uv) {
+  Container::Ref r = Image::New(img, size, uv);
+  AddObject(r);
+}
+
 }  // namespace UI7
 }  // namespace PD

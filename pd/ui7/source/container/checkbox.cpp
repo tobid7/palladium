@@ -61,6 +61,7 @@ PD_UI7_API void Checkbox::Draw() {
 
 PD_UI7_API void Checkbox::Update() {
   // Assert(io.get(), "Did you run Container::Init correctly?");
+  cbs = io->ItemRowHeight;
   this->SetSize(cbs + fvec2(tdim.x + io->ItemSpace.x, 0));
 }
 }  // namespace UI7

@@ -105,6 +105,7 @@ class PD_UI7_API Menu {
     }
     pLayout->AddObject(r);
   }
+  void ColorEdit(const std::string &label, u32 &clr);
   void SameLine() { pLayout->SameLine(); }
   void Separator();
   void SeparatorText(const std::string &label);

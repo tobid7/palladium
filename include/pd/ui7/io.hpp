@@ -73,6 +73,7 @@ class PD_UI7_API IO {
   UI7::Theme::Ref Theme;
   fvec2 MenuPadding = 5.f;
   fvec2 FramePadding = 5.f;
+  float ItemRowHeight = 0.f;
   float FrameRounding = 0.f;
   fvec2 ItemSpace = vec2(5.f, 2.f);
   fvec2 MinSliderDragSize = 10.f;  // Min height (Vt) and Min Width (Hz)
