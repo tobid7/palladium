@@ -23,10 +23,9 @@ SOFTWARE.
  */
 
 #include <pd/drivers/gfx.hpp>
-#include <pd/drivers/pd_p_api.hpp>
 
 namespace PD {
-PD_DEF_EXP(GfxDriver::Ref, Gfx::pGfx);
+GfxDriver::Ref Gfx::pGfx = nullptr;
 
 void Gfx::Init(GfxDriver::Ref d) {
   if (!d) {

@@ -22,10 +22,9 @@ SOFTWARE.
  */
 
 #include <pd/drivers/os.hpp>
-#include <pd/drivers/pd_p_api.hpp>
 
 namespace PD {
-PD_DEF_EXP(OsDriver::Ref, OS::pOs);
+OsDriver::Ref OS::pOs = nullptr;
 
 TT::Res::Ref& OsDriver::GetTraceRef(const std::string& id) {
   if (!pTraces.count(id)) {

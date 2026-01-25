@@ -1,8 +1,7 @@
 #include <pd/drivers/hid.hpp>
-#include <pd/drivers/pd_p_api.hpp>
 
 namespace PD {
-PD_DEF_EXP(HidDriver::Ref, Hid::pHid);
+HidDriver::Ref Hid::pHid = nullptr;
 
 bool HidDriver::IsEvent(Event e, Key keys) { return KeyEvents[0][e] & keys; }
 bool HidDriver::IsEvent(Event e, KbKey keys) {
