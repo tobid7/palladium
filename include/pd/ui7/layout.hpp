@@ -37,7 +37,7 @@ namespace PD {
 namespace UI7 {
 class PD_UI7_API Layout {
  public:
-  Layout(const ID &id, IO::Ref io) : ID(id) {
+  Layout(const ID& id, IO::Ref io) : ID(id) {
     this->IO = io;
     DrawList = Li::DrawList::New();
     DrawList->SetFont(IO->Font);
@@ -58,9 +58,9 @@ class PD_UI7_API Layout {
    * Render a Simple Label
    * @param label The text to draw
    */
-  void Label(const std::string &label);
+  void Label(const std::string& label);
   template <typename... Args>
-  void Label(std::format_string<Args...> s, Args &&...args) {
+  void Label(std::format_string<Args...> s, Args&&... args) {
     Label(std::format(s, std::forward<Args>(args)...));
   }
   /**
@@ -68,13 +68,13 @@ class PD_UI7_API Layout {
    * @param label The buttons text
    * @return if the button was pressed
    */
-  bool Button(const std::string &label);
+  bool Button(const std::string& label);
   /**
    * Render a Checkbox
    * @param label Label of the Checkbox
    * @param v A value to update
    */
-  void Checkbox(const std::string &label, bool &v);
+  void Checkbox(const std::string& label, bool& v);
   /**
    * Render an Image
    * @param img Texture reference of the image
@@ -90,7 +90,7 @@ class PD_UI7_API Layout {
    * @param precission Difine the Format string len for float/double
    */
   template <typename T>
-  void DragData(const std::string &label, T *data, size_t num_elms = 1,
+  void DragData(const std::string& label, T* data, size_t num_elms = 1,
                 T min = std::numeric_limits<T>::min(),
                 T max = std::numeric_limits<T>::max(), T step = 1,
                 int precision = 1) {
@@ -104,7 +104,7 @@ class PD_UI7_API Layout {
     AddObject(r);
   }
   template <typename T>
-  void Slider(const std::string &label, T *data,
+  void Slider(const std::string& label, T* data,
               T min = std::numeric_limits<T>::min(),
               T max = std::numeric_limits<T>::max(), int precision = 1) {
     u32 id = Strings::FastHash("drd" + label + std::to_string((uintptr_t)data));
@@ -119,20 +119,20 @@ class PD_UI7_API Layout {
   /** SECTION OTHERSTUFF */
 
   const std::string GetName() const { return ID.GetName(); }
-  const UI7::ID &GetID() const { return this->ID; }
+  const UI7::ID& GetID() const { return this->ID; }
 
-  const fvec2 &GetPosition() const { return Pos; }
-  void SetPosition(const fvec2 &v) { Pos = v; }
-  const fvec2 &GetSize() const { return Size; }
-  void SetSize(const fvec2 &v) { Size = v; }
+  const fvec2& GetPosition() const { return Pos; }
+  void SetPosition(const fvec2& v) { Pos = v; }
+  const fvec2& GetSize() const { return Size; }
+  void SetSize(const fvec2& v) { Size = v; }
 
   Li::DrawList::Ref GetDrawList() { return DrawList; }
 
   void CursorInit();
   void SameLine();
-  void CursorMove(const fvec2 &size);
+  void CursorMove(const fvec2& size);
 
-  bool ObjectWorkPos(fvec2 &movpos);
+  bool ObjectWorkPos(fvec2& movpos);
 
   /**
    * Extended Object Add Func to Add Object in Front or disable

@@ -23,44 +23,43 @@ SOFTWARE.
  */
 
 #ifdef PD_IMAGE_BUILD_SHARED
-#define STB_IMAGE_IMPLEMENTATION
+#define PD_IMAGE_IMPLEMENTATION
 #endif
-
-#include <pd/external/stb_image.h>
 
 #include <cstring>
 #include <memory>
+#include <pd/external/stb_image.hpp>
 #include <pd/image/image.hpp>
 #include <pd/image/img_convert.hpp>
 
 namespace PD {
 PD_IMAGE_API void Image::Load(const std::string& path) {
-  u8* img = stbi_load(path.c_str(), &pWidth, &pHeight, &fmt, 4);
+  u8* img = pdi_load(path.c_str(), &pWidth, &pHeight, &fmt, 4);
   if (fmt == 3) {
-    stbi_image_free(img);
-    img = stbi_load(path.c_str(), &pWidth, &pHeight, &fmt, 3);
+    pdi_image_free(img);
+    img = pdi_load(path.c_str(), &pWidth, &pHeight, &fmt, 3);
     pBuffer = std::vector<PD::u8>(img, img + (pWidth * pHeight * 3));
     pFmt = RGB;
-    stbi_image_free(img);
+    pdi_image_free(img);
   } else if (fmt == 4) {
     pBuffer = std::vector<PD::u8>(img, img + (pWidth * pHeight * 4));
     pFmt = RGBA;
-    stbi_image_free(img);
+    pdi_image_free(img);
   }
 }
 PD_IMAGE_API void Image::Load(const std::vector<u8>& buf) {
   u8* img =
-      stbi_load_from_memory(buf.data(), buf.size(), &pWidth, &pHeight, &fmt, 4);
+      pdi_load_from_memory(buf.data(), buf.size(), &pWidth, &pHeight, &fmt, 4);
   if (fmt == 3) {
-    stbi_image_free(img);
-    img = stbi_load_from_memory(buf.data(), buf.size(), &pWidth, &pHeight, &fmt,
-                                3);
+    pdi_image_free(img);
+    img = pdi_load_from_memory(buf.data(), buf.size(), &pWidth, &pHeight, &fmt,
+                               3);
     pBuffer = std::vector<PD::u8>(img, img + (pWidth * pHeight * 3));
     pFmt = RGB;
-    stbi_image_free(img);
+    pdi_image_free(img);
   } else if (fmt == 4) {
     pBuffer = std::vector<PD::u8>(img, img + (pWidth * pHeight * 4));
-    stbi_image_free(img);
+    pdi_image_free(img);
     pFmt = RGBA;
   }
 }

@@ -102,12 +102,12 @@ class TimeStats {
    * Get Data Buffer
    * @return data bufer (not edidable)
    */
-  const std::vector<u64> &GetData() { return val; }
+  const std::vector<u64>& GetData() { return val; }
   /**
    * Access an element in the list [not edidable]
    * @return value to access
    */
-  const u64 &operator[](int i) { return val[smart_idx(i)]; }
+  const u64& operator[](int i) { return val[smart_idx(i)]; }
   /**
    * Get List Lengh
    * @return Lengh
@@ -160,7 +160,7 @@ class Res {
    * Setter for the ID (Name)
    * @param v ID of the Trace
    */
-  void SetID(const std::string &v) { id = v; }
+  void SetID(const std::string& v) { id = v; }
   /**
    * Getter for the traces ID
    * @return Trace ID
@@ -218,12 +218,12 @@ class Res {
  * Begin a Trace
  * @param id Name of the Trace
  */
-PD_CORE_API void Beg(const std::string &id);
+PD_CORE_API void Beg(const std::string& id);
 /**
  * End a Trace
  * @param id Name of the Trace
  */
-PD_CORE_API void End(const std::string &id);
+PD_CORE_API void End(const std::string& id);
 /**
  * Collect Start end end of the trace by tracking
  * when the Scope object goes out of scope
@@ -245,7 +245,7 @@ class Scope {
    * Constructor requiring a Name for the Trace
    * @param id Name of the Trace
    */
-  Scope(const std::string &id) {
+  Scope(const std::string& id) {
     this->ID = id;
     Beg(id);
   }

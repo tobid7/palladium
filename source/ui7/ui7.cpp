@@ -40,19 +40,19 @@ PD_UI7_API std::string GetVersion(bool show_build) {
   return s.str();
 }
 
-PD_UI7_API void Context::AddViewPort(const ID &id, const ivec4 &vp) {
+PD_UI7_API void Context::AddViewPort(const ID& id, const ivec4& vp) {
   pIO->AddViewPort(id, vp);
 }
 
-PD_UI7_API void Context::UseViewPort(const ID &id) {
+PD_UI7_API void Context::UseViewPort(const ID& id) {
   if (!pIO->ViewPorts.count(id)) {
     return;
   }
   pIO->CurrentViewPort = pIO->ViewPorts[id]->GetSize();
 }
 
-PD_UI7_API Menu::Ref Context::BeginMenu(const ID &id, UI7MenuFlags flags,
-                                        bool *pShow) {
+PD_UI7_API Menu::Ref Context::BeginMenu(const ID& id, UI7MenuFlags flags,
+                                        bool* pShow) {
   if (pCurrent) {
     std::cout << "[UI7] Error: You are already in " << pCurrent->pID.GetName()
               << " Menu" << std::endl;
@@ -141,7 +141,7 @@ PD_UI7_API void Context::Update() {
     FinalList.insert(FinalList.begin(), pIO->InputHandler->FocusedMenu);
   }
   pDFO = FinalList;
-  for (auto &it : FinalList) {
+  for (auto& it : FinalList) {
     this->pIO->InputHandler->CurrentMenu = it;
     pMenus[it]->Update(); /** Render */
     this->pIO->InputHandler->CurrentMenu = 0;
@@ -154,7 +154,7 @@ PD_UI7_API void Context::Update() {
   pIO->FDL->pPool.Sort();
 }
 
-PD_UI7_API void Context::AboutMenu(bool *show) {
+PD_UI7_API void Context::AboutMenu(bool* show) {
   if (auto m = BeginMenu("About UI7", UI7MenuFlags_Scrolling, show)) {
     m->Label("Palladium UI7 " + GetVersion());
     m->Separator();
@@ -176,7 +176,7 @@ PD_UI7_API void Context::AboutMenu(bool *show) {
   }
 }
 
-PD_UI7_API void Context::MetricsMenu(bool *show) {
+PD_UI7_API void Context::MetricsMenu(bool* show) {
   if (auto m = BeginMenu("UI7 Metrics", UI7MenuFlags_Scrolling, show)) {
     m->Label("Palladium - UI7 " + GetVersion());
     m->Separator();
@@ -192,7 +192,7 @@ PD_UI7_API void Context::MetricsMenu(bool *show) {
     m->SeparatorText("TimeTrace");
     if (m->BeginTreeNode("Traces (" + std::to_string(OS::GetTraceMap().size()) +
                          ")")) {
-      for (auto &it : OS::GetTraceMap()) {
+      for (auto& it : OS::GetTraceMap()) {
         if (m->BeginTreeNode(it.second->GetID())) {
           m->Label("Diff: " + UI7DTF(it.second->GetLastDiff()));
           m->Label("Protocol Len: " +
@@ -226,7 +226,7 @@ PD_UI7_API void Context::MetricsMenu(bool *show) {
     /** Section IO */
     m->SeparatorText("IO");
     if (m->BeginTreeNode("Menus (" + std::to_string(pMenus.size()) + ")")) {
-      for (auto &it : pMenus) {
+      for (auto& it : pMenus) {
         if (m->BeginTreeNode(it.second->pID.GetName())) {
           m->Label("Name: " + it.second->pID.GetName());
           m->Label(std::format("Pos: {}", it.second->pLayout->GetPosition()));
@@ -236,7 +236,7 @@ PD_UI7_API void Context::MetricsMenu(bool *show) {
           if (m->BeginTreeNode(
                   "ID Objects (" +
                   std::to_string(it.second->pLayout->IDObjects.size()) + ")")) {
-            for (auto &jt : it.second->pLayout->IDObjects) {
+            for (auto& jt : it.second->pLayout->IDObjects) {
               m->Label(std::format("{:08X}", jt->GetID()));
             }
             m->EndTreeNode();
@@ -248,7 +248,7 @@ PD_UI7_API void Context::MetricsMenu(bool *show) {
     }
     if (m->BeginTreeNode("Active Menus (" +
                          std::to_string(pCurrentMenus.size()) + ")")) {
-      for (auto &it : pCurrentMenus) {
+      for (auto& it : pCurrentMenus) {
         if (m->BeginTreeNode(pMenus[it]->pID.GetName())) {
           m->Label("Name: " + pMenus[it]->pID.GetName());
           m->Label(std::format("Pos: {}", pMenus[it]->pLayout->GetPosition()));
@@ -259,7 +259,7 @@ PD_UI7_API void Context::MetricsMenu(bool *show) {
                   "ID Objects (" +
                   std::to_string(pMenus[it]->pLayout->IDObjects.size()) +
                   ")")) {
-            for (auto &jt : pMenus[it]->pLayout->IDObjects) {
+            for (auto& jt : pMenus[it]->pLayout->IDObjects) {
               m->Label(std::format("{:08X}", jt->GetID()));
             }
             m->EndTreeNode();
@@ -301,14 +301,14 @@ PD_UI7_API void Context::MetricsMenu(bool *show) {
   }
 }
 
-PD_UI7_API void UI7::Context::StyleEditor(bool *show) {
+PD_UI7_API void UI7::Context::StyleEditor(bool* show) {
   if (auto m = BeginMenu("UI7 Style Editor", UI7MenuFlags_Scrolling, show)) {
     m->Label("Palladium - UI7 " + GetVersion() + " Style Editor");
     m->Separator();
-    m->DragData("MenuPadding", (float *)&pIO->MenuPadding, 2, 0.f, 100.f);
-    m->DragData("FramePadding", (float *)&pIO->FramePadding, 2, 0.f, 100.f);
-    m->DragData("ItemSpace", (float *)&pIO->ItemSpace, 2, 0.f, 100.f);
-    m->DragData("MinSliderSize", (float *)&pIO->MinSliderDragSize, 2, 1.f,
+    m->DragData("MenuPadding", (float*)&pIO->MenuPadding, 2, 0.f, 100.f);
+    m->DragData("FramePadding", (float*)&pIO->FramePadding, 2, 0.f, 100.f);
+    m->DragData("ItemSpace", (float*)&pIO->ItemSpace, 2, 0.f, 100.f);
+    m->DragData("MinSliderSize", (float*)&pIO->MinSliderDragSize, 2, 1.f,
                 100.f);
     m->DragData("OverScroll Modifier", &pIO->OverScrollMod, 1, 0.01f,
                 std::numeric_limits<float>::max(), 0.01f, 2);
@@ -324,8 +324,8 @@ PD_UI7_API void UI7::Context::StyleEditor(bool *show) {
     }
     /// Small trick to print without prefix
 #define ts(x) m->ColorEdit(std::string(#x).substr(9), pIO->Theme->GetRef(x));
-#define ts2(x)                                                            \
-  m->DragData(std::string(#x).substr(9), (u8 *)&pIO->Theme->GetRef(x), 4, \
+#define ts2(x)                                                           \
+  m->DragData(std::string(#x).substr(9), (u8*)&pIO->Theme->GetRef(x), 4, \
               (u8)0, (u8)255);
     ts(UI7Color_Background);
     ts(UI7Color_Border);

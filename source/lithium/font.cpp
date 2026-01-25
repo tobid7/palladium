@@ -26,10 +26,9 @@ SOFTWARE.
 
 /** Due to Limitations of Shared Lib Stuff */
 #ifdef PD_LITHIUM_BUILD_SHARED
-#define STB_TRUETYPE_IMPLEMENTATION
+#define PD_TRUETYPE_IMPLEMENTATION
 #endif
-#include <pd/external/stb_truetype.h>
-
+#include <pd/external/stb_truetype.hpp>
 #include <pd/lithium/renderer.hpp>
 
 #ifdef PD_LI_INCLUDE_FONTS
@@ -81,15 +80,15 @@ PD_LITHIUM_API void Font::LoadTTF(const std::vector<u8>& data, int height) {
     texszs = 1024;  // Max size
   }
 
-  stbtt_fontinfo inf;
-  if (!stbtt_InitFont(&inf, data.data(), 0)) {
+  pdtt_fontinfo inf;
+  if (!pdtt_InitFont(&inf, data.data(), 0)) {
     return;
   }
 
-  float scale = stbtt_ScaleForPixelHeight(&inf, PixelHeight);
+  float scale = pdtt_ScaleForPixelHeight(&inf, PixelHeight);
 
   int ascent, descent, lineGap;
-  stbtt_GetFontVMetrics(&inf, &ascent, &descent, &lineGap);
+  pdtt_GetFontVMetrics(&inf, &ascent, &descent, &lineGap);
   int baseline = static_cast<int>(ascent * scale);
 
   // Cache to not render same codepoint tex twice
@@ -102,13 +101,13 @@ PD_LITHIUM_API void Font::LoadTTF(const std::vector<u8>& data, int height) {
   bool empty = true;
 
   for (u32 ii = 0x0000; ii <= 0xFFFF; ii++) {
-    int gi = stbtt_FindGlyphIndex(&inf, ii);
+    int gi = pdtt_FindGlyphIndex(&inf, ii);
     if (gi == 0) continue;
-    if (stbtt_IsGlyphEmpty(&inf, gi)) continue;
+    if (pdtt_IsGlyphEmpty(&inf, gi)) continue;
 
     int w = 0, h = 0, xo = 0, yo = 0;
     unsigned char* bitmap =
-        stbtt_GetCodepointBitmap(&inf, scale, scale, ii, &w, &h, &xo, &yo);
+        pdtt_GetCodepointBitmap(&inf, scale, scale, ii, &w, &h, &xo, &yo);
     if (!bitmap || w <= 0 || h <= 0) {
       if (bitmap) free(bitmap);
       continue;

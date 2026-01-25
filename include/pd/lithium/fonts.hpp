@@ -37,5 +37,5 @@ struct FontFileData {
 extern FontFileData pFontData[];
 extern size_t pNumFonts;
 extern PD::u8 pFontsDataRaw[];
-}   // namespace PD
+}  // namespace PD
 #endif

@@ -49,7 +49,7 @@ PD_IMAGE_API std::vector<float> GaussianKernel(int radius, float si);
  * @param idxfn Indexing function
  */
 PD_IMAGE_API void GaussianBlur(
-    std::vector<u8> &buf, int w, int h, float radius, float si,
+    std::vector<u8>& buf, int w, int h, float radius, float si,
     std::function<int(int, int, int)> idxfn = [](int x, int y, int w) -> int {
       return y * w + x;
     });
@@ -64,7 +64,7 @@ PD_IMAGE_API void GaussianBlur(
  * @param idxfn Indexing function
  */
 PD_IMAGE_API void GaussianBlur(
-    void *buf, int w, int h, int bpp, float radius, float si,
+    void* buf, int w, int h, int bpp, float radius, float si,
     std::function<int(int, int, int)> idxfn = [](int x, int y, int w) -> int {
       return y * w + x;
     });

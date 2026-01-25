@@ -45,13 +45,13 @@ PD_IMAGE_API std::vector<float> GaussianKernel(int r, float si) {
   }
   return kernel;
 }
-PD_IMAGE_API void GaussianBlur(std::vector<u8> &buf, int w, int h, float radius,
+PD_IMAGE_API void GaussianBlur(std::vector<u8>& buf, int w, int h, float radius,
                                float si,
                                std::function<int(int, int, int)> idxfn) {
   GaussianBlur(buf.data(), w, h, 4, radius, si, idxfn);
 }
 
-PD_IMAGE_API void GaussianBlur(void *buf, int w, int h, int bpp, float radius,
+PD_IMAGE_API void GaussianBlur(void* buf, int w, int h, int bpp, float radius,
                                float si,
                                std::function<int(int, int, int)> idxfn) {
   if (bpp != 4 && bpp != 3) {
@@ -60,7 +60,7 @@ PD_IMAGE_API void GaussianBlur(void *buf, int w, int h, int bpp, float radius,
   std::vector<float> kernel = GaussianKernel(radius, si);
   int hks = kernel.size() / 2;
   int end = w * h * bpp;
-  std::vector<unsigned char> res((u8 *)buf, ((u8 *)buf) + end);
+  std::vector<unsigned char> res((u8*)buf, ((u8*)buf) + end);
   ImgConvert::Reverse32(res, w, h);
   for (int y = 0; y < h; y++) {
     for (int x = 0; x < w; x++) {
@@ -72,9 +72,9 @@ PD_IMAGE_API void GaussianBlur(void *buf, int w, int h, int bpp, float radius,
           int idx = idxfn(xoff, yoff, w) * 4;
 
           float weight = kernel[ky + hks] * kernel[kx + hks];
-          r += ((u8 *)buf)[idx] * weight;
-          g += ((u8 *)buf)[idx + 1] * weight;
-          b += ((u8 *)buf)[idx + 2] * weight;
+          r += ((u8*)buf)[idx] * weight;
+          g += ((u8*)buf)[idx + 1] * weight;
+          b += ((u8*)buf)[idx + 2] * weight;
         }
       }
       int idx = idxfn(x, y, w) * bpp;

@@ -36,7 +36,7 @@ namespace PD {
 namespace UI7 {
 class PD_UI7_API Menu {
  public:
-  Menu(const UI7::ID &id, UI7::IO::Ref pIO);
+  Menu(const UI7::ID& id, UI7::IO::Ref pIO);
   ~Menu() {}
 
   PD_SHARED(Menu);
@@ -45,9 +45,9 @@ class PD_UI7_API Menu {
    * Render a Simple Label
    * @param label The text to draw
    */
-  void Label(const std::string &label);
+  void Label(const std::string& label);
   template <typename... Args>
-  void Label(std::format_string<Args...> s, Args &&...args) {
+  void Label(std::format_string<Args...> s, Args&&... args) {
     Label(std::format(s, std::forward<Args>(args)...));
   }
   /**
@@ -55,13 +55,13 @@ class PD_UI7_API Menu {
    * @param label The buttons text
    * @return if the button was pressed
    */
-  bool Button(const std::string &label);
+  bool Button(const std::string& label);
   /**
    * Render a Checkbox
    * @param label Label of the Checkbox
    * @param v A value to update
    */
-  void Checkbox(const std::string &label, bool &v);
+  void Checkbox(const std::string& label, bool& v);
   /**
    * Render an Image
    * @param img Texture reference of the image
@@ -77,7 +77,7 @@ class PD_UI7_API Menu {
    * @param precission Difine the Format string len for float/double
    */
   template <typename T>
-  void DragData(const std::string &label, T *data, size_t num_elms = 1,
+  void DragData(const std::string& label, T* data, size_t num_elms = 1,
                 T min = std::numeric_limits<T>::min(),
                 T max = std::numeric_limits<T>::max(), T step = 1,
                 int precision = 1) {
@@ -94,7 +94,7 @@ class PD_UI7_API Menu {
     pLayout->AddObject(r);
   }
   template <typename T>
-  void Slider(const std::string &label, T *data,
+  void Slider(const std::string& label, T* data,
               T min = std::numeric_limits<T>::min(),
               T max = std::numeric_limits<T>::max(), int precision = 1) {
     u32 id = Strings::FastHash("drd" + label + std::to_string((uintptr_t)data));
@@ -105,11 +105,11 @@ class PD_UI7_API Menu {
     }
     pLayout->AddObject(r);
   }
-  void ColorEdit(const std::string &label, u32 &clr);
+  void ColorEdit(const std::string& label, u32& clr);
   void SameLine() { pLayout->SameLine(); }
   void Separator();
-  void SeparatorText(const std::string &label);
-  bool BeginTreeNode(const ID &id);
+  void SeparatorText(const std::string& label);
+  bool BeginTreeNode(const ID& id);
   void EndTreeNode();
 
   void HandleFocus();
@@ -131,7 +131,7 @@ class PD_UI7_API Menu {
   Layout::Ref pLayout;
   IO::Ref pIO;
   ID pID;
-  bool *pIsShown = nullptr;
+  bool* pIsShown = nullptr;
   bool pIsOpen = true;
   std::unordered_map<u32, bool> pTreeNodes;
   fvec2 TempScrollXY;

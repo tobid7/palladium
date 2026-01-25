@@ -42,18 +42,18 @@ namespace ImgConvert {
  * @param h height of the image
  */
 PD_IMAGE_API
-void RGB24toRGBA32(std::vector<PD::u8> &out, const std::vector<u8> &in,
-                   const int &w, const int &h);
+void RGB24toRGBA32(std::vector<PD::u8>& out, const std::vector<u8>& in,
+                   const int& w, const int& h);
 PD_IMAGE_API
-void RGB32toRGBA24(std::vector<u8> &out, const std::vector<u8> &in,
-                   const int &w, const int &h);
+void RGB32toRGBA24(std::vector<u8>& out, const std::vector<u8>& in,
+                   const int& w, const int& h);
 /**
  * Reverse 32 (RGBA -> ABGR || ABGR -> RGBA)
  * @param buf Buffer to convert
  * @param w width
  * @param h height
  */
-PD_IMAGE_API void Reverse32(std::vector<u8> &buf, const int &w, const int &h);
-PD_IMAGE_API void ReverseBuf(std::vector<u8> &buf, size_t bpp, int w, int h);
+PD_IMAGE_API void Reverse32(std::vector<u8>& buf, const int& w, const int& h);
+PD_IMAGE_API void ReverseBuf(std::vector<u8>& buf, size_t bpp, int w, int h);
 }  // namespace ImgConvert
 }  // namespace PD
