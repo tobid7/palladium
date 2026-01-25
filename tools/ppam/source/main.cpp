@@ -1,6 +1,6 @@
 /*
 MIT License
-Copyright (c) 2024 - 2025 René Amthor (tobid7)
+Copyright (c) 2024 - 2026 René Amthor (tobid7)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,7 @@ constexpr std::string_view ppa_text = R"(#pragma once
 
 /*
 MIT License
-Copyright (c) 2024 - 2025 René Amthor (tobid7)
+Copyright (c) 2024 - 2026 René Amthor (tobid7)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
