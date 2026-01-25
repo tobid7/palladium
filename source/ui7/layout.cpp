@@ -26,14 +26,14 @@ SOFTWARE.
 
 namespace PD {
 namespace UI7 {
-PD_UI7_API void Layout::CursorInit() { Cursor = fvec2(WorkRect.x, WorkRect.y); }
+PD_API void Layout::CursorInit() { Cursor = fvec2(WorkRect.x, WorkRect.y); }
 
-PD_UI7_API void Layout::SameLine() {
+PD_API void Layout::SameLine() {
   BackupCursor = LastObjSize;
   Cursor = SamelineCursor;
 }
 
-PD_UI7_API void Layout::CursorMove(const fvec2& size) {
+PD_API void Layout::CursorMove(const fvec2& size) {
   LastObjSize = size;
   SamelineCursor = Cursor + fvec2(size.x + IO->ItemSpace.x, 0);
   if (BeforeSameLine.y) {
@@ -48,7 +48,7 @@ PD_UI7_API void Layout::CursorMove(const fvec2& size) {
   MaxPosition = fvec2(std::max(MaxPosition.x, SamelineCursor.x), Cursor.y);
 }
 
-PD_UI7_API bool Layout::ObjectWorkPos(fvec2& movpos) {
+PD_API bool Layout::ObjectWorkPos(fvec2& movpos) {
   if (Scrolling[1]) {
     movpos.y -= ScrollOffset.y;
     if (!Li::Renderer::InBox(
@@ -61,7 +61,7 @@ PD_UI7_API bool Layout::ObjectWorkPos(fvec2& movpos) {
   return false;
 }
 
-PD_UI7_API void Layout::AddObject(Container::Ref obj) {
+PD_API void Layout::AddObject(Container::Ref obj) {
   obj->Init(IO, DrawList);
   obj->SetPos(AlignPosition(Cursor, obj->GetSize(), WorkRect, GetAlignment()));
   obj->Update();
@@ -70,7 +70,7 @@ PD_UI7_API void Layout::AddObject(Container::Ref obj) {
   Objects.push_back(obj);
 }
 
-PD_UI7_API void Layout::AddObjectEx(Container::Ref obj, u32 flags) {
+PD_API void Layout::AddObjectEx(Container::Ref obj, u32 flags) {
   obj->Init(IO, DrawList);
   if (!(flags & UI7LytAdd_NoCursorUpdate)) {
     obj->SetPos(
@@ -90,7 +90,7 @@ PD_UI7_API void Layout::AddObjectEx(Container::Ref obj, u32 flags) {
   }
 }
 
-PD_UI7_API Container::Ref Layout::FindObject(u32 id) {
+PD_API Container::Ref Layout::FindObject(u32 id) {
   for (auto& it : IDObjects) {
     if (it->GetID() == id) {
       return it;
@@ -99,8 +99,8 @@ PD_UI7_API Container::Ref Layout::FindObject(u32 id) {
   return nullptr;
 }
 
-PD_UI7_API fvec2 Layout::AlignPosition(fvec2 pos, fvec2 size, fvec4 area,
-                                       UI7Align alignment) {
+PD_API fvec2 Layout::AlignPosition(fvec2 pos, fvec2 size, fvec4 area,
+                                   UI7Align alignment) {
   vec2 p = pos;
   if (alignment & UI7Align_Center) {
     p.x = (area.x + area.z) * 0.5 - (pos.x - area.x + size.x * 0.5);
@@ -113,7 +113,7 @@ PD_UI7_API fvec2 Layout::AlignPosition(fvec2 pos, fvec2 size, fvec4 area,
   return p;
 }
 
-PD_UI7_API void Layout::Update() {
+PD_API void Layout::Update() {
   if (Size == fvec2(0.f)) {
     Size = fvec2(MaxPosition) + IO->MenuPadding * 2;
   }
@@ -144,14 +144,14 @@ PD_UI7_API void Layout::Update() {
 
 /** SECTION CONTAINERS (STOLEN FROM FORMER MENU) */
 
-PD_UI7_API void Layout::Label(const std::string& label) {
+PD_API void Layout::Label(const std::string& label) {
   // Layout API
   auto r = Label::New(label, IO);
   r->SetClipRect(fvec4(GetPosition(), GetPosition() + GetSize()));
   AddObject(r);
 }
 
-PD_UI7_API bool Layout::Button(const std::string& label) {
+PD_API bool Layout::Button(const std::string& label) {
   bool ret = false;
   u32 id = Strings::FastHash("btn" + label + std::to_string(Objects.size()));
   Container::Ref r = FindObject(id);
@@ -166,7 +166,7 @@ PD_UI7_API bool Layout::Button(const std::string& label) {
   return ret;
 }
 
-PD_UI7_API void Layout::Checkbox(const std::string& label, bool& v) {
+PD_API void Layout::Checkbox(const std::string& label, bool& v) {
   u32 id = Strings::FastHash("cbx" + label + std::to_string(Objects.size()));
   Container::Ref r = FindObject(id);
   if (!r) {
@@ -176,7 +176,7 @@ PD_UI7_API void Layout::Checkbox(const std::string& label, bool& v) {
   AddObject(r);
 }
 
-PD_UI7_API void Layout::Image(Li::Texture::Ref img, fvec2 size, Li::Rect uv) {
+PD_API void Layout::Image(Li::Texture::Ref img, fvec2 size, Li::Rect uv) {
   Container::Ref r = Image::New(img, size, uv);
   AddObject(r);
 }

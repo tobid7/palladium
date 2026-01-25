@@ -25,16 +25,16 @@ SOFTWARE.
  */
 
 #include <pd/core/core.hpp>
+#include <pd/pd_p_api.hpp>
 #include <pd/ui7/containers.hpp>
 #include <pd/ui7/io.hpp>
 #include <pd/ui7/layout.hpp>
-#include <pd/ui7/pd_p_api.hpp>
 
 #include "pd/ui7/container/dragdata.hpp"
 
 namespace PD {
 namespace UI7 {
-class PD_UI7_API Menu {
+class PD_API Menu {
  public:
   Menu(const UI7::ID& id, UI7::IO::Ref pIO);
   ~Menu() {}

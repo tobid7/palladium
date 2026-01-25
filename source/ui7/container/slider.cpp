@@ -29,15 +29,15 @@ namespace PD {
 namespace UI7 {
 // Setup Supported Datatypes (Probably making this Object
 // header only to not care about datatype support)
-template class PD_UI7_API Slider<float>;
-template class PD_UI7_API Slider<int>;
-template class PD_UI7_API Slider<double>;
-template class PD_UI7_API Slider<u8>;
-template class PD_UI7_API Slider<u16>;
-template class PD_UI7_API Slider<u32>;
-template class PD_UI7_API Slider<u64>;
+template class PD_API Slider<float>;
+template class PD_API Slider<int>;
+template class PD_API Slider<double>;
+template class PD_API Slider<u8>;
+template class PD_API Slider<u16>;
+template class PD_API Slider<u32>;
+template class PD_API Slider<u64>;
 template <typename T>
-PD_UI7_API void Slider<T>::HandleInput() {
+PD_API void Slider<T>::HandleInput() {
   /// Ensure to only check input once
   if (inp_done) {
     return;
@@ -66,7 +66,7 @@ PD_UI7_API void Slider<T>::HandleInput() {
 }
 
 template <typename T>
-PD_UI7_API void Slider<T>::Draw() {
+PD_API void Slider<T>::Draw() {
   // Assert(io.get() && list.get(), "Did you run Container::Init correctly?");
   // io->Ren->OnScreen(screen);
   std::string p;
@@ -93,7 +93,7 @@ PD_UI7_API void Slider<T>::Draw() {
 }
 
 template <typename T>
-PD_UI7_API void Slider<T>::Update() {
+PD_API void Slider<T>::Update() {
   // Assert(io.get(), "Did you run Container::Init correctly?");
   //  Probably need to find a faster solution (caching sizes calculated here)
   slw = std::clamp(static_cast<float>(width / max), 3.f, width);

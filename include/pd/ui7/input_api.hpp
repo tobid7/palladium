@@ -26,8 +26,8 @@ SOFTWARE.
 
 #include <pd/core/core.hpp>
 #include <pd/lithium/lithium.hpp>
+#include <pd/pd_p_api.hpp>
 #include <pd/ui7/id.hpp>
-#include <pd/ui7/pd_p_api.hpp>
 
 namespace PD {
 namespace UI7 {

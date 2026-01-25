@@ -37,7 +37,7 @@ SOFTWARE.
 
 namespace PD {
 namespace Li {
-PD_LITHIUM_API void Font::LoadDefaultFont(int id, int pixel_height) {
+PD_API void Font::LoadDefaultFont(int id, int pixel_height) {
 #ifdef PD_LI_INCLUDE_FONTS
   if (id < pNumFonts) {
     auto font = pFontData[id];
@@ -48,7 +48,7 @@ PD_LITHIUM_API void Font::LoadDefaultFont(int id, int pixel_height) {
 #endif
 }
 
-PD_LITHIUM_API void Font::LoadTTF(const std::string& path, int height) {
+PD_API void Font::LoadTTF(const std::string& path, int height) {
   /**
    * Just use LoadFile2Mem which looks way cleaner
    * and helps not having the font loading code twice
@@ -59,15 +59,15 @@ PD_LITHIUM_API void Font::LoadTTF(const std::string& path, int height) {
   LoadTTF(font, height);
 }
 
-PD_LITHIUM_API void Font::pMakeAtlas(bool final, std::vector<u8>& font_tex,
-                                     int texszs, PD::Li::Texture::Ref tex) {
+PD_API void Font::pMakeAtlas(bool final, std::vector<u8>& font_tex, int texszs,
+                             PD::Li::Texture::Ref tex) {
   auto t =
       Gfx::LoadTex(font_tex, texszs, texszs, Texture::RGBA32, Texture::LINEAR);
   tex->CopyFrom(t);
   Textures.push_back(tex);
 }
 
-PD_LITHIUM_API void Font::LoadTTF(const std::vector<u8>& data, int height) {
+PD_API void Font::LoadTTF(const std::vector<u8>& data, int height) {
   /**
    * Some additional Info:
    * Removed the stbtt get bitmapbox as we dont need to place
@@ -183,7 +183,7 @@ PD_LITHIUM_API void Font::LoadTTF(const std::vector<u8>& data, int height) {
   }
 }
 
-PD_LITHIUM_API Font::Codepoint& Font::GetCodepoint(u32 cp) {
+PD_API Font::Codepoint& Font::GetCodepoint(u32 cp) {
   // Check if codepoijt exist or return a static invalid one
   auto res = CodeMap.find(cp);
   if (res == CodeMap.end()) {
@@ -194,7 +194,7 @@ PD_LITHIUM_API Font::Codepoint& Font::GetCodepoint(u32 cp) {
   return res->second;
 }
 
-PD_LITHIUM_API fvec2 Font::GetTextBounds(const std::string& text, float scale) {
+PD_API fvec2 Font::GetTextBounds(const std::string& text, float scale) {
   u32 id = PD::FNV1A32(text);
   if (pTMS.find(id) != pTMS.end()) {
     pTMS[id].TimeStamp = PD::OS::GetTime();
@@ -247,9 +247,9 @@ PD_LITHIUM_API fvec2 Font::GetTextBounds(const std::string& text, float scale) {
   return res;
 }
 
-PD_LITHIUM_API void Font::CmdTextEx(CmdPool& cmds, const fvec2& pos, u32 color,
-                                    float scale, const std::string& text,
-                                    LiTextFlags flags, const fvec2& box) {
+PD_API void Font::CmdTextEx(CmdPool& cmds, const fvec2& pos, u32 color,
+                            float scale, const std::string& text,
+                            LiTextFlags flags, const fvec2& box) {
   fvec2 off;
   float cfs = (DefaultPixelHeight * scale) / (float)PixelHeight;
   float lh = (float)PixelHeight * cfs;
@@ -336,9 +336,8 @@ PD_LITHIUM_API void Font::CmdTextEx(CmdPool& cmds, const fvec2& pos, u32 color,
   }
 }
 
-PD_LITHIUM_API std::string Font::pWrapText(const std::string& txt, float scale,
-                                           const PD::fvec2& max,
-                                           PD::fvec2& dim) {
+PD_API std::string Font::pWrapText(const std::string& txt, float scale,
+                                   const PD::fvec2& max, PD::fvec2& dim) {
   u32 id = PD::FNV1A32(txt);
   if (pTMS.find(id) != pTMS.end()) {
     if (pTMS[id].Text.size()) {
@@ -373,9 +372,8 @@ PD_LITHIUM_API std::string Font::pWrapText(const std::string& txt, float scale,
   return ret;
 }
 
-PD_LITHIUM_API std::string Font::pShortText(const std::string& txt, float scale,
-                                            const PD::fvec2& max,
-                                            PD::fvec2& dim) {
+PD_API std::string Font::pShortText(const std::string& txt, float scale,
+                                    const PD::fvec2& max, PD::fvec2& dim) {
   u32 id = PD::FNV1A32(txt);
   if (pTMS.find(id) != pTMS.end()) {
     if (pTMS[id].Text.size()) {
@@ -417,7 +415,7 @@ PD_LITHIUM_API std::string Font::pShortText(const std::string& txt, float scale,
   return ret;
 }
 
-PD_LITHIUM_API void Font::CleanupTMS() {
+PD_API void Font::CleanupTMS() {
   u64 t = PD::OS::GetTime();
   for (auto it = pTMS.begin(); it != pTMS.end();) {
     if (t - it->second.TimeStamp > 1000) {

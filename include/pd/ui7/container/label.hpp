@@ -30,7 +30,7 @@ namespace UI7 {
 /**
  * Label [Text] Object
  */
-class PD_UI7_API Label : public Container {
+class PD_API Label : public Container {
  public:
   /**
    * Constructor for Label Object

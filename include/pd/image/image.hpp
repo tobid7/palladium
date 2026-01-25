@@ -25,10 +25,10 @@ SOFTWARE.
  */
 
 #include <pd/core/core.hpp>
-#include <pd/image/pd_p_api.hpp>
+#include <pd/pd_p_api.hpp>
 
 namespace PD {
-class PD_IMAGE_API Image {
+class PD_API Image {
  public:
   enum Format {
     RGBA,    // bpp == 4

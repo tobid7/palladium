@@ -25,17 +25,17 @@ SOFTWARE.
  */
 
 #include <pd/core/core.hpp>
+#include <pd/pd_p_api.hpp>
 #include <pd/ui7/container/container.hpp>
 #include <pd/ui7/container/dragdata.hpp>
 #include <pd/ui7/container/slider.hpp>
 #include <pd/ui7/flags.hpp>
 #include <pd/ui7/input_api.hpp>
-#include <pd/ui7/pd_p_api.hpp>
 #include <pd/ui7/theme.hpp>
 
 namespace PD {
 namespace UI7 {
-class PD_UI7_API Layout {
+class PD_API Layout {
  public:
   Layout(const ID& id, IO::Ref io) : ID(id) {
     this->IO = io;

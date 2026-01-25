@@ -23,15 +23,15 @@ SOFTWARE.
 
 #include <pd/ui7/ui7.hpp>
 
+#include "pd/pd_p_api.hpp"
 #include "pd/ui7/flags.hpp"
-#include "pd/ui7/pd_p_api.hpp"
 
 #define UI7DHX32(x) std::format("{}: {:#08x}", #x, x)
 #define UI7DTF(x) PD::Strings::FormatNanos(x)
 
 namespace PD {
 namespace UI7 {
-PD_UI7_API std::string GetVersion(bool show_build) {
+PD_API std::string GetVersion(bool show_build) {
   std::stringstream s;
   s << ((UI7_VERSION >> 24) & 0xFF) << ".";
   s << ((UI7_VERSION >> 16) & 0xFF) << ".";
@@ -40,19 +40,19 @@ PD_UI7_API std::string GetVersion(bool show_build) {
   return s.str();
 }
 
-PD_UI7_API void Context::AddViewPort(const ID& id, const ivec4& vp) {
+PD_API void Context::AddViewPort(const ID& id, const ivec4& vp) {
   pIO->AddViewPort(id, vp);
 }
 
-PD_UI7_API void Context::UseViewPort(const ID& id) {
+PD_API void Context::UseViewPort(const ID& id) {
   if (!pIO->ViewPorts.count(id)) {
     return;
   }
   pIO->CurrentViewPort = pIO->ViewPorts[id]->GetSize();
 }
 
-PD_UI7_API Menu::Ref Context::BeginMenu(const ID& id, UI7MenuFlags flags,
-                                        bool* pShow) {
+PD_API Menu::Ref Context::BeginMenu(const ID& id, UI7MenuFlags flags,
+                                    bool* pShow) {
   if (pCurrent) {
     std::cout << "[UI7] Error: You are already in " << pCurrent->pID.GetName()
               << " Menu" << std::endl;
@@ -82,7 +82,7 @@ PD_UI7_API Menu::Ref Context::BeginMenu(const ID& id, UI7MenuFlags flags,
   return pCurrent;
 }
 
-PD_UI7_API void Context::EndMenu() {
+PD_API void Context::EndMenu() {
   /**
    * Currently it would be a better wy to handle menus as follows
    *
@@ -104,7 +104,7 @@ PD_UI7_API void Context::EndMenu() {
   // pIO->InputHandler->CurrentMenu = 0;
 }
 
-PD_UI7_API void Context::Update() {
+PD_API void Context::Update() {
   /**
    * Cause Commenting each line looks carbage...
    * This function simply clears the FinalDrawList, Searches for Menu ID's in
@@ -154,7 +154,7 @@ PD_UI7_API void Context::Update() {
   pIO->FDL->pPool.Sort();
 }
 
-PD_UI7_API void Context::AboutMenu(bool* show) {
+PD_API void Context::AboutMenu(bool* show) {
   if (auto m = BeginMenu("About UI7", UI7MenuFlags_Scrolling, show)) {
     m->Label("Palladium UI7 " + GetVersion());
     m->Separator();
@@ -176,7 +176,7 @@ PD_UI7_API void Context::AboutMenu(bool* show) {
   }
 }
 
-PD_UI7_API void Context::MetricsMenu(bool* show) {
+PD_API void Context::MetricsMenu(bool* show) {
   if (auto m = BeginMenu("UI7 Metrics", UI7MenuFlags_Scrolling, show)) {
     m->Label("Palladium - UI7 " + GetVersion());
     m->Separator();
@@ -301,7 +301,7 @@ PD_UI7_API void Context::MetricsMenu(bool* show) {
   }
 }
 
-PD_UI7_API void UI7::Context::StyleEditor(bool* show) {
+PD_API void UI7::Context::StyleEditor(bool* show) {
   if (auto m = BeginMenu("UI7 Style Editor", UI7MenuFlags_Scrolling, show)) {
     m->Label("Palladium - UI7 " + GetVersion() + " Style Editor");
     m->Separator();

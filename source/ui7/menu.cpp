@@ -34,7 +34,7 @@ Menu::Menu(const ID& id, IO::Ref io) : pIO(io), pID(id) {
   pLayout->CursorInit();
 }
 
-PD_UI7_API void Menu::Label(const std::string& label) {
+PD_API void Menu::Label(const std::string& label) {
   // Layout API
   auto r = Label::New(label, pIO);
   r->SetClipRect(fvec4(pLayout->GetPosition(),
@@ -42,7 +42,7 @@ PD_UI7_API void Menu::Label(const std::string& label) {
   pLayout->AddObject(r);
 }
 
-PD_UI7_API bool Menu::Button(const std::string& label) {
+PD_API bool Menu::Button(const std::string& label) {
   bool ret = false;
   u32 id = Strings::FastHash("btn" + label +
                              std::to_string(pLayout->Objects.size()));
@@ -58,7 +58,7 @@ PD_UI7_API bool Menu::Button(const std::string& label) {
   return ret;
 }
 
-PD_UI7_API void Menu::Checkbox(const std::string& label, bool& v) {
+PD_API void Menu::Checkbox(const std::string& label, bool& v) {
   u32 id = Strings::FastHash("cbx" + label +
                              std::to_string(pLayout->Objects.size()));
   Container::Ref r = pLayout->FindObject(id);
@@ -69,12 +69,12 @@ PD_UI7_API void Menu::Checkbox(const std::string& label, bool& v) {
   pLayout->AddObject(r);
 }
 
-PD_UI7_API void Menu::Image(Li::Texture::Ref img, fvec2 size, Li::Rect uv) {
+PD_API void Menu::Image(Li::Texture::Ref img, fvec2 size, Li::Rect uv) {
   Container::Ref r = Image::New(img, size, uv);
   pLayout->AddObject(r);
 }
 
-PD_UI7_API void Menu::ColorEdit(const std::string& label, u32& clr) {
+PD_API void Menu::ColorEdit(const std::string& label, u32& clr) {
   u32 id = Strings::FastHash("drd" + label);
   Container::Ref r = pLayout->FindObject(id);
   if (!r) {
@@ -84,7 +84,7 @@ PD_UI7_API void Menu::ColorEdit(const std::string& label, u32& clr) {
   pLayout->AddObject(r);
 }
 
-PD_UI7_API void Menu::Separator() {
+PD_API void Menu::Separator() {
   // Dynamic Objects are very simple...
   Container::Ref r = DynObj::New(
       [=, this](UI7::IO::Ref io, Li::DrawList::Ref l, UI7::Container* self) {
@@ -98,7 +98,7 @@ PD_UI7_API void Menu::Separator() {
   pLayout->AddObject(r);
 }
 
-PD_UI7_API void Menu::SeparatorText(const std::string& label) {
+PD_API void Menu::SeparatorText(const std::string& label) {
   // Also note to use [=] instead of [&] to not undefined access label
   Container::Ref r = DynObj::New([=, this](UI7::IO::Ref io, Li::DrawList::Ref l,
                                            UI7::Container* self) {
@@ -127,7 +127,7 @@ PD_UI7_API void Menu::SeparatorText(const std::string& label) {
       pIO->Font->PixelHeight * pIO->FontScale));
   pLayout->AddObject(r);
 }
-PD_UI7_API void Menu::HandleFocus() {
+PD_API void Menu::HandleFocus() {
   // Check if menu can be focused for Selective Menu Input API
   vec4 newarea = fvec4(pLayout->Pos, pLayout->Size);
   if (!pIsOpen) {
@@ -146,7 +146,7 @@ PD_UI7_API void Menu::HandleFocus() {
 }
 
 /** Todo: (func name is self describing) */
-PD_UI7_API void Menu::HandleScrolling() {
+PD_API void Menu::HandleScrolling() {
   if (Flags & UI7MenuFlags_VtScrolling) {
     bool allowed =
         pLayout->MaxPosition.y > (pLayout->WorkRect.w - pLayout->WorkRect.y);
@@ -184,7 +184,7 @@ PD_UI7_API void Menu::HandleScrolling() {
   }
 }
 
-PD_UI7_API void Menu::HandleTitlebarActions() {
+PD_API void Menu::HandleTitlebarActions() {
   // Collapse
   if (!(Flags & UI7MenuFlags_NoCollapse)) {
     vec2 cpos = pLayout->Pos + pIO->FramePadding;
@@ -247,7 +247,7 @@ PD_UI7_API void Menu::HandleTitlebarActions() {
   }
 }
 
-PD_UI7_API void Menu::DrawBaseLayout() {
+PD_API void Menu::DrawBaseLayout() {
   if (pIsOpen) {
     /** Resize Sym (Render on Top of Everything) */
     if (!(Flags & UI7MenuFlags_NoResize)) {
@@ -348,7 +348,7 @@ PD_UI7_API void Menu::DrawBaseLayout() {
   }
 }
 
-PD_UI7_API void Menu::Update() {
+PD_API void Menu::Update() {
   HandleFocus();
   if (pLayout->Size == fvec2(0.f) || Flags & UI7MenuFlags_AlwaysAutoSize) {
     pLayout->Size = fvec2(pLayout->MaxPosition) + pIO->MenuPadding * 2;
@@ -369,7 +369,7 @@ PD_UI7_API void Menu::Update() {
   }
 }
 
-PD_UI7_API bool Menu::BeginTreeNode(const ID& id) {
+PD_API bool Menu::BeginTreeNode(const ID& id) {
   // As of some notes this should work:
   auto n = pTreeNodes.find(id);
   if (n == pTreeNodes.end()) {
@@ -418,7 +418,7 @@ PD_UI7_API bool Menu::BeginTreeNode(const ID& id) {
   return n->second;
 }
 
-PD_UI7_API void UI7::Menu::EndTreeNode() {
+PD_API void UI7::Menu::EndTreeNode() {
   pLayout->InitialCursorOffset.x -= 10.f;
   pLayout->Cursor.x -= 10.f;
   if (pLayout->InitialCursorOffset.x < 0.f) {

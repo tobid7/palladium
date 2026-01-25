@@ -35,28 +35,28 @@ namespace IO {
  * @param path Path to the File
  * @return 8Bit FileBuffer
  */
-PD_CORE_API std::vector<u8> LoadFile2Mem(const std::string& path);
+PD_API std::vector<u8> LoadFile2Mem(const std::string& path);
 /**
  * Load a File into a std::string
  * @param path Path to the File
  * @return std::string file content
  */
-PD_CORE_API std::string LoadFile2Str(const std::string& path);
+PD_API std::string LoadFile2Str(const std::string& path);
 /**
  * Hash a 8Bit Memory Buffer
  * @param data 8Bit input Buffer
  * @return 32Bit Hash
  */
-PD_CORE_API u32 HashMemory(const std::vector<u8>& data);
+PD_API u32 HashMemory(const std::vector<u8>& data);
 /**
  * Function to decrompress RLE buffer
  * @param data Data buffer to decompress
  */
-PD_CORE_API void DecompressRLE(std::vector<u8>& data);
+PD_API void DecompressRLE(std::vector<u8>& data);
 /**
  * Function to compress data with RLE Algorithm
  * @param data Data buf
  */
-PD_CORE_API void CompressRLE(std::vector<u8>& data);
+PD_API void CompressRLE(std::vector<u8>& data);
 }  // namespace IO
 }  // namespace PD

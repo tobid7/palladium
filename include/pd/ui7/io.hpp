@@ -25,14 +25,14 @@ SOFTWARE.
  */
 
 #include <pd/core/core.hpp>
+#include <pd/pd_p_api.hpp>
 #include <pd/ui7/input_api.hpp>
-#include <pd/ui7/pd_p_api.hpp>
 #include <pd/ui7/theme.hpp>
 #include <pd/ui7/viewport.hpp>
 
 namespace PD {
 namespace UI7 {
-class PD_UI7_API IO {
+class PD_API IO {
  public:
   IO() {
     Time = Timer::New();

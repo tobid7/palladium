@@ -25,15 +25,15 @@ SOFTWARE.
  */
 
 #include <pd/drivers/drivers.hpp>
-#include <pd/lithium/pd_p_api.hpp>
 #include <pd/lithium/rect.hpp>
+#include <pd/pd_p_api.hpp>
 
 namespace PD {
 namespace Li {
 /**
  * Static Class Render Setup Functions
  */
-class PD_LITHIUM_API Renderer {
+class PD_API Renderer {
  public:
   Renderer() = default;
   ~Renderer() = default;

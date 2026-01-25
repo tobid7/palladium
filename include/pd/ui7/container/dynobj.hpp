@@ -36,7 +36,7 @@ namespace UI7 {
  * This only means that InPressed is responding the info in
  * the next frame
  */
-class PD_UI7_API DynObj : public Container {
+class PD_API DynObj : public Container {
  public:
   /**
    * Button Object constructor

@@ -25,7 +25,7 @@ SOFTWARE.
 #include <pd/core/color.hpp>
 
 namespace PD {
-PD_CORE_API std::string Color::Hex(bool rgba) const {
+PD_API std::string Color::Hex(bool rgba) const {
   /** Need to int cast (so it is used as num and not char...) */
   std::stringstream s;
   s << "#";

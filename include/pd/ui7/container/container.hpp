@@ -24,8 +24,8 @@ SOFTWARE.
  */
 
 #include <pd/core/core.hpp>
+#include <pd/pd_p_api.hpp>
 #include <pd/ui7/io.hpp>
-#include <pd/ui7/pd_p_api.hpp>
 
 namespace PD {
 namespace UI7 {
@@ -33,7 +33,7 @@ namespace UI7 {
  * Container base class all Objects are based on
  * @note this class can be used to create custom Objects as well
  */
-class PD_UI7_API Container {
+class PD_API Container {
  public:
   Container() = default;
   /**

@@ -66,6 +66,7 @@ set(PD_SOURCES
 
 if(${PD_BUILD_SHARED})
     add_library(palladium SHARED ${PD_SOURCES})
+    target_compile_definitions(palladium PRIVATE -DPD_BUILD_SHARED)
 else()
     add_library(palladium STATIC ${PD_SOURCES})
 endif()
@@ -85,8 +86,6 @@ file(GLOB_RECURSE PD_FMTFILES CONFIGURE_DEPENDS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/pd/lithium/*.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/pd/ui7/*.hpp
 )
-
-message(STATUS "Files to format: ${PD_FMTFILES}")
 
 add_custom_target(pd-clang-format
     COMMAND ${CLANG_FORMAT} --style=file -i ${PD_FMTFILES}

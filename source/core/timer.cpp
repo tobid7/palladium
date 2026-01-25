@@ -26,25 +26,25 @@ SOFTWARE.
 #include <pd/drivers/drivers.hpp>
 
 namespace PD {
-PD_CORE_API Timer::Timer(bool autostart) {
+PD_API Timer::Timer(bool autostart) {
   pIsRunning = autostart;
   Reset();
 }
 
-PD_CORE_API void Timer::Reset() {
+PD_API void Timer::Reset() {
   pStart = OS::GetTime();
   pNow = pStart;
 }
 
-PD_CORE_API void Timer::Update() {
+PD_API void Timer::Update() {
   if (pIsRunning) {
     pNow = OS::GetTime();
   }
 }
 
-PD_CORE_API void Timer::Pause() { pIsRunning = false; }
-PD_CORE_API void Timer::Rseume() { pIsRunning = true; }
-PD_CORE_API bool Timer::IsRunning() const { return pIsRunning; }
-PD_CORE_API u64 Timer::Get() { return pNow - pStart; }
-PD_CORE_API double Timer::GetSeconds() { return (double)Get() / 1000.0; }
+PD_API void Timer::Pause() { pIsRunning = false; }
+PD_API void Timer::Rseume() { pIsRunning = true; }
+PD_API bool Timer::IsRunning() const { return pIsRunning; }
+PD_API u64 Timer::Get() { return pNow - pStart; }
+PD_API double Timer::GetSeconds() { return (double)Get() / 1000.0; }
 }  // namespace PD

@@ -26,34 +26,33 @@ SOFTWARE.
 
 namespace PD {
 namespace Li {
-PD_LITHIUM_API bool Renderer::InBox(const fvec2& pos, const fvec2& szs,
-                                    const fvec4& rect) {
+PD_API bool Renderer::InBox(const fvec2& pos, const fvec2& szs,
+                            const fvec4& rect) {
   return (pos.x + szs.x >= rect.x && pos.y + szs.y >= rect.y &&
           pos.x <= rect.z && pos.y <= rect.w);
 }
 
-PD_LITHIUM_API bool Renderer::InBox(const fvec2& pos, const fvec4& rect) {
+PD_API bool Renderer::InBox(const fvec2& pos, const fvec4& rect) {
   return (pos.x > rect.x && pos.x < rect.x + rect.z && pos.y > rect.y &&
           pos.y < rect.y + rect.w);
 }
 
-PD_LITHIUM_API bool Renderer::InBox(const fvec2& alpha, const fvec2& bravo,
-                                    const fvec2& charlie, const fvec4& rect) {
+PD_API bool Renderer::InBox(const fvec2& alpha, const fvec2& bravo,
+                            const fvec2& charlie, const fvec4& rect) {
   return ((alpha.x < rect.z && bravo.x < rect.z && charlie.x < rect.z) ||
           (alpha.y < rect.w && bravo.y < rect.w && charlie.y < rect.w) ||
           (alpha.x > 0 && bravo.x > 0 && charlie.x > 0) ||
           (alpha.y > 0 && bravo.y > 0 && charlie.y > 0));
 }
 
-PD_LITHIUM_API void Renderer::RotateCorner(fvec2& pos, float sinus,
-                                           float cosinus) {
+PD_API void Renderer::RotateCorner(fvec2& pos, float sinus, float cosinus) {
   float x = pos.x * cosinus - pos.y * sinus;
   float y = pos.y * cosinus - pos.x * sinus;
   pos = fvec2(x, y);
 }
 
-PD_LITHIUM_API Rect Renderer::PrimRect(const fvec2& pos, const fvec2& size,
-                                       float angle) {
+PD_API Rect Renderer::PrimRect(const fvec2& pos, const fvec2& size,
+                               float angle) {
   fvec2 c = size * 0.5f;  // Center
   fvec2 corner[4] = {
       fvec2(-c.x, -c.y),
@@ -76,8 +75,7 @@ PD_LITHIUM_API Rect Renderer::PrimRect(const fvec2& pos, const fvec2& size,
               corner[3] + pos + c);
 }
 
-PD_LITHIUM_API Rect Renderer::PrimLine(const fvec2& a, const fvec2& b,
-                                       int thickness) {
+PD_API Rect Renderer::PrimLine(const fvec2& a, const fvec2& b, int thickness) {
   // Using the vec maths api makes the code as short as it is
   vec2 dir = a - b;
   float len = dir.Len();
@@ -88,8 +86,8 @@ PD_LITHIUM_API Rect Renderer::PrimLine(const fvec2& a, const fvec2& b,
   return Rect(a + off, b + off, a - off, b - off);
 }
 
-PD_LITHIUM_API void Renderer::CmdQuad(Command::Ref cmd, const Rect& quad,
-                                      const Rect& uv, u32 color) {
+PD_API void Renderer::CmdQuad(Command::Ref cmd, const Rect& quad,
+                              const Rect& uv, u32 color) {
   cmd->AddIdx(0).AddIdx(1).AddIdx(2);
   cmd->AddIdx(0).AddIdx(2).AddIdx(3);
   cmd->AddVtx(Vertex(quad.BotRight(), uv.BotRight(), color));
@@ -98,9 +96,8 @@ PD_LITHIUM_API void Renderer::CmdQuad(Command::Ref cmd, const Rect& quad,
   cmd->AddVtx(Vertex(quad.BotLeft(), uv.BotLeft(), color));
 }
 
-PD_LITHIUM_API void Renderer::CmdTriangle(Command::Ref cmd, const fvec2 a,
-                                          const fvec2 b, const fvec2 c,
-                                          u32 clr) {
+PD_API void Renderer::CmdTriangle(Command::Ref cmd, const fvec2 a,
+                                  const fvec2 b, const fvec2 c, u32 clr) {
   cmd->AddIdx(2).AddIdx(1).AddIdx(0);
   cmd->AddVtx(Vertex(a, vec2(0.f, 1.f), clr));
   cmd->AddVtx(Vertex(b, vec2(1.f, 1.f), clr));
@@ -110,9 +107,9 @@ PD_LITHIUM_API void Renderer::CmdTriangle(Command::Ref cmd, const fvec2 a,
 // TODO: Don't render OOS (Probably make it with a define as it
 // would probably be faster to render out of screen than checking if
 // it could be skipped)
-PD_LITHIUM_API void Renderer::CmdConvexPolyFilled(
-    Command::Ref cmd, const std::vector<fvec2>& points, u32 clr,
-    Texture::Ref tex) {
+PD_API void Renderer::CmdConvexPolyFilled(Command::Ref cmd,
+                                          const std::vector<fvec2>& points,
+                                          u32 clr, Texture::Ref tex) {
   if (points.size() < 3 || tex == nullptr) {
     return;  // Need at least three points
   }

@@ -36,12 +36,12 @@ namespace BitUtil {
  * @param v 32 bit unsigned int
  * @return true if its a single bit number
  */
-PD_CORE_API bool IsSingleBit(u32 v);
+PD_API bool IsSingleBit(u32 v);
 /**
  * Get the Next Power of two Number
  * @param v Current Number
  * @return Next Number thats a Pow of 2
  */
-PD_CORE_API u32 GetPow2(u32 v);
+PD_API u32 GetPow2(u32 v);
 }  // namespace BitUtil
 }  // namespace PD

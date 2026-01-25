@@ -25,7 +25,7 @@ SOFTWARE.
 
 namespace PD {
 namespace UI7 {
-PD_UI7_API void Label::Draw() {
+PD_API void Label::Draw() {
   // Assert(io.get() && list.get(), "Did you run Container::Init correctly?");
   // io->Ren->OnScreen(screen);
   if (pCLipRectUsed) {
@@ -38,7 +38,7 @@ PD_UI7_API void Label::Draw() {
   }
 }
 
-PD_UI7_API void Label::Update() {
+PD_API void Label::Update() {
   /**
    * Todo: This is a hacky workaround
    * Needs proper optimisation

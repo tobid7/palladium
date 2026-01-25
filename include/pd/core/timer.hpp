@@ -29,7 +29,7 @@ namespace PD {
 /**
  * Timer class
  */
-class PD_CORE_API Timer {
+class PD_API Timer {
  public:
   /**
    * Constructor

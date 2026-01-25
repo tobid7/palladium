@@ -24,9 +24,9 @@ SOFTWARE.
  */
 
 #include <pd/core/core.hpp>
-#include <pd/lithium/pd_p_api.hpp>
 #include <pd/lithium/texture.hpp>
 #include <pd/lithium/vertex.hpp>
+#include <pd/pd_p_api.hpp>
 
 namespace PD {
 namespace Li {
@@ -72,7 +72,7 @@ class Command {
   TexAddress Tex;
 };
 
-class PD_LITHIUM_API CmdPool {
+class PD_API CmdPool {
  public:
   CmdPool() {}
   ~CmdPool() {}

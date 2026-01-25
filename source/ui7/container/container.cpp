@@ -25,7 +25,7 @@ SOFTWARE.
 
 namespace PD {
 namespace UI7 {
-PD_UI7_API void Container::HandleScrolling(fvec2 scrolling, fvec4 viewport) {
+PD_API void Container::HandleScrolling(fvec2 scrolling, fvec4 viewport) {
   if (last_use != 0 && OS::GetTime() - last_use > 5000) {
     rem = true;
   }
@@ -37,7 +37,7 @@ PD_UI7_API void Container::HandleScrolling(fvec2 scrolling, fvec4 viewport) {
             viewport.y + viewport.w));
 }
 
-PD_UI7_API void Container::HandleInternalInput() {
+PD_API void Container::HandleInternalInput() {
   /** Requires Handle Scrolling First */
 }
 }  // namespace UI7

@@ -33,7 +33,7 @@ SOFTWARE.
 #include <pd/image/img_convert.hpp>
 
 namespace PD {
-PD_IMAGE_API void Image::Load(const std::string& path) {
+PD_API void Image::Load(const std::string& path) {
   u8* img = pdi_load(path.c_str(), &pWidth, &pHeight, &fmt, 4);
   if (fmt == 3) {
     pdi_image_free(img);
@@ -47,7 +47,7 @@ PD_IMAGE_API void Image::Load(const std::string& path) {
     pdi_image_free(img);
   }
 }
-PD_IMAGE_API void Image::Load(const std::vector<u8>& buf) {
+PD_API void Image::Load(const std::vector<u8>& buf) {
   u8* img =
       pdi_load_from_memory(buf.data(), buf.size(), &pWidth, &pHeight, &fmt, 4);
   if (fmt == 3) {
@@ -63,8 +63,7 @@ PD_IMAGE_API void Image::Load(const std::vector<u8>& buf) {
     pFmt = RGBA;
   }
 }
-PD_IMAGE_API void Image::Copy(const std::vector<u8>& buf, int w, int h,
-                              int bpp) {
+PD_API void Image::Copy(const std::vector<u8>& buf, int w, int h, int bpp) {
   this->fmt = bpp;
   if (buf.size() != (size_t)w * h * bpp) {
     // Size Error
@@ -76,7 +75,7 @@ PD_IMAGE_API void Image::Copy(const std::vector<u8>& buf, int w, int h,
   }
 }
 
-PD_IMAGE_API void Image::FlipHorizontal() {
+PD_API void Image::FlipHorizontal() {
   /**
    * Dont know if i am brain dead but i think this code
    * should Horizpntal flip an image
@@ -96,7 +95,7 @@ PD_IMAGE_API void Image::FlipHorizontal() {
   }
 }
 
-PD_IMAGE_API void Image::FlipVertical() {
+PD_API void Image::FlipVertical() {
   /**
    * Dont know if i am brain dead but i think this code
    * should Vertical flip an image
@@ -116,7 +115,7 @@ PD_IMAGE_API void Image::FlipVertical() {
   }
 }
 
-PD_IMAGE_API void Image::Convert(Image::Ref img, Image::Format dst) {
+PD_API void Image::Convert(Image::Ref img, Image::Format dst) {
   if (img->pFmt == dst) {
     return;
   } else if (img->pFmt == Image::RGB && dst == Image::BGR) {
@@ -163,7 +162,7 @@ PD_IMAGE_API void Image::Convert(Image::Ref img, Image::Format dst) {
   }
 }
 
-PD_IMAGE_API int Image::Fmt2Bpp(Format fmt) {
+PD_API int Image::Fmt2Bpp(Format fmt) {
   switch (fmt) {
     case RGBA:
     case ABGR:
@@ -183,9 +182,9 @@ PD_IMAGE_API int Image::Fmt2Bpp(Format fmt) {
   }
 }
 
-PD_IMAGE_API void Image::ReTile(Image::Ref img,
-                                std::function<u32(int x, int y, int w)> src,
-                                std::function<u32(int x, int y, int w)> dst) {
+PD_API void Image::ReTile(Image::Ref img,
+                          std::function<u32(int x, int y, int w)> src,
+                          std::function<u32(int x, int y, int w)> dst) {
   std::vector<PD::u8> cpy = img->pBuffer;
   /** could use fmt here but for 565 that woulnt work as it is not supported by
    * file loading where fmt is used */

@@ -42,7 +42,7 @@ SOFTWARE.
 #include <vector>
 
 /** Dynamic Lib loading */
-#include <pd/core/pd_p_api.hpp>
+#include <pd/pd_p_api.hpp>
 
 /** Memory Management */
 

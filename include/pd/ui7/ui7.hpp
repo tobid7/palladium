@@ -25,9 +25,9 @@ SOFTWARE.
  */
 
 #include <pd/core/core.hpp>
+#include <pd/pd_p_api.hpp>
 #include <pd/ui7/io.hpp>
 #include <pd/ui7/menu.hpp>
-#include <pd/ui7/pd_p_api.hpp>
 
 #include "pd/ui7/flags.hpp"
 
@@ -46,9 +46,9 @@ namespace UI7 {
  * @param show_build Show build num (mostly unused)
  * @return Version String (1.0.0-1 for example)
  */
-PD_UI7_API std::string GetVersion(bool show_build = false);
+PD_API std::string GetVersion(bool show_build = false);
 /** Base Context for UI7 */
-class PD_UI7_API Context {
+class PD_API Context {
  public:
   Context() { pIO = IO::New(); }
   ~Context() = default;

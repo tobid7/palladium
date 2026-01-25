@@ -1,6 +1,6 @@
 #include <pd/lithium/command.hpp>
 
-PD_LITHIUM_API PD::Li::Command::Ref PD::Li::CmdPool::NewCmd() {
+PD_API PD::Li::Command::Ref PD::Li::CmdPool::NewCmd() {
   if (pPoolIdx >= pPool.size()) {
     Resize(pPool.size() + 128);
   }
@@ -10,18 +10,16 @@ PD_LITHIUM_API PD::Li::Command::Ref PD::Li::CmdPool::NewCmd() {
   return nu;
 }
 
-PD_LITHIUM_API void PD::Li::CmdPool::Init(size_t initial_size) {
-  Resize(initial_size);
-}
+PD_API void PD::Li::CmdPool::Init(size_t initial_size) { Resize(initial_size); }
 
-PD_LITHIUM_API void PD::Li::CmdPool::Deinit() {
+PD_API void PD::Li::CmdPool::Deinit() {
   for (auto it : pPool) {
     Command::Delete(it);
   }
   pPool.clear();
 }
 
-PD_LITHIUM_API void PD::Li::CmdPool::Resize(size_t nulen) {
+PD_API void PD::Li::CmdPool::Resize(size_t nulen) {
   if (nulen <= pPool.size()) {
     return;  // no idea yet
   }
@@ -32,7 +30,7 @@ PD_LITHIUM_API void PD::Li::CmdPool::Resize(size_t nulen) {
   }
 }
 
-PD_LITHIUM_API void PD::Li::CmdPool::Reset() {
+PD_API void PD::Li::CmdPool::Reset() {
   for (u32 i = 0; i < pPoolIdx; i++) {
     pPool[i]->Clear();
   }
@@ -47,12 +45,12 @@ PD::Li::Command::Ref PD::Li::CmdPool::GetCmd(size_t idx) { return pPool[idx]; }
 size_t PD::Li::CmdPool::Size() const { return pPoolIdx; }
 size_t PD::Li::CmdPool::Cap() const { return pPool.size(); }
 
-PD_LITHIUM_API void PD::Li::CmdPool::Merge(CmdPool& p) {
+PD_API void PD::Li::CmdPool::Merge(CmdPool& p) {
   Copy(p);
   p.Reset();
 }
 
-PD_LITHIUM_API void PD::Li::CmdPool::Copy(CmdPool& p) {
+PD_API void PD::Li::CmdPool::Copy(CmdPool& p) {
   if (pPoolIdx + p.Size() > pPool.size()) {
     Resize(pPoolIdx + p.Size());
   }
@@ -64,13 +62,13 @@ PD_LITHIUM_API void PD::Li::CmdPool::Copy(CmdPool& p) {
   }
 }
 
-PD_LITHIUM_API void PD::Li::CmdPool::Sort() {
+PD_API void PD::Li::CmdPool::Sort() {
   if (pPoolIdx < 2) return;
   std::sort(begin(), end(), pTheOrder);
 }
 
-PD_LITHIUM_API bool PD::Li::CmdPool::pTheOrder(const Command::Ref& a,
-                                               const Command::Ref& b) {
+PD_API bool PD::Li::CmdPool::pTheOrder(const Command::Ref& a,
+                                       const Command::Ref& b) {
   if (a->Layer == b->Layer) {
     if (a->Tex == b->Tex) {
       return a->Index < b->Index;

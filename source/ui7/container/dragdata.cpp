@@ -29,15 +29,15 @@ namespace PD {
 namespace UI7 {
 // Setup Supported Datatypes (Probably making this Object
 // header only to not care about datatype support)
-template class PD_UI7_API DragData<float>;
-template class PD_UI7_API DragData<int>;
-template class PD_UI7_API DragData<double>;
-template class PD_UI7_API DragData<u8>;
-template class PD_UI7_API DragData<u16>;
-template class PD_UI7_API DragData<u32>;
-template class PD_UI7_API DragData<u64>;
+template class PD_API DragData<float>;
+template class PD_API DragData<int>;
+template class PD_API DragData<double>;
+template class PD_API DragData<u8>;
+template class PD_API DragData<u16>;
+template class PD_API DragData<u32>;
+template class PD_API DragData<u64>;
 template <typename T>
-PD_UI7_API void DragData<T>::HandleInput() {
+PD_API void DragData<T>::HandleInput() {
   /// Ensure to only check input once
   if (inp_done) {
     return;
@@ -69,7 +69,7 @@ PD_UI7_API void DragData<T>::HandleInput() {
 }
 
 template <typename T>
-PD_UI7_API void DragData<T>::Draw() {
+PD_API void DragData<T>::Draw() {
   // Assert(io.get() && list.get(), "Did you run Container::Init correctly?");
   // io->Ren->OnScreen(screen);
   float off_x = 0.f;
@@ -97,7 +97,7 @@ PD_UI7_API void DragData<T>::Draw() {
 }
 
 template <typename T>
-PD_UI7_API void DragData<T>::Update() {
+PD_API void DragData<T>::Update() {
   // Assert(io.get(), "Did you run Container::Init correctly?");
   //  Probably need to find a faster solution (caching sizes calculated here)
   float off_x = 0;

@@ -32,7 +32,7 @@ namespace UI7 {
 /**
  * Color Editor (Creating a PopUP when clicking)
  */
-class PD_UI7_API ColorEdit : public Container {
+class PD_API ColorEdit : public Container {
  public:
   /**
    * Constructor

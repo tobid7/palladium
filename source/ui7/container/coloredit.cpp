@@ -26,7 +26,7 @@ SOFTWARE.
 
 namespace PD {
 namespace UI7 {
-PD_UI7_API void ColorEdit::HandleInput() {
+PD_API void ColorEdit::HandleInput() {
   /// Ensure to only check input once
   if (inp_done) {
     return;
@@ -42,7 +42,7 @@ PD_UI7_API void ColorEdit::HandleInput() {
   //}
   inp_done = true;
 }
-PD_UI7_API void ColorEdit::Draw() {
+PD_API void ColorEdit::Draw() {
   // Assert(io.get() && list.get(), "Did you run Container::Init correctly?");
   // io->Ren->OnScreen(screen);
   list->PathRect(FinalPos(), FinalPos() + io->ItemRowHeight, io->FrameRounding);
@@ -90,7 +90,7 @@ PD_UI7_API void ColorEdit::Draw() {
   }
 }
 
-PD_UI7_API void ColorEdit::Update() {
+PD_API void ColorEdit::Update() {
   // Assert(io.get(), "Did you run Container::Init correctly?");
   this->SetSize(
       fvec2(tdim.x + io->ItemSpace.x + io->ItemRowHeight, io->ItemRowHeight));

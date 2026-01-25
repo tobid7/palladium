@@ -33,7 +33,7 @@ namespace UI7 {
  * Context::Update while the visual update is done
  * during the Update
  */
-class PD_UI7_API Checkbox : public Container {
+class PD_API Checkbox : public Container {
  public:
   /**
    * Constructor for Checkbox Object

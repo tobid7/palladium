@@ -41,7 +41,7 @@ constexpr float Radians(float v) { return v * (Numbers::Tau / 360.0f); }
  * @note That this is not a full Matrix Library
  */
 
-struct PD_CORE_API Mat4 {
+struct PD_API Mat4 {
   std::array<float, 16> m;
   constexpr Mat4() : m{} {}
   constexpr static Mat4 Diagonal(float x, float y, float z, float w) {

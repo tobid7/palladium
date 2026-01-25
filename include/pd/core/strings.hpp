@@ -43,47 +43,47 @@ constexpr int HexChar2Int(char c) {
  * @param exts List of Extensions to check for
  * @return true if one of the extensions is found in the String
  */
-PD_CORE_API bool StringEndsWith(const std::string& str,
-                                const std::vector<std::string>& exts);
+PD_API bool StringEndsWith(const std::string& str,
+                           const std::vector<std::string>& exts);
 /**
  * Function to Create a wstring of a string
  * @param s Input String to Convert
  * @return Result wstring
  * @note Returns Empty if it has an error
  */
-PD_CORE_API std::wstring MakeWstring(const std::string& s);
+PD_API std::wstring MakeWstring(const std::string& s);
 /**
  * Generate a Formatted String by an Nanoseconds Input
  * @param nanos Nanoseconds Input
  * @return Result String
  */
-PD_CORE_API const std::string FormatNanos(unsigned long long nanos);
+PD_API const std::string FormatNanos(unsigned long long nanos);
 /**
  * Generate a Formatted String by an Milliseconds Input
  * @param millis Milliseconds Input
  * @return Result String
  */
-PD_CORE_API const std::string FormatMillis(unsigned long long millis);
+PD_API const std::string FormatMillis(unsigned long long millis);
 /**
  * Create a formatted String by an input bytes value
  * @param bytes value in bytes
  * @result Formatted String for example `2.5MB`
  */
-PD_CORE_API const std::string FormatBytes(unsigned long long bytes);
+PD_API const std::string FormatBytes(unsigned long long bytes);
 /**
  * Extract the Filename out of a Path
  * @param path Path to extract from
  * @param saperators Path Split Chars
  * @return extracted filename
  */
-PD_CORE_API const std::string GetFileName(
-    const std::string& path, const std::string& saperators = "/\\");
+PD_API const std::string GetFileName(const std::string& path,
+                                     const std::string& saperators = "/\\");
 /**
  * Remove Extension from a Path / Filename
  * @param path Input Path
  * @return Path without Extension
  */
-PD_CORE_API const std::string PathRemoveExtension(const std::string& path);
+PD_API const std::string PathRemoveExtension(const std::string& path);
 /**
  * Function to Convert a Type to a hex value
  * @tparam T Type
@@ -101,7 +101,7 @@ inline const std::string ToHex(const T& v) {
  * @param s String to hash
  * @return 32Bit Hash
  */
-PD_CORE_API u32 FastHash(const std::string& s);
+PD_API u32 FastHash(const std::string& s);
 /**
  * Function to Generate a Compiler Name and Version String
  * Based on their Macros

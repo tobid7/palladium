@@ -33,7 +33,7 @@ namespace UI7 {
  * and modifys these by moving left or right when dragging
  */
 template <typename T>
-class PD_UI7_API Slider : public Container {
+class PD_API Slider : public Container {
  public:
   /**
    * Constructor

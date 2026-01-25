@@ -2,7 +2,7 @@
 
 /*
 MIT License
-Copyright (c) 2024 - 2025 René Amthor (tobid7)
+Copyright (c) 2024 - 2026 René Amthor (tobid7)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -26,26 +26,26 @@ SOFTWARE.
 /** Generated with ppam */
 
 #ifdef _WIN32  // Windows (MSVC Tested)
-#ifdef PD_IMAGE_BUILD_SHARED
-#define PD_IMAGE_API __declspec(dllexport)
+#ifdef PD_BUILD_SHARED
+#define PD_API __declspec(dllexport)
 #else
-#define PD_IMAGE_API __declspec(dllimport)
+#define PD_API __declspec(dllimport)
 #endif
 #elif defined(__APPLE__)  // macOS (untested yet)
-#ifdef PD_IMAGE_BUILD_SHARED
-#define PD_IMAGE_API __attribute__((visibility("default")))
+#ifdef PD_BUILD_SHARED
+#define PD_API __attribute__((visibility("default")))
 #else
-#define PD_IMAGE_API
+#define PD_API
 #endif
 #elif defined(__linux__)  // Linux (untested yet)
-#ifdef PD_IMAGE_BUILD_SHARED
-#define PD_IMAGE_API __attribute__((visibility("default")))
+#ifdef PD_BUILD_SHARED
+#define PD_API __attribute__((visibility("default")))
 #else
-#define PD_IMAGE_API
+#define PD_API
 #endif
 #elif defined(__3DS__)  // 3ds Specific
 // Only Static supported
-#define PD_IMAGE_API
+#define PD_API
 #else
-#define PD_IMAGE_API
+#define PD_API
 #endif

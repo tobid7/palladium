@@ -27,7 +27,7 @@ SOFTWARE.
 #include <pd/core/strings.hpp>
 
 namespace PD {
-class PD_CORE_API Color {
+class PD_API Color {
  public:
   /**
    * Default Constructor (all variables are set to 0)

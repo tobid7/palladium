@@ -25,7 +25,7 @@ SOFTWARE.
 
 namespace PD {
 namespace UI7 {
-PD_UI7_API void Image::Draw() {
+PD_API void Image::Draw() {
   // Assert(io.get() && list.get(), "Did you run Container::Init correctly?");
   // Assert(img.get(), "Image is nullptr!");
   // io->Ren->OnScreen(screen);

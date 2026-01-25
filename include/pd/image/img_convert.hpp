@@ -26,7 +26,7 @@ SOFTWARE.
 
 #include <pd/core/core.hpp>
 #include <pd/image/image.hpp>
-#include <pd/image/pd_p_api.hpp>
+#include <pd/pd_p_api.hpp>
 
 namespace PD {
 /**
@@ -41,10 +41,10 @@ namespace ImgConvert {
  * @param w width of the image
  * @param h height of the image
  */
-PD_IMAGE_API
+PD_API
 void RGB24toRGBA32(std::vector<PD::u8>& out, const std::vector<u8>& in,
                    const int& w, const int& h);
-PD_IMAGE_API
+PD_API
 void RGB32toRGBA24(std::vector<u8>& out, const std::vector<u8>& in,
                    const int& w, const int& h);
 /**
@@ -53,7 +53,7 @@ void RGB32toRGBA24(std::vector<u8>& out, const std::vector<u8>& in,
  * @param w width
  * @param h height
  */
-PD_IMAGE_API void Reverse32(std::vector<u8>& buf, const int& w, const int& h);
-PD_IMAGE_API void ReverseBuf(std::vector<u8>& buf, size_t bpp, int w, int h);
+PD_API void Reverse32(std::vector<u8>& buf, const int& w, const int& h);
+PD_API void ReverseBuf(std::vector<u8>& buf, size_t bpp, int w, int h);
 }  // namespace ImgConvert
 }  // namespace PD

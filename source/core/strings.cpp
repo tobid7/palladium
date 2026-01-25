@@ -24,8 +24,8 @@ SOFTWARE.
 #include <pd/core/strings.hpp>
 
 namespace PD::Strings {
-PD_CORE_API bool StringEndsWith(const std::string& str,
-                                const std::vector<std::string>& exts) {
+PD_API bool StringEndsWith(const std::string& str,
+                           const std::vector<std::string>& exts) {
   // Changed order to not do an substr on empty string
   if (str.empty()) {
     return false;
@@ -44,7 +44,7 @@ PD_CORE_API bool StringEndsWith(const std::string& str,
   return false;
 }
 
-PD_CORE_API std::wstring MakeWstring(const std::string& s) {
+PD_API std::wstring MakeWstring(const std::string& s) {
   // Manually convert to wstring as they removed wstring_convert :(
   std::wstring result;
   size_t i = 0;
@@ -85,7 +85,7 @@ PD_CORE_API std::wstring MakeWstring(const std::string& s) {
   return result;
 }
 
-PD_CORE_API const std::string FormatNanos(unsigned long long nanos) {
+PD_API const std::string FormatNanos(unsigned long long nanos) {
   // Based on some code of my minecraft plugins
   if (nanos < 1000) {
     return std::format("{}ns", nanos);
@@ -106,7 +106,7 @@ PD_CORE_API const std::string FormatNanos(unsigned long long nanos) {
   return "";
 }
 
-PD_CORE_API const std::string FormatMillis(unsigned long long millis) {
+PD_API const std::string FormatMillis(unsigned long long millis) {
   // Original Code can be found in some of my mv plugins
   if (millis < 1000) {
     return std::format("{}ms", millis);
@@ -121,7 +121,7 @@ PD_CORE_API const std::string FormatMillis(unsigned long long millis) {
   return "";
 }
 
-PD_CORE_API const std::string FormatBytes(unsigned long long bytes) {
+PD_API const std::string FormatBytes(unsigned long long bytes) {
   static const std::vector<std::string> endings = {
       "B", "KB", "MB", "GB", "TB", "Unk",
   };
@@ -137,8 +137,8 @@ PD_CORE_API const std::string FormatBytes(unsigned long long bytes) {
   return std::format("{:.1f} {}", b, endings[i]);
 }
 
-PD_CORE_API const std::string GetFileName(const std::string& path,
-                                          const std::string& saperators) {
+PD_API const std::string GetFileName(const std::string& path,
+                                     const std::string& saperators) {
   auto pos = path.find_last_of(saperators);
   if (pos != path.npos) {
     return path.substr(pos + 1);
@@ -147,7 +147,7 @@ PD_CORE_API const std::string GetFileName(const std::string& path,
   return path;
 }
 
-PD_CORE_API const std::string PathRemoveExtension(const std::string& path) {
+PD_API const std::string PathRemoveExtension(const std::string& path) {
   auto pos = path.find_last_of('.');
   if (pos != path.npos) {
     return path.substr(0, pos);
@@ -156,7 +156,7 @@ PD_CORE_API const std::string PathRemoveExtension(const std::string& path) {
   return path;
 }
 
-PD_CORE_API u32 FastHash(const std::string& s) {
+PD_API u32 FastHash(const std::string& s) {
   u32 hash = 5381;
   for (auto& it : s) {
     hash = (hash * 33) + static_cast<u8>(it);

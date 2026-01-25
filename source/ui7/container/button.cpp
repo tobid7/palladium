@@ -25,7 +25,7 @@ SOFTWARE.
 
 namespace PD {
 namespace UI7 {
-PD_UI7_API void Button::HandleInput() {
+PD_API void Button::HandleInput() {
   /// Ensure to only check input once
   if (inp_done) {
     return;
@@ -46,7 +46,7 @@ PD_UI7_API void Button::HandleInput() {
   //}
   inp_done = true;
 }
-PD_UI7_API void Button::Draw() {
+PD_API void Button::Draw() {
   // Assert(io.get() && list.get(), "Did you run Container::Init correctly?");
   // io->Ren->OnScreen(screen);
   list->PathRect(FinalPos(), FinalPos() + size, io->FrameRounding);
@@ -57,7 +57,7 @@ PD_UI7_API void Button::Draw() {
   list->LayerDown();
 }
 
-PD_UI7_API void Button::Update() {
+PD_API void Button::Update() {
   // Assert(io.get(), "Did you run Container::Init correctly?");
   this->SetSize(tdim + io->FramePadding);
 }

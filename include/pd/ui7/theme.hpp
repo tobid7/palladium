@@ -24,7 +24,7 @@ SOFTWARE.
  */
 
 #include <pd/core/core.hpp>
-#include <pd/ui7/pd_p_api.hpp>
+#include <pd/pd_p_api.hpp>
 
 /**
  *  Using this to support 32bit color values as well as
@@ -55,7 +55,7 @@ enum UI7Color_ {
 
 namespace PD {
 namespace UI7 {
-class PD_UI7_API Theme {
+class PD_API Theme {
  public:
   /**
    * Default Constructor Setting up the Default theme

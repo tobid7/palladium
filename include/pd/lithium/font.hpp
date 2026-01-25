@@ -26,9 +26,9 @@ SOFTWARE.
 
 #include <pd/core/core.hpp>
 #include <pd/lithium/command.hpp>
-#include <pd/lithium/pd_p_api.hpp>
 #include <pd/lithium/rect.hpp>
 #include <pd/lithium/texture.hpp>
+#include <pd/pd_p_api.hpp>
 
 using LiTextFlags = PD::u32;
 enum LiTextFlags_ {
@@ -44,7 +44,7 @@ enum LiTextFlags_ {
 
 namespace PD {
 namespace Li {
-class PD_LITHIUM_API Font {
+class PD_API Font {
  public:
   /** Codepoint Data holder */
   struct Codepoint {

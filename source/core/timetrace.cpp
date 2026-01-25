@@ -25,12 +25,12 @@ SOFTWARE.
 #include <pd/drivers/drivers.hpp>
 
 namespace PD::TT {
-PD_CORE_API void Beg(const std::string& id) {
+PD_API void Beg(const std::string& id) {
   auto trace = OS::GetTraceRef(id);
   trace->SetStart(PD::OS::GetNanoTime());
 }
 
-PD_CORE_API void End(const std::string& id) {
+PD_API void End(const std::string& id) {
   auto trace = OS::GetTraceRef(id);
   trace->SetEnd(PD::OS::GetNanoTime());
 }

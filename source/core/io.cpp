@@ -25,7 +25,7 @@ SOFTWARE.
 
 namespace PD {
 namespace IO {
-PD_CORE_API std::vector<u8> LoadFile2Mem(const std::string& path) {
+PD_API std::vector<u8> LoadFile2Mem(const std::string& path) {
   std::ifstream iff(path, std::ios::binary);
   if (!iff) {
     return std::vector<u8>();
@@ -39,7 +39,7 @@ PD_CORE_API std::vector<u8> LoadFile2Mem(const std::string& path) {
   return res;
 }
 
-PD_CORE_API std::string LoadFile2Str(const std::string& path) {
+PD_API std::string LoadFile2Str(const std::string& path) {
   std::ifstream iff(path, std::ios::binary);
   if (!iff) {
     return "";
@@ -53,7 +53,7 @@ PD_CORE_API std::string LoadFile2Str(const std::string& path) {
   return ret;
 }
 
-PD_CORE_API u32 HashMemory(const std::vector<u8>& data) {
+PD_API u32 HashMemory(const std::vector<u8>& data) {
   u32 hash = 4477;
   for (auto& it : data) {
     hash = (hash * 33) + it;
@@ -61,7 +61,7 @@ PD_CORE_API u32 HashMemory(const std::vector<u8>& data) {
   return hash;
 }
 
-PD_CORE_API void DecompressRLE(std::vector<u8>& data) {
+PD_API void DecompressRLE(std::vector<u8>& data) {
   if ((data.size() % 2) != 0) {
     return;
   }
@@ -72,7 +72,7 @@ PD_CORE_API void DecompressRLE(std::vector<u8>& data) {
   }
 }
 
-PD_CORE_API void CompressRLE(std::vector<u8>& data) {
+PD_API void CompressRLE(std::vector<u8>& data) {
   if (data.empty()) {
     /** No exceptions enabled :( */
     return;

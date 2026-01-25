@@ -25,7 +25,7 @@ SOFTWARE.
 #include <pd/core/mat.hpp>
 
 namespace PD {
-PD_CORE_API Mat4 Mat4::RotateX(float a) {
+PD_API Mat4 Mat4::RotateX(float a) {
   float c = std::cos(a);
   float s = std::sin(a);
   Mat4 ret = Identity();
@@ -36,7 +36,7 @@ PD_CORE_API Mat4 Mat4::RotateX(float a) {
   return ret;
 }
 
-PD_CORE_API Mat4 Mat4::RotateY(float a) {
+PD_API Mat4 Mat4::RotateY(float a) {
   float c = std::cos(a);
   float s = std::sin(a);
   Mat4 ret = Identity();
@@ -47,7 +47,7 @@ PD_CORE_API Mat4 Mat4::RotateY(float a) {
   return ret;
 }
 
-PD_CORE_API Mat4 Mat4::RotateZ(float a) {
+PD_API Mat4 Mat4::RotateZ(float a) {
   float c = std::cos(a);
   float s = std::sin(a);
   Mat4 ret = Identity();
@@ -58,7 +58,7 @@ PD_CORE_API Mat4 Mat4::RotateZ(float a) {
   return ret;
 }
 
-PD_CORE_API Mat4 Mat4::Rotate(fvec3 axis, float a) {
+PD_API Mat4 Mat4::Rotate(fvec3 axis, float a) {
   float s = std::sin(a);
   float c = std::cos(a);
   float t = 1.f - c;
@@ -81,7 +81,7 @@ PD_CORE_API Mat4 Mat4::Rotate(fvec3 axis, float a) {
   return ret;
 }
 
-PD_CORE_API Mat4 Mat4::Perspective(float fov, float aspect, float n, float f) {
+PD_API Mat4 Mat4::Perspective(float fov, float aspect, float n, float f) {
   float _fov = std::tan(fov / 2.f);
   Mat4 ret;
   ret(0, 0) = 1.f / (aspect * _fov);
@@ -98,8 +98,8 @@ PD_CORE_API Mat4 Mat4::Perspective(float fov, float aspect, float n, float f) {
   return ret;
 }
 
-PD_CORE_API Mat4 Mat4::LookAt(const fvec3& pos, const fvec3& center,
-                              const fvec3& up) {
+PD_API Mat4 Mat4::LookAt(const fvec3& pos, const fvec3& center,
+                         const fvec3& up) {
   auto f = fvec3(center - pos).Normalize();
   auto s = f.Cross(up).Normalize();
   auto u = s.Cross(f);

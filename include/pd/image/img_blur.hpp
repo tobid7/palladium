@@ -25,7 +25,7 @@ SOFTWARE.
  */
 
 #include <pd/core/core.hpp>
-#include <pd/image/pd_p_api.hpp>
+#include <pd/pd_p_api.hpp>
 
 namespace PD {
 /**
@@ -38,7 +38,7 @@ namespace ImgBlur {
  * @param si sigma value to use
  * @return list of kernel values
  */
-PD_IMAGE_API std::vector<float> GaussianKernel(int radius, float si);
+PD_API std::vector<float> GaussianKernel(int radius, float si);
 /**
  * Gaussian Blur for basic Image Buffer
  * @param buf Image Buffer (unsigned char)
@@ -48,7 +48,7 @@ PD_IMAGE_API std::vector<float> GaussianKernel(int radius, float si);
  * @param si Blur sigma
  * @param idxfn Indexing function
  */
-PD_IMAGE_API void GaussianBlur(
+PD_API void GaussianBlur(
     std::vector<u8>& buf, int w, int h, float radius, float si,
     std::function<int(int, int, int)> idxfn = [](int x, int y, int w) -> int {
       return y * w + x;
@@ -63,7 +63,7 @@ PD_IMAGE_API void GaussianBlur(
  * @param si Blur sigma
  * @param idxfn Indexing function
  */
-PD_IMAGE_API void GaussianBlur(
+PD_API void GaussianBlur(
     void* buf, int w, int h, int bpp, float radius, float si,
     std::function<int(int, int, int)> idxfn = [](int x, int y, int w) -> int {
       return y * w + x;

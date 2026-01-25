@@ -30,7 +30,7 @@ namespace UI7 {
 /**
  * Image Object
  */
-class PD_UI7_API Image : public Container {
+class PD_API Image : public Container {
  public:
   /**
    * Constructor for the Image Object

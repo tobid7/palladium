@@ -29,7 +29,7 @@ SOFTWARE.
 
 namespace PD {
 namespace ImgBlur {
-PD_IMAGE_API std::vector<float> GaussianKernel(int r, float si) {
+PD_API std::vector<float> GaussianKernel(int r, float si) {
   /// Define radius as r to be shorter
   int size = 2 * r + 1;
   std::vector<float> kernel(size);
@@ -45,15 +45,13 @@ PD_IMAGE_API std::vector<float> GaussianKernel(int r, float si) {
   }
   return kernel;
 }
-PD_IMAGE_API void GaussianBlur(std::vector<u8>& buf, int w, int h, float radius,
-                               float si,
-                               std::function<int(int, int, int)> idxfn) {
+PD_API void GaussianBlur(std::vector<u8>& buf, int w, int h, float radius,
+                         float si, std::function<int(int, int, int)> idxfn) {
   GaussianBlur(buf.data(), w, h, 4, radius, si, idxfn);
 }
 
-PD_IMAGE_API void GaussianBlur(void* buf, int w, int h, int bpp, float radius,
-                               float si,
-                               std::function<int(int, int, int)> idxfn) {
+PD_API void GaussianBlur(void* buf, int w, int h, int bpp, float radius,
+                         float si, std::function<int(int, int, int)> idxfn) {
   if (bpp != 4 && bpp != 3) {
     return;
   }

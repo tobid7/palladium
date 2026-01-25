@@ -26,7 +26,7 @@ SOFTWARE.
 
 #include <pd/lithium/command.hpp>
 #include <pd/lithium/font.hpp>
-#include <pd/lithium/pd_p_api.hpp>
+#include <pd/pd_p_api.hpp>
 
 /** Path Rect Flags */
 using LiPathRectFlags = PD::u32;
@@ -46,7 +46,7 @@ enum LiPathRectFlags_ : PD::u32 {
 
 namespace PD {
 namespace Li {
-class PD_LITHIUM_API DrawList {
+class PD_API DrawList {
  public:
   DrawList(int initial_size = 64);
   ~DrawList();
