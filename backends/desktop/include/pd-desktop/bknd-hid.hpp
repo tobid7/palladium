@@ -30,7 +30,7 @@ SOFTWARE.
 namespace PD {
 class HidGLFW : public HidDriver {
  public:
-  HidGLFW(GLFWwindow* win);
+  HidGLFW(PDDriverData data);
   ~HidGLFW() = default;
 
   PD_SHARED(HidGLFW);
@@ -44,7 +44,7 @@ class HidGLFW : public HidDriver {
         pTimings.erase(k);
         return false;
       }
-      return (PD::OS::GetTime() - pTimings[k]) > 50;
+      return 0;  //(PD::OS::GetTime() - pTimings[k]) > 50;
     }
     if (!IsEvent(Event_Held, k)) {
       if (pTimings.count(k)) {
@@ -53,7 +53,7 @@ class HidGLFW : public HidDriver {
       }
     }
     if (IsEvent(Event_Held, k)) {
-      pTimings[k] = PD::OS::GetTime();
+      pTimings[k] = 0;  // PD::OS::GetTime();
       return true;
     }
     return false;

@@ -132,10 +132,10 @@ PD_API void Menu::HandleFocus() {
   if (!pIsOpen) {
     newarea = fvec4(pLayout->Pos, fvec2(pLayout->Size.x, TitleBarHeight));
   }
-  if ((Hid::IsDown(Hid::Key::Touch) ||
-       Hid::IsEvent(Hid::Event::Event_Down, HidKb::Kb_MouseLeft)) &&
-      Li::Renderer::InBox(Hid::MousePos(), newarea) &&
-      !Li::Renderer::InBox(Hid::MousePos(),
+  if ((pIO->pCtx.Hid()->IsDown(Hid::Key::Touch) ||
+       pIO->pCtx.Hid()->IsEvent(Hid::Event::Event_Down, HidKb::Kb_MouseLeft)) &&
+      Li::Renderer::InBox(pIO->pCtx.Hid()->MousePos(), newarea) &&
+      !Li::Renderer::InBox(pIO->pCtx.Hid()->MousePos(),
                            pIO->InputHandler->FocusedMenuRect)) {
     pIO->InputHandler->FocusedMenu = pID;
   }
@@ -150,7 +150,7 @@ PD_API void Menu::HandleScrolling() {
     bool allowed =
         pLayout->MaxPosition.y > (pLayout->WorkRect.w - pLayout->WorkRect.y);
     if (allowed) {
-      if (PD::Hid::IsDown(PD::Hid::Key::Touch)) {
+      if (pIO->pCtx.Hid()->IsDown(PD::Hid::Key::Touch)) {
         pLayout->ScrollStart = pLayout->ScrollOffset;
       }
       if (pIO->InputHandler->DragObject(

@@ -43,8 +43,11 @@ void TextCB(GLFWwindow* win, unsigned int c) {
   }
   *HidGLFW::pText += (char)c;
 }
-HidGLFW::HidGLFW(GLFWwindow* win) : HidDriver("HidGLFW") {
-  Window = win;
+HidGLFW::HidGLFW(PDDriverData data) : HidDriver("HidGLFW") {
+  if (!data) {
+    std::cout << "[HidGLFW] Error: Data pointer was null" << std::endl;
+  }
+  Window = reinterpret_cast<GLFWwindow*>(data);
   HidGLFW::pOldTextCB = glfwSetCharCallback(Window, NullTextCB);
   Flags |= Flags_HasKeyboard;
   Flags |= Flags_HasMouse;
@@ -148,10 +151,10 @@ void HidGLFW::Update() {
   glfwGetCursorPos(Window, &x, &y);
   pMouse[1] = pMouse[0];  // Cycle pMouse pos
   pMouse[0] = fvec2(x, y);
-  if (pInTextMode && (PD::OS::GetTime() - pLastUpdate) > 50) {
-    pLastUpdate = PD::OS::GetTime();
-    HandleTextOps();
-  }
+  /*if (pInTextMode && (PD::OS::GetTime() - pLastUpdate) > 50) {
+      pLastUpdate = PD::OS::GetTime();
+      HandleTextOps();
+    }*/
 }
 
 void HidGLFW::GetInputStr(std::string& str) {

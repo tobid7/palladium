@@ -78,7 +78,7 @@ class PD_API Color {
    */
   constexpr Color& Hex(const std::string_view& hex) {
     if (!(hex.length() == 7 || hex.length() == 9)) {
-      throw "[PD] Color: hex string is not rgb or rgba!";
+      PD::Throw("[PD] Color: hex string is not rgb or rgba!");
     }
     r = PD::Strings::HexChar2Int(hex[1]) * 16 +
         PD::Strings::HexChar2Int(hex[2]);

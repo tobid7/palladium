@@ -156,7 +156,7 @@ void GfxC3D::RenderDrawData(const PD::Li::CmdPool& Commands) {
   // C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, pLocProjection, (C3D_Mtx*)&proj);
   size_t index = 0;
   while (index < Commands.Size()) {
-    PD::Li::Texture::Ref Tex = Commands.GetCmd(index)->Tex;
+    PD::Li::TexAddress Tex = Commands.GetCmd(index)->Tex;
     if (!Tex) {
       index++;
       continue;
@@ -186,8 +186,8 @@ void GfxC3D::RenderDrawData(const PD::Li::CmdPool& Commands) {
     } else {
       C3D_SetScissor(GPU_SCISSOR_DISABLE, 0, 0, 0, 0);
     }
-    FragCfg(((C3D_Tex*)Tex->Address)->fmt);
-    BindTex(Tex->Address);
+    FragCfg(((C3D_Tex*)Tex)->fmt);
+    BindTex(Tex);
     auto bufInfo = C3D_GetBufInfo();
     BufInfo_Init(bufInfo);
     BufInfo_Add(bufInfo, VertexBuffer.data(), sizeof(Li::Vertex), 3, 0x210);

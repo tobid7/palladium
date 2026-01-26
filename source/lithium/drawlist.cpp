@@ -30,7 +30,7 @@ SOFTWARE.
 
 namespace PD {
 namespace Li {
-PD_API DrawList::DrawList(int initial_size) {
+PD_API DrawList::DrawList(Context& ctx, int initial_size) : pCtx(&ctx) {
   DrawSolid();
   pPool.Init(initial_size);
 }
@@ -40,7 +40,7 @@ PD_API DrawList::~DrawList() {
   pPool.Deinit();
 }
 
-PD_API void DrawList::DrawSolid() { CurrentTex = Gfx::GetSolidTex(); }
+PD_API void DrawList::DrawSolid() { CurrentTex = pCtx->GetSolidTex(); }
 
 PD_API void DrawList::Clear() {
   pNumIndices = 0;
@@ -70,9 +70,6 @@ PD_API void DrawList::Merge(DrawList::Ref list) {
 PD_API void DrawList::Copy(DrawList::Ref list) { pPool.Copy(list->pPool); }
 
 PD_API void DrawList::Optimize() {
-#ifndef NDEBUG
-  PD::TT::Scope s("Optimize");
-#endif
   /*std::sort(pDrawList.begin(), pDrawList.end(),
             [](const PD::Li::Command::Ref &a, const PD::Li::Command::Ref &b) {
               if (a->Layer == b->Layer) {  // Same layer

@@ -38,7 +38,7 @@ class PD_API Layout {
  public:
   Layout(const ID& id, IO::Ref io) : ID(id) {
     this->IO = io;
-    DrawList = Li::DrawList::New();
+    DrawList = Li::DrawList::New(io->pCtx);
     DrawList->SetFont(IO->Font);
     DrawList->SetFontScale(io->FontScale);
     Scrolling[0] = false;

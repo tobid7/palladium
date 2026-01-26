@@ -34,7 +34,7 @@ SOFTWARE.
 namespace PD {
 class GfxGL2 : public GfxDriver {
  public:
-  GfxGL2() : GfxDriver("OpenGL2") {}
+  GfxGL2(PDDriverData data = nullptr) : GfxDriver("OpenGL2") {}
   ~GfxGL2() = default;
 
   PD_SHARED(GfxGL2);

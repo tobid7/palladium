@@ -32,7 +32,9 @@ namespace PD {
 namespace UI7 {
 class InputHandler {
  public:
-  InputHandler() { DragTime = Timer::New(false); }
+  InputHandler(PD::Context& ctx) : pCtx(ctx) {
+    DragTime = Timer::New(*pCtx.Os().get(), false);
+  }
   ~InputHandler() = default;
 
   PD_SHARED(InputHandler);
@@ -55,10 +57,10 @@ class InputHandler {
       }
     }
     // Get a Short define for touch pos
-    fvec2 p = Hid::MousePos();
+    fvec2 p = pCtx.Hid()->MousePos();
     // Check if Drag starts in the area position
-    if ((Hid::IsDown(Hid::Key::Touch) ||
-         Hid::IsEvent(PD::Hid::Event::Event_Down, HidKb::Kb_MouseLeft)) &&
+    if ((pCtx.Hid()->IsDown(pCtx.Hid()->Key::Touch) ||
+         pCtx.Hid()->IsEvent(PD::HidDriver::Event_Down, HidKb::Kb_MouseLeft)) &&
         Li::Renderer::InBox(p, area)) {
       // Set ID and iniatial Positions
       DraggedObject = id;
@@ -70,15 +72,16 @@ class InputHandler {
       DragTime->Reset();
       DragTime->Rseume();
       return false;  // To make sure the Object is "Dragged"
-    } else if ((Hid::IsHeld(Hid::Key::Touch) ||
-                Hid::IsEvent(PD::Hid::Event::Event_Held,
-                             HidKb::Kb_MouseLeft)) &&
+    } else if ((pCtx.Hid()->IsHeld(pCtx.Hid()->Key::Touch) ||
+                pCtx.Hid()->IsEvent(PD::HidDriver::Event_Held,
+                                    HidKb::Kb_MouseLeft)) &&
                IsObjectDragged()) {
       // Update DragLast and DragPoisition
       DragLastPosition = DragPosition;
       DragPosition = p;
-    } else if ((Hid::IsUp(Hid::Key::Touch) ||
-                Hid::IsEvent(PD::Hid::Event::Event_Up, HidKb::Kb_MouseLeft)) &&
+    } else if ((pCtx.Hid()->IsUp(pCtx.Hid()->Key::Touch) ||
+                pCtx.Hid()->IsEvent(PD::HidDriver::Event_Up,
+                                    HidKb::Kb_MouseLeft)) &&
                IsObjectDragged()) {
       // Released... Everything gets reset
       DraggedObject = 0;
@@ -88,9 +91,9 @@ class InputHandler {
       DragDestination = fvec4(0);
       // Set Drag released to true (only one frame)
       // and Only if still in Box
-      DragReleased = Li::Renderer::InBox(Hid::MousePosLast(), area);
+      DragReleased = Li::Renderer::InBox(pCtx.Hid()->MousePosLast(), area);
       DragReleasedAW = true;  // Advanced
-      u64 d_rel = PD::OS::GetTime();
+      u64 d_rel = pCtx.Os()->GetTime();
       if (d_rel - DragLastReleased < DoubleClickTime) {
         DragDoubleRelease = true;
         DragLastReleased = 0;  // Set 0 to prevent double exec
@@ -129,6 +132,7 @@ class InputHandler {
   bool DragReleased = false;       ///< Drag Releaded in Box
   bool DragReleasedAW = false;     ///< Drag Released Anywhere
   bool DragDoubleRelease = false;  ///< Double Click
+  PD::Context& pCtx;
   /** Check if an object is Dragged already */
   bool IsObjectDragged() const { return DraggedObject != 0; }
 };

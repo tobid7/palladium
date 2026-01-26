@@ -23,20 +23,4 @@ SOFTWARE.
 
 #include <pd/drivers/gfx.hpp>
 
-namespace PD {
-GfxDriver::Ref Gfx::pGfx = nullptr;
-
-void Gfx::Init(GfxDriver::Ref d) {
-  if (!d) {
-    return;
-  }
-  pGfx = d;
-  pGfx->Init();
-  pGfx->PostInit();
-}
-
-void GfxDriver::PostInit() {
-  std::vector<PD::u8> white(16 * 16 * 4, 0xff);
-  pSolid = this->LoadTex(white, 16, 16);
-}
-}  // namespace PD
+namespace PD {}  // namespace PD

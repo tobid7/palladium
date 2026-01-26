@@ -47,7 +47,7 @@ namespace PD {
 namespace Li {
 class PD_API DrawList {
  public:
-  DrawList(int initial_size = 64);
+  DrawList(Context& ctx, int initial_size = 64);
   ~DrawList();
 
   /** Require Copy and Move Constructors */
@@ -218,6 +218,7 @@ class PD_API DrawList {
   std::vector<fvec2> pPath;
   u32 pNumIndices = 0;
   u32 pNumVertices = 0;
+  Context* pCtx = nullptr;
 };
 }  // namespace Li
 }  // namespace PD

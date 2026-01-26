@@ -24,9 +24,8 @@ SOFTWARE.
 #include <pd/drivers/hid.hpp>
 
 namespace PD {
-HidDriver::Ref Hid::pHid = nullptr;
-
 bool HidDriver::IsEvent(Event e, Key keys) { return KeyEvents[0][e] & keys; }
+
 bool HidDriver::IsEvent(Event e, KbKey keys) {
   return KbKeyEvents[0][e].Has(keys);
 }

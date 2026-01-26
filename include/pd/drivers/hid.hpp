@@ -24,6 +24,7 @@ SOFTWARE.
  */
 
 #include <pd/core/core.hpp>
+#include <pd/drivers/types.hpp>
 
 namespace PD {
 /** Did not found a better solution yet sadly */
@@ -134,7 +135,8 @@ class HidDriver {
     Event_Up,    ///< Key released
   };
 
-  HidDriver(const std::string& name = "NullHid") : pName(name) {};
+  HidDriver(const std::string& name = "NullHid") : pName(name) {}
+  HidDriver(PDDriverData data) : pName("NullHid") {}
   virtual ~HidDriver() = default;
   PD_SHARED(HidDriver);
 
@@ -233,6 +235,8 @@ class HidDriver {
    */
   virtual void GetInputStr(std::string& str) {}
 
+  const std::string& GetName() const { return pName; }
+
   /** Data Section */
 
   /** Backend Identification Name */
@@ -255,42 +259,8 @@ class HidDriver {
   /** Keyboard Key Event Table Setup */
   std::unordered_map<Event, u128> KbKeyEvents[2];
 };
-
-/** Static Hid Controller */
-class Hid {
- public:
-  Hid() = default;
-  ~Hid() = default;
-
-  /** Referenec to Drivers enums */
-  using Key = HidDriver::Key;
-  using KbKey = HidKb::KbKey;
-  using Event = HidDriver::Event;
-
-  static void Init(HidDriver::Ref v = nullptr) {
-    if (v) {
-      pHid = v;
-    } else {
-      pHid = HidDriver::New();
-    }
-  }
-
-  static bool IsEvent(Event e, Key keys) { return pHid->IsEvent(e, keys); }
-  static bool IsEvent(Event e, KbKey key) { return pHid->IsEvent(e, key); }
-  static bool IsDown(Key keys) { return pHid->IsDown(keys); }
-  static bool IsUp(Key keys) { return pHid->IsUp(keys); }
-  static bool IsHeld(Key keys) { return pHid->IsHeld(keys); }
-  static fvec2 MousePos() { return pHid->MousePos(); }
-  static fvec2 MousePosLast() { return pHid->MousePosLast(); }
-  static void Clear() { pHid->Clear(); }
-  static void Lock() { pHid->Lock(); }
-  static void Lock(bool v) { pHid->Lock(v); }
-  static void Unlock() { pHid->Unlock(); }
-  static bool Locked() { return pHid->Locked(); }
-  static void Update() { pHid->Update(); }
-  static u32 GetFlags() { return pHid->Flags; }
-  static void GetStrInput(std::string& str) { pHid->GetInputStr(str); }
-
-  static HidDriver::Ref pHid;
-};
+namespace Hid {
+using Event = HidDriver::Event;
+using Key = HidDriver::Key;
+}  // namespace Hid
 }  // namespace PD

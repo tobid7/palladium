@@ -337,6 +337,8 @@ PD::Li::Texture::Ref GfxGL2::LoadTex(const std::vector<PD::u8>& pixels, int w,
   }
   glBindTexture(GL_TEXTURE_2D, 0);
   auto res = PD::Li::Texture::New(texID, PD::ivec2(w, h));
+  std::cout << std::format("Texture loaded: {} {}", texID, PD::ivec2(w, h))
+            << std::endl;
   return res;
 }
 

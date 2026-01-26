@@ -28,6 +28,7 @@ set(PD_SOURCES
     source/core/timetrace.cpp
 
     # Drivers
+    source/drivers/context.cpp
     source/drivers/gfx.cpp
     source/drivers/hid.cpp
     source/drivers/os.cpp
@@ -85,6 +86,10 @@ file(GLOB_RECURSE PD_FMTFILES CONFIGURE_DEPENDS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/pd/image/*.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/pd/lithium/*.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/pd/ui7/*.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/backends/desktop/include/*.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/backends/3ds/include/*.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/backends/desktop/include/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/backends/3ds/include/*.cpp
 )
 
 add_custom_target(pd-clang-format

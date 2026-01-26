@@ -49,7 +49,7 @@ PD_API std::string GetVersion(bool show_build = false);
 /** Base Context for UI7 */
 class PD_API Context {
  public:
-  Context() { pIO = IO::New(); }
+  Context(PD::Context& ctx) { pIO = IO::New(ctx); }
   ~Context() = default;
 
   PD_SHARED(Context);

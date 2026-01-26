@@ -53,15 +53,15 @@ PD_API void Font::LoadTTF(const std::string& path, int height) {
    * and helps not having the font loading code twice
    * when adding LoadTTF with mem support
    */
-  TT::Scope st("LI_LoadTTF_" + path);
+  TT::Scope st(*pCtx.Os().get(), "LI_LoadTTF_" + path);
   auto font = PD::IO::LoadFile2Mem(path);
   LoadTTF(font, height);
 }
 
 PD_API void Font::pMakeAtlas(bool final, std::vector<u8>& font_tex, int texszs,
                              PD::Li::Texture::Ref tex) {
-  auto t =
-      Gfx::LoadTex(font_tex, texszs, texszs, Texture::RGBA32, Texture::LINEAR);
+  auto t = pCtx.Gfx()->LoadTex(font_tex, texszs, texszs, Texture::RGBA32,
+                               Texture::LINEAR);
   tex->CopyFrom(t);
   Textures.push_back(tex);
 }
@@ -147,7 +147,7 @@ PD_API void Font::LoadTTF(const std::vector<u8>& data, int height) {
     uvs.z = (off.x + w) / static_cast<float>(texszs);
     uvs.w = (off.y + h) / static_cast<float>(texszs);
     // Flip if needed
-    if (Gfx::Flags() & LiBackendFlags_FlipUV_Y) {
+    if (pCtx.Gfx()->Flags & LiBackendFlags_FlipUV_Y) {
       uvs.y = 1.f - uvs.y;
       uvs.w = 1.f - uvs.w;
     }
@@ -196,7 +196,7 @@ PD_API Font::Codepoint& Font::GetCodepoint(u32 cp) {
 PD_API fvec2 Font::GetTextBounds(const std::string& text, float scale) {
   u32 id = PD::FNV1A32(text);
   if (pTMS.find(id) != pTMS.end()) {
-    pTMS[id].TimeStamp = PD::OS::GetTime();
+    pTMS[id].TimeStamp = pCtx.Os()->GetTime();
     return pTMS[id].Size;
   }
   // Use wstring for exemple for german äöü
@@ -242,7 +242,7 @@ PD_API fvec2 Font::GetTextBounds(const std::string& text, float scale) {
   res.y += lh;
   pTMS[id].ID = id;
   pTMS[id].Size = res;
-  pTMS[id].TimeStamp = PD::OS::GetTime();
+  pTMS[id].TimeStamp = pCtx.Os()->GetTime();
   return res;
 }
 
@@ -341,7 +341,7 @@ PD_API std::string Font::pWrapText(const std::string& txt, float scale,
   if (pTMS.find(id) != pTMS.end()) {
     if (pTMS[id].Text.size()) {
       dim = pTMS[id].Size;
-      pTMS[id].TimeStamp = PD::OS::GetTime();
+      pTMS[id].TimeStamp = pCtx.Os()->GetTime();
       return pTMS[id].Text;
     }
   }
@@ -367,7 +367,7 @@ PD_API std::string Font::pWrapText(const std::string& txt, float scale,
   pTMS[id].ID = id;
   pTMS[id].Size = dim;
   pTMS[id].Text = ret;
-  pTMS[id].TimeStamp = PD::OS::GetTime();
+  pTMS[id].TimeStamp = pCtx.Os()->GetTime();
   return ret;
 }
 
@@ -377,7 +377,7 @@ PD_API std::string Font::pShortText(const std::string& txt, float scale,
   if (pTMS.find(id) != pTMS.end()) {
     if (pTMS[id].Text.size()) {
       dim = pTMS[id].Size;
-      pTMS[id].TimeStamp = PD::OS::GetTime();
+      pTMS[id].TimeStamp = pCtx.Os()->GetTime();
       return pTMS[id].Text;
     }
   }
@@ -410,12 +410,12 @@ PD_API std::string Font::pShortText(const std::string& txt, float scale,
   pTMS[id].ID = id;
   pTMS[id].Size = dim;
   pTMS[id].Text = ret;
-  pTMS[id].TimeStamp = PD::OS::GetTime();
+  pTMS[id].TimeStamp = pCtx.Os()->GetTime();
   return ret;
 }
 
 PD_API void Font::CleanupTMS() {
-  u64 t = PD::OS::GetTime();
+  u64 t = pCtx.Os()->GetTime();
   for (auto it = pTMS.begin(); it != pTMS.end();) {
     if (t - it->second.TimeStamp > 1000) {
       it = pTMS.erase(it);

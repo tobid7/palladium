@@ -190,9 +190,10 @@ PD_API void Context::MetricsMenu(bool* show) {
     m->Label("Menus: " + std::to_string(pMenus.size()));
     /** Section TimeTrace */
     m->SeparatorText("TimeTrace");
-    if (m->BeginTreeNode("Traces (" + std::to_string(OS::GetTraceMap().size()) +
+    if (m->BeginTreeNode("Traces (" +
+                         std::to_string(pIO->pCtx.Os()->GetTraceMap().size()) +
                          ")")) {
-      for (auto& it : OS::GetTraceMap()) {
+      for (auto& it : pIO->pCtx.Os()->GetTraceMap()) {
         if (m->BeginTreeNode(it.second->GetID())) {
           m->Label("Diff: " + UI7DTF(it.second->GetLastDiff()));
           m->Label("Protocol Len: " +
@@ -207,18 +208,18 @@ PD_API void Context::MetricsMenu(bool* show) {
       m->EndTreeNode();
     }
     m->SeparatorText("Palladium Info");
-    m->Label("Renderer: " + PD::Gfx::pGfx->pName);
-    if (m->BeginTreeNode(std::string("Input: " + PD::Hid::pHid->pName))) {
-      if (PD::Hid::GetFlags() & PD::HidDriver::Flags_HasKeyboard) {
+    m->Label("Renderer: " + pIO->pCtx.Gfx()->GetName());
+    if (m->BeginTreeNode(std::string("Input: " + pIO->pCtx.Hid()->GetName()))) {
+      if (pIO->pCtx.Hid()->Flags & PD::HidDriver::Flags_HasKeyboard) {
         m->Label("- Keyboard Supported");
       }
-      if (PD::Hid::GetFlags() & PD::HidDriver::Flags_HasMouse) {
+      if (pIO->pCtx.Hid()->Flags & PD::HidDriver::Flags_HasMouse) {
         m->Label("- Mouse Supported");
       }
-      if (PD::Hid::GetFlags() & PD::HidDriver::Flags_HasTouch) {
+      if (pIO->pCtx.Hid()->Flags & PD::HidDriver::Flags_HasTouch) {
         m->Label("- Touch Supported");
       }
-      if (PD::Hid::GetFlags() & PD::HidDriver::FLags_HasGamepad) {
+      if (pIO->pCtx.Hid()->Flags & PD::HidDriver::FLags_HasGamepad) {
         m->Label("- Gamepad Supported");
       }
       m->EndTreeNode();

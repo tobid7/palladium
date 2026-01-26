@@ -25,13 +25,15 @@ SOFTWARE.
 
 #include <pd/core/common.hpp>
 #include <pd/core/timetrace.hpp>
+#include <pd/drivers/types.hpp>
 
 namespace PD {
 using TraceMap = std::map<std::string, TT::Res::Ref>;
 
 class OsDriver {
  public:
-  OsDriver() = default;
+  OsDriver(const std::string& name = "StdPd") : pName(name) {}
+  OsDriver(PDDriverData data) : pName("StdPd") {}
   virtual ~OsDriver() = default;
   PD_SHARED(OsDriver);
 
@@ -40,32 +42,11 @@ class OsDriver {
   TraceMap& GetTraceMap();
   TT::Res::Ref& GetTraceRef(const std::string& id);
   bool TraceExist(const std::string& id);
+  const std::string& GetName() const { return pName; }
 
   TraceMap pTraces;
-};
 
-/** Static Os Controller */
-class OS {
- public:
-  OS() = default;
-  ~OS() = default;
-
-  static void Init(OsDriver::Ref v = nullptr) {
-    if (v) {
-      pOs = v;
-    } else {
-      pOs = OsDriver::New();
-    }
-  }
-
-  static u64 GetTime() { return pOs->GetTime(); }
-  static u64 GetNanoTime() { return pOs->GetNanoTime(); }
-  static TraceMap& GetTraceMap() { return pOs->GetTraceMap(); }
-  static TT::Res::Ref& GetTraceRef(const std::string& id) {
-    return pOs->GetTraceRef(id);
-  }
-  static bool TraceExist(const std::string& id) { return pOs->TraceExist(id); }
-
-  static OsDriver::Ref pOs;
+ private:
+  const std::string pName = "StdPd";
 };
 }  // namespace PD

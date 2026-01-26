@@ -74,7 +74,12 @@ SOFTWARE.
 
 namespace PD {
 [[noreturn]] inline void Throw(const std::string& str) {
-  throw std::runtime_error("[PD] " + str);
+#ifdef _EXCEPTIONS
+  throw std::runtime_error("PD Error " + str);
+#else
+  std::cout << "PD Error " << str << std::endl;
+  std::abort();
+#endif
 }
 /** Types */
 using u8 = unsigned char;

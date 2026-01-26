@@ -32,7 +32,7 @@ SOFTWARE.
 namespace PD {
 class GfxC3D : public GfxDriver {
  public:
-  GfxC3D() : GfxDriver("Citro3D") {}
+  GfxC3D(PDDriverData data = nullptr) : GfxDriver("Citro3D") {}
   ~GfxC3D() = default;
 
   PD_SHARED(GfxC3D);

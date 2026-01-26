@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
+#include <pd/drivers/context.hpp>
 #include <pd/drivers/gfx.hpp>
 #include <pd/drivers/hid.hpp>
 #include <pd/drivers/os.hpp>

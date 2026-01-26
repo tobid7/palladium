@@ -26,6 +26,7 @@ SOFTWARE.
 #include <pd/core/common.hpp>
 
 namespace PD {
+class OsDriver;
 /**
  * Timer class
  */
@@ -35,7 +36,7 @@ class PD_API Timer {
    * Constructor
    * @param auto_start [default true] sets if timer should start after creation
    */
-  Timer(bool auto_start = true);
+  Timer(OsDriver& os, bool auto_start = true);
   /**
    * Unused Deconstructor
    */
@@ -81,5 +82,7 @@ class PD_API Timer {
   u64 pNow;
   /** Is Running */
   bool pIsRunning = false;
+  /** Os Driver reference */
+  OsDriver& pOs;
 };
 }  // namespace PD

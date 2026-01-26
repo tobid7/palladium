@@ -24,8 +24,6 @@ SOFTWARE.
 #include <pd/drivers/os.hpp>
 
 namespace PD {
-OsDriver::Ref OS::pOs = nullptr;
-
 TT::Res::Ref& OsDriver::GetTraceRef(const std::string& id) {
   if (!pTraces.count(id)) {
     pTraces[id] = TT::Res::New();

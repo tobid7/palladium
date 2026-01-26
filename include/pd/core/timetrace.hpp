@@ -26,6 +26,7 @@ SOFTWARE.
 #include <pd/core/common.hpp>
 
 namespace PD {
+class OsDriver;
 /**
  * Class to calculate Maximum/Minimum and Average Timings
  */
@@ -218,12 +219,12 @@ class Res {
  * Begin a Trace
  * @param id Name of the Trace
  */
-PD_API void Beg(const std::string& id);
+PD_API void Beg(OsDriver& os, const std::string& id);
 /**
  * End a Trace
  * @param id Name of the Trace
  */
-PD_API void End(const std::string& id);
+PD_API void End(OsDriver& os, const std::string& id);
 /**
  * Collect Start end end of the trace by tracking
  * when the Scope object goes out of scope
@@ -245,18 +246,20 @@ class Scope {
    * Constructor requiring a Name for the Trace
    * @param id Name of the Trace
    */
-  Scope(const std::string& id) {
+  Scope(OsDriver& os, const std::string& id) : pOs(os) {
     this->ID = id;
-    Beg(id);
+    Beg(pOs, id);
   }
   /**
    * Deconstructor getting the end time when going out of scope
    */
-  ~Scope() { End(ID); }
+  ~Scope() { End(pOs, ID); }
 
  private:
   /** Trace Name/ID */
   std::string ID;
+  /** Os Driver Reference */
+  OsDriver& pOs;
 };
 }  // namespace TT
 }  // namespace PD

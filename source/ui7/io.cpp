@@ -27,7 +27,7 @@ SOFTWARE.
 namespace PD {
 PD_API void UI7::IO::Update() {
   /** Todo: find out if we even still use the Drawlist regestry */
-  u64 current = OS::GetNanoTime();
+  u64 current = pCtx.Os()->GetNanoTime();
   Delta = static_cast<float>(current - LastTime) / 1000000.f;
   LastTime = current;
   DeltaStats->Add(Delta * 1000);

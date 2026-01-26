@@ -25,19 +25,19 @@ SOFTWARE.
 #include <pd/drivers/drivers.hpp>
 
 namespace PD {
-PD_API Timer::Timer(bool autostart) {
+PD_API Timer::Timer(OsDriver& os, bool autostart) : pOs(os) {
   pIsRunning = autostart;
   Reset();
 }
 
 PD_API void Timer::Reset() {
-  pStart = OS::GetTime();
+  pStart = pOs.GetTime();
   pNow = pStart;
 }
 
 PD_API void Timer::Update() {
   if (pIsRunning) {
-    pNow = OS::GetTime();
+    pNow = pOs.GetTime();
   }
 }
 

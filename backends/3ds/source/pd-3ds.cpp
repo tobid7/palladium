@@ -27,9 +27,9 @@ SOFTWARE.
 #include <pd-3ds.hpp>
 
 namespace PD {
-PD::Li::Font::Ref LoadSystemFont() {
-  TT::Scope st("LI_SystemFont");  // Trace loading time
-  Li::Font::Ref ret = Li::Font::New();
+PD::Li::Font::Ref LoadSystemFont(Context& ctx) {
+  TT::Scope st(*ctx.Os(), "LI_SystemFont");  // Trace loading time
+  Li::Font::Ref ret = Li::Font::New(ctx);
   fontEnsureMapped();  // Call this to be sure the font is mapped
   // Get some const references for system font loading
   const auto fnt = fontGetSystemFont();
@@ -124,8 +124,8 @@ PD::Li::Font::Ref LoadSystemFont() {
 void Init(void* data) {
   // Dekstop Init Stage
   // First use default OS Driver
-  PD::OS::Init();
-  PD::Gfx::Init(PD::GfxC3D::New());
-  PD::Hid::Init(PD::Hid3DS::New());
+  // PD::OS::Init();
+  // PD::Gfx::Init(PD::GfxC3D::New());
+  // PD::Hid::Init(PD::Hid3DS::New());
 }
 }  // namespace PD

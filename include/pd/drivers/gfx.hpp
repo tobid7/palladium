@@ -24,6 +24,7 @@ SOFTWARE.
  */
 
 #include <pd/core/core.hpp>
+#include <pd/drivers/types.hpp>
 #include <pd/lithium/command.hpp>
 #include <pd/lithium/texture.hpp>
 
@@ -61,7 +62,8 @@ class GfxDriver2 {
 };
 class GfxDriver {
  public:
-  GfxDriver(const std::string& name = "NullGfx") : pName(name) {};
+  GfxDriver(const std::string& name = "NullGfx") : pName(name) {}
+  GfxDriver(PDDriverData data) : pName("NullGfx") {}
   ~GfxDriver() = default;
 
   PD_SHARED(GfxDriver);
@@ -77,6 +79,7 @@ class GfxDriver {
   virtual void RenderDrawData(const Li::CmdPool& Commands) {}
 
   void SetViewPort(const ivec2& vp) { ViewPort = vp; }
+  void SetViewPort(int w, int h) { ViewPort = PD::ivec2(w, h); }
 
   virtual Li::Texture::Ref LoadTex(
       const std::vector<u8>& pixels, int w, int h,
@@ -89,6 +92,8 @@ class GfxDriver {
   virtual void DestroyTex(PD::Li::Texture::Ref tex) {}
 
   Li::Texture::Ref GetSolidTex() { return pSolid; }
+
+  const std::string& GetName() const { return pName; }
 
   const std::string pName = "NullGfx";
   LiBackendFlags Flags = 0;
@@ -106,39 +111,5 @@ class GfxDriver {
   u32 VertexCounter;
   // Optional Frame Counter
   u64 FrameCounter;
-};
-
-/** Static Gfx Controller */
-class Gfx {
- public:
-  Gfx() = default;
-  ~Gfx() = default;
-
-  static void Init(GfxDriver::Ref d);
-
-  static void Deinit() { pGfx->Deinit(); }
-  static void NewFrame() { pGfx->NewFrame(); }
-
-  static void BindTex(Li::TexAddress addr) { pGfx->BindTex(addr); }
-  static void SetViewPort(const ivec2& vp) { pGfx->SetViewPort(vp); }
-  static void SetViewPort(int w, int h) { pGfx->SetViewPort(PD::ivec2(w, h)); }
-
-  static void RenderDrawData(const Li::CmdPool& Commands) {
-    pGfx->RenderDrawData(Commands);
-  }
-
-  static LiBackendFlags Flags() { return pGfx->Flags; }
-  static Li::Texture::Ref LoadTex(
-      const std::vector<u8>& pixels, int w, int h,
-      Li::Texture::Type type = Li::Texture::Type::RGBA32,
-      Li::Texture::Filter filter = Li::Texture::Filter::LINEAR) {
-    return pGfx->LoadTex(pixels, w, h, type, filter);
-  }
-
-  static void DestroyTex(Li::Texture::Ref tex) { pGfx->DestroyTex(tex); }
-
-  static Li::Texture::Ref GetSolidTex() { return pGfx->GetSolidTex(); }
-
-  static GfxDriver::Ref pGfx;
 };
 }  // namespace PD

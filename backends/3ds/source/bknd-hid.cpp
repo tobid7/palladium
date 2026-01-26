@@ -26,7 +26,7 @@ SOFTWARE.
 #include <pd-3ds/bknd-hid.hpp>
 
 namespace PD {
-Hid3DS::Hid3DS() : HidDriver("Hid3DS") {
+Hid3DS::Hid3DS(PDDriverData data) : HidDriver("Hid3DS") {
   this->Flags |= Flags_HasTouch;
   this->Flags |= FLags_HasGamepad;
   pBinds[KEY_A] = A;
@@ -64,7 +64,7 @@ void Hid3DS::Update() {
   u32 kd = hidKeysDown();
   u32 kh = hidKeysHeld();
   u32 ku = hidKeysUp();
-  for (auto &b : pBinds) {
+  for (auto& b : pBinds) {
     if (b.first & kd) {
       KeyEvents[0][Event_Down] |= b.second;
     }

@@ -30,20 +30,21 @@ SOFTWARE.
 #include <pd/ui7/viewport.hpp>
 
 namespace PD {
+class Context;
 namespace UI7 {
 class PD_API IO {
  public:
-  IO() {
-    Time = Timer::New();
-    InputHandler = InputHandler::New();
+  IO(PD::Context& ctx) : pCtx(ctx) {
+    Time = Timer::New(*pCtx.Os().get());
+    InputHandler = InputHandler::New(pCtx);
     Theme = UI7::Theme::New();
-    Back = Li::DrawList::New();
-    Front = Li::DrawList::New();
-    FDL = Li::DrawList::New();
+    Back = Li::DrawList::New(pCtx);
+    Front = Li::DrawList::New(pCtx);
+    FDL = Li::DrawList::New(pCtx);
     DeltaStats = TimeStats::New(60);
     /** Probably not the best solution i guess */
-    CurrentViewPort.z = PD::Gfx::pGfx->ViewPort.x;
-    CurrentViewPort.w = PD::Gfx::pGfx->ViewPort.y;
+    CurrentViewPort.z = pCtx.Gfx()->ViewPort.x;
+    CurrentViewPort.w = pCtx.Gfx()->ViewPort.y;
   }
   ~IO() {}
 
@@ -89,6 +90,8 @@ class PD_API IO {
   u32 NumVertices = 0;  ///< Debug Vertices Num
   u32 NumIndices = 0;   ///< Debug Indices Num
   std::vector<u32> MenuOrder;
+
+  PD::Context& pCtx;  // Palladium base context
 
   // DrawListApi
   void RegisterDrawList(const UI7::ID& id, Li::DrawList::Ref v) {

@@ -26,7 +26,7 @@ SOFTWARE.
 
 namespace PD {
 void Init(void* data) {
-  if (!data) {
+  /*if (!data) {
     std::cout << "[PD-DRIVERS] Error: pd-desktop requires GLFWwindow* "
                  "reference as data "
                  "input!"
@@ -37,6 +37,6 @@ void Init(void* data) {
   // First use default OS Driver
   PD::OS::Init();
   PD::Gfx::Init(PD::GfxGL2::New());
-  PD::Hid::Init(PD::HidGLFW::New(reinterpret_cast<GLFWwindow*>(data)));
+  PD::Hid::Init(PD::HidGLFW::New(reinterpret_cast<GLFWwindow*>(data)));*/
 }
 }  // namespace PD

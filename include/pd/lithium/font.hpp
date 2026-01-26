@@ -42,6 +42,7 @@ enum LiTextFlags_ {
 };
 
 namespace PD {
+class Context;
 namespace Li {
 class PD_API Font {
  public:
@@ -56,7 +57,7 @@ class PD_API Font {
   };
 
   /** Constructore doesnt need Backand anymore */
-  Font() = default;
+  Font(Context& ctx) : pCtx(ctx) {}
   ~Font() = default;
 
   PD_SHARED(Font);
@@ -128,6 +129,7 @@ class PD_API Font {
     u64 TimeStamp;
   };
   std::unordered_map<u32, TMELEM> pTMS;
+  Context& pCtx;
 };
 }  // namespace Li
 }  // namespace PD

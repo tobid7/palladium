@@ -28,7 +28,7 @@ SOFTWARE.
 namespace PD {
 class Hid3DS : public HidDriver {
  public:
-  Hid3DS();
+  Hid3DS(PDDriverData data = nullptr);
   ~Hid3DS() = default;
 
   PD_SHARED(Hid3DS);

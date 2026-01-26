@@ -26,10 +26,10 @@ SOFTWARE.
 namespace PD {
 namespace UI7 {
 PD_API void Container::HandleScrolling(fvec2 scrolling, fvec4 viewport) {
-  if (last_use != 0 && OS::GetTime() - last_use > 5000) {
+  if (last_use != 0 && io->pCtx.Os()->GetTime() - last_use > 5000) {
     rem = true;
   }
-  last_use = OS::GetTime();
+  last_use = io->pCtx.Os()->GetTime();
   pos -= fvec2(0, scrolling.y);
   skippable = !Li::Renderer::InBox(
       pos, size,
