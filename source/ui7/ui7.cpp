@@ -208,6 +208,7 @@ PD_API void Context::MetricsMenu(bool* show) {
       m->EndTreeNode();
     }
     m->SeparatorText("Palladium Info");
+    m->Label("Os Driver: {}", pIO->pCtx.Os()->GetName());
     m->Label("Renderer: " + pIO->pCtx.Gfx()->GetName());
     if (m->BeginTreeNode(std::string("Input: " + pIO->pCtx.Hid()->GetName()))) {
       if (pIO->pCtx.Hid()->Flags & PD::HidDriver::Flags_HasKeyboard) {

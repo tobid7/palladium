@@ -198,13 +198,14 @@ PD_API void Menu::HandleTitlebarActions() {
   }
   // Close Logic
   if (!(Flags & UI7MenuFlags_NoClose) && pIsShown != nullptr) {
-    vec2 cpos =
-        fvec2(pLayout->Pos.x + pLayout->Size.x - 12 - pIO->FramePadding.x,
+    fvec2 size = TitleBarHeight - pIO->FramePadding.y * 2;
+    fvec2 cpos =
+        fvec2(pLayout->Pos.x + pLayout->Size.x - size.x - pIO->FramePadding.x,
               pLayout->Pos.y + pIO->FramePadding.y);
 
     // clr_close_btn = UI7Color_FrameBackground;
     if (pIO->InputHandler->DragObject(UI7::ID(pID.GetName() + "clse"),
-                                      fvec4(cpos, fvec2(12)))) {
+                                      fvec4(cpos, size))) {
       if (pIO->InputHandler->DragReleased) {
         *pIsShown = !(*pIsShown);
       }
