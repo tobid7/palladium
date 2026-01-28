@@ -125,7 +125,12 @@ PD_API void Layout::Update() {
       it->SetPos(it->GetPos() + Pos);
       it->HandleInput();
       it->UnlockInput();
+      if (Flags & UI7LayoutFlags_UseClipRect) {
+        it->SetClipRect(fvec4(Pos, Size));
+      }
+      it->PreDraw();
       it->Draw();
+      it->PostDraw();
     }
   }
 

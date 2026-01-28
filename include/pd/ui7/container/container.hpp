@@ -113,6 +113,11 @@ class PD_API Container {
   /** Template function to update internal data (if needed) */
   virtual void Update() {}
 
+  /** Internal function */
+  void PreDraw();
+  /** Internal function */
+  void PostDraw();
+
   /** Internal Input Handler */
   void HandleInternalInput();
 

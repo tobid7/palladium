@@ -28,14 +28,8 @@ namespace UI7 {
 PD_API void Label::Draw() {
   // Assert(io.get() && list.get(), "Did you run Container::Init correctly?");
   // io->Ren->OnScreen(screen);
-  if (pCLipRectUsed) {
-    list->PushClipRect(pClipRect);
-  }
   list->DrawTextEx(FinalPos(), label, io->Theme->Get(UI7Color_Text),
                    LiTextFlags_NoOOS, PD::fvec2(0, io->CurrentViewPort.w));
-  if (pCLipRectUsed) {
-    list->PopClipRect();
-  }
 }
 
 PD_API void Label::Update() {

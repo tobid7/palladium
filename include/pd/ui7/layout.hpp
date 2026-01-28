@@ -178,6 +178,7 @@ class PD_API Layout {
   UI7::ID ID;
   UI7::IO::Ref IO;
   Li::DrawList::Ref DrawList;
+  UI7LayoutFlags Flags;
 
   // Positioning
   fvec2 Pos;

@@ -40,5 +40,18 @@ PD_API void Container::HandleScrolling(fvec2 scrolling, fvec4 viewport) {
 PD_API void Container::HandleInternalInput() {
   /** Requires Handle Scrolling First */
 }
+
+/** Internal function */
+PD_API void Container::PreDraw() {
+  if (pCLipRectUsed) {
+    list->PushClipRect(pClipRect);
+  }
+}
+/** Internal function */
+PD_API void Container::PostDraw() {
+  if (pCLipRectUsed) {
+    list->PopClipRect();
+  }
+}
 }  // namespace UI7
 }  // namespace PD

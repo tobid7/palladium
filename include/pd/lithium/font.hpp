@@ -44,6 +44,7 @@ enum LiTextFlags_ {
 namespace PD {
 class Context;
 namespace Li {
+class DrawList;
 class PD_API Font {
  public:
   /** Codepoint Data holder */
@@ -93,7 +94,7 @@ class PD_API Font {
   /**
    * Extended Draw Text Function that vreates a Command List
    */
-  void CmdTextEx(CmdPool& cmds, const fvec2& pos, u32 color, float scale,
+  void CmdTextEx(DrawList& dl, const fvec2& pos, u32 color, float scale,
                  const std::string& text, LiTextFlags flags = 0,
                  const fvec2& box = 0);
 

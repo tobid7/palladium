@@ -28,6 +28,7 @@ SOFTWARE.
 #define PD_TRUETYPE_IMPLEMENTATION
 #endif
 #include <pd/external/stb_truetype.hpp>
+#include <pd/lithium/drawlist.hpp>
 #include <pd/lithium/renderer.hpp>
 
 #ifdef PD_LI_INCLUDE_FONTS
@@ -246,7 +247,7 @@ PD_API fvec2 Font::GetTextBounds(const std::string& text, float scale) {
   return res;
 }
 
-PD_API void Font::CmdTextEx(CmdPool& cmds, const fvec2& pos, u32 color,
+PD_API void Font::CmdTextEx(DrawList& dl, const fvec2& pos, u32 color,
                             float scale, const std::string& text,
                             LiTextFlags flags, const fvec2& box) {
   fvec2 off;
@@ -291,7 +292,7 @@ PD_API void Font::CmdTextEx(CmdPool& cmds, const fvec2& pos, u32 color,
       it = pShortText(it, scale, box - pos, tmp_dim);
     }
     auto wline = Strings::MakeWstring(it);
-    auto cmd = cmds.NewCmd();
+    auto cmd = dl.GetNewCmd();
     auto Tex = GetCodepoint(wline[0]).Tex;
     if (Tex) {
       cmd->Tex = Tex->Address;
@@ -303,7 +304,7 @@ PD_API void Font::CmdTextEx(CmdPool& cmds, const fvec2& pos, u32 color,
         continue;
       }
       if (Tex != cp.Tex) {
-        cmd = cmds.NewCmd();
+        cmd = dl.GetNewCmd();
         Tex = cp.Tex;
         if (Tex) {
           cmd->Tex = Tex->Address;

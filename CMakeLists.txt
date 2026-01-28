@@ -90,6 +90,7 @@ file(GLOB_RECURSE PD_FMTFILES CONFIGURE_DEPENDS
     ${CMAKE_CURRENT_SOURCE_DIR}/backends/3ds/include/*.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/backends/desktop/include/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/backends/3ds/include/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/test/source*.cpp
 )
 
 add_custom_target(pd-clang-format

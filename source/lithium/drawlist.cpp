@@ -288,7 +288,7 @@ PD_API void DrawList::DrawText(const fvec2& pos, const std::string& text,
   if (!pCurrentFont) {
     return;
   }
-  pCurrentFont->CmdTextEx(pPool, pos, color, pFontScale, text);
+  pCurrentFont->CmdTextEx(*this, pos, color, pFontScale, text);
 }
 
 PD_API void DrawList::DrawTextEx(const fvec2& p, const std::string& text,
@@ -297,7 +297,7 @@ PD_API void DrawList::DrawTextEx(const fvec2& p, const std::string& text,
   if (!pCurrentFont) {
     return;
   }
-  pCurrentFont->CmdTextEx(pPool, p, color, pFontScale, text, flags, box);
+  pCurrentFont->CmdTextEx(*this, p, color, pFontScale, text, flags, box);
 }
 
 PD_API void DrawList::DrawLine(const fvec2& a, const fvec2& b, u32 color,

@@ -30,14 +30,13 @@ Menu::Menu(const ID& id, IO::Ref io) : pIO(io), pID(id) {
   pLayout = Layout::New(id, io);
   TitleBarHeight = pIO->FontScale * pIO->Font->PixelHeight + pIO->MenuPadding.y;
   pLayout->WorkRect.y += TitleBarHeight;
+  pLayout->Flags |= UI7LayoutFlags_UseClipRect;
   pLayout->CursorInit();
 }
 
 PD_API void Menu::Label(const std::string& label) {
   // Layout API
   auto r = Label::New(label, pIO);
-  r->SetClipRect(fvec4(pLayout->GetPosition(),
-                       pLayout->GetPosition() + pLayout->GetSize()));
   pLayout->AddObject(r);
 }
 
