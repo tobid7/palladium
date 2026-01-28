@@ -74,6 +74,21 @@ endif()
 
 target_include_directories(palladium PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Nintendo3DS")
+    target_compile_options(palladium PRIVATE
+        $<$<COMPILE_LANGUAGE:C>:-Wall>
+        $<$<COMPILE_LANGUAGE:C>:-Wno-psabi>
+        $<$<COMPILE_LANGUAGE:CXX>:-fno-exceptions>
+    )
+endif()
+
+if(${CMAKE_BUILD_TYPE} STREQUAL "Release")
+    target_compile_options(palladium PRIVATE
+        $<$<CONFIG:Debug>:-O0 -g>
+        $<$<CONFIG:Release>:-O3>
+    )
+endif()
+
 install(DIRECTORY include DESTINATION ".")
 install(TARGETS palladium)
 

@@ -11,11 +11,10 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Nintendo3DS")
     if(${PD_BUILD_SHARED})
         message(ERROR "3DS Only supports Static libraries")
     endif()
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wno-psabi -O2")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_C_FLAGS} -fno-rtti -fno-exceptions")
 endif()
 
 add_subdirectory(../ palladium)
+
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Nintendo3DS")
     add_subdirectory(../backends/3ds pd-3ds)
 else()
@@ -24,17 +23,33 @@ endif()
 
 add_executable(test source/main.cpp
     ${BKND_SRC})
+
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Nintendo3DS")
     target_link_libraries(test PUBLIC pd-3ds palladium)
 else()
     target_link_libraries(test PUBLIC pd-desktop palladium)
 endif()
 
-#set(RC_FILES
-#testassets/ComicNeue.ttf
-#testassets/logo.png
-#testassets/test.png)
-#install(FILES ${RC_FILES} DESTINATION ".")
-#else()
-#target_link_libraries(test PUBLIC pd-backend-3ds ctru citro3d)
-#endif()
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Nintendo3DS")
+    target_compile_options(palladium PRIVATE
+        $<$<COMPILE_LANGUAGE:C>:-Wall>
+        $<$<COMPILE_LANGUAGE:C>:-Wno-psabi>
+        $<$<COMPILE_LANGUAGE:CXX>:-fno-exceptions>
+    )
+endif()
+
+if(${CMAKE_BUILD_TYPE} STREQUAL "Release")
+    target_compile_options(palladium PRIVATE
+        $<$<CONFIG:Debug>:-O0 -g>
+        $<$<CONFIG:Release>:-O3>
+    )
+endif()
+
+# set(RC_FILES
+# testassets/ComicNeue.ttf
+# testassets/logo.png
+# testassets/test.png)
+# install(FILES ${RC_FILES} DESTINATION ".")
+# else()
+# target_link_libraries(test PUBLIC pd-backend-3ds ctru citro3d)
+# endif()

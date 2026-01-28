@@ -309,6 +309,7 @@ void GfxGL2::RenderDrawData(const Li::CmdPool& Commands) {
 #if PD_OPENGL >= 33
     glBindVertexArray(0);
 #endif
+    glDisable(GL_SCISSOR_TEST);
   }
 }
 
