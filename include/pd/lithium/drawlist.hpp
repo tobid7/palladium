@@ -91,7 +91,7 @@ class PD_API DrawList {
   void SetFontScale(float scale) { pFontScale = scale; }
 
   void DrawSolid();
-  void DrawTexture(Texture::Ref tex) { CurrentTex = tex; }
+  void DrawTexture(Texture::Ref tex);
 
   // SECTION: Draw API //
 

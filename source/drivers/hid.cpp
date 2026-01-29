@@ -24,13 +24,13 @@ SOFTWARE.
 #include <pd/drivers/hid.hpp>
 
 namespace PD {
-bool HidDriver::IsEvent(Event e, Key keys) { return KeyEvents[0][e] & keys; }
+PD_API bool HidDriver::IsEvent(Event e, Key keys) { return KeyEvents[0][e] & keys; }
 
-bool HidDriver::IsEvent(Event e, KbKey keys) {
+PD_API bool HidDriver::IsEvent(Event e, KbKey keys) {
   return KbKeyEvents[0][e].Has(keys);
 }
 
-void HidDriver::SwapTab() {
+PD_API void HidDriver::SwapTab() {
   auto tkd = KeyEvents[1][Event_Down];
   auto tkh = KeyEvents[1][Event_Held];
   auto tku = KeyEvents[1][Event_Up];
@@ -46,7 +46,7 @@ void HidDriver::SwapTab() {
  * If this func has no verride, still clear the stats
  * cause if they are empty this leads to a crash
  */
-void HidDriver::Update() {
+PD_API void HidDriver::Update() {
   // Clear States
   for (int i = 0; i < 2; i++) {
     KeyEvents[i][Event_Down] = 0;

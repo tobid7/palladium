@@ -24,7 +24,7 @@ SOFTWARE.
  */
 
 /** Generated with ppam */
-
+#ifndef PD_BUILD_STATIC
 #ifdef _WIN32  // Windows (MSVC Tested)
 #ifdef PD_BUILD_SHARED
 #define PD_API __declspec(dllexport)
@@ -46,6 +46,9 @@ SOFTWARE.
 #elif defined(__3DS__)  // 3ds Specific
 // Only Static supported
 #define PD_API
+#else
+#define PD_API
+#endif
 #else
 #define PD_API
 #endif

@@ -83,7 +83,8 @@ constexpr static KbKey Kb_F11 = KbKey::Flag(47);
 constexpr static KbKey Kb_F12 = KbKey::Flag(48);
 constexpr static KbKey Kb_MouseLeft = KbKey::Flag(120);
 }  // namespace HidKb
-class HidDriver {
+
+class PD_API HidDriver {
  public:
   enum Flags : u32 {
     Flags_None = 0,

@@ -34,6 +34,7 @@ SOFTWARE.
 
 namespace PD {
 namespace UI7 {
+  class Context;
 class PD_API Layout {
  public:
   Layout(const ID& id, IO::Ref io) : ID(id) {
@@ -172,7 +173,7 @@ class PD_API Layout {
 
  private:
   friend class Menu;
-  friend class Context;
+  friend class PD::UI7::Context;
   friend class ReMenu;
   // Base Components
   UI7::ID ID;

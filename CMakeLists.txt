@@ -70,6 +70,7 @@ if(${PD_BUILD_SHARED})
     target_compile_definitions(palladium PRIVATE -DPD_BUILD_SHARED)
 else()
     add_library(palladium STATIC ${PD_SOURCES})
+    target_compile_definitions(palladium PUBLIC -DPD_BUILD_STATIC)
 endif()
 
 target_include_directories(palladium PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
@@ -82,12 +83,10 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Nintendo3DS")
     )
 endif()
 
-if(${CMAKE_BUILD_TYPE} STREQUAL "Release")
-    target_compile_options(palladium PRIVATE
-        $<$<CONFIG:Debug>:-O0 -g>
-        $<$<CONFIG:Release>:-O3>
-    )
-endif()
+target_compile_options(palladium PRIVATE
+    $<$<CONFIG:Debug>:-O0 -g>
+    $<$<CONFIG:Release>:-O3>
+)
 
 install(DIRECTORY include DESTINATION ".")
 install(TARGETS palladium)

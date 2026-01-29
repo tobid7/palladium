@@ -306,5 +306,7 @@ PD_API void DrawList::DrawLine(const fvec2& a, const fvec2& b, u32 color,
   PathAdd(b);
   PathStroke(color, t);
 }
+
+PD_API void DrawList::DrawTexture(Texture::Ref tex) { CurrentTex = tex; }
 }  // namespace Li
 }  // namespace PD
