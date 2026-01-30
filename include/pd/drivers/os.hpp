@@ -26,11 +26,12 @@ SOFTWARE.
 #include <pd/core/common.hpp>
 #include <pd/core/timetrace.hpp>
 #include <pd/drivers/types.hpp>
+#include <pd/pd_p_api.hpp>
 
 namespace PD {
 using TraceMap = std::map<std::string, TT::Res::Ref>;
 
-class OsDriver {
+class PD_API OsDriver {
  public:
   OsDriver(const std::string& name = "StdPd") : pName(name) {}
   OsDriver(PDDriverData data) : pName("StdPd") {}

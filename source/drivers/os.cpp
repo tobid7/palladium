@@ -24,7 +24,7 @@ SOFTWARE.
 #include <pd/drivers/os.hpp>
 
 namespace PD {
-TT::Res::Ref& OsDriver::GetTraceRef(const std::string& id) {
+PD_API TT::Res::Ref& OsDriver::GetTraceRef(const std::string& id) {
   if (!pTraces.count(id)) {
     pTraces[id] = TT::Res::New();
     pTraces[id]->SetID(id);
@@ -32,18 +32,18 @@ TT::Res::Ref& OsDriver::GetTraceRef(const std::string& id) {
   return pTraces[id];
 }
 
-TraceMap& OsDriver::GetTraceMap() { return pTraces; }
+PD_API TraceMap& OsDriver::GetTraceMap() { return pTraces; }
 
-bool OsDriver::TraceExist(const std::string& id) { return pTraces.count(id); }
+PD_API bool OsDriver::TraceExist(const std::string& id) { return pTraces.count(id); }
 
 /** Standart Driver */
-u64 OsDriver::GetTime() {
+PD_API u64 OsDriver::GetTime() {
   return std::chrono::duration_cast<std::chrono::milliseconds>(
              std::chrono::steady_clock::now().time_since_epoch())
       .count();
 }
 
-u64 OsDriver::GetNanoTime() {
+PD_API u64 OsDriver::GetNanoTime() {
   return std::chrono::duration_cast<std::chrono::nanoseconds>(
              std::chrono::steady_clock::now().time_since_epoch())
       .count();
