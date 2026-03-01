@@ -1,0 +1,6 @@
+@PACKAGE_INIT@
+
+include("${CMAKE_CURRENT_LIST_DIR}/palladiumTargets.cmake")
+if(NOT TARGET palladium::pd-desktop AND PALLADIUM_FIND_DESKTOP)
+    find_dependency(palladium::pd-desktop OPTIONAL)
+endif()

@@ -34,7 +34,7 @@ SOFTWARE.
 
 namespace PD {
 namespace UI7 {
-  class Context;
+class Context;
 class PD_API Layout {
  public:
   Layout(const ID& id, IO::Ref io) : ID(id) {

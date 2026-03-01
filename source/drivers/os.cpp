@@ -34,7 +34,9 @@ PD_API TT::Res::Ref& OsDriver::GetTraceRef(const std::string& id) {
 
 PD_API TraceMap& OsDriver::GetTraceMap() { return pTraces; }
 
-PD_API bool OsDriver::TraceExist(const std::string& id) { return pTraces.count(id); }
+PD_API bool OsDriver::TraceExist(const std::string& id) {
+  return pTraces.count(id);
+}
 
 /** Standart Driver */
 PD_API u64 OsDriver::GetTime() {
