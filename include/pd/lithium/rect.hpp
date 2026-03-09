@@ -131,7 +131,7 @@ class Rect {
     return *this;
   }
 
-  bool operator==(Rect& r) { return Top == r.Top && Bot == r.Bot; }
+  bool operator==(const Rect& r) const { return Top == r.Top && Bot == r.Bot; }
 
   void SwapVec2XY() {
     Top.SwapXY();

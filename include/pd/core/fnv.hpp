@@ -50,4 +50,21 @@ constexpr u64 FNV1A64(std::string_view str) {
   }
   return ret;
 }
+
+namespace Detail {
+template <typename T>
+struct FNV1A {};
+
+template <>
+struct FNV1A<u32> {
+  static constexpr u32 Hash(std::string_view str) { return FNV1A32(str); }
+  static constexpr u32 Hash(const std::string& str) { return FNV1A32(str); }
+};
+
+template <>
+struct FNV1A<u64> {
+  static constexpr u64 Hash(std::string_view str) { return FNV1A64(str); }
+  static constexpr u64 Hash(const std::string& str) { return FNV1A64(str); }
+};
+}  // namespace Detail
 }  // namespace PD

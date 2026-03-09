@@ -53,6 +53,7 @@ PD_API void DrawList::Clear() {
   while (!pClipRects.empty()) {
     pClipRects.pop();
   }
+  DrawSolid();
 }
 
 PD_API void DrawList::Merge(DrawList::Ref list) {
