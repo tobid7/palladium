@@ -127,4 +127,48 @@ inline const std::string GetCompilerVersion() {
   return res.str();
 }
 }  // namespace Strings
+class U8Iterator {
+ public:
+  explicit U8Iterator(const char* s) : ptr(reinterpret_cast<const u8*>(s)) {}
+  ~U8Iterator() = default;
+
+  bool Decode32(u32& ret) {
+    if (ptr == nullptr || *ptr == 0) return false;
+    u8 c = *ptr;
+    if (c < 0x80) {
+      ret = c;
+      ptr += 1;
+    } else if ((c >> 5) == 0x6) {
+      ret = ((c & 0x1F) << 6) | (ptr[1] & 0x3F);
+      ptr += 2;
+    } else if ((c >> 4) == 0xE) {
+      ret = ((c & 0x0F) << 12) | ((ptr[1] & 0x3F) << 6) | (ptr[2] & 0x3F);
+      ptr += 3;
+    } else {
+      ret = ((c & 0x07) << 18) | ((ptr[1] & 0x3F) << 12) |
+            ((ptr[2] & 0x3F) << 6) | (ptr[3] & 0x3F);
+      ptr += 4;
+    }
+    return true;
+  }
+
+  bool PeekNext32(u32& ret) {
+    if (ptr + 1 == nullptr || *ptr + 1 == 0) return false;
+    u8 c = *ptr;
+    if (c < 0x80) {
+      ret = c;
+    } else if ((c >> 5) == 0x6) {
+      ret = ((c & 0x1F) << 6) | (ptr[1] & 0x3F);
+    } else if ((c >> 4) == 0xE) {
+      ret = ((c & 0x0F) << 12) | ((ptr[1] & 0x3F) << 6) | (ptr[2] & 0x3F);
+    } else {
+      ret = ((c & 0x07) << 18) | ((ptr[1] & 0x3F) << 12) |
+            ((ptr[2] & 0x3F) << 6) | (ptr[3] & 0x3F);
+    }
+    return true;
+  }
+
+ private:
+  const u8* ptr = nullptr;
+};
 }  // namespace PD

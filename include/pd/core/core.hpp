@@ -29,6 +29,7 @@ SOFTWARE.
 #include <pd/core/hashid.hpp>
 #include <pd/core/io.hpp>
 #include <pd/core/mat.hpp>
+#include <pd/core/pool.hpp>
 #include <pd/core/strings.hpp>
 #include <pd/core/timer.hpp>
 #include <pd/core/timetrace.hpp>
