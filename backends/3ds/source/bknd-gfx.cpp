@@ -180,8 +180,10 @@ void GfxC3D::RenderDrawData(const PD::Li::CmdPool& Commands) {
     if (ScissorEnabled) {
       // Figure out this setup was pain
       C3D_SetScissor(GPU_SCISSOR_NORMAL,
-                     ViewPort.y - (ScissorRect.y + ScissorRect.w),
-                     ViewPort.x - (ScissorRect.x + ScissorRect.z),
+                     std::clamp(ViewPort.y - (ScissorRect.y + ScissorRect.w), 0,
+                                ViewPort.y),
+                     std::clamp(ViewPort.x - (ScissorRect.x + ScissorRect.z), 0,
+                                ViewPort.x),
                      ViewPort.y - ScissorRect.y, ViewPort.x - ScissorRect.x);
     } else {
       C3D_SetScissor(GPU_SCISSOR_DISABLE, 0, 0, 0, 0);

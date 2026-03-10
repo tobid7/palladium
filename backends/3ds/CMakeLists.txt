@@ -9,11 +9,11 @@ set(SRC
 )
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/libpicasso)
 add_library(pd-3ds STATIC ${SRC})
-target_include_directories(pd-3ds PUBLIC 
-  PUBLIC
+target_include_directories(pd-3ds PUBLIC
+    PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
-    )
+)
 target_link_libraries(pd-3ds PUBLIC m palladium ctru citro3d pica::pica)
 add_library(palladium::pd-3ds ALIAS pd-3ds)
 install(TARGETS pd-3ds

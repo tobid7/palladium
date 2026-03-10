@@ -38,6 +38,7 @@ class PD_API Image : public Container {
    * @param size Custom Size of the Image
    */
   Image(Li::Texture::Ref img, fvec2 size = 0.f, Li::Rect uv = fvec4(0.f)) {
+    if (!img) return;
     this->img = img;
     if (size == fvec2(0.f)) {
       size = img->GetSize();
@@ -60,9 +61,9 @@ class PD_API Image : public Container {
   void Draw() override;
 
  private:
-  Li::Texture::Ref img;  ///< Texture reference to the Image
-  fvec2 newsize = 0.f;   ///< New Size
-  Li::Rect cuv;          ///< Custom UV
+  Li::Texture::Ref img = nullptr;  ///< Texture reference to the Image
+  fvec2 newsize = 0.f;             ///< New Size
+  Li::Rect cuv;                    ///< Custom UV
 };
 }  // namespace UI7
 }  // namespace PD
