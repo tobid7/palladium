@@ -56,5 +56,9 @@ class GfxC3D : public GfxDriver {
   shaderProgram_s Shader;
   C3D_AttrInfo ShaderInfo;
   std::vector<u8> pRawShader;
+  u32 pCountVertices = 0;
+  u32 pCountIndices = 0;
+  u32 pCountDrawCalls = 0;
+  u32 pDrawCommands = 0;
 };
 }  // namespace PD

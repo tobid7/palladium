@@ -124,6 +124,9 @@ class PD_API Menu {
 
   void Update();
 
+  void SetSize(PD::fvec2 size) { pLayout->SetSize(size); }
+  void SetPosition(PD::fvec2 pos) { pLayout->SetPosition(pos); }
+
   /** Data Section */
 
   UI7MenuFlags Flags = 0;

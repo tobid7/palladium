@@ -138,8 +138,14 @@ void GfxC3D::NewFrame() {
   CurrentVertex = 0;
   FrameCounter++;
   /** Probably completly incorrect but just do it like that */
-  VertexCounter = CurrentVertex;
-  IndexCounter = CurrentIndex;
+  VertexCounter = pCountVertices;
+  IndexCounter = pCountIndices;
+  DrawCalls = pCountDrawCalls;
+  DrawCommands = pDrawCommands;
+  pCountDrawCalls = 0;
+  pCountIndices = 0;
+  pCountVertices = 0;
+  pDrawCommands = 0;
 }
 
 void GfxC3D::BindTex(PD::Li::TexAddress addr) {
@@ -147,6 +153,7 @@ void GfxC3D::BindTex(PD::Li::TexAddress addr) {
 }
 
 void GfxC3D::RenderDrawData(const PD::Li::CmdPool& Commands) {
+  pDrawCommands += Commands.Size();
   shaderProgramUse(&Shader);
   C3D_SetAttrInfo(&ShaderInfo);
   C3D_Mtx proj;
@@ -169,6 +176,8 @@ void GfxC3D::RenderDrawData(const PD::Li::CmdPool& Commands) {
            Commands.GetCmd(index)->ScissorOn == ScissorEnabled &&
            Commands.GetCmd(index)->ScissorRect == ScissorRect) {
       auto c = Commands.GetCmd(index);
+      pCountIndices += c->IndexBuffer.size();
+      pCountVertices += c->VertexBuffer.size();
       for (size_t i = 0; i < c->IndexBuffer.size(); i++) {
         IndexBuffer[CurrentIndex++] = CurrentVertex + c->IndexBuffer.at(i);
       }
@@ -196,6 +205,7 @@ void GfxC3D::RenderDrawData(const PD::Li::CmdPool& Commands) {
 
     C3D_DrawElements(GPU_TRIANGLES, CurrentIndex - StartIndex,
                      C3D_UNSIGNED_SHORT, IndexBuffer.data() + StartIndex);
+    pCountDrawCalls++;
   }
   C3D_DepthTest(true, GPU_GREATER, GPU_WRITE_ALL);
 }

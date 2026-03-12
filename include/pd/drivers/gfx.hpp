@@ -111,5 +111,9 @@ class GfxDriver {
   u32 VertexCounter;
   // Optional Frame Counter
   u64 FrameCounter;
+  // Draw calls counter
+  u32 DrawCalls;
+  // Command Counter
+  u32 DrawCommands;
 };
 }  // namespace PD

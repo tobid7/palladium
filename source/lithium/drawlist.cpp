@@ -71,6 +71,7 @@ PD_API void DrawList::Merge(DrawList::Ref list) {
 PD_API void DrawList::Copy(DrawList::Ref list) { pPool.Copy(list->pPool); }
 
 PD_API void DrawList::Optimize() {
+  pPool.Sort();
   /*std::sort(pDrawList.begin(), pDrawList.end(),
             [](const PD::Li::Command::Ref &a, const PD::Li::Command::Ref &b) {
               if (a->Layer == b->Layer) {  // Same layer
