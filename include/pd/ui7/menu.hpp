@@ -126,6 +126,8 @@ class PD_API Menu {
 
   void SetSize(PD::fvec2 size) { pLayout->SetSize(size); }
   void SetPosition(PD::fvec2 pos) { pLayout->SetPosition(pos); }
+  const PD::fvec2& GetSize() const { return pLayout->GetSize(); }
+  const PD::fvec2& GetPosition() const { return pLayout->GetPosition(); }
 
   /** Data Section */
 
