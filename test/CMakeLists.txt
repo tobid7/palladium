@@ -38,7 +38,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Nintendo3DS")
     )
 endif()
 
-if(${CMAKE_BUILD_TYPE} STREQUAL "Release")
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
     target_compile_options(palladium PRIVATE
         $<$<CONFIG:Debug>:-O0 -g>
         $<$<CONFIG:Release>:-O3>
