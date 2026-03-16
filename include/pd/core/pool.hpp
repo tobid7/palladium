@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <memory>
 #include <pd/common.hpp>
 namespace PD {
 template <typename T, typename Alloc = std::allocator<T>>
@@ -24,6 +25,10 @@ class Pool {
     pPos = 0;
     pCap = size;
     pData = pAlloc.allocate(size);
+    for (size_t i = 0; i < pCap; i++) {
+      std::allocator_traits<Alloc>::construct(pAlloc, &pData[i]);
+    }
+    PDLOG("Pool::Init({})", size);
   }
 
   Pool(const Pool&) = delete;
@@ -49,7 +54,15 @@ class Pool {
     return false;
   }
 
-  void Reset() { pPos = 0; }
+  void Reset() {
+    for (size_t i = 0; i < pCap; i++) {
+      std::allocator_traits<Alloc>::destroy(pAlloc, &pData[i]);
+    }
+    pPos = 0;
+    for (size_t i = 0; i < pCap; i++) {
+      std::allocator_traits<Alloc>::construct(pAlloc, &pData[i]);
+    }
+  }
 
   size_t size() const { return pPos; }
   size_t capacity() const { return pCap; }
