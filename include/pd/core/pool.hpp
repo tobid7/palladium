@@ -1,20 +1,29 @@
 #pragma once
 
+#include <iostream>
 #include <pd/common.hpp>
-
 namespace PD {
 template <typename T, typename Alloc = std::allocator<T>>
 class Pool {
  public:
+  using value_type = T;
+  using iterator = T*;
+  using const_iterator = const iterator*;
+
   Pool() = default;
-  ~Pool() = default;
+  ~Pool() {
+    if (pData) {
+      pAlloc.deallocate(pData, pCap);
+      pData = nullptr;
+    }
+  }
 
   static Pool* Create(size_t size) { return new Pool(size); }
 
   void Init(size_t size) {
     pPos = 0;
     pCap = size;
-    pPool.resize(size);
+    pData = pAlloc.allocate(size);
   }
 
   Pool(const Pool&) = delete;
@@ -24,7 +33,7 @@ class Pool {
 
   T* Allocate(size_t num = 1) {
     if (CheckLimits(num)) return nullptr;
-    T* ret = &pPool[pPos];
+    T* ret = &pData[pPos];
     pPos += num;
     return ret;
   }
@@ -42,10 +51,19 @@ class Pool {
 
   void Reset() { pPos = 0; }
 
+  size_t size() const { return pPos; }
+  size_t capacity() const { return pCap; }
+  T& at(size_t idx) { return pData[idx]; }
+  const T& at(size_t idx) const { return pData[idx]; }
+
+  T& operator[](size_t idx) { return at(idx); }
+  const T& operator[](size_t idx) const { return at(idx); }
+
  private:
-  Pool(size_t size) : pCap(size), pPos(0) { pPool.resize(size); }
+  Pool(size_t size) : pCap(size), pPos(0) { pData = pAlloc.allocate(size); }
   size_t pCap = 0;
   size_t pPos = 0;
-  std::vector<T, Alloc> pPool;
+  Alloc pAlloc;
+  T* pData = nullptr;
 };
 }  // namespace PD
