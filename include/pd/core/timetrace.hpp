@@ -23,10 +23,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/core/common.hpp>
+#include <pd/common.hpp>
 
 namespace PD {
-class OsDriver;
 /**
  * Class to calculate Maximum/Minimum and Average Timings
  */
@@ -38,8 +37,6 @@ class TimeStats {
    */
   TimeStats(int l) : len(l), val(l, 0) {}
   ~TimeStats() = default;
-
-  PD_SHARED(TimeStats);
 
   /**
    * Add a New Value to the list
@@ -152,10 +149,8 @@ namespace TT {
 class Res {
  public:
   /** Constructore that Inits a protocol at size of 60 frames */
-  Res() : start(0), end(0) { protocol = TimeStats::New(60); }
+  Res() : start(0), end(0), protocol(60) {}
   ~Res() = default;
-
-  PD_SHARED(Res);
 
   /**
    * Setter for the ID (Name)
@@ -184,7 +179,7 @@ class Res {
   void SetEnd(u64 v) {
     end = v;
     diff = end - start;
-    protocol->Add(GetLastDiff());
+    protocol.Add(GetLastDiff());
   }
   /**
    * Getter for the End Time
@@ -201,7 +196,7 @@ class Res {
    * Get Protcol Reference
    * @return Protocol Ref
    */
-  TimeStats::Ref GetProtocol() { return protocol; }
+  TimeStats& GetProtocol() { return protocol; }
 
  private:
   /** Trace ID */
@@ -213,18 +208,18 @@ class Res {
   /** Last Diff */
   u64 diff;
   /** Protocol */
-  TimeStats::Ref protocol;
+  TimeStats protocol;
 };
 /**
  * Begin a Trace
  * @param id Name of the Trace
  */
-PD_API void Beg(OsDriver& os, const std::string& id);
+PD_API void Beg(const std::string& id);
 /**
  * End a Trace
  * @param id Name of the Trace
  */
-PD_API void End(OsDriver& os, const std::string& id);
+PD_API void End(const std::string& id);
 /**
  * Collect Start end end of the trace by tracking
  * when the Scope object goes out of scope
@@ -246,20 +241,18 @@ class Scope {
    * Constructor requiring a Name for the Trace
    * @param id Name of the Trace
    */
-  Scope(OsDriver& os, const std::string& id) : pOs(os) {
+  Scope(const std::string& id) {
     this->ID = id;
-    Beg(pOs, id);
+    Beg(id);
   }
   /**
    * Deconstructor getting the end time when going out of scope
    */
-  ~Scope() { End(pOs, ID); }
+  ~Scope() { End(ID); }
 
  private:
   /** Trace Name/ID */
   std::string ID;
-  /** Os Driver Reference */
-  OsDriver& pOs;
 };
 }  // namespace TT
 }  // namespace PD
