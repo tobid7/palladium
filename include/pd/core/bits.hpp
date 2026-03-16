@@ -23,33 +23,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-// This file is based on fvec4
-
 #include <pd/common.hpp>
-#include <pd/core/vec4.hpp>
 
 namespace PD {
-class fquat : public fvec4 {
-  constexpr fquat() : fvec4(0.f, 0.f, 0.f, 1.f) {}
-  constexpr fquat(float x, float y, float z, float w) : fvec4(x, y, z, w) {}
-  constexpr fquat(const fvec4& v) : fvec4(v) {}
-
-  static fquat Identity() { return fquat(0.f, 0.f, 0.f, 1.f); }
-
-  constexpr fquat Conjugate() const { return fquat(-x, -y, -z, w); }
-  fquat Inverse() const {
-    float len = SqLen();
-    if (len == 0.0f) {
-      return fquat();
-    }
-    return Conjugate() / len;
-  }
-
-  fquat operator*(const fquat& v) const {
-    return fquat(w * v.x + x * v.w + y * v.z - z * v.y,
-                 w * v.y - x * v.z + y * v.w + z * v.x,
-                 w * v.z + x * v.y - y * v.x + z * v.w,
-                 w * v.w - x * v.x - y * v.y - z * v.z);
-  }
-};
+namespace Bits {
+/**
+ * Check if a 32 Bit number only set a sigle bit to 1
+ * @param v 32 bit unsigned int
+ * @return true if its a single bit number
+ */
+PD_API bool IsSingleBit(u32 v);
+/**
+ * Get the Next Power of two Number
+ * @param v Current Number
+ * @return Next Number thats a Pow of 2
+ */
+PD_API u32 GetPow2(u32 v);
+}  // namespace Bits
 }  // namespace PD
