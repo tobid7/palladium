@@ -26,14 +26,10 @@ SOFTWARE.
 namespace PD {
 PD_API std::string Color::Hex(bool rgba) const {
   /** Need to int cast (so it is used as num and not char...) */
-  std::stringstream s;
-  s << "#";
-  s << std::hex << std::setw(2) << std::setfill('0') << (int)r;
-  s << std::hex << std::setw(2) << std::setfill('0') << (int)g;
-  s << std::hex << std::setw(2) << std::setfill('0') << (int)b;
+  std::string ret = std::format("#{:02X}{:02X}{:02X}", r, g, b);
   if (rgba || a != 255) {  // QoL change btw
-    s << std::hex << std::setw(2) << std::setfill('0') << (int)a;
+    ret += std::format("{:02X}", a);
   }
-  return s.str();
+  return ret;
 }
 }  // namespace PD

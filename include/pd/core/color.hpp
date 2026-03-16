@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/core/common.hpp>
+#include <pd/common.hpp>
 #include <pd/core/strings.hpp>
 
 namespace PD {
@@ -139,6 +139,11 @@ class PD_API Color {
    * @return 32Bit Color Value
    */
   constexpr operator u32() const { return Get(); }
+
+  const float rf() const { return static_cast<float>(r) / 255.f; }
+  const float gf() const { return static_cast<float>(g) / 255.f; }
+  const float bf() const { return static_cast<float>(b) / 255.f; }
+  const float af() const { return static_cast<float>(a) / 255.f; }
 
   /** Public Access Data section */
   u8 r;

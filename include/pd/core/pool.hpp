@@ -1,6 +1,6 @@
 #pragma once
 
-#include <pd/core/common.hpp>
+#include <pd/common.hpp>
 
 namespace PD {
 template <typename T, typename Alloc = std::allocator<T>>
