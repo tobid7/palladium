@@ -24,5 +24,10 @@ int main() {
   PD::Os::UseDriver<PD::OsDriver>();
   ColorTests();
   std::cout << PD::Os::GetTime() << std::endl;
+  PD::Pool<int> pool;
+  pool.Init(90);
+  int* elems = pool.Allocate(5);
+  std::cout << std::format("Pool ({}/{})", pool.size(), pool.capacity())
+            << std::endl;
   return 0;
 }
