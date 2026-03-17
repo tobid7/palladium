@@ -1,56 +1,13 @@
+#include <pd_system/gfx_opengl2.hpp>
+
+#if defined(PD_ENABLE_OPENGL2)
 #include <glad/glad.h>
 
-#include <gfx_opengl.hpp>
-
-#include "pd/common.hpp"
-#include "pd/drivers/gfx.hpp"
+#include <pd/drivers/drivers.hpp>
+#include <pd_system/gl-helper.hpp>
 
 namespace PD {
-GLuint compileShader(const std::string& source, GLenum type) {
-  GLuint shader = glCreateShader(type);
-  const char* src = source.c_str();
-  glShaderSource(shader, 1, &src, nullptr);
-  glCompileShader(shader);
-
-  GLint success;
-  glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-  if (!success) {
-    char infoLog[512];
-    glGetShaderInfoLog(shader, 512, nullptr, infoLog);
-    std::cerr << "Shader Compilation Error: " << infoLog << std::endl;
-  }
-
-  return shader;
-}
-
-GLuint createShaderProgram(const std::string& vertexShaderSource,
-                           const std::string& fragmentShaderSource) {
-  GLuint vertexShader = compileShader(vertexShaderSource, GL_VERTEX_SHADER);
-  GLuint fragmentShader =
-      compileShader(fragmentShaderSource, GL_FRAGMENT_SHADER);
-
-  GLuint shaderProgram = glCreateProgram();
-  glAttachShader(shaderProgram, vertexShader);
-  glAttachShader(shaderProgram, fragmentShader);
-  glLinkProgram(shaderProgram);
-
-  GLint success;
-  glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-  if (!success) {
-    char infoLog[512];
-    glGetProgramInfoLog(shaderProgram, 512, nullptr, infoLog);
-    std::cerr << "Shader Program Linking Error: " << infoLog << std::endl;
-  }
-
-  glDeleteShader(vertexShader);
-  glDeleteShader(fragmentShader);
-
-  if (success) PDLOG("Shader [{}] compiled sucessfully", shaderProgram);
-
-  return shaderProgram;
-}
-
-const char* vertex_shader = R"(
+const char* GfxOpenGL2::pVertCode = R"(
   #version 120
   
   attribute vec2 pos;
@@ -71,7 +28,7 @@ const char* vertex_shader = R"(
   }
   )";
 
-const char* frag_shader = R"(
+const char* GfxOpenGL2::pFragCode = R"(
   #version 120
       
   varying vec2 oUV;
@@ -90,7 +47,7 @@ const char* frag_shader = R"(
   }
   )";
 
-void GfxOpenGL::pSetupShaderAttribs(u32 shader) {
+void GfxOpenGL2::pSetupShaderAttribs(u32 shader) {
   GLint _pos = glGetAttribLocation(shader, "pos");
   GLint _uv = glGetAttribLocation(shader, "uv");
   GLint _color = glGetAttribLocation(shader, "color");
@@ -108,15 +65,15 @@ void GfxOpenGL::pSetupShaderAttribs(u32 shader) {
   glEnableVertexAttribArray(_color);
 }
 
-void GfxOpenGL::SysInit() {
-  pShader = createShaderProgram(vertex_shader, frag_shader);
+void GfxOpenGL2::SysInit() {
+  pShader = CreateShaderProgram(pVertCode, pFragCode);
   glUseProgram(pShader);
   glGenBuffers(1, &VBO);
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
-  pSetupShaderAttribs(pShader);
   glGenBuffers(1, &IBO);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
 
+  pSetupShaderAttribs(pShader);
   pLocTex = glGetUniformLocation(pShader, "tex");
   pLocAlfa = glGetUniformLocation(pShader, "alfa");
   pLocProjection = glGetUniformLocation(pShader, "projection");
@@ -124,21 +81,20 @@ void GfxOpenGL::SysInit() {
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
   PDLOG(
-      "GfxOpenGL::SysInit():\n  pShader = {}\n  pLocTex = {}\n  pLocAlfa = "
+      "GfxOpenGL2::SysInit():\n  pShader = {}\n  pLocTex = {}\n  pLocAlfa = "
       "{}\n  pLocProjection = {}\n  VBO = {}\n  IBO = {}",
       pShader, pLocTex, pLocAlfa, pLocProjection, VBO, IBO);
 }
 
-void GfxOpenGL::SysDeinit() {
+void GfxOpenGL2::SysDeinit() {
   glDeleteBuffers(1, &VBO);
   glDeleteBuffers(1, &IBO);
-  PDLOG("GfxOpenGL::SysDeinit()");
+  PDLOG("GfxOpenGL2::SysDeinit()");
 }
 
-void GfxOpenGL::Submit(size_t count, size_t start) {
+void GfxOpenGL2::Submit(size_t count, size_t start) {
   BindTexture(CurrentTex);
   glUseProgram(pShader);
-  pSetupShaderAttribs(pShader);
   glUniformMatrix4fv(pLocProjection, 1, GL_FALSE, Projection.m.data());
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
   glBufferData(GL_ARRAY_BUFFER, CurrentVertex * sizeof(PD::Li::Vertex),
@@ -148,14 +104,17 @@ void GfxOpenGL::Submit(size_t count, size_t start) {
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, CurrentIndex * sizeof(PD::u16),
                GetIndexBufPtr(0), GL_DYNAMIC_DRAW);
 
-  glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT,
+  pSetupShaderAttribs(pShader);
+  GLint ibo = 0;
+  glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &ibo);
+  glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_SHORT,
                  reinterpret_cast<void*>(start * sizeof(u16)));
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
   BindTexture(0);
 }
 
-void GfxOpenGL::BindTexture(TextureID id) {
+void GfxOpenGL2::BindTexture(TextureID id) {
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, (GLuint)id);
   glUniform1i(pLocTex, 0);
@@ -164,25 +123,25 @@ void GfxOpenGL::BindTexture(TextureID id) {
   glUniform1i(pLocAlfa, fmt == GL_ALPHA);
 }
 
-void GfxOpenGL::SysReset() {
+void GfxOpenGL2::SysReset() {
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
-TextureID GfxOpenGL::LoadTexture(const std::vector<PD::u8>& pixels, int w,
-                                 int h, TextureFormat type,
-                                 TextureFilter filter) {
+TextureID GfxOpenGL2::LoadTexture(const std::vector<PD::u8>& pixels, int w,
+                                  int h, TextureFormat type,
+                                  TextureFilter filter) {
   GLuint texID;
   glGenTextures(1, &texID);
   glBindTexture(GL_TEXTURE_2D, texID);
 
   // Set base format (Always using RGBA as base)
   GLenum fmt = GL_RGBA;
-  /*if (type == PD::Li::Texture::Type::RGB24) {
+  if (type == TextureFormat::RGB24) {
     fmt = GL_RGB;
-  } else if (type == PD::Li::Texture::Type::A8) {
+  } else if (type == TextureFormat::A8) {
     fmt = GL_ALPHA;
-  }*/
+  }
   glTexImage2D(GL_TEXTURE_2D, 0, fmt, w, h, 0, fmt, GL_UNSIGNED_BYTE,
                pixels.data());
   if (filter == TextureFilter::Linear) {
@@ -193,12 +152,33 @@ TextureID GfxOpenGL::LoadTexture(const std::vector<PD::u8>& pixels, int w,
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   }
   glBindTexture(GL_TEXTURE_2D, 0);
-  PDLOG("GfxOpenGL::LoadTexture -> [{}] {}", PD::ivec2(w, h), texID);
+  PDLOG("GfxOpenGL2::LoadTexture -> [{}] {}, [{}, {}]", PD::ivec2(w, h), texID,
+        type, filter);
   return texID;
 }
 
-void GfxOpenGL::DeleteTexture(const TextureID& tex) {
+void GfxOpenGL2::DeleteTexture(const TextureID& tex) {
   GLuint tex_ = tex;
   glDeleteTextures(1, &tex_);
 }
 }  // namespace PD
+#else
+namespace PD {
+void GfxOpenGL2::SysInit() {
+  PDLOG(
+      "GfxOpenGL2::SysInit: OpenGL2 Driver is not included in "
+      "palladium-system");
+}
+void GfxOpenGL2::SysDeinit() {}
+void GfxOpenGL2::Submit(size_t count, size_t start) {}
+void GfxOpenGL2::BindTexture(TextureID id) {}
+void GfxOpenGL2::SysReset() {}
+TextureID GfxOpenGL2::LoadTexture(const std::vector<PD::u8>& pixels, int w,
+                                  int h, TextureFormat type,
+                                  TextureFilter filter) {
+  return 0;
+}
+void GfxOpenGL2::DeleteTexture(const TextureID& tex) {}
+void GfxOpenGL2::pSetupShaderAttribs(u32 shader) {}
+}  // namespace PD
+#endif

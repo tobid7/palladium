@@ -93,6 +93,6 @@ struct std::formatter<PD::Color> : std::formatter<std::string> {
                        std::format_parse_context::const_iterator end,
                        size_t len, const char* what) {
     return (end - it >= static_cast<std::ptrdiff_t>(len) &&
-            std::string_view(it, len) == what);
+            std::string_view(&*it, len) == what);  // msvc things...
   }
 };
