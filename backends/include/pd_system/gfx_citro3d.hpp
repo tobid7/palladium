@@ -1,24 +1,25 @@
 #pragma once
 
 #include <pd/drivers/gfx.hpp>
+#include <pd_system/ctr-linear-allocator.hpp>
 
 namespace PD {
-struct GfxOpenGLConfig {
+struct GfxCitro3DConfig {
   // Vertex Allocator
   template <typename T>
-  using VertexAlloc = std::allocator<T>;
+  using VertexAlloc = LinearAllocator<T>;
   // Index Allocator
   template <typename T>
-  using IndexAlloc = std::allocator<T>;
-  using IndexType = u32;  // Index Type
+  using IndexAlloc = LinearAllocator<T>;
 
   static constexpr size_t NumVertices = 32768;  // 8192*4
   static constexpr size_t NumIndices = 49152;   // 8192*6
 };
-class GfxOpenGL : public GfxDriverBase<GfxOpenGLConfig> {
+
+class GfxCitro3D : public GfxDriverBase<GfxCitro3DConfig> {
  public:
-  GfxOpenGL(): GfxDriverBase("OpenGL2") {}
-  ~GfxOpenGL() {}
+  GfxCitro3D() : GfxDriverBase("Citro3D") {}
+  ~GfxCitro3D() {}
 
   void SysInit() override;
   void SysDeinit() override;
@@ -31,12 +32,7 @@ class GfxOpenGL : public GfxDriverBase<GfxOpenGLConfig> {
   void DeleteTexture(const TextureID& tex) override;
 
  private:
-  void pSetupShaderAttribs(u32 shader);
-  u32 pShader = 0;
-  u32 VBO = 0;
-  u32 IBO = 0;
-  int pLocTex = 0;
-  int pLocAlfa = 0;
-  int pLocProjection = 0;
+  struct Impl;
+  Impl* impl = nullptr;
 };
 }  // namespace PD

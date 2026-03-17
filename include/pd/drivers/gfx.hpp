@@ -19,6 +19,7 @@ enum class TextureFilter {
 
 enum class TextureFormat {
   RGBA32,
+  RGB24,
   A8,
 };
 
@@ -69,20 +70,17 @@ struct DefaultGfxConfig {
   // Index Allocator
   template <typename T>
   using IndexAlloc = std::allocator<T>;
-  using IndexType = u16;  // Index Type
 
   static constexpr size_t NumVertices = 32768;  // 8192*4
   static constexpr size_t NumIndices = 49152;   // 8192*6
 };
 
 template <typename Config = DefaultGfxConfig>
-class PD_API GfxDriverBase : public GfxDriver {
+class GfxDriverBase : public GfxDriver {
  public:
-  using IndexType = Config::IndexType;
   using VtxPool =
       Pool<Li::Vertex, typename Config::template VertexAlloc<Li::Vertex>>;
-  using IdxPool =
-      Pool<IndexType, typename Config::template VertexAlloc<IndexType>>;
+  using IdxPool = Pool<u16, typename Config::template VertexAlloc<u16>>;
   GfxDriverBase(std::string_view name = "Default") : GfxDriver(name) {}
   virtual ~GfxDriverBase() {}
 
@@ -111,17 +109,19 @@ class PD_API GfxDriverBase : public GfxDriver {
         for (size_t i = 0; i < c.IndexCount; i++) {
           pIdx[i] = CurrentVertex + c.FirstIndex[i];
         }
+        CurrentIndex += c.IndexCount;
+        CurrentVertex += c.VertexCount;
         for (size_t i = 0; i < c.VertexCount; i++) {
           pVtx[i] = c.FirstVertex[i];
         }
         index++;
       }
-      Submit(index - startidx, startidx);
+      Submit(CurrentIndex - startidx, startidx);
     }
   }
 
  protected:
-  IndexType* GetIndexBufPtr(size_t start) { return &pIdxPool[start]; }
+  u16* GetIndexBufPtr(size_t start) { return &pIdxPool[start]; }
   Li::Vertex* GetVertexBufPtr(size_t start) { return &pVtxPool[start]; }
   void ResetPools() override {
     pVtxPool.Reset();
