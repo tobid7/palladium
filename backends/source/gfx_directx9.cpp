@@ -37,7 +37,7 @@ VS_OUT main(VS_IN input) {
 
 static const char* g_psCode = R"(
 sampler2D tex : register(s0);
-bool alfa;
+float alfa;
 
 struct PS_IN {
     float2 uv  : TEXCOORD0;
@@ -46,7 +46,7 @@ struct PS_IN {
 
 float4 main(PS_IN input) : COLOR0 {
     float4 tc = tex2D(tex, input.uv);
-    if (alfa)
+    if (alfa > 0.5)
         return float4(input.col.rgb, tc.a * input.col.a);
     else
         return tc * input.col;
@@ -136,6 +136,7 @@ void GfxDirectX9::SysDeinit() {
 void GfxDirectX9::Submit(size_t count, size_t start) {
   if (!impl || !impl->Device || !impl->VBO || !impl->IBO) return;
 
+  BindTexture(CurrentTex);
   impl->Device->SetVertexShaderConstantF(
       0, reinterpret_cast<const float*>(&Projection), 4);
 
@@ -186,7 +187,7 @@ void GfxDirectX9::SysReset() {
 Li::Texture GfxDirectX9::LoadTexture(const std::vector<PD::u8>& pixels, int w,
                                      int h, TextureFormat type,
                                      TextureFilter filter) {
-  if (!impl || !impl->Device) return 0;
+  if (!impl || !impl->Device) return Li::Texture();
   IDirect3DTexture9* tex = nullptr;
   D3DFORMAT fmt = D3DFMT_A8R8G8B8;
   if (type == TextureFormat::RGB24)
@@ -196,7 +197,7 @@ Li::Texture GfxDirectX9::LoadTexture(const std::vector<PD::u8>& pixels, int w,
 
   HRESULT hr = impl->Device->CreateTexture(w, h, 1, 0, fmt, D3DPOOL_MANAGED,
                                            &tex, nullptr);
-  if (FAILED(hr) || !tex) return 0;
+  if (FAILED(hr) || !tex) return Li::Texture();
 
   D3DLOCKED_RECT rect;
   tex->LockRect(0, &rect, nullptr, 0);
@@ -209,7 +210,7 @@ Li::Texture GfxDirectX9::LoadTexture(const std::vector<PD::u8>& pixels, int w,
         u8 r = pixels[(y * w + x) * 3 + 0];
         u8 g = pixels[(y * w + x) * 3 + 1];
         u8 b = pixels[(y * w + x) * 3 + 2];
-        dst[x] = (0xFF << 24) | (r << 16) | (g << 8) | b;  // X8R8G8B8
+        dst[x] = (0xFF << 24) | (r << 16) | (g << 8) | b;
       }
       dstRow += rect.Pitch;
     }
@@ -222,7 +223,7 @@ Li::Texture GfxDirectX9::LoadTexture(const std::vector<PD::u8>& pixels, int w,
         u8 g = pixels[(y * w + x) * 4 + 1];
         u8 b = pixels[(y * w + x) * 4 + 2];
         u8 a = pixels[(y * w + x) * 4 + 3];
-        dst[x] = (a << 24) | (r << 16) | (g << 8) | b;  // A8R8G8B8
+        dst[x] = (a << 24) | (r << 16) | (g << 8) | b;
       }
       dstRow += rect.Pitch;
     }
@@ -246,7 +247,7 @@ Li::Texture GfxDirectX9::LoadTexture(const std::vector<PD::u8>& pixels, int w,
 
 void GfxDirectX9::DeleteTexture(const Li::Texture& tex) {
   if (!tex.GetID()) return;
-  UnRegisterTexture(tex);
+  UnregisterTexture(tex);
   IDirect3DTexture9* t = (IDirect3DTexture9*)tex.GetID();
   t->Release();
 }

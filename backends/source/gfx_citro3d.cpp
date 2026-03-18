@@ -55,6 +55,7 @@ struct GfxCitro3D::Impl {
   shaderProgram_s pShader;
   DVLB_s* pCode;
   int uLocProjection = 0;
+  C3D_Tex* CurrentTex = nullptr;
   std::vector<u8> pShaderRaw;
 
   GPU_TEXCOLOR TextureTranslateFormat(TextureFormat fmt) {
@@ -83,14 +84,15 @@ struct GfxCitro3D::Impl {
     }
   }
 
-  void SetupPixelStage(GPU_TEXCOLOR clr) {
+  void SetupPixelStage() {
     shaderProgramUse(&pShader);
     C3D_BindProgram(&pShader);
     C3D_SetAttrInfo(&pAttr);
     C3D_DepthTest(false, GPU_GREATER, GPU_WRITE_ALL);
+    if (!CurrentTex) return;
     C3D_TexEnv* env = C3D_GetTexEnv(0);
     C3D_TexEnvInit(env);
-    switch (clr) {
+    switch (CurrentTex->fmt) {
       case GPU_A4:
       case GPU_A8:
       case GPU_L4:
@@ -142,15 +144,30 @@ void GfxCitro3D::SysDeinit() {
 
 void GfxCitro3D::Submit(size_t count, size_t start) {
   if (!impl) return;
+  BindTexture(CurrentTex);
+  impl->SetupPixelStage();  // needs to be called after
+  C3D_Mtx proj;
+  Mtx_OrthoTilt(&proj, 0.f, ViewPort.x, ViewPort.y, 0.f, 1.f, -1.f, false);
+  C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, impl->uLocProjection, &proj);
+  // C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, impl->uLocProjection,
+  //                  (C3D_Mtx*)&Projection);
+  auto buf = C3D_GetBufInfo();
+  BufInfo_Init(buf);
+  BufInfo_Add(buf, GetVertexBufPtr(0), sizeof(Li::Vertex), 3, 0x210);
+  C3D_DrawElements(GPU_TRIANGLES, count, C3D_UNSIGNED_SHORT,
+                   GetIndexBufPtr(start));
+  impl->CurrentTex = nullptr;
 }
 
 void GfxCitro3D::BindTexture(TextureID id) {
-  if (!impl) return;
+  if (!impl || !id) return;
+  impl->CurrentTex = (C3D_Tex*)id;
   C3D_TexBind(0, (C3D_Tex*)id);
 }
 
 void GfxCitro3D::SysReset() {
   if (!impl) return;
+  C3D_CullFace(GPU_CULL_NONE);
 }
 
 Li::Texture GfxCitro3D::LoadTexture(const std::vector<PD::u8>& pixels, int w,
@@ -210,7 +227,7 @@ Li::Texture GfxCitro3D::LoadTexture(const std::vector<PD::u8>& pixels, int w,
 
 void GfxCitro3D::DeleteTexture(const Li::Texture& tex) {
   if (!tex.GetID()) return;
-  UnRegisterTexture(tex);
+  UnregisterTexture(tex);
   C3D_Tex* t = reinterpret_cast<C3D_Tex*>(tex.GetID());
   C3D_TexDelete(t);
   delete t;
