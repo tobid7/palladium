@@ -55,7 +55,7 @@ class PD_API Slider : public Container {
     this->min = min;
     this->max = max;
     this->precision = precision;
-    this->width = io->CurrentViewPort.z * 0.3f;
+    this->width = io->CurrentViewPort->pSize.z * 0.3f;
     this->tdim = io->Font->GetTextBounds(label, io->FontScale);
   }
   ~Slider() = default;

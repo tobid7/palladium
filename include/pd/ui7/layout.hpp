@@ -45,7 +45,7 @@ class PD_API Layout {
     Scrolling[0] = false;
     Scrolling[1] = false;
     CursorInit();
-    Pos = fvec2(io->CurrentViewPort.x, io->CurrentViewPort.y);
+    Pos = fvec2(io->CurrentViewPort->pSize.x, io->CurrentViewPort->pSize.y);
     Size = 0;
     WorkRect = fvec4(IO->MenuPadding, Size - (fvec2(2) * IO->MenuPadding));
   }

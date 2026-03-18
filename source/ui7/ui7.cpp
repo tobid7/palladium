@@ -48,7 +48,7 @@ PD_API void Context::UseViewPort(const ID& id) {
   if (!pIO->ViewPorts.count(id)) {
     return;
   }
-  pIO->CurrentViewPort = pIO->ViewPorts[id]->GetSize();
+  pIO->CurrentViewPort = pIO->ViewPorts[id];
 }
 
 PD_API Menu::Ref Context::BeginMenu(const ID& id, UI7MenuFlags flags,

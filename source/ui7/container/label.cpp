@@ -29,7 +29,8 @@ PD_API void Label::Draw() {
   // Assert(io.get() && list.get(), "Did you run Container::Init correctly?");
   // io->Ren->OnScreen(screen);
   list->DrawTextEx(FinalPos(), label, io->Theme->Get(UI7Color_Text),
-                   LiTextFlags_NoOOS, PD::fvec2(0, io->CurrentViewPort.w));
+                   LiTextFlags_NoOOS,
+                   PD::fvec2(0, io->CurrentViewPort->pSize.w));
 }
 
 PD_API void Label::Update() {
@@ -39,11 +40,11 @@ PD_API void Label::Update() {
    * Needs a max size (to support sligning dynaically by the window size)
    */
   if (io->WrapLabels) {
-    this->label =
-        io->Font->pWrapText(this->label, io->FontScale,
-                            PD::fvec2(io->CurrentViewPort.z - FinalPos().x * 4,
-                                      io->CurrentViewPort.w),
-                            this->tdim);
+    this->label = io->Font->pWrapText(
+        this->label, io->FontScale,
+        PD::fvec2(io->CurrentViewPort->pSize.z - FinalPos().x * 4,
+                  io->CurrentViewPort->pSize.w),
+        this->tdim);
     SetSize(tdim);
   }
 }

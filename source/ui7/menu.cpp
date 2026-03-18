@@ -239,9 +239,10 @@ PD_API void Menu::HandleTitlebarActions() {
       // Keep Window In Viewport
       // Maybe i need to add some operators to vec
       pLayout->Pos.x = std::clamp<float>(pLayout->Pos.x, -pLayout->Size.x + 10,
-                                         pIO->CurrentViewPort.z - 10);
-      pLayout->Pos.y = std::clamp<float>(pLayout->Pos.y, pIO->CurrentViewPort.y,
-                                         pIO->CurrentViewPort.w - 10);
+                                         pIO->CurrentViewPort->pSize.z - 10);
+      pLayout->Pos.y =
+          std::clamp<float>(pLayout->Pos.y, pIO->CurrentViewPort->pSize.y,
+                            pIO->CurrentViewPort->pSize.w - 10);
     }
   }
 }

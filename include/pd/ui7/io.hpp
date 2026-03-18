@@ -43,8 +43,8 @@ class PD_API IO {
     FDL = Li::DrawList::New(pCtx);
     DeltaStats = TimeStats::New(60);
     /** Probably not the best solution i guess */
-    CurrentViewPort.z = pCtx.Gfx()->ViewPort.x;
-    CurrentViewPort.w = pCtx.Gfx()->ViewPort.y;
+    CurrentViewPort =
+        ViewPort::New("Default", ivec4(ivec2(0, 0), pCtx.Gfx()->ViewPort));
   }
   ~IO() {}
 
@@ -61,7 +61,8 @@ class PD_API IO {
    * Possible thanks to the DrawList::Merge Feature
    */
   Li::DrawList::Ref FDL = nullptr;
-  ivec4 CurrentViewPort = ivec4(0, 0, 0, 0);
+  ViewPort::Ref CurrentViewPort;
+  // ivec4 CurrentViewPort = ivec4(0, 0, 0, 0);
   std::unordered_map<u32, ViewPort::Ref> ViewPorts;
   float Framerate = 0.f;
   float Delta = 0.f;
