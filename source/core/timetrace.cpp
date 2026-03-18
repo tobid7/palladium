@@ -25,12 +25,12 @@ SOFTWARE.
 
 namespace PD::TT {
 PD_API void Beg(const std::string& id) {
-  auto trace = os.GetTraceRef(id);
-  trace->SetStart(os.GetNanoTime());
+  /*auto trace = os.GetTraceRef(id);
+  trace->SetStart(os.GetNanoTime());*/
 }
 
 PD_API void End(const std::string& id) {
-  auto trace = os.GetTraceRef(id);
-  trace->SetEnd(os.GetNanoTime());
+  /*auto trace = os.GetTraceRef(id);
+  trace->SetEnd(os.GetNanoTime());*/
 }
 }  // namespace PD::TT
