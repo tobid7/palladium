@@ -3,6 +3,7 @@
 #include <pd/core/mat.hpp>
 #include <pd/drivers/interface.hpp>
 #include <pd/lithium/command.hpp>
+#include <pd/lithium/texture.hpp>
 
 using LiBackendFlags = PD::u32;
 enum LiBackendFlags_ {
@@ -11,23 +12,12 @@ enum LiBackendFlags_ {
 };
 
 namespace PD {
-using TextureID = ptr;
-enum class TextureFilter {
-  Linear,
-  Nearest,
-};
-
-enum class TextureFormat {
-  RGBA32,
-  RGB24,
-  A8,
-};
 
 // Pre interface class
 class PD_API GfxDriver : public DriverInterface {
  public:
   GfxDriver(std::string_view name);
-  virtual ~GfxDriver() = default;
+  virtual ~GfxDriver();
 
   virtual void Init() {}
   virtual void Deinit() { SysDeinit(); }
@@ -36,12 +26,13 @@ class PD_API GfxDriver : public DriverInterface {
   void SetViewPort(int x, int y);
   virtual void BindTexture(TextureID id) {}
   void Reset();
-  virtual TextureID LoadTexture(const std::vector<PD::u8>& pixels, int w, int h,
-                                TextureFormat type = TextureFormat::RGBA32,
-                                TextureFilter filter = TextureFilter::Linear) {
-    return 0;
+  virtual Li::Texture LoadTexture(
+      const std::vector<PD::u8>& pixels, int w, int h,
+      TextureFormat type = TextureFormat::RGBA32,
+      TextureFilter filter = TextureFilter::Linear) {
+    return Li::Texture();
   }
-  virtual void DeleteTexture(const TextureID& tex) {}
+  virtual void DeleteTexture(const Li::Texture& tex) {}
   virtual void Draw(const Pool<Li::Command>& commands) {}
 
  protected:
@@ -50,6 +41,8 @@ class PD_API GfxDriver : public DriverInterface {
   virtual void SysReset() {}
   virtual void Submit(size_t count, size_t start) {}
   virtual void ResetPools() = 0;
+  void RegisterTexture(const Li::Texture& tex);
+  void UnregisterTexture(const Li::Texture& tex);
 
   // Counters
   size_t CountDrawcalls = 0;
@@ -61,6 +54,7 @@ class PD_API GfxDriver : public DriverInterface {
   TextureID CurrentTex = 0;
   Mat4 Projection;
   ivec2 ViewPort;
+  std::unordered_map<TextureID, Li::Texture> pTextureRegestry;
 };
 
 struct DefaultGfxConfig {
@@ -152,10 +146,14 @@ class PD_API Gfx {
   static void Draw(const Pool<Li::Command>& commands) {
     driver->Draw(commands);
   }
-  static TextureID LoadTexture(const std::vector<PD::u8>& pixels, int w, int h,
-                               TextureFormat type = TextureFormat::RGBA32,
-                               TextureFilter filter = TextureFilter::Linear) {
+  static Li::Texture LoadTexture(const std::vector<PD::u8>& pixels, int w,
+                                 int h,
+                                 TextureFormat type = TextureFormat::RGBA32,
+                                 TextureFilter filter = TextureFilter::Linear) {
     return driver->LoadTexture(pixels, w, h, type, filter);
+  }
+  static void DeleteTexture(const Li::Texture& tex) {
+    driver->DeleteTexture(tex);
   }
 
   static const char* GetDriverName() { return driver->GetName(); }
