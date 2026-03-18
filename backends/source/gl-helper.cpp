@@ -1,3 +1,4 @@
+#if defined(PD_ENABLE_OPENGL2) || defined(PD_ENABLE_OPENGL3)
 #include <glad/glad.h>
 
 #include <iostream>
@@ -44,3 +45,4 @@ u32 CreateShaderProgram(const char* vert, const char* frag) {
   return shaderProgram;
 }
 }  // namespace PD
+#endif

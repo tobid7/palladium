@@ -4,3 +4,6 @@
 [submodule "vendor/glfw"]
 	path = vendor/glfw
 	url = https://github.com/glfw/glfw.git
+[submodule "vendor/libpicasso"]
+	path = vendor/libpicasso
+	url = https://github.com/tobid7/libpicasso
