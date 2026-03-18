@@ -39,7 +39,5 @@ class GfxOpenGL2 : public GfxDriverBase<GfxOpenGL2Config> {
   int pLocTex = 0;
   int pLocAlfa = 0;
   int pLocProjection = 0;
-  static const char* pVertCode;
-  static const char* pFragCode;
 };
 }  // namespace PD
