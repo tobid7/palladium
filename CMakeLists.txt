@@ -31,9 +31,11 @@ set(PD_SOURCES
     # Core
     source/core/bits.cpp
     source/core/color.cpp
+    source/core/io.cpp
     source/core/mat.cpp
     source/core/strings.cpp
     source/core/timer.cpp
+    source/core/timetrace.cpp
 
     # Drivers
     source/drivers/os.cpp
