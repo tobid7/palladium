@@ -86,12 +86,5 @@ else()
         spirv-cross-msl
         spirv-cross-reflect
         spirv-cross-util
-        glslang
-        glslang-default-resource-limits
-        #OGLCompiler
-        OSDependent
-        SPIRV
-        #SPVRemapper
-        #HLSL
     )
 endif()
