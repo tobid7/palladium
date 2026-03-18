@@ -109,6 +109,16 @@ struct PD_API Mat4 {
     return ret;
   }
 
+  constexpr Mat4 Transpose() const {
+    Mat4 ret;
+    for (int i = 0; i < 4; ++i) {
+      for (int j = 0; j < 4; ++j) {
+        ret(i, j) = (*this)(j, i);
+      }
+    }
+    return ret;
+  }
+
   constexpr static Mat4 Ortho(float l, float r, float b, float t, float n,
                               float f) {
     Mat4 ret;
