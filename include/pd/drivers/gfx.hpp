@@ -34,6 +34,7 @@ class PD_API GfxDriver : public DriverInterface {
   }
   virtual void DeleteTexture(const Li::Texture& tex) {}
   virtual void Draw(const Pool<Li::Command>& commands) {}
+  Li::Texture::Ptr GetWhiteTexture() { return &pWhite; }
 
  protected:
   virtual void SysDeinit() {}
@@ -55,6 +56,7 @@ class PD_API GfxDriver : public DriverInterface {
   Mat4 Projection;
   ivec2 ViewPort;
   std::unordered_map<TextureID, Li::Texture> pTextureRegestry;
+  Li::Texture pWhite;
 };
 
 struct DefaultGfxConfig {
@@ -79,9 +81,11 @@ class GfxDriverBase : public GfxDriver {
   virtual ~GfxDriverBase() {}
 
   void Init() override {
-    pVtxPool.Init(Config::NumVertices);
-    pIdxPool.Init(Config::NumIndices);
+    // pVtxPool.Init(Config::NumVertices);
+    // pIdxPool.Init(Config::NumIndices);
     SysInit();
+    std::vector<u8> img(16 * 16 * 4, 0xff);
+    pWhite = LoadTexture(img, 16, 16);
   }
 
   void Draw(const Pool<Li::Command>& commands) override {
@@ -90,11 +94,12 @@ class GfxDriverBase : public GfxDriver {
     while (index < commands.size()) {
       CurrentTex = commands[index].Tex;
       if (!CurrentTex) {
-        index++;
-        continue;
+        CurrentTex = pWhite.GetID();
       }
       size_t startidx = CurrentIndex;
-      while (index < commands.size() && CurrentTex == commands[index].Tex) {
+      while (index < commands.size() &&
+             (CurrentTex == commands[index].Tex ||
+              (CurrentTex == pWhite.GetID() && commands[index].Tex == 0))) {
         const auto& c = commands[index];
         CountVertices += c.VertexCount;
         CountIndices += c.IndexCount;
@@ -154,6 +159,9 @@ class PD_API Gfx {
   }
   static void DeleteTexture(const Li::Texture& tex) {
     driver->DeleteTexture(tex);
+  }
+  static Li::Texture::Ptr GetWhiteTexture() {
+    return driver->GetWhiteTexture();
   }
 
   static const char* GetDriverName() { return driver->GetName(); }

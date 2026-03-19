@@ -18,6 +18,7 @@ enum class TextureFormat {
 namespace Li {
 class Texture {
  public:
+  using Ptr = Texture*;
   Texture() : pID(0), pSize(0, 0), pUV(fvec4(0, 0, 1, 1)) {}
   Texture(TextureID id, ivec2 size)
       : pID(id), pSize(size), pUV(fvec4(0, 0, 1, 1)) {}
