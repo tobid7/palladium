@@ -9,3 +9,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED true)
 add_executable(pdlm
     source/main.cpp
 )
+
+install(
+    TARGETS pdlm
+)
