@@ -7,7 +7,7 @@
 #include <pd/drivers/drivers.hpp>
 #include <pd_system/gl-helper.hpp>
 #include <pd_system/shaders.hpp>
-#include <pd_system/spirv-helper.hpp>
+#include <spirv-helper.hpp>
 
 namespace PD {
 void GfxOpenGL3::SysInit() {
