@@ -43,6 +43,8 @@ set(PD_SOURCES
 
     # Lithium
     source/lithium/pools.cpp
+    source/lithium/math.cpp
+    source/lithium/drawlist.cpp
 )
 
 if(${PD_BUILD_SHARED})

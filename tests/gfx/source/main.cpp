@@ -96,6 +96,7 @@ class App {
     glfwSwapInterval(1);
 #else
     gfxInitDefault();
+    consoleInit(GFX_BOTTOM, nullptr);
     C3D_Init(C3D_DEFAULT_CMDBUF_SIZE);
     Top =
         C3D_RenderTargetCreate(240, 400, GPU_RB_RGBA8, GPU_RB_DEPTH24_STENCIL8);
@@ -107,29 +108,18 @@ class App {
     PD::Gfx::UseDriver<PD::GfxCitro3D>();
 #endif
     PD::Gfx::Init();
-    PD::Li::InitPools(8192);
 #ifdef __3DS__
     pTex = LoadTex("sdmc:/icon.png");
 #else
     pTex = LoadTex("icon.png");
 #endif
-    /*std::vector<PD::u8> img(16 * 16 * 4, 0xff);
-    pTex = PD::Gfx::LoadTexture(img, 16, 16);*/
+    pList.DrawRectFilled(0, 50, 0xff00ffff);
+    pList.BindTexture(pTex);
+    pList.DrawRectFilled(50, pTex.GetSize(), 0xffffffff);
+    pList.DrawCircleFilled(500, 100, 0xffffffff, 50);
+    // pList.PathRect(300, 700, 40.f);
+    //  pList.PathFill(0xffffffff);
     std::cout << "GfxDriver: " << PD::Gfx::GetDriverName() << std::endl;
-    pPool.Init(10);
-    auto cmd = pPool.Allocate(1);
-    cmd->Reserve(4, 6);
-    cmd->Add(0, 1, 2);
-    cmd->Add(0, 2, 3);
-    cmd->Add(
-        PD::Li::Vertex(PD::fvec2(0, 0), pTex.GetUV().TopLeft(), 0xffffffff));
-    cmd->Add(PD::Li::Vertex(PD::fvec2(pTex.GetSize().x, 0),
-                            pTex.GetUV().TopRight(), 0xffffffff));
-    cmd->Add(PD::Li::Vertex(PD::fvec2(pTex.GetSize().x, pTex.GetSize().y),
-                            pTex.GetUV().BotRight(), 0xffffffff));
-    cmd->Add(PD::Li::Vertex(PD::fvec2(0, pTex.GetSize().y),
-                            pTex.GetUV().BotLeft(), 0xffffffff));
-    cmd->Tex = pTex.GetID();
   }
   ~App() {
     PD::Gfx::DeleteTexture(pTex);
@@ -168,7 +158,7 @@ class App {
 #endif
       PD::Gfx::Reset();
 
-      PD::Gfx::Draw(pPool);
+      PD::Gfx::Draw(pList);
 #ifdef __3DS__
       C3D_FrameEnd(0);
 #else
@@ -194,7 +184,7 @@ class App {
 #else
   GLFWwindow* window = nullptr;
 #endif
-  PD::Pool<PD::Li::Command> pPool;
+  PD::Li::Drawlist pList;
   PD::Li::Texture pTex;
   Driver pDriver;
 #ifdef _WIN32
