@@ -5,16 +5,8 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Nintendo3DS")
 else()
     # GLAD
     add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/glad)
-    # SPIRV-Cross
-    set(SPIRV_CROSS_CLI OFF CACHE BOOL "" FORCE)
-    set(SPIRV_CROSS_ENABLE_TESTS OFF CACHE BOOL "" FORCE)
-    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/spirv-cross)
-endif()
-
-if(PD_BUILD_TOOLS)
-    # GLSLANG
-    set(ENABLE_OPT OFF CACHE BOOL "" FORCE)
-    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/glslang)
+    # SPIRV-Helper
+    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/spirv-helper)
 endif()
 
 # STB

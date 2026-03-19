@@ -8,3 +8,7 @@ target_link_libraries(gfx-tests PRIVATE palladium::palladium pd-system stb)
 if(NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Nintendo3DS")
 	target_link_libraries(gfx-tests PRIVATE glfw)
 endif()
+
+install(
+	TARGETS gfx-tests
+)
