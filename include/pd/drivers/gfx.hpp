@@ -5,10 +5,11 @@
 #include <pd/lithium/command.hpp>
 #include <pd/lithium/texture.hpp>
 
-using LiBackendFlags = PD::u32;
-enum LiBackendFlags_ {
-  LiBackendFlags_None = 0,
-  LiBackendFlags_FlipUV_Y = 1 << 0,  // Essential for font loading
+using PDBackendFlags = PD::u32;
+enum PDBackendFlags_ {
+  PDBackendFlags_None = 0,
+  PDBackendFlags_FlipUV_Y = 1 << 0,   // Essential for font loading
+  PDBackendFlags_WindingCW = 1 << 0,  // Use CW instead of CCW winding
 };
 
 namespace PD {
@@ -20,7 +21,10 @@ class PD_API GfxDriver : public DriverInterface {
   virtual ~GfxDriver();
 
   virtual void Init() {}
-  virtual void Deinit() { SysDeinit(); }
+  virtual void Deinit() {
+    DeleteTexture(pWhite);
+    SysDeinit();
+  }
 
   void SetViewPort(const ivec2& size);
   void SetViewPort(int x, int y);
@@ -66,9 +70,6 @@ struct DefaultGfxConfig {
   // Index Allocator
   template <typename T>
   using IndexAlloc = std::allocator<T>;
-
-  static constexpr size_t NumVertices = 32768;  // 8192*4
-  static constexpr size_t NumIndices = 49152;   // 8192*6
 };
 
 template <typename Config = DefaultGfxConfig>
@@ -81,8 +82,6 @@ class GfxDriverBase : public GfxDriver {
   virtual ~GfxDriverBase() {}
 
   void Init() override {
-    // pVtxPool.Init(Config::NumVertices);
-    // pIdxPool.Init(Config::NumIndices);
     SysInit();
     std::vector<u8> img(16 * 16 * 4, 0xff);
     pWhite = LoadTexture(img, 16, 16);
@@ -122,6 +121,8 @@ class GfxDriverBase : public GfxDriver {
  protected:
   u16* GetIndexBufPtr(size_t start) { return &pIdxPool[start]; }
   Li::Vertex* GetVertexBufPtr(size_t start) { return &pVtxPool[start]; }
+  size_t GetVertexPoolSize() const { return pVtxPool.size(); }
+  size_t GetIndexPoolSize() const { return pIdxPool.size(); }
   void ResetPools() override {
     pVtxPool.Reset();
     pIdxPool.Reset();
