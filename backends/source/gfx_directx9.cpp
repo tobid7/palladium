@@ -61,6 +61,8 @@ struct GfxDirectX9::Impl {
   IDirect3DVertexShader9* VS = nullptr;
   IDirect3DPixelShader9* FS = nullptr;
   IDirect3DTexture9* CurrentTex = nullptr;
+  size_t VertexBufferSize = 0;
+  size_t IndexBufferSize = 0;
 };
 
 void GfxDirectX9::SysInit() {
@@ -78,14 +80,7 @@ void GfxDirectX9::SysInit() {
          0},
         D3DDECL_END()};
     impl->Device->CreateVertexDeclaration(elements, &impl->Decl);
-    impl->Device->CreateVertexBuffer(
-        GfxDirectX9Config::NumVertices * sizeof(PD::Li::Vertex),
-        D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &impl->VBO,
-        nullptr);
-    impl->Device->CreateIndexBuffer(GfxDirectX9Config::NumIndices * sizeof(u16),
-                                    D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY,
-                                    D3DFMT_INDEX16, D3DPOOL_DEFAULT, &impl->IBO,
-                                    nullptr);
+
     ID3DBlob* vsBlob = nullptr;
     ID3DBlob* errBlob = nullptr;
     HRESULT hr = D3DCompile(g_vsCode, strlen(g_vsCode), nullptr, nullptr,
@@ -140,6 +135,32 @@ void GfxDirectX9::Submit(size_t count, size_t start) {
   impl->Device->SetVertexShaderConstantF(
       0, reinterpret_cast<const float*>(&Projection), 4);
 
+  if (!impl->VBO || impl->VertexBufferSize != GetVertexPoolSize()) {
+    if (impl->VBO) {
+      impl->VBO->Release();
+      impl->VBO = nullptr;
+      impl->VertexBufferSize = 0;
+    }
+    if (impl->Device->CreateVertexBuffer(
+            GetVertexPoolSize() * sizeof(Li::Vertex),
+            D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT,
+            &impl->VBO, nullptr) < 0)
+      return;
+    impl->VertexBufferSize = GetVertexPoolSize();
+  }
+  if (!impl->IBO || impl->IndexBufferSize != GetIndexPoolSize()) {
+    if (impl->IBO) {
+      impl->IBO->Release();
+      impl->IBO = nullptr;
+      impl->IndexBufferSize = 0;
+    }
+    if (impl->Device->CreateIndexBuffer(GetVertexPoolSize() * sizeof(u16),
+                                        D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY,
+                                        D3DFMT_INDEX16, D3DPOOL_DEFAULT,
+                                        &impl->IBO, nullptr) < 0)
+      return;
+    impl->IndexBufferSize = GetIndexPoolSize();
+  }
   void* vptr;
   impl->VBO->Lock(0, 0, &vptr, D3DLOCK_DISCARD);
   memcpy(vptr, GetVertexBufPtr(0), CurrentVertex * sizeof(PD::Li::Vertex));
