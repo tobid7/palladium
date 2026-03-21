@@ -2,8 +2,16 @@ cmake_minimum_required(VERSION 3.22)
 
 project(gfx-tests)
 
-add_executable(gfx-tests ${CMAKE_CURRENT_SOURCE_DIR}/source/main.cpp)
+add_executable(gfx-tests
+	${CMAKE_CURRENT_SOURCE_DIR}/source/main.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/source/os/horizon-nx.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/source/os/horizon-ctr.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/source/os/desktopos.cpp
+)
 target_link_libraries(gfx-tests PRIVATE palladium::palladium pd-system stb)
+target_include_directories(gfx-tests
+	PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Nintendo3DS")
 	target_link_libraries(gfx-tests PRIVATE ctru)
