@@ -1,6 +1,7 @@
 #pragma once
 
 #include <pd/lithium/atlas.hpp>
+#include <pd/lithium/command.hpp>
 #include <pd/lithium/rect.hpp>
 #include <pd/lithium/texture.hpp>
 #include <pd/lithium/vertex.hpp>
@@ -105,5 +106,17 @@ struct std::formatter<PD::Li::AtlasState> : std::formatter<std::string> {
         break;
     }
     return std::format_to(ctx.out(), "{}", ret);
+  }
+};
+
+template <>
+struct std::formatter<PD::Li::Command> : std::formatter<std::string> {
+  constexpr auto parse(std::format_parse_context& ctx) { return ctx.begin(); }
+
+  template <typename FormatContext>
+  auto format(const PD::Li::Command& value, FormatContext& ctx) const {
+    return std::format_to(ctx.out(), "[0x{:X}, 0x{:X}] [{}, {}] 0x{:X}",
+                          (PD::ptr)value.FirstVertex, (PD::ptr)value.FirstIndex,
+                          value.VertexCount, value.IndexCount, value.Tex);
   }
 };

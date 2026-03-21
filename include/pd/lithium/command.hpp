@@ -13,44 +13,58 @@ class Command {
   ~Command() {}
 
   void Reserve(size_t vtx, size_t idx) {
-    if (!FirstVertex)
-      FirstVertex = AllocateVertices(vtx);
-    else
-      AllocateVertices(vtx);
-    if (!FirstIndex)
-      FirstIndex = AllocateIndices(idx);
-    else
-      AllocateIndices(idx);
+    if (!FirstVertex) {
+      FirstVertex = AllocateVertices(vtx, (PD::ptr)this);
+      VertexCountMax = vtx;
+    } else {
+      ExpandVertices(vtx, (PD::ptr)this);
+      VertexCountMax += vtx;
+    }
+    if (!FirstIndex) {
+      FirstIndex = AllocateIndices(idx, (PD::ptr)this);
+      IndexCountMax = idx;
+    } else {
+      ExpandVertices(idx, (PD::ptr)this);
+      IndexCountMax += idx;
+    }
   }
 
   void Reset() {
     Layer = 0;
     Tex = 0;
-    FirstIndex = nullptr;
-    FirstVertex = nullptr;
+    FirstIndex = 0;
+    FirstVertex = 0;
     IndexCount = 0;
     VertexCount = 0;
+    VertexCountMax = 0;
+    IndexCountMax = 0;
   }
 
   Command& Add(const Vertex& vtx) {
-    FirstVertex[VertexCount++] = vtx;
+    if (VertexCount <= VertexCountMax)
+      PutVertex(FirstVertex + VertexCount++, vtx, (PD::ptr)this);
     return *this;
   }
   Command& Add(u16 idx) {
-    FirstIndex[IndexCount++] = VertexCount + idx;
+    if (IndexCount <= IndexCountMax)
+      PutIndex(FirstIndex + IndexCount++, VertexCount + idx, (PD::ptr)this);
     return *this;
   }
   Command& Add(u16 a, u16 b, u16 c) {
-    FirstIndex[IndexCount++] = VertexCount + a;
-    FirstIndex[IndexCount++] = VertexCount + b;
-    FirstIndex[IndexCount++] = VertexCount + c;
+    if (IndexCount + 3 <= IndexCountMax) {
+      size_t idx = FirstIndex + IndexCount;
+      PutIndex(idx + 0, VertexCount + a, (PD::ptr)this);
+      PutIndex(idx + 1, VertexCount + b, (PD::ptr)this);
+      PutIndex(idx + 2, VertexCount + c, (PD::ptr)this);
+      IndexCount += 3;
+    }
     return *this;
   }
 
   int Layer = 0;
   ptr Tex = 0;
-  Vertex* FirstVertex = nullptr;
-  u16* FirstIndex = nullptr;
+  size_t FirstVertex = 0;
+  size_t FirstIndex = 0;
   size_t VertexCount = 0;
   size_t IndexCount = 0;
   // Todo: implement

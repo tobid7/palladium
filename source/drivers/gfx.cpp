@@ -8,7 +8,7 @@ PD_API GfxDriver::GfxDriver(std::string_view name) : DriverInterface(name) {}
 
 PD_API GfxDriver::~GfxDriver() {
   if (pTextureRegestry.size()) {
-    PDLOG("GfxDriver: {} is still holding {} texture{}!", GetName(),
+    PDERR("GfxDriver: {} is still holding {} texture{}!", GetName(),
           pTextureRegestry.size(), (pTextureRegestry.size() == 1 ? "" : "s"));
   }
 }
@@ -40,7 +40,7 @@ PD_API void GfxDriver::UnregisterTexture(const Li::Texture& tex) {
     pTextureRegestry.erase(pTextureRegestry.find(tex.GetID()));
     PDLOG("GfxDriver: Texture {{ {} }} has been deleted!", tex);
   } else {
-    PDLOG("GfxDriver: WARNING Texture {{ {} }} does not exist in regestry!",
+    PDWARN("GfxDriver: WARNING Texture {{ {} }} does not exist in regestry!",
           tex);
   }
 }
