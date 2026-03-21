@@ -209,6 +209,13 @@ Li::Texture GfxDirectX9::LoadTexture(const std::vector<PD::u8>& pixels, int w,
                                      int h, TextureFormat type,
                                      TextureFilter filter) {
   if (!impl || !impl->Device) return Li::Texture();
+  if (pixels.size() !=
+      static_cast<size_t>(w * h * Li::TextureFormat2Bpp(type))) {
+    PDERR("Failed to load Texture due to Size mismatch: {} != {}",
+          pixels.size(),
+          static_cast<size_t>(w * h * Li::TextureFormat2Bpp(type)));
+    return Li::Texture();
+  }
   IDirect3DTexture9* tex = nullptr;
   D3DFORMAT fmt = D3DFMT_A8R8G8B8;
   if (type == TextureFormat::RGB24)
