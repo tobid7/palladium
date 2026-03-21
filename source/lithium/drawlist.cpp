@@ -265,7 +265,6 @@ PD_API void Drawlist::DrawConvexPolyFilled(const Pool<fvec2>& points,
         uv_tl.y + ((points[i].y - minY) / (maxY - minY)) * (uv_bl.y - uv_tl.y);
     cmd.Add(Vertex(points[i], fvec2(u, v), color));
   }
-  std::cout << std::format("{}: {}", __PRETTY_FUNCTION__, cmd);
 }
 
 PD_API void Drawlist::PrimQuad(Command& cmd, const Rect& quad, const Rect& uv,
