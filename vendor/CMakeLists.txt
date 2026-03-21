@@ -14,7 +14,15 @@ endif()
 
 # STB
 add_library(stb INTERFACE)
-target_include_directories(stb INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/stb)
+target_include_directories(stb
+	INTERFACE
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/stb>
+		$<INSTALL_INTERFACE:include>
+)
+install(TARGETS stb
+    EXPORT palladiumTargets
+    INCLUDES DESTINATION include
+)
 
 if(NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Nintendo3DS" AND NOT ${CMAKE_SYSTEM_NAME} STREQUAL "NintendoSwitch")
 	# GLFW
