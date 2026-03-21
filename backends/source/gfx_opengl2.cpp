@@ -82,10 +82,6 @@ void GfxOpenGL2::SysInit() {
 
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-  PDLOG(
-      "GfxOpenGL2::SysInit():\n  pShader = {}\n  pLocTex = {}\n  pLocAlfa = "
-      "{}\n  pLocProjection = {}\n  VBO = {}\n  IBO = {}",
-      pShader, pLocTex, pLocAlfa, pLocProjection, VBO, IBO);
 }
 
 void GfxOpenGL2::SysDeinit() {
@@ -172,7 +168,7 @@ void GfxOpenGL2::DeleteTexture(const Li::Texture& tex) {
 #else
 namespace PD {
 void GfxOpenGL2::SysInit() {
-  PDLOG(
+  PDERR(
       "GfxOpenGL2::SysInit: OpenGL2 Driver is not included in "
       "palladium-system");
 }

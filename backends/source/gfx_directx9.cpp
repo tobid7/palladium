@@ -86,7 +86,7 @@ void GfxDirectX9::SysInit() {
     HRESULT hr = D3DCompile(g_vsCode, strlen(g_vsCode), nullptr, nullptr,
                             nullptr, "main", "vs_2_0", 0, 0, &vsBlob, &errBlob);
     if (FAILED(hr)) {
-      PDLOG("Vertex Shader compile error: {}",
+      PDERR("Vertex Shader compile error: {}",
             errBlob ? (char*)errBlob->GetBufferPointer() : "");
     } else {
       impl->Device->CreateVertexShader((DWORD*)vsBlob->GetBufferPointer(),
@@ -109,7 +109,7 @@ void GfxDirectX9::SysInit() {
     if (psBlob) psBlob->Release();
     if (errBlob) errBlob->Release();
   } else {
-    PDLOG(
+    PDERR(
         "GfxDirectX9::SysInit Error: pDevice is not set!\nYOu need to include "
         "your D3D9 Device as "
         "folowing:\nPD::Gfx::UseDriver<PD::GfxDirectX9>(D3D9Device);");
@@ -276,7 +276,7 @@ void GfxDirectX9::DeleteTexture(const Li::Texture& tex) {
 #else
 namespace PD {
 void GfxDirectX9::SysInit() {
-  PDLOG(
+  PDERR(
       "GfxDirectX9::SysInit: DirectX9 Driver is not included in "
       "palladium-system");
 }
