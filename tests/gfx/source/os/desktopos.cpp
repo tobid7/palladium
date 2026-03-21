@@ -105,7 +105,18 @@ void DesktopOS::ClearViewPort() {
   }
 }
 
-void DesktopOS::SwapBuffers() { glfwSwapBuffers(impl->win); }
+void DesktopOS::SwapBuffers() {
+  if (pDriver == Driver::DirectX9) {
+#ifdef _WIN32
+    if (impl->dx9_device) {
+      impl->dx9_device->EndScene();
+      impl->dx9_device->Present(nullptr, nullptr, nullptr, nullptr);
+    }
+#endif
+  } else {
+    glfwSwapBuffers(impl->win);
+  }
+}
 
 }  // namespace PD
 #endif
