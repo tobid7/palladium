@@ -29,14 +29,14 @@ namespace PD {
 namespace Li {
 class Rect {
  public:
-  Rect() : Top(0), Bot(0) {}
+  constexpr Rect() : Top(0), Bot(0) {}
   ~Rect() = default;
   /**
    * Constructor that initializes the rectangle using top and bottom positions.
    * @param t Top left and right corner positions.
    * @param b Bottom left and right corner positions.
    */
-  Rect(const fvec4& t, const fvec4& b) {
+  constexpr Rect(const fvec4& t, const fvec4& b) {
     Top = t;
     Bot = b;
   }
@@ -48,7 +48,8 @@ class Rect {
    * @param bl Bottom left corner position.
    * @param br Bottom right corner position.
    */
-  Rect(const fvec2& tl, const fvec2& tr, const fvec2& bl, const fvec2& br) {
+  constexpr Rect(const fvec2& tl, const fvec2& tr, const fvec2& bl,
+                 const fvec2& br) {
     Top = fvec4(tl, tr);
     Bot = fvec4(bl, br);
   }
@@ -61,7 +62,7 @@ class Rect {
    *
    * @param uv Vec4 UV map.
    */
-  Rect(const fvec4& uv) {
+  constexpr Rect(const fvec4& uv) {
     Top = vec4(uv.x, uv.y, uv.z, uv.y);
     Bot = vec4(uv.x, uv.w, uv.z, uv.w);
   }
@@ -70,29 +71,29 @@ class Rect {
    * Get the top-left corner position.
    * @return Top-left position as vec2.
    */
-  fvec2 TopLeft() const { return fvec2(Top.x, Top.y); }
+  constexpr fvec2 TopLeft() const { return fvec2(Top.x, Top.y); }
   /**
    * Get the top-right corner position.
    * @return Top-right position as vec2.
    */
-  fvec2 TopRight() const { return fvec2(Top.z, Top.w); }
+  constexpr fvec2 TopRight() const { return fvec2(Top.z, Top.w); }
   /**
    * Get the bottom-left corner position.
    * @return Bottom-left position as vec2.
    */
-  fvec2 BotLeft() const { return fvec2(Bot.x, Bot.y); }
+  constexpr fvec2 BotLeft() const { return fvec2(Bot.x, Bot.y); }
   /**
    * Get the bottom-right corner position.
    * @return Bottom-right position as vec2.
    */
-  fvec2 BotRight() const { return fvec2(Bot.z, Bot.w); }
+  constexpr fvec2 BotRight() const { return fvec2(Bot.z, Bot.w); }
 
   /**
    * Set the top-left corner position.
    * @param v New top-left position.
    * @return Reference to the updated Rect.
    */
-  Rect& TopLeft(const fvec2& v) {
+  constexpr Rect& TopLeft(const fvec2& v) {
     Top.x = v.x;
     Top.y = v.y;
     return *this;
@@ -103,7 +104,7 @@ class Rect {
    * @param v New top-right position.
    * @return Reference to the updated Rect.
    */
-  Rect& TopRight(const fvec2& v) {
+  constexpr Rect& TopRight(const fvec2& v) {
     Top.z = v.x;
     Top.w = v.y;
     return *this;
@@ -114,7 +115,7 @@ class Rect {
    * @param v New bottom-left position.
    * @return Reference to the updated Rect.
    */
-  Rect& BotLeft(const fvec2& v) {
+  constexpr Rect& BotLeft(const fvec2& v) {
     Bot.x = v.x;
     Bot.y = v.y;
     return *this;
@@ -125,15 +126,17 @@ class Rect {
    * @param v New bottom-right position.
    * @return Reference to the updated Rect.
    */
-  Rect& BotRight(const fvec2& v) {
+  constexpr Rect& BotRight(const fvec2& v) {
     Bot.z = v.x;
     Bot.w = v.y;
     return *this;
   }
 
-  bool operator==(const Rect& r) const { return Top == r.Top && Bot == r.Bot; }
+  constexpr bool operator==(const Rect& r) const {
+    return Top == r.Top && Bot == r.Bot;
+  }
 
-  void SwapVec2XY() {
+  constexpr void SwapVec2XY() {
     Top.SwapXY();
     Top.SwapZW();
     Bot.SwapXY();
