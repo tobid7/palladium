@@ -174,6 +174,13 @@ Li::Texture GfxCitro3D::LoadTexture(const std::vector<PD::u8>& pixels, int w,
                                     int h, TextureFormat type,
                                     TextureFilter filter) {
   if (!impl || w > 1024 || h > 1024) return Li::Texture();
+  if (pixels.size() !=
+      static_cast<size_t>(w * h * Li::TextureFormat2Bpp(type))) {
+    PDERR("Failed to load Texture due to Size mismatch: {} != {}",
+          pixels.size(),
+          static_cast<size_t>(w * h * Li::TextureFormat2Bpp(type)));
+    return Li::Texture();
+  }
   // Don't check here as check done before
   PD::Li::Texture res;
   int bpp = impl->TextureFormat2Bpp(type);
