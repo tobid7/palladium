@@ -40,6 +40,7 @@ class PD_API GfxDriver : public DriverInterface {
   virtual void DeleteTexture(const Li::Texture& tex) {}
   virtual void Draw(const Pool<Li::Command>& commands) {}
   Li::Texture::Ptr GetWhiteTexture() { return &pWhite; }
+  PDBackendFlags GetFlags() { return Flags; }
 
  protected:
   virtual void SysDeinit() {}
@@ -62,6 +63,7 @@ class PD_API GfxDriver : public DriverInterface {
   ivec2 ViewPort;
   std::unordered_map<TextureID, Li::Texture> pTextureRegestry;
   Li::Texture pWhite;
+  PDBackendFlags Flags = 0;
 };
 
 struct DefaultGfxConfig {
@@ -165,6 +167,8 @@ class PD_API Gfx {
   static Li::Texture::Ptr GetWhiteTexture() {
     return driver->GetWhiteTexture();
   }
+
+  static PDBackendFlags GetFlags() { return driver->GetFlags(); }
 
   static const char* GetDriverName() { return driver->GetName(); }
 
