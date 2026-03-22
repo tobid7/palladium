@@ -46,9 +46,10 @@ set(PD_SOURCES
 	source/drivers/gfx.cpp
 
 	# Lithium
-	source/lithium/pools.cpp
-	source/lithium/math.cpp
 	source/lithium/drawlist.cpp
+	source/lithium/font.cpp
+	source/lithium/math.cpp
+	source/lithium/pools.cpp
 )
 
 if(${PD_BUILD_SHARED})
