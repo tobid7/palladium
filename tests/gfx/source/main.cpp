@@ -42,7 +42,6 @@ int main(int argc, char** argv) {
   PD::Li::Font font;
   font.LoadTTF(ResourcePath("default.ttf"));
   pList.SetFont(&font);
-  pList.SetFontscale(0.7f);
   while (pOs->Mainloop()) {
     pOs->ClearViewPort();
     PD::Li::ResetPools();
