@@ -162,7 +162,7 @@ PD_API fvec2 Font::GetTextBounds(const char* text, float scale) {
   u32 c;
   while (it.Decode32(c)) {
     auto cp = GetCodepoint(c);
-    if (!cp.pInvalid && c != '\n' && c != '\t' && c != ' ') {
+    if (cp.pInvalid && c != '\n' && c != '\t' && c != ' ') {
       continue;
     }
     switch (c) {
@@ -211,10 +211,9 @@ PD_API void Font::CmdTextEx(Drawlist& dl, const fvec2& pos, u32 color,
   U8Iterator it(text);
   u32 c;
   Command* cmd = nullptr;
-
   while (it.Decode32(c)) {
     auto cp = GetCodepoint(c);
-    if ((!cp.pInvalid && c != '\n' && c != '\t' && c != ' ') && c != '\r')
+    if ((cp.pInvalid && c != L'\n' && c != L'\t' && c != L' ') && c != L'\r')
       continue;
 
     if (c == L'\n') {
