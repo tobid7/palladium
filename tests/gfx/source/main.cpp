@@ -45,6 +45,7 @@ int main(int argc, char** argv) {
   while (pOs->Mainloop()) {
     pOs->ClearViewPort();
     PD::Li::ResetPools();
+    pList.SetFontscale(pOs->SizeTranslate(PD::fvec2(0.0017)).x);
     pList.PathRect(pOs->PositionTranslate(0.05), pOs->PositionTranslate(0.4f),
                    10.f);
     pList.PathFill(0xff00ffff);
