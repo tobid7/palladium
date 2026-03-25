@@ -52,6 +52,14 @@ int main(int argc, char** argv) {
     pList.DrawRectFilled(pOs->PositionTranslate(PD::fvec2(0.02f, 0.5f)),
                          pOs->SizeTranslate(PD::fvec2(0.3)), 0xffffffff);
     pList.DrawText(5, "Hello World!", 0xff0000ff);
+    pList.DrawText(
+        pOs->PositionTranslate(PD::fvec2(0.005, 0.9)),
+        std::format("VIDC: [{}, {}, {}, {}]\nGfxDriver: {}",
+                    PD::Gfx::GetNumVertices(), PD::Gfx::GetNumIndices(),
+                    PD::Gfx::GetNumDrawcalls(), PD::Gfx::GetNumCommands(),
+                    PD::Gfx::GetDriverName())
+            .c_str(),
+        PD::Color("#ffffff"));
     PD::Gfx::Reset();
     PD::Gfx::Draw(pList);
     pList.Clear();

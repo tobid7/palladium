@@ -25,8 +25,14 @@ PD_API void GfxDriver::SetViewPort(int x, int y) {
 }
 
 PD_API void GfxDriver::Reset() {
+  CountIndices = CurrentIndex;
+  CountVertices = CurrentVertex;
   CurrentVertex = 0;
   CurrentIndex = 0;
+  CountCommands = pCountCommands;
+  CountDrawcalls = pCountDrawcalls;
+  pCountCommands = 0;
+  pCountDrawcalls = 0;
   ResetPools();
   SysReset();
 }
@@ -41,7 +47,7 @@ PD_API void GfxDriver::UnregisterTexture(const Li::Texture& tex) {
     PDLOG("GfxDriver: Texture {{ {} }} has been deleted!", tex);
   } else {
     PDWARN("GfxDriver: WARNING Texture {{ {} }} does not exist in regestry!",
-          tex);
+           tex);
   }
 }
 }  // namespace PD
