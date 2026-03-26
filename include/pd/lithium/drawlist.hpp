@@ -70,6 +70,7 @@ class PD_API Drawlist {
   /** Font Handling */
   void SetFont(Font* font) { pFont = font; }
   void SetFontscale(float fontscale = 1.f) { pFontScale = fontscale; }
+  const float& GetFontScale() const { return pFontScale; }
 
   /** Data geters */
   const Pool<Command>& Data() const { return pCommands; }
