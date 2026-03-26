@@ -29,6 +29,8 @@ class OsCtx {
     return fvec2(in.x * pViewPort.y, in.y * pViewPort.y);
   }
 
+  const PD::ivec2& GetViewport() const { return pViewPort; }
+
  protected:
   PD::ivec2 pViewPort;
   const Driver pDriver;
