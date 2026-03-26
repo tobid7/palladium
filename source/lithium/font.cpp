@@ -271,5 +271,15 @@ PD_API std::string Font::pShortText(const std::string& txt, float scale,
   return "";
 }
 
+PD_API void Font::Delete() {
+  for (auto& it : Textures) {
+    // Creating a tmp fake Li tex for deletion
+    PD::Gfx::DeleteTexture(PD::Li::Texture(it, 0));
+  }
+  pCurrentTex = 0;
+  PixelHeight = 0;
+  pTMS.clear();
+  CodeMap.clear();
+}
 }  // namespace Li
 }  // namespace PD
