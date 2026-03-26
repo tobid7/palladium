@@ -3,6 +3,12 @@
 #include <os/horizon-nx.hpp>
 #include <palladium>
 
+////
+#include <pd/ultra/elems/rect.hpp>
+#include <pd/ultra/elems/text.hpp>
+#include <pd/ultra/layout.hpp>
+////
+
 PD::OsCtx* pOs = nullptr;
 
 const char* ResourcePath(const char* in) {
@@ -13,6 +19,20 @@ const char* ResourcePath(const char* in) {
 #else
   return in;
 #endif
+}
+
+void DrawTextHaxxed(const char* text, PD::Li::Font& font, PD::Li::Drawlist& l,
+                    const PD::Ultra::Canvas& c, const PD::fvec2& pos,
+                    const PD::Color& color, UltraAlignment align) {
+  PD::fvec2 bounds = font.GetTextBounds(text, l.GetFontScale());
+  PD::Li::Rect _b = c.VTranslateObject(pos, bounds, align, true);
+  l.UnbindTexture();
+  l.PathRect(_b.TopLeft(), _b.BotRight());
+  l.PathFill(0x30ff00ff);
+  l.PathRect(_b.TopLeft(), _b.BotRight());
+  l.PathStroke(0xffff00ff, 1, LiDrawFlags_Close);
+  l.DrawText(c.VTranslateObject(pos, bounds, align, true).TopLeft(), text,
+             color);
 }
 
 int main(int argc, char** argv) {
@@ -40,32 +60,55 @@ int main(int argc, char** argv) {
   PD::Image img(ResourcePath("icon.png"));
   auto pTex = PD::Gfx::LoadTexture(img, img.Width(), img.Height());
   PD::Li::Font font;
-  font.LoadTTF(ResourcePath("default.ttf"));
+  font.LoadTTF(ResourcePath("default.ttf"), 64);
   pList.SetFont(&font);
+  PD::Ultra::Layout lyt;
+  lyt.GetCanvas().SetVirtualViewport(PD::fvec2(400, 240));
+  lyt.SetFont(font);
+  PD::Ultra::Rect rr;
+  PD::Ultra::Text txt;
+  rr.SetPosition(12, 20);
+  rr.SetSize(90, 60);
+  rr.SetColor(PD::Color("#ff00ff"));
+  lyt.Add(rr);
+  txt.SetPosition(0);
+  txt.SetColor(0xffffffff);
+  txt.SetText("const std::string &text");
+  lyt.Add(txt);
   while (pOs->Mainloop()) {
+    lyt.GetCanvas().SetViewport(pOs->GetViewport());
     pOs->ClearViewPort();
     PD::Li::ResetPools();
-    pList.SetFontscale(pOs->SizeTranslate(PD::fvec2(0.0017)).x);
-    pList.PathRect(pOs->PositionTranslate(0.05), pOs->PositionTranslate(0.4f),
-                   10.f);
+    pList.SetFontscale(lyt.GetCanvas().VTranslateFontscale(0.7f));
+    lyt.Render();
+    /*auto t = lyt.GetCanvas().VTranslateObject(
+        PD::fvec2(5, 30), PD::fvec2(170, 110), UltraAlignment_TopLeft);
+    auto icnpos = lyt.GetCanvas().VTranslateObject(
+        PD::fvec2(5, 5), PD::fvec2(60), UltraAlignment_TopRight);
+    pList.PathRect(t.TopLeft(), t.BotRight(),
+                   lyt.GetCanvas().VTranslateSize(10).x);
     pList.PathFill(0xff00ffff);
     pList.BindTexture(pTex);
-    pList.DrawRectFilled(pOs->PositionTranslate(PD::fvec2(0.02f, 0.5f)),
-                         pOs->SizeTranslate(PD::fvec2(0.3)), 0xffffffff);
-    pList.DrawText(5, "Hello World!", 0xff0000ff);
-    pList.DrawText(
-        pOs->PositionTranslate(PD::fvec2(0.005, 0.9)),
-        std::format("VIDC: [{}, {}, {}, {}]\nGfxDriver: {}",
-                    PD::Gfx::GetNumVertices(), PD::Gfx::GetNumIndices(),
-                    PD::Gfx::GetNumDrawcalls(), PD::Gfx::GetNumCommands(),
-                    PD::Gfx::GetDriverName())
+    pList.PathRect(icnpos.TopLeft(), icnpos.BotRight());
+    pList.PathFill(0xffffffff);
+    DrawTextHaxxed("Hello World!", font, pList, lyt.GetCanvas(),
+                   PD::fvec2(5, 5), 0xff0000ff, UltraAlignment_TopLeft);*/
+    DrawTextHaxxed(
+        std::format(
+            "Font Scale: {}\nVP: [{}]\nVIDC: [{}, {}, {}, {}]\nGfxDriver: {}",
+            pList.GetFontScale(), pOs->GetViewport(), PD::Gfx::GetNumVertices(),
+            PD::Gfx::GetNumIndices(), PD::Gfx::GetNumDrawcalls(),
+            PD::Gfx::GetNumCommands(), PD::Gfx::GetDriverName())
             .c_str(),
-        PD::Color("#ffffff"));
+        font, pList, lyt.GetCanvas(), PD::fvec2(5, 5), 0xffffffff,
+        UltraAlignment_BotLeft);
     PD::Gfx::Reset();
     PD::Gfx::Draw(pList);
+    PD::Gfx::Draw(lyt.Data());
     pList.Clear();
     pOs->SwapBuffers();
   }
+  font.Delete();
   PD::Gfx::DeleteTexture(pTex);
   PD::Gfx::Deinit();
   pOs->Deinit();
