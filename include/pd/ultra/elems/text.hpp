@@ -12,13 +12,10 @@ class PD_API Text : public ElementBase {
 
   void Draw(PD::Li::Drawlist& l) override;
 
-  void SetPosition(const PD::fvec2& pos) { pPos = pos; }
-  void SetPosition(float x, float y) { pPos = PD::fvec2(x, y); }
   void SetColor(const PD::Color& color) { pColor = color; }
   void SetText(const std::string& text) { pText = text; }
 
  private:
-  PD::fvec2 pPos;
   PD::Color pColor;
   std::string pText;
 };
