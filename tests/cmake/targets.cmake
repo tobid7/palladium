@@ -16,7 +16,7 @@ function(make_3ds_target _NAME TITLE AUTHOR _VERSION ICON ROMFS)
 			DEPENDS ${_NAME}.elf
 			COMMENT "Creating ${_NAME}.smdh"
 		)
-		add_custom_target(${_NAME}.3dsx
+		add_custom_target(${_NAME}.3dsx ALL
 			COMMAND ${3DSXTOOL} ${_NAME}.elf ${_NAME}.3dsx --smdh=${_NAME}.smdh
 				--romfs="${ROMFS}"
 			DEPENDS ${_NAME}.smdh
@@ -35,7 +35,7 @@ function(make_nx_target _NAME TITLE AUTHOR _VERSION ICON ROMFS)
 			DEPENDS ${_NAME}.elf
 			COMMENT "Creating ${_NAME}.nacp"
 		)
-		add_custom_target(${_NAME}.nro
+		add_custom_target(${_NAME}.nro ALL
 			COMMAND ${ELF2NRO} ${_NAME}.elf ${_NAME}.nro --nacp=${_NAME}.nacp
 				--romfsdir="${ROMFS}" --icon="${ICON}"
 			DEPENDS ${_NAME}.nacp
