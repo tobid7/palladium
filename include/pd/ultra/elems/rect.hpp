@@ -8,20 +8,28 @@ namespace Ultra {
 class PD_API Rect : public ElementBase {
  public:
   Rect() {}
+  Rect(const PD::fvec2& pos, const PD::fvec2& size, const PD::Color& color,
+       float rounding = 0.f, UltraAlignment align = 0)
+      : pColor(color), pRounding(rounding) {
+    this->pAlignment = align;
+    this->pPos = pos;
+    this->pSize = size;
+  }
+  Rect(float x, float y, float w, float h, const PD::Color& color,
+       float rounding = 0.f, UltraAlignment align = 0)
+      : pColor(color), pRounding(rounding) {
+    this->pAlignment = align;
+    this->pPos = PD::fvec2(x, y);
+    this->pSize = PD::fvec2(w, h);
+  }
   ~Rect() {}
 
   void Draw(PD::Li::Drawlist& l) override;
 
-  void SetPosition(const PD::fvec2& pos) { pPos = pos; }
-  void SetPosition(float x, float y) { pPos = PD::fvec2(x, y); }
-  void SetSize(const PD::fvec2& size) { pSize = size; }
-  void SetSize(float w, float h) { pSize = PD::fvec2(w, h); }
   void SetColor(const PD::Color& color) { pColor = color; }
   void SetRounding(float r) { pRounding = r; }
 
  private:
-  PD::fvec2 pPos;
-  PD::fvec2 pSize;
   PD::Color pColor;
   float pRounding = 0.f;
 };
