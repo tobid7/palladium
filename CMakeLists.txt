@@ -54,8 +54,10 @@ set(PD_SOURCES
 	# Ultra
 	source/ultra/canvas.cpp
 	source/ultra/layout.cpp
+	source/ultra/elems/element.cpp
 	source/ultra/elems/rect.cpp
 	source/ultra/elems/text.cpp
+	source/ultra/elems/image.cpp
 )
 
 if(${PD_BUILD_SHARED})
