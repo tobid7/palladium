@@ -6,6 +6,7 @@
 namespace PD {
 namespace Ultra {
 class Canvas;
+class Container;
 class PD_API ElementBase {
  public:
   ElementBase() {}
@@ -16,7 +17,6 @@ class PD_API ElementBase {
    * Reset Function (for PD::Pool::FastReset)
    */
   virtual void Reset() {}
-  void Update(Canvas& c);
 
   void SetAlignment(UltraAlignment a) { pAlignment = a; }
   void SetPosition(const PD::fvec2& pos) { pPos = pos; }
@@ -25,13 +25,14 @@ class PD_API ElementBase {
   void SetSize(float w, float h) { pSize = PD::fvec2(w, h); }
 
  protected:
+  friend class Container;
+  void SetParent(Container* c) { pParent = c; }
   bool RevisionUpdate(PD::u32 req);
+  Container* pParent;
   PD::u32 pCanvasRev = 0;
-  PD::Li::Rect pRenderspace;
   UltraAlignment pAlignment = 0;
   PD::fvec2 pPos;
   PD::fvec2 pSize;
-  ElementBase* pParent = nullptr;
 };
 }  // namespace Ultra
 }  // namespace PD

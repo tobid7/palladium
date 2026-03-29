@@ -28,10 +28,14 @@ class PD_API Rect : public ElementBase {
 
   void SetColor(const PD::Color& color) { pColor = color; }
   void SetRounding(float r) { pRounding = r; }
+  void SetLined(bool v) { pLined = v; }
+  void SetThickness(int v) { pThickness = v; }
 
  private:
   PD::Color pColor;
   float pRounding = 0.f;
+  bool pLined = false;
+  int pThickness = 1.f;
 };
 }  // namespace Ultra
 
