@@ -68,15 +68,15 @@ PD_API void Drawlist::PathFastArcToN(const fvec2& c, float r, float amin,
   }
 }
 
-PD_API void Drawlist::PathRect(const fvec2& tl, const fvec2& br, float r) {
-  if (r == 0.f) {
+PD_API void Drawlist::PathRect(const fvec2& tl, const fvec2& br,
+                               float rounding) {
+  if (rounding == 0.f) {
     PathAdd(tl);
     PathAdd(vec2(br.x, tl.y));
     PathAdd(br);
     PathAdd(vec2(tl.x, br.y));
   } else {
-    float r = std::numeric_limits<float>::max();
-    r = std::min({r, (br.x - tl.x) * 0.5f, (br.y - tl.y) * 0.5f});
+    float r = std::min({rounding, (br.x - tl.x) * 0.5f, (br.y - tl.y) * 0.5f});
     /** Calculate Optimal segment count automatically */
     float corner = M_PI * 0.5f;
     int segments = std::max(3, int(std::ceil(corner / (6.0f * M_PI / 180.0f))));
@@ -101,15 +101,15 @@ PD_API void Drawlist::PathRect(const fvec2& tl, const fvec2& br, float r) {
   }
 }
 
-PD_API void Drawlist::PathRectEx(const fvec2& tl, const fvec2& br, float r,
-                                 LiPathRectFlags flags) {
-  if (r == 0.f) {
+PD_API void Drawlist::PathRectEx(const fvec2& tl, const fvec2& br,
+                                 float rounding, LiPathRectFlags flags) {
+  if (rounding == 0.f) {
     PathAdd(tl);
     PathAdd(vec2(br.x, tl.y));
     PathAdd(br);
     PathAdd(vec2(tl.x, br.y));
   } else {
-    float r = std::min({r, (br.x - tl.x) * 0.5f, (br.y - tl.y) * 0.5f});
+    float r = std::min({rounding, (br.x - tl.x) * 0.5f, (br.y - tl.y) * 0.5f});
     /** Calculate Optimal segment count automatically */
     float corner = M_PI * 0.5f;
     int segments = std::max(3, int(std::ceil(corner / (6.0f * M_PI / 180.0f))));
