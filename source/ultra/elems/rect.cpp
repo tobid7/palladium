@@ -3,10 +3,12 @@
 namespace PD {
 namespace Ultra {
 PD_API void Rect::Draw(PD::Li::Drawlist& l) {
-  l.PathRect(pRenderspace.TopLeft(), pRenderspace.BotRight(), pRounding);
-  l.PathFill(pColor);
-  l.DrawText(pRenderspace.BotRight(), std::to_string(pCanvasRev).c_str(),
-             0xff0000ff);
+  l.PathRect(pPos, pPos + pSize, pRounding);
+  if (pLined) {
+    l.PathStroke(pColor, pThickness, LiDrawFlags_Close);
+  } else {
+    l.PathFill(pColor);
+  }
 }
 }  // namespace Ultra
 }  // namespace PD

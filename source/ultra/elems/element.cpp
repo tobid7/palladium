@@ -11,16 +11,5 @@ PD_API bool ElementBase::RevisionUpdate(PD::u32 req) {
     return false;
   }
 }
-PD_API void ElementBase::Update(Canvas& c) {
-  if (RevisionUpdate(c.GetRevision())) {
-    if (pParent) {
-      pRenderspace = c.VTranslateObject(
-          pParent->pRenderspace.TopLeft(),
-          pRenderspace.BotRight() - pRenderspace.TopLeft(), pAlignment, true);
-    } else {
-      pRenderspace = c.VTranslateObject(pPos, pSize, pAlignment);
-    }
-  }
-}
 }  // namespace Ultra
 }  // namespace PD
