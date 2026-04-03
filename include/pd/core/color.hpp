@@ -72,6 +72,12 @@ class PD_API Color {
   constexpr Color(const std::string_view& hex) { Hex(hex); }
 
   /**
+   * Constructor for Hex Input (is abel to run at compile time xD)
+   * @param hex Hex String in `#ffffff` or `#ffffffff` format
+   */
+  constexpr Color(const char* hex) { Hex(std::string_view{hex}); }
+
+  /**
    * Create Color Object by Hex String (at compile time btw)
    * @param hex Hex String in `#ffffff` or `#ffffffff` format
    * @return Color class itself
