@@ -103,7 +103,7 @@ PD_API void Font::LoadTTF(const std::vector<u8>& data, int px_height) {
     uvs.z = (off.x + w) / static_cast<float>(texszs);
     uvs.w = (off.y + h) / static_cast<float>(texszs);
     // Flip if needed
-    if (PD::Gfx::GetFlags() & PDBackendFlags_FlipUV_Y) {
+    if (PD::Gfx::GetFlags() & PDGfxBackendFlags_FlipUV_Y) {
       uvs.y = 1.f - uvs.y;
       uvs.w = 1.f - uvs.w;
     }
