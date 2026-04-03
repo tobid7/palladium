@@ -7,6 +7,7 @@ PD_API void Layout::Render(PD::Li::Drawlist& list) {
   float fc = list.GetFontScale();
   list.SetFontscale(GetCanvas().VTranslateFontscale(fc));
   for (auto& it : GetElements()) {
+    it->SetFontIfNull(*pFont);
     it->Update();
     it->Draw(list);
   }
