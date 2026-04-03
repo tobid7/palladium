@@ -22,6 +22,43 @@ const char* ResourcePath(const char* in) {
 #endif
 }
 
+class MainMenu : public PD::Ultra::Layout {
+ public:
+  MainMenu(PD::Li::Font& font) {
+    SetBaseViewport(PD::ivec2(1280, 720));
+    pBackground.SetSize(800, 450);
+    pBackground.SetColor(PD::Color("#ffffffff"));
+    pBackground.SetAlignment(UltraAlignment_CenterHorizontal |
+                             UltraAlignment_CenterVertical);
+    Push(pBackground);
+    pText.SetColor(PD::Color("#000000"));
+    pText.SetText("Hello World");
+    pText.SetAlignment(UltraAlignment_CenterHorizontal |
+                       UltraAlignment_CenterVertical);
+    pText.SetFont(font);
+    Push(pText);
+  }
+  ~MainMenu() {}
+
+ private:
+  PD::Ultra::Rect pBackground;
+  PD::Ultra::Text pText;
+};
+
+class App {
+ public:
+  App(PD::Li::Font& font) : main(font) {}
+  ~App() {}
+
+  void Update(PD::ivec2 vp, PD::Li::Drawlist& list) {
+    main.SetViewport(vp);
+    main.Render(list);
+  }
+
+ private:
+  MainMenu main;
+};
+
 int main(int argc, char** argv) {
   // PD::LogFilter(PD::LogLevel::Warning);
   Driver drv = Driver::OpenGL3;
@@ -49,46 +86,13 @@ int main(int argc, char** argv) {
   PD::Li::Font font;
   font.LoadTTF(ResourcePath("default.ttf"), 64);
   pList.SetFont(&font);
-  PD::Ultra::Layout lyt;
-  lyt.SetViewport(PD::fvec2(1280, 720));
-  lyt.SetFont(font);
-  PD::Ultra::Rect r;
-  r.SetColor(0xff0000ff);
-  r.SetRounding(10.f);
-  r.SetLined(true);
-  r.SetPosition(250, 150);
-  r.SetSize(100, 70);
-  PD::Ultra::Rect rr;
-  rr.SetColor(0x880000ff);
-  rr.SetRounding(10.f);
-  rr.SetPosition(250, 150);
-  rr.SetSize(100, 70);
-  lyt.Push(&rr);
-  lyt.Push(&r);
-  PD::Ultra::Text txt;
-  txt.SetPosition(PD::fvec2(5, 200));
-  txt.SetText("OpenGL");
-  txt.SetColor(PD::Color("#ffffffff"));
-  lyt.Push(&txt);
+  App app(font);
   while (pOs->Mainloop()) {
     pOs->ClearViewPort();
-    lyt.SetViewport(pOs->GetViewport());
-    PD::Li::ResetPools();
-    pList.DrawRectFilled(150, 50, 0x88ffffff);
-    pList.DrawRect(150, 50, 0xffffffff);
-    lyt.Render();
-    pList.DrawText(
-        5,
-        std::format(
-            "Font Scale: {}\nVP: [{}]\nVIDC: [{}, {}, {}, {}]\nGfxDriver: {}",
-            pList.GetFontScale(), pOs->GetViewport(), PD::Gfx::GetNumVertices(),
-            PD::Gfx::GetNumIndices(), PD::Gfx::GetNumDrawcalls(),
-            PD::Gfx::GetNumCommands(), PD::Gfx::GetDriverName())
-            .c_str(),
-        0xffffffff);
+    PD::Li::ResetPools();  // Move to other place (or refactor this)
+    app.Update(pOs->GetViewport(), pList);
     PD::Gfx::Reset();
     PD::Gfx::Draw(pList);
-    PD::Gfx::Draw(lyt.Data());
     pList.Clear();
     pOs->SwapBuffers();
   }

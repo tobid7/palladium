@@ -11,14 +11,7 @@ class PD_API Layout : public Container {
   Layout() {}
   ~Layout() {}
 
-  void SetFont(PD::Li::Font& font);
-
-  void Render();
-
-  const PD::Li::Drawlist& Data() const { return pList; }
-
- private:
-  PD::Li::Drawlist pList;
+  void Render(PD::Li::Drawlist& list);
 };
 }  // namespace Ultra
 }  // namespace PD
