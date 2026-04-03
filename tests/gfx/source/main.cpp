@@ -4,10 +4,13 @@
 #include <palladium>
 
 ////
+#include <pd/ultra/elems/button.hpp>
+#include <pd/ultra/elems/element.hpp>
 #include <pd/ultra/elems/image.hpp>
 #include <pd/ultra/elems/rect.hpp>
 #include <pd/ultra/elems/text.hpp>
 #include <pd/ultra/layout.hpp>
+
 ////
 
 PD::OsCtx* pOs = nullptr;
@@ -25,24 +28,36 @@ const char* ResourcePath(const char* in) {
 class MainMenu : public PD::Ultra::Layout {
  public:
   MainMenu(PD::Li::Font& font) {
+    SetFont(font);
     SetBaseViewport(PD::ivec2(1280, 720));
     pBackground.SetSize(800, 450);
-    pBackground.SetColor(PD::Color("#ffffffff"));
+    pBackground.SetColor("#ffffffff");
     pBackground.SetAlignment(UltraAlignment_CenterHorizontal |
                              UltraAlignment_CenterVertical);
     Push(pBackground);
-    pText.SetColor(PD::Color("#000000"));
-    pText.SetText("Hello World");
-    pText.SetAlignment(UltraAlignment_CenterHorizontal |
-                       UltraAlignment_CenterVertical);
-    pText.SetFont(font);
+    pText.SetColor("#ffffff");
+    pText.SetText("MousePos: ");
+    pText.SetAlignment(UltraAlignment_TopLeft);
     Push(pText);
+    pBtn.SetText("Test");
+    pBtn.SetAlignment(UltraAlignment_Center);
+    pBtn.SetColor("#1273fb");
+    pBtn.SetFocusedColor("#0011ff");
+    pBtn.SetTextColor("#ffffff");
+    pBtn.SetRounding(10);
+    pBtn.OnPress([]() { PD::Log("Btn Pressed..."); });
+    Push(pBtn);
   }
   ~MainMenu() {}
+
+  void Update() {
+    pText.SetText(std::format("MousePos: {}", PD::Hid::MousePos()));
+  }
 
  private:
   PD::Ultra::Rect pBackground;
   PD::Ultra::Text pText;
+  PD::Ultra::Button pBtn;
 };
 
 class App {
@@ -51,6 +66,7 @@ class App {
   ~App() {}
 
   void Update(PD::ivec2 vp, PD::Li::Drawlist& list) {
+    main.Update();
     main.SetViewport(vp);
     main.Render(list);
   }
@@ -92,8 +108,6 @@ int main(int argc, char** argv) {
     pOs->ClearViewPort();
     PD::Li::ResetPools();  // Move to other place (or refactor this)
     app.Update(pOs->GetViewport(), pList);
-    pList.DrawText(5, std::format("Mouse: {}", PD::Hid::MousePos()).c_str(),
-                   PD::Color("#ffffffff"));
     PD::Gfx::Reset();
     PD::Gfx::Draw(pList);
     pList.Clear();
