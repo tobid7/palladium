@@ -3,17 +3,16 @@
 
 namespace PD {
 namespace Ultra {
-PD_API void Layout::SetFont(PD::Li::Font& font) { pList.SetFont(&font); }
-
-PD_API void Layout::Render() {
-  pList.Clear();
+PD_API void Layout::Render(PD::Li::Drawlist& list) {
+  float fc = list.GetFontScale();
+  list.SetFontscale(GetCanvas().VTranslateFontscale(fc));
   for (auto& it : GetElements()) {
     it->Update();
-    it->Draw(pList);
+    it->Draw(list);
   }
-  pList.DrawText(PD::fvec2(5, GetBotLeft().y - 40),
-                 std::format("Lyt: [{}]", GetRenderspace()).c_str(),
-                 0xffff00ff);
+  list.DrawText(PD::fvec2(5, GetBotLeft().y - 40),
+                std::format("Lyt: [{}]", GetRenderspace()).c_str(), 0xffff00ff);
+  list.SetFontscale(fc);
 }
 }  // namespace Ultra
 }  // namespace PD
