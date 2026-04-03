@@ -6,6 +6,7 @@ namespace Ultra {
 PD_API void Text::Draw(PD::Li::Drawlist& l) {
   if (!pFont) return;
   l.SetFont(pFont);
+  l.SetFontscale(pParent->GetCanvas().VTranslateFontscale(pFontScale));
   l.DrawText(pRenderspace.TopLeft(), pText.c_str(), pColor);
 }
 
@@ -14,8 +15,8 @@ PD_API void Text::Update() {
   if (!pParent) ElementBase::Update();
   pRenderspace = pParent->GetCanvas().VTranslateObject(
       pParent->GetTopLeft() + pPos,
-      pFont->GetTextBounds(pText.c_str(),
-                           pParent->GetCanvas().VTranslateFontscale(pScale)),
+      pFont->GetTextBounds(
+          pText.c_str(), pParent->GetCanvas().VTranslateFontscale(pFontScale)),
       pAlignment, true);
 }
 }  // namespace Ultra

@@ -20,6 +20,11 @@ PD_API bool InBounds(const fvec2& a, const fvec2& b, const fvec2& c,
           (a.x > 0 && b.x > 0 && c.x > 0) || (a.y > 0 && b.y > 0 && c.y > 0));
 }
 
+PD_API bool InSpace(const PD::fvec2& pos, const Rect& rect) {
+  return (pos.x > rect.Top.x && pos.x < rect.Top.z && pos.y > rect.Top.y &&
+          pos.y < rect.Bot.y);
+}
+
 PD_API void RotateCorner(fvec2& pos, float sinus, float cosinus) {
   float x = pos.x * cosinus - pos.y * sinus;
   float y = pos.y * cosinus - pos.x * sinus;
