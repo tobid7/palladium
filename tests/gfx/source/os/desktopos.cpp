@@ -72,6 +72,7 @@ void DesktopOS::Init() {
   }
 #endif
   glfwSwapInterval(1);
+  PD::Hid::UseDriver<HidGlfw>(impl->win);
 }
 
 void DesktopOS::Deinit() {
