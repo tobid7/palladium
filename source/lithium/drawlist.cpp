@@ -34,12 +34,13 @@ PD_API Command& Drawlist::NewCommand() {
 PD_API void Drawlist::BindTexture(const Texture& tex) { pCurrentTexture = tex; }
 
 /** Path API */
-PD_API void Drawlist::PathStroke(u32 color, int t, LiDrawFlags flags) {
+PD_API void Drawlist::PathStroke(const PD::Color& color, int t,
+                                 LiDrawFlags flags) {
   DrawPolyLine(pPath, color, flags, t);
   PathClear();
 }
 
-PD_API void Drawlist::PathFill(u32 color) {
+PD_API void Drawlist::PathFill(const PD::Color& color) {
   DrawConvexPolyFilled(pPath, color);
   PathClear();
 }
@@ -152,20 +153,21 @@ PD_API void Drawlist::PathRectEx(const fvec2& tl, const fvec2& br,
 }
 
 /** Drawing functions */
-PD_API void Drawlist::DrawRect(const fvec2& pos, const fvec2& size, u32 color,
-                               int t) {
+PD_API void Drawlist::DrawRect(const fvec2& pos, const fvec2& size,
+                               const PD::Color& color, int t) {
   PathRect(pos, pos + size);
   PathStroke(color, t, LiDrawFlags_Close);
 }
 
 PD_API void Drawlist::DrawRectFilled(const fvec2& pos, const fvec2& size,
-                                     u32 color) {
+                                     const PD::Color& color) {
   PathRect(pos, pos + size);
   PathFill(color);
 }
 
 PD_API void Drawlist::DrawTriangle(const fvec2& a, const fvec2& b,
-                                   const fvec2& c, u32 color, int t) {
+                                   const fvec2& c, const PD::Color& color,
+                                   int t) {
   PathAdd(a);
   PathAdd(b);
   PathAdd(c);
@@ -173,15 +175,17 @@ PD_API void Drawlist::DrawTriangle(const fvec2& a, const fvec2& b,
 }
 
 PD_API void Drawlist::DrawTriangleFilled(const fvec2& a, const fvec2& b,
-                                         const fvec2& c, u32 color) {
+                                         const fvec2& c,
+                                         const PD::Color& color) {
   PathAdd(a);
   PathAdd(b);
   PathAdd(c);
   PathFill(color);
 }
 
-PD_API void Drawlist::DrawCircle(const fvec2& center, float rad, u32 color,
-                                 int num_segments, int t) {
+PD_API void Drawlist::DrawCircle(const fvec2& center, float rad,
+                                 const PD::Color& color, int num_segments,
+                                 int t) {
   if (num_segments <= 0) {
     // Auto Segment
   } else {
@@ -193,7 +197,8 @@ PD_API void Drawlist::DrawCircle(const fvec2& center, float rad, u32 color,
 }
 
 PD_API void Drawlist::DrawCircleFilled(const fvec2& center, float rad,
-                                       u32 color, int num_segments) {
+                                       const PD::Color& color,
+                                       int num_segments) {
   if (num_segments <= 0) {
     // Auto Segment
   } else {
@@ -203,19 +208,22 @@ PD_API void Drawlist::DrawCircleFilled(const fvec2& center, float rad,
   PathFill(color);
 }
 
-PD_API void Drawlist::DrawText(const fvec2& p, const char* text, u32 color) {
+PD_API void Drawlist::DrawText(const fvec2& p, const char* text,
+                               const PD::Color& color) {
   if (!pFont) return;
   pFont->CmdTextEx(*this, p, color, pFontScale, text);
 }
 
-PD_API void Drawlist::DrawTextEx(const fvec2& p, const char* text, u32 color,
-                                 LiTextFlags flags, const fvec2& box) {
+PD_API void Drawlist::DrawTextEx(const fvec2& p, const char* text,
+                                 const PD::Color& color, LiTextFlags flags,
+                                 const fvec2& box) {
   if (!pFont) return;
   pFont->CmdTextEx(*this, p, color, pFontScale, text, flags, box);
 }
 
-PD_API void Drawlist::DrawPolyLine(const Pool<fvec2>& points, u32 color,
-                                   LiDrawFlags flags, int t) {
+PD_API void Drawlist::DrawPolyLine(const Pool<fvec2>& points,
+                                   const PD::Color& color, LiDrawFlags flags,
+                                   int t) {
   if (points.size() < 2) {
     return;
   }
@@ -236,7 +244,7 @@ PD_API void Drawlist::DrawPolyLine(const Pool<fvec2>& points, u32 color,
 }
 
 PD_API void Drawlist::DrawConvexPolyFilled(const Pool<fvec2>& points,
-                                           u32 color) {
+                                           const PD::Color& color) {
   if (points.size() < 3) {
     return;  // Need at least three points
   }
@@ -275,7 +283,7 @@ PD_API void Drawlist::DrawConvexPolyFilled(const Pool<fvec2>& points,
 }
 
 PD_API void Drawlist::PrimQuad(Command& cmd, const Rect& quad, const Rect& uv,
-                               u32 color) {
+                               const PD::Color& color) {
   cmd.Reserve(4, 6);
   cmd.Add(2, 1, 0);
   cmd.Add(3, 2, 0);
@@ -286,7 +294,7 @@ PD_API void Drawlist::PrimQuad(Command& cmd, const Rect& quad, const Rect& uv,
 }
 
 PD_API void Drawlist::PrimTriangle(Command& cmd, const fvec2& a, const fvec2& b,
-                                   const fvec2& c, u32 color) {
+                                   const fvec2& c, const PD::Color& color) {
   cmd.Reserve(3, 3);
   cmd.Add(2, 1, 0);
   cmd.Add(Vertex(a, vec2(0.f, 1.f), color));
