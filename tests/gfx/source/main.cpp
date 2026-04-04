@@ -25,6 +25,65 @@ const char* ResourcePath(const char* in) {
 #endif
 }
 
+std::string Key2String(PD::Hid::Gamepad gp) {
+  std::string res;
+  if (gp & PD::Hid::Gamepad::A) {
+    res += "A";
+  }
+  if (gp & PD::Hid::Gamepad::B) {
+    res += "B";
+  }
+  if (gp & PD::Hid::Gamepad::X) {
+    res += "X";
+  }
+  if (gp & PD::Hid::Gamepad::Y) {
+    res += "Y";
+  }
+  if (gp & PD::Hid::Gamepad::Start) {
+    res += "Start";
+  }
+  if (gp & PD::Hid::Gamepad::Select) {
+    res += "Select";
+  }
+  if (gp & PD::Hid::Gamepad::DDown) {
+    res += "DDown";
+  }
+  if (gp & PD::Hid::Gamepad::DUp) {
+    res += "DUp";
+  }
+  if (gp & PD::Hid::Gamepad::DLeft) {
+    res += "DLeft";
+  }
+  if (gp & PD::Hid::Gamepad::DRight) {
+    res += "DRight";
+  }
+  if (gp & PD::Hid::Gamepad::L) {
+    res += "L";
+  }
+  if (gp & PD::Hid::Gamepad::R) {
+    res += "R";
+  }
+  if (gp & PD::Hid::Gamepad::ZL) {
+    res += "ZL";
+  }
+  if (gp & PD::Hid::Gamepad::ZR) {
+    res += "ZR";
+  }
+  return res;
+}
+
+std::string ComboGpOut(PD::Hid::Gamepad gp) {
+  std::string res = Key2String(gp);
+  if (PD::Hid::IsEvent(PD::Hid::Event::Down, gp)) {
+    res += ": 1";
+  } else if (PD::Hid::IsEvent(PD::Hid::Event::Held, gp)) {
+    res += ": 2";
+  } else if (PD::Hid::IsEvent(PD::Hid::Event::Up, gp)) {
+    res += ": 3";
+  }
+  return res;
+}
+
 class MainMenu : public PD::Ultra::Layout {
  public:
   MainMenu(PD::Li::Font& font) {
@@ -32,8 +91,7 @@ class MainMenu : public PD::Ultra::Layout {
     SetBaseViewport(PD::ivec2(1280, 720));
     pBackground.SetSize(800, 450);
     pBackground.SetColor("#ffffffff");
-    pBackground.SetAlignment(UltraAlignment_CenterHorizontal |
-                             UltraAlignment_CenterVertical);
+    pBackground.SetAlignment(UltraAlignment_Center);
     Push(pBackground);
     pText.SetColor("#ffffff");
     pText.SetText("MousePos: ");
@@ -108,6 +166,27 @@ int main(int argc, char** argv) {
     pOs->ClearViewPort();
     PD::Li::ResetPools();  // Move to other place (or refactor this)
     app.Update(pOs->GetViewport(), pList);
+    pList.DrawText(
+        PD::fvec2(5, 37),
+        std::format(
+            "Input:\n  Driver: {}\n  Gamepad: {}\n    {}\n    {}\n    "
+            "{}\n    {}\n    {}\n    {}\n    {}\n    {}\n    {}\n    {}\n    "
+            "{}\n    {}\n    "
+            "{}\n    {}\n",
+            PD::Hid::GetDriverName(),
+            bool(PD::Hid::GetFlags() & PDHidBackendFlags_HasGamepad),
+            ComboGpOut(PD::Hid::Gamepad::Start),
+            ComboGpOut(PD::Hid::Gamepad::Select),
+            ComboGpOut(PD::Hid::Gamepad::A), ComboGpOut(PD::Hid::Gamepad::B),
+            ComboGpOut(PD::Hid::Gamepad::X), ComboGpOut(PD::Hid::Gamepad::Y),
+            ComboGpOut(PD::Hid::Gamepad::DDown),
+            ComboGpOut(PD::Hid::Gamepad::DUp),
+            ComboGpOut(PD::Hid::Gamepad::DLeft),
+            ComboGpOut(PD::Hid::Gamepad::DRight),
+            ComboGpOut(PD::Hid::Gamepad::L), ComboGpOut(PD::Hid::Gamepad::R),
+            ComboGpOut(PD::Hid::Gamepad::ZL), ComboGpOut(PD::Hid::Gamepad::ZR))
+            .c_str(),
+        "#ffffff");
     PD::Gfx::Reset();
     PD::Gfx::Draw(pList);
     pList.Clear();
