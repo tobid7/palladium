@@ -29,7 +29,7 @@ void HorizonNX::Init() {
   gladLoadGL();
   glfwSwapInterval(1);
   PD::Gfx::UseDriver<PD::GfxOpenGL3>();
-  PD::Hid::UseDriver<PD::HidDriver>();
+  PD::Hid::UseDriver<PD::HidGlfw>(impl->win);
 }
 
 void HorizonNX::Deinit() {

@@ -8,6 +8,7 @@ option(PD_ENABLE_DIRECTX9 "Enable DirectX9 Support" ON)
 option(PD_ENABLE_CITRO3D "Enable Citro3D Support (3DS)" OFF)
 option(PD_ENABLE_VULKAN "Not implemented yet" OFF)
 option(PD_ENABLE_HID_GLFW "Enable GLFW Input Driver" ON)
+option(PD_ENABLE_HID_NX "Enable NX Input Driver" OFF)
 
 if(NOT WIN32) # cause we are not on windows...
     set(PD_ENABLE_DIRECTX9 OFF)
@@ -17,13 +18,16 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Nintendo3DS")
     set(PD_ENABLE_OPENGL2 OFF)
     set(PD_ENABLE_OPENGL3 OFF)
     set(PD_ENABLE_VULKAN OFF)
-    set(PD_ENABLE_HID_GLFW OFF)
     set(PD_ENABLE_CITRO3D ON)
+    set(PD_ENABLE_HID_GLFW OFF)
+    set(PD_ENABLE_HID_NX OFF)
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "NintendoSwitch")
     set(PD_ENABLE_OPENGL2 OFF)
     set(PD_ENABLE_OPENGL3 ON)
     set(PD_ENABLE_VULKAN OFF)
     set(PD_ENABLE_CITRO3D OFF)
+    set(PD_ENABLE_HID_NX ON) # Best case for Nintendo Switch
+    set(PD_ENABLE_HID_GLFW ON) # Technically supported but not recommended
 endif()
 
 add_library(pd-system STATIC
@@ -33,12 +37,15 @@ add_library(pd-system STATIC
     ${CMAKE_CURRENT_SOURCE_DIR}/source/gfx_directx9.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/source/gfx_citro3d.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/source/hid_glfw.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/hid_nx.cpp
 )
 
 target_include_directories(pd-system
     PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
+    # Why is this not a default include (same problem as with the __SWITCH__ define)
+    $<$<STREQUAL:${CMAKE_SYSTEM_NAME},NintendoSwitch>:${DEVKITPRO}/portlibs/switch/include>
 )
 
 target_compile_options(palladium
@@ -56,48 +63,24 @@ target_compile_definitions(pd-system
     $<$<BOOL:${PD_ENABLE_DIRECTX9}>:PD_ENABLE_DIRECTX9>
     $<$<BOOL:${PD_ENABLE_CITRO3D}>:PD_ENABLE_CITRO3D>
     $<$<BOOL:${PD_ENABLE_HID_GLFW}>:PD_ENABLE_HID_GLFW>
+    $<$<BOOL:${PD_ENABLE_HID_NX}>:PD_ENABLE_HID_NX>
 )
 
 # Palladium
 target_link_libraries(pd-system PUBLIC palladium::palladium)
 
-# glad (if we have any OpenGL version included)
-if(PD_ENABLE_OPENGL2 OR PD_ENABLE_OPENGL3)
-    target_link_libraries(pd-system
-        PUBLIC glad
-    )
-endif()
 
-# DirectX9
-if(PD_ENABLE_DIRECTX9)
-    target_link_libraries(pd-system
-        PUBLIC
-        d3d9
-        d3dcompiler
-    )
-endif()
+# Depandant Lib includes (i love this cmake feature)
+target_link_libraries(pd-system PUBLIC
+    $<$<BOOL:${PD_ENABLE_DIRECTX9}>:d3d9 d3dcompiler> # DirectX9
+    $<$<BOOL:${PD_ENABLE_CITRO3D}>:pica::pica citro3d ctru> # 3ds
+    $<$<BOOL:${PD_ENABLE_OPENGL3}>:spirv-helper> # OpenGL3
+    # Include Glad if we have any OpenGL Usage
+    $<$<OR:$<BOOL:${PD_ENABLE_OPENGL2}>,$<BOOL:${PD_ENABLE_OPENGL3}>>:glad>
+    $<$<BOOL:${PD_ENABLE_HID_NX}>:nx> # Hid NX requirement
+    # Hid GLFW requirement
+    $<$<BOOL:${PD_ENABLE_HID_GLFW}>:
+    $<$<STREQUAL:${CMAKE_SYSTEM_NAME},NintendoSwitch>:glfw3>
+    $<$<NOT:$<STREQUAL:${CMAKE_SYSTEM_NAME},NintendoSwitch>>:glfw>>
 
-if(${CMAKE_SYSTEM_NAME} STREQUAL "Nintendo3DS")
-    target_link_libraries(pd-system
-        PUBLIC
-        pica::pica
-        citro3d
-        ctru
-    )
-else()
-    if(${CMAKE_SYSTEM_NAME} STREQUAL "NintendoSwitch")
-        target_include_directories(pd-system
-            PUBLIC $ENV{DEVKITPRO}/portlibs/switch/include
-        )
-        if(PD_ENABLE_HID_GLFW)
-            target_link_libraries(pd-system PUBLIC glfw3) # use dkp glfw
-        endif()
-    else()
-        if(PD_ENABLE_HID_GLFW)
-            target_link_libraries(pd-system PUBLIC glfw) # use vendor glfw
-        endif()
-    endif()
-    target_link_libraries(pd-system
-        PUBLIC spirv-helper
-    )
-endif()
+)
