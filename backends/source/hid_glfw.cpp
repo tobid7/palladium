@@ -78,7 +78,6 @@ void HidGlfw::Update() {
   // }
   double x, y;
   glfwGetCursorPos(impl->Win, &x, &y);
-  pMouse[1] = pMouse[0];  // Cycle pMouse pos
   pMouse[0] = fvec2(x, y);
 }
 }  // namespace PD

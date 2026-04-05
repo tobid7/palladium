@@ -9,7 +9,6 @@
         "cmake/presets/default.json",
         "cmake/presets/3ds.json",
         "cmake/presets/switch.json",
-        "cmake/presets/mingw.json",
         "cmake/presets/msvc.json"
     ]
 }
