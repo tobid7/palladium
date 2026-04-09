@@ -127,6 +127,8 @@ class PD_API HidDriver : public DriverInterface {
   virtual void Update();
   virtual bool IsEvent(Event e, HidInternal::GamepadKey keys);
   virtual bool IsEvent(Event e, HidInternal::Keyboard::Key keys);
+  virtual const fvec2& GetLeftStick() const { return pLStick[0]; }
+  virtual const fvec2& GetRightStick() const { return pRStick[0]; }
 
   PDHidBackendFlags GetFlags() const { return pFlags; }
 
@@ -134,6 +136,8 @@ class PD_API HidDriver : public DriverInterface {
   void SwapTab();
   PDHidBackendFlags pFlags = PDHidBackendFlags_None;
   fvec2 pMouse[2];  // Current And last pos
+  fvec2 pLStick[2];
+  fvec2 pRStick[2];
   std::unordered_map<u32, u32> pGamepad;
   std::unordered_map<u128, u128> pKeyboard;
   std::unordered_map<Event, u32> pGamepadEvents[2];
@@ -168,6 +172,8 @@ class PD_API Hid {
     return driver->IsEvent(e, keys);
   }
   static PDHidBackendFlags GetFlags() { return driver->GetFlags(); }
+  static const fvec2& GetLeftStick() { return driver->GetLeftStick(); }
+  static const fvec2& GetRightStick() { return driver->GetRightStick(); }
 
   static const char* GetDriverName() { return driver->GetName(); }
 
