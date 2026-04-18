@@ -122,6 +122,20 @@ class PD_API Color {
   }
 
   /**
+   * Lerp
+   * @param v Target color
+   * @param t interpolation factor
+   * @return Class Reference
+   */
+  constexpr Color& Lerp(const Color& v, float t) {
+    a = static_cast<u8>(a + (v.a - a) * t);
+    b = static_cast<u8>(b + (v.b - b) * t);
+    g = static_cast<u8>(g + (v.g - g) * t);
+    r = static_cast<u8>(r + (v.r - r) * t);
+    return *this;
+  }
+
+  /**
    * Get 32Bit Color Value
    * @return 32Bit Color Value (ABGR iirc)
    */

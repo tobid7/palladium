@@ -26,6 +26,7 @@ using LiDrawFlags = PD::u32;
 enum LiDrawFlags_ : PD::u32 {
   LiDrawFlags_None = 0,
   LiDrawFlags_Close = 1 << 0,
+  LiDrawFlags_AA = 1 << 1,
 };
 
 namespace PD {
@@ -58,6 +59,8 @@ class PD_API Drawlist {
   void PathStroke(const PD::Color& color, int t = 1,
                   LiDrawFlags flags = LiDrawFlags_None);
   void PathFill(const PD::Color& color);
+  void PathFillGradient(const PD::Color& a, const PD::Color& b,
+                        float rad = 0.f);
   void PathArcToN(const fvec2& c, float r, float amin, float amax, int s);
   void PathFastArcToN(const fvec2& c, float r, float amin, float amax, int s);
   void PathRect(const fvec2& tl, const fvec2& br, float r = 0.f);
@@ -97,6 +100,8 @@ class PD_API Drawlist {
   void DrawPolyLine(const Pool<fvec2>& points, const PD::Color& color,
                     LiDrawFlags flags = LiDrawFlags_None, int t = 1);
   void DrawConvexPolyFilled(const Pool<fvec2>& points, const PD::Color& color);
+  void DrawConvexPolyFilled(const Pool<fvec2>& points, const PD::Color& a,
+                            const PD::Color b, float rad = 0.f);
 
   void PrimQuad(Command& cmd, const Rect& quad, const Rect& uv,
                 const PD::Color& color);
