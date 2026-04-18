@@ -58,6 +58,7 @@ PD_API Rect PrimLine(const fvec2& a, const fvec2& b, int t) {
   // Using the vec maths api makes the code as short as it is
   vec2 dir = a - b;
   float len = dir.Len();
+  if (len == 0.0f) return Rect();
   vec2 unit_dir = dir / len;
   vec2 perpendicular(-unit_dir.y, unit_dir.x);
   vec2 off = perpendicular * ((float)t * 0.5f);
