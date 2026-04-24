@@ -140,6 +140,7 @@ void HidGlfw::HandleAxisKey(GLFWgamepadstate s, int iK, int eA, bool negative) {
 }
 }  // namespace PD
 #else
+struct GLFWgamepadstate {};
 namespace PD {
 
 HidGlfw::HidGlfw(GLFWwindow* win) : HidDriver("HidGlfw") {}
@@ -149,6 +150,7 @@ HidGlfw::~HidGlfw() {}
 void HidGlfw::Update() {
   HidDriver::Update();  // clear stats
 }
-void HidGlfw::HandleAxisKey(GLFWgamepadstate s, int iK, int eA) {}
+void HidGlfw::HandleAxisKey(GLFWgamepadstate s, int iK, int eA, bool negative) {
+}
 }  // namespace PD
 #endif
