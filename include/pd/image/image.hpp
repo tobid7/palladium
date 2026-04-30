@@ -25,7 +25,7 @@ class PD_API Image {
   void Copy(const std::vector<u8>& pixels, int w, int h, int bpp = 4);
 
   const int& Width() const { return pSize.x; }
-  const int& Height() const { return pSize.x; }
+  const int& Height() const { return pSize.y; }
   const ivec2& Size() const { return pSize; }
 
   const std::vector<u8>& data() const { return pData; }
