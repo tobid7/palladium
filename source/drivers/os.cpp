@@ -10,7 +10,7 @@ PD_API u64 OsDriver::GetTime() const {
 }
 
 PD_API u64 OsDriver::GetTimeNano() const {
-  return std::chrono::duration_cast<std::chrono::milliseconds>(
+  return std::chrono::duration_cast<std::chrono::nanoseconds>(
              std::chrono::steady_clock::now().time_since_epoch())
       .count();
 }

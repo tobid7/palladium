@@ -161,4 +161,6 @@ add_custom_target(pd-clang-format
 )
 
 add_subdirectory(backends)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tests)
+if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tests)
+endif()
