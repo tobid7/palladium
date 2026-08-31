@@ -107,6 +107,31 @@ class Pool {
     pPos = 0;
   }
 
+  /**
+   * Copy the data of another pool
+   */
+  void AppendCopy(const Pool& v) {
+    if (!v.size()) return;
+    ExpandIf(v.size());
+    for (size_t i = 0; i < v.size(); i++) {
+      pData[pPos + i] = v.pData[i];
+    }
+    pPos += v.size();
+  }
+
+  /**
+   * Move the data of another pool
+   */
+  void AppendMove(Pool& v) {
+    if (!v.size()) return;
+    ExpandIf(v.size());
+    for (size_t i = 0; i < v.size(); i++) {
+      pData[pPos + i] = std::move(v.pData[i]);
+    }
+    pPos += v.size();
+    v.ResetFast();
+  }
+
   size_t size() const { return pPos; }
   size_t capacity() const { return pCap; }
   T& at(size_t idx) { return pData[idx]; }

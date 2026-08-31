@@ -71,6 +71,7 @@ void Log(LogLevel lvl, std::format_string<Args...> fmt, Args&&... args) {
 }
 template <typename T>
 std::string TypeName() {
+#ifdef __RTTI
 #if defined(__GNUG__) && !defined(_MSC_VER)
   int res = 0;
   std::unique_ptr<char, void (*)(void*)> up{
@@ -78,6 +79,9 @@ std::string TypeName() {
   return (res == 0) ? up.get() : typeid(T).name();
 #else
   return typeid(T).name();  // no demangler available :/
+#endif
+#else
+  return "";
 #endif
 }
 }  // namespace PD
