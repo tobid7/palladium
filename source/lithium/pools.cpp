@@ -57,8 +57,8 @@ PD_API const u16& GetIndex(size_t loc) {
 }
 
 PD_API void ResetPools() {
-  pVtxPool.Reset();
-  pIdxPool.Reset();
+  pVtxPool.NoReset();
+  pIdxPool.NoReset();
 }
 }  // namespace Li
 }  // namespace PD
