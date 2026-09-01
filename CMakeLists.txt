@@ -39,6 +39,7 @@ set(PD_SOURCES
     source/core/timetrace.cpp
 
     # Image
+    source/image/convert.cpp
     source/image/image.cpp
 
     # Drivers
