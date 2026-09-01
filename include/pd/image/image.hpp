@@ -40,6 +40,8 @@ class PD_API Image {
   static int Format2Bpp(Format fmt);
   static Format GuessFmtFromBpp(int bpp);
 
+  void Convert(Format dst);
+
  private:
   std::vector<u8> pData;
   ivec2 pSize;
