@@ -136,11 +136,26 @@ PD_API void Font::LoadTTF(const std::vector<u8>& data, int px_height) {
   if (!empty) {
     BakeAndPush(true, font_tex, texszs);
   }
+
+  for (u32 i = 0; i < 128; i++) {
+    auto r = CodeMap.find(i);
+    if (r == CodeMap.end()) {
+      static Codepoint invalid;
+      invalid.pInvalid = true;
+      pAsciiCache[i] = invalid;
+    } else {
+      pAsciiCache[i] = CodeMap[i];
+    }
+  }
 }
 
 PD_API void Font::LoadDefaultFont(int id, int pixel_height) {}
 
 PD_API Font::Codepoint& Font::GetCodepoint(u32 c) {
+  if (c < 128) {
+    // Direct Access (~11% improvement)
+    return pAsciiCache[c];
+  }
   // Check if codepoijt exist or return a static invalid one
   auto res = CodeMap.find(c);
   if (res == CodeMap.end()) {

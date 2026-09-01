@@ -92,6 +92,8 @@ class PD_API Font {
    * **Now using unordered map**
    */
   std::unordered_map<u32, Codepoint> CodeMap;
+  /** need some performance tweaks */
+  std::array<Codepoint, 128> pAsciiCache;
   /** TMS */
   struct TMELEM {
     PD::u32 ID;
