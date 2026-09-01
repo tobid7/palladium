@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
+#include <map>
 #include <pd/common.hpp>
 
 namespace PD {
@@ -143,6 +144,8 @@ class TimeStats {
  * Timatrace Functions
  */
 namespace TT {
+class Res;
+using TraceMap = std::map<std::string, TT::Res>;
 /**
  * Data Structure for a TimeTrace Result
  */
@@ -202,11 +205,11 @@ class Res {
   /** Trace ID */
   std::string id;
   /** Start time */
-  u64 start;
+  u64 start = 0;
   /** End Time */
-  u64 end;
+  u64 end = 0;
   /** Last Diff */
-  u64 diff;
+  u64 diff = 0;
   /** Protocol */
   TimeStats protocol;
 };
@@ -220,6 +223,9 @@ PD_API void Beg(const std::string& id);
  * @param id Name of the Trace
  */
 PD_API void End(const std::string& id);
+PD_API TraceMap& GetTraceMap();
+PD_API TT::Res& GetTraceRef(const std::string& id);
+PD_API bool TraceExist(const std::string& id);
 /**
  * Collect Start end end of the trace by tracking
  * when the Scope object goes out of scope
