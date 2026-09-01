@@ -45,6 +45,8 @@ class PD_API Drawlist {
 
   /** Command Allocation */
   Command& NewCommand();
+  bool HasCommands() { return pCommands.size() > 0; }
+  Command& GetLastCommand() { return pCommands[pCommands.size() - 1]; }
 
   /** Path API */
   void PathAdd(const fvec2& point) { pPath.Push(point); }
