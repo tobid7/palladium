@@ -107,6 +107,9 @@ class Pool {
     pPos = 0;
   }
 
+  /** THE ILLEGAL RESET FUNC */
+  void NoReset() { pPos = 0; }
+
   /**
    * Copy the data of another pool
    */
