@@ -48,10 +48,10 @@ set(PD_SOURCES
     source/drivers/hid.cpp
 
     # Lithium
+    source/lithium/command.cpp
     source/lithium/drawlist.cpp
     source/lithium/font.cpp
     source/lithium/math.cpp
-    source/lithium/pools.cpp
 
     # Ultra
     source/ultra/canvas.cpp

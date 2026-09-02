@@ -95,11 +95,11 @@ void GfxOpenGL2::Submit(size_t count, size_t start) {
   glUseProgram(pShader);
   glUniformMatrix4fv(pLocProjection, 1, GL_FALSE, Projection.m.data());
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
-  glBufferData(GL_ARRAY_BUFFER, CurrentVertex * sizeof(PD::Li::Vertex),
+  glBufferData(GL_ARRAY_BUFFER, GetVertexPoolSize() * sizeof(PD::Li::Vertex),
                GetVertexBufPtr(0), GL_DYNAMIC_DRAW);
 
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, CurrentIndex * sizeof(PD::u16),
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, GetIndexPoolSize() * sizeof(u16),
                GetIndexBufPtr(0), GL_DYNAMIC_DRAW);
 
   pSetupShaderAttribs(pShader);
