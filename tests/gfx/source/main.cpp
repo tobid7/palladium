@@ -119,7 +119,7 @@ class MainMenu : public PD::Ultra::Layout {
     Push(pBackground);
     pText.SetColor("#ffffff");
     pText.SetText("MousePos: ");
-    pText.SetAlignment(UltraAlignment_TopLeft);
+    pText.SetAlignment(UltraAlignment_TopRight);
     Push(pText);
     pBtn.SetText("Test");
     pBtn.SetAlignment(UltraAlignment_Center);
@@ -198,6 +198,7 @@ int main(int argc, char** argv) {
   Cursor RightStick;
   RightStick.pColor = "#00ffff";
   while (pOs->Mainloop()) {
+    PD::TT::Scope __st("MainLoop");
     PD::Hid::Update();
     PD::Gfx::NewFrame();
     pOs->ClearViewPort();
@@ -219,7 +220,7 @@ int main(int argc, char** argv) {
                          PD::Hid::Gamepad::CSUp | PD::Hid::Gamepad::CSDown)) {
       RightStick.pPos.y += PD::Hid::GetRightStick().y * 15;
     }
-    pList.DrawText(
+    /*pList.DrawText(
         PD::fvec2(5, 37),
         std::format(
             "Input:\n  Driver: {}\n  Gamepad: {}\n    {}\n    {}\n    "
@@ -249,12 +250,12 @@ int main(int argc, char** argv) {
             ComboGpOut(PD::Hid::Gamepad::CSDown), PD::Hid::GetLeftStick(),
             PD::Hid::GetRightStick(), LeftStick.pPos)
             .c_str(),
-        "#ffffff");
-    LeftStick.Render(pList);
-    RightStick.Render(pList);
+        "#ffffff");*/
+    // LeftStick.Render(pList);
+    // RightStick.Render(pList);
     pList.UnbindTexture();
     pList.PathRect(50, PD::fvec2(450, 240));
-    pList.PathFillGradient("#ff0000", "#990000", PD::Radians(135));
+    /*pList.PathFillGradient("#ff0000", "#990000", PD::Radians(135));
     pList.PathAdd(PD::fvec2(100, 120));
     pList.PathAdd(PD::fvec2(250, 260));
     pList.PathAdd(PD::fvec2(420, 180));
@@ -262,9 +263,20 @@ int main(int argc, char** argv) {
     pList.PathAdd(PD::fvec2(820, 220));
     pList.PathAdd(PD::fvec2(1000, 360));
 
-    pList.PathStroke("#ff00ff", 10, LiDrawFlags_AA);
-    PD::Gfx::Reset();  // needs to be on top now
+    pList.PathStroke("#ff00ff", 10, LiDrawFlags_AA);*/
+    int __i = 0;
+    for (auto& it : PD::TT::GetTraceMap()) {
+      pList.DrawText(
+          PD::fvec2(2, 2 + (__i++) * 17),
+          std::format("{}: {}", it.second.GetID(),
+                      PD::Strings::FormatNanos(it.second.GetLastDiff()))
+              .c_str(),
+          "#ff00ff");
+    }
+    PD::Gfx::Reset();
+    PD::TT::Beg("PD::Gfx::Draw");
     PD::Gfx::Draw(pList);
+    PD::TT::End("PD::Gfx::Draw");
     pList.Clear();
     pOs->SwapBuffers();
   }

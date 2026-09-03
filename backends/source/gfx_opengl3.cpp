@@ -65,20 +65,12 @@ void GfxOpenGL3::Submit(size_t count, size_t start) {
   BindTexture(CurrentTex);
   glUseProgram(pShader);
   glUniformMatrix4fv(pLocProjection, 1, GL_FALSE, Projection.m.data());
+
   glBindVertexArray(VAO);
-  glBindBuffer(GL_ARRAY_BUFFER, VBO);
-  glBufferData(GL_ARRAY_BUFFER, GetVertexPoolSize() * sizeof(PD::Li::Vertex),
-               GetVertexBufPtr(0), GL_DYNAMIC_DRAW);
-
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, GetIndexPoolSize() * sizeof(u16),
-               GetIndexBufPtr(0), GL_DYNAMIC_DRAW);
-
   glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_SHORT,
                  reinterpret_cast<void*>(start * sizeof(u16)));
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
   glBindVertexArray(0);
+
   BindTexture(0);
 }
 
@@ -141,6 +133,20 @@ void GfxOpenGL3::DeleteTexture(const Li::Texture& tex) {
   GLuint tex_ = tex.GetID();
   glDeleteTextures(1, &tex_);
 }
+
+void GfxOpenGL3::UploadPools() {
+  glBindVertexArray(VAO);
+
+  glBindBuffer(GL_ARRAY_BUFFER, VBO);
+  glBufferData(GL_ARRAY_BUFFER, GetVertexPoolSize() * sizeof(PD::Li::Vertex),
+               GetVertexBufPtr(0), GL_DYNAMIC_DRAW);
+
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, GetIndexPoolSize() * sizeof(u16),
+               GetIndexBufPtr(0), GL_DYNAMIC_DRAW);
+
+  glBindVertexArray(0);
+}
 }  // namespace PD
 #else
 namespace PD {
@@ -159,5 +165,6 @@ Li::Texture GfxOpenGL3::LoadTexture(const std::vector<PD::u8>& pixels, int w,
   return Li::Texture();
 }
 void GfxOpenGL3::DeleteTexture(const Li::Texture& tex) {}
+void GfxOpenGL3::UploadPools() {}
 }  // namespace PD
 #endif

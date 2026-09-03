@@ -27,6 +27,7 @@ class GfxOpenGL2 : public GfxDriverBase<GfxOpenGL2Config> {
       TextureFormat type = TextureFormat::RGBA32,
       TextureFilter filter = TextureFilter::Linear) override;
   void DeleteTexture(const Li::Texture& tex) override;
+  void UploadPools() override;
 
  private:
   void pSetupShaderAttribs(u32 shader);
