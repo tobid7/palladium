@@ -56,13 +56,13 @@ class PD_API GfxDriver : public DriverInterface {
   virtual void PutIndex(size_t loc, u16 idx, PD::ptr accessor) = 0;
   virtual const Li::Vertex& GetVertex(size_t loc) const = 0;
   virtual const u16& GetIndex(size_t loc) const = 0;
+  virtual void ResetPools() = 0;
 
  protected:
   virtual void SysDeinit() {}
   virtual void SysInit() {}
   virtual void SysReset() {}
   virtual void Submit(size_t count, size_t start) {}
-  virtual void ResetPools() = 0;
   void RegisterTexture(const Li::Texture& tex);
   void UnregisterTexture(const Li::Texture& tex);
 
@@ -170,15 +170,16 @@ class GfxDriverBase : public GfxDriver {
 
   const u16& GetIndex(size_t loc) const override { return pIdxPool[loc]; }
 
+  void ResetPools() override {
+    pVtxPool.NoReset();
+    pIdxPool.NoReset();
+  }
+
  protected:
   u16* GetIndexBufPtr(size_t start) { return &pIdxPool[start]; }
   Li::Vertex* GetVertexBufPtr(size_t start) { return &pVtxPool[start]; }
   size_t GetVertexPoolSize() const { return pVtxPool.size(); }
   size_t GetIndexPoolSize() const { return pIdxPool.size(); }
-  void ResetPools() override {
-    pVtxPool.NoReset();
-    pIdxPool.NoReset();
-  }
 
  private:
   VtxPool pVtxPool;
@@ -258,6 +259,8 @@ class PD_API Gfx {
   }
 
   static const u16& GetIndex(size_t loc) { return driver->GetIndex(loc); }
+
+  static void NewFrame() { driver->ResetPools(); }
 
  private:
   static std::unique_ptr<GfxDriver> driver;
