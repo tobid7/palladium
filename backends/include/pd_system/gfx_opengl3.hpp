@@ -27,6 +27,7 @@ class GfxOpenGL3 : public GfxDriverBase<GfxOpenGL3Config> {
       TextureFormat type = TextureFormat::RGBA32,
       TextureFilter filter = TextureFilter::Linear) override;
   void DeleteTexture(const Li::Texture& tex) override;
+  void UploadPools() override;
 
  private:
   u32 pShader = 0;

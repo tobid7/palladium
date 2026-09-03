@@ -94,19 +94,14 @@ void GfxOpenGL2::Submit(size_t count, size_t start) {
   BindTexture(CurrentTex);
   glUseProgram(pShader);
   glUniformMatrix4fv(pLocProjection, 1, GL_FALSE, Projection.m.data());
+
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
-  glBufferData(GL_ARRAY_BUFFER, GetVertexPoolSize() * sizeof(PD::Li::Vertex),
-               GetVertexBufPtr(0), GL_DYNAMIC_DRAW);
-
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, GetIndexPoolSize() * sizeof(u16),
-               GetIndexBufPtr(0), GL_DYNAMIC_DRAW);
-
   pSetupShaderAttribs(pShader);
-  GLint ibo = 0;
-  glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &ibo);
+
   glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_SHORT,
                  reinterpret_cast<void*>(start * sizeof(u16)));
+
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
   BindTexture(0);
@@ -171,6 +166,16 @@ void GfxOpenGL2::DeleteTexture(const Li::Texture& tex) {
   GLuint tex_ = tex.GetID();
   glDeleteTextures(1, &tex_);
 }
+
+void GfxOpenGL2::UploadPools() {
+  glBindBuffer(GL_ARRAY_BUFFER, VBO);
+  glBufferData(GL_ARRAY_BUFFER, GetVertexPoolSize() * sizeof(PD::Li::Vertex),
+               GetVertexBufPtr(0), GL_DYNAMIC_DRAW);
+
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, GetIndexPoolSize() * sizeof(u16),
+               GetIndexBufPtr(0), GL_DYNAMIC_DRAW);
+}
 }  // namespace PD
 #else
 namespace PD {
@@ -190,5 +195,6 @@ Li::Texture GfxOpenGL2::LoadTexture(const std::vector<PD::u8>& pixels, int w,
 }
 void GfxOpenGL2::DeleteTexture(const Li::Texture& tex) {}
 void GfxOpenGL2::pSetupShaderAttribs(u32 shader) {}
+void GfxOpenGL2::UploadPools() {}
 }  // namespace PD
 #endif
