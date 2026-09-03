@@ -51,7 +51,7 @@ PD_API void Font::LoadTTF(const std::vector<u8>& data, int px_height) {
   // Cache to not render same codepoint tex twice
   std::map<u32, int> buf_cache;
 
-  std::vector<u8> font_tex(texszs * texszs * 4, 0);
+  std::vector<u8> font_tex(texszs * texszs, 0);
   fvec2 off;
 
   bool empty = true;
@@ -116,12 +116,8 @@ PD_API void Font::LoadTTF(const std::vector<u8>& data, int px_height) {
     for (int y = 0; y < h; ++y) {
       for (int x = 0; x < w; ++x) {
         int map_pos = ((static_cast<int>(off.y) + y) * texszs +
-                       (static_cast<int>(off.x) + x)) *
-                      4;
-        font_tex[map_pos + 0] = 255;
-        font_tex[map_pos + 1] = 255;
-        font_tex[map_pos + 2] = 255;
-        font_tex[map_pos + 3] = bitmap[x + y * w];
+                       (static_cast<int>(off.x) + x));
+        font_tex[map_pos] = bitmap[x + y * w];
       }
     }
 
@@ -286,7 +282,7 @@ PD_API void Font::CleanupTMS() {}
 
 PD_API void Font::BakeAndPush(bool final, std::vector<u8>& font_tex,
                               int texszs) {
-  auto t = PD::Gfx::LoadTexture(font_tex, texszs, texszs);
+  auto t = PD::Gfx::LoadTexture(font_tex, texszs, texszs, TextureFormat::A8);
   PDLOG("Font: Texture backed as 0x{:X} at {}", t.GetID(), pCurrentTex);
   Textures.push_back(t.GetID());
   pCurrentTex = Textures.size();
