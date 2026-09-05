@@ -36,7 +36,8 @@ Menu::Menu(const ID& id, IO& io) : pIO(io), pID(id), pLayout(id, io) {
 
 PD_API void Menu::Label(const std::string& label) {
   // Layout API
-  auto r = new UI7::Label(label, pIO);
+  auto r = pIO.LabelPool.Allocate();
+  *r = UI7::Label(label, pIO);
   pLayout.AddObject(r);
 }
 
@@ -68,7 +69,8 @@ PD_API void Menu::Checkbox(const std::string& label, bool& v) {
 }
 
 PD_API void Menu::Image(Li::Texture img, fvec2 size, Li::Rect uv) {
-  Container* r = new UI7::Image(img, size, uv);
+  auto r = pIO.ImagePool.Allocate();
+  *r = UI7::Image(img, size, uv);
   pLayout.AddObject(r);
 }
 
@@ -84,8 +86,9 @@ PD_API void Menu::ColorEdit(const std::string& label, u32& clr) {
 
 PD_API void Menu::Separator() {
   // Dynamic Objects are very simple...
-  Container* r =
-      new DynObj([=, this](UI7::IO* io, Li::Drawlist* l, UI7::Container* self) {
+  DynObj* r = pIO.DynObjPool.Allocate();
+  *r = UI7::DynObj(
+      [=, this](UI7::IO* io, Li::Drawlist* l, UI7::Container* self) {
         l->DrawRectFilled(self->FinalPos(), self->GetSize(),
                           pIO.Theme.Get(UI7Color_TextDead));
       });
@@ -98,8 +101,9 @@ PD_API void Menu::Separator() {
 
 PD_API void Menu::SeparatorText(const std::string& label) {
   // Also note to use [=] instead of [&] to not undefined access label
-  Container* r = new DynObj([=, this](UI7::IO* io, Li::Drawlist* l,
-                                      UI7::Container* self) {
+  DynObj* r = pIO.DynObjPool.Allocate();
+  *r = UI7::DynObj([=, this](UI7::IO* io, Li::Drawlist* l,
+                             UI7::Container* self) {
     fvec2 size = self->GetSize();
     fvec2 tdim = io->Font->GetTextBounds(label.c_str(), io->FontScale);
     fvec2 pos = self->FinalPos();
@@ -251,14 +255,14 @@ PD_API void Menu::DrawBaseLayout() {
   if (pIsOpen) {
     /** Resize Sym (Render on Top of Everything) */
     if (!(Flags & UI7MenuFlags_NoResize)) {
-      Container* r =
-          new DynObj([](IO* io, Li::Drawlist* l, UI7::Container* self) {
-            // //l->Layer(1);
-            l->PathAdd(self->FinalPos() + self->GetSize() - fvec2(0, 20));
-            l->PathAdd(self->FinalPos() + self->GetSize());
-            l->PathAdd(self->FinalPos() + self->GetSize() - fvec2(20, 0));
-            l->PathFill(io->Theme.Get(UI7Color_Button));
-          });
+      DynObj* r = pIO.DynObjPool.Allocate();
+      *r = UI7::DynObj([](IO* io, Li::Drawlist* l, UI7::Container* self) {
+        // //l->Layer(1);
+        l->PathAdd(self->FinalPos() + self->GetSize() - fvec2(0, 20));
+        l->PathAdd(self->FinalPos() + self->GetSize());
+        l->PathAdd(self->FinalPos() + self->GetSize() - fvec2(20, 0));
+        l->PathFill(io->Theme.Get(UI7Color_Button));
+      });
       r->SetSize(
           fvec2(pLayout.GetSize().x, pLayout.GetSize().y - TitleBarHeight));
       r->SetPos(fvec2(0, TitleBarHeight));
@@ -267,8 +271,8 @@ PD_API void Menu::DrawBaseLayout() {
     }
 
     /** Background */
-    Container* r = new DynObj([](IO* io, Li::Drawlist* l,
-                                 UI7::Container* self) {
+    DynObj* r = pIO.DynObjPool.Allocate();
+    *r = UI7::DynObj([](IO* io, Li::Drawlist* l, UI7::Container* self) {
       // l->Layer(0);
       l->PathRectEx(self->FinalPos(), self->FinalPos() + self->GetSize(), 10.f,
                     LiPathRectFlags_KeepTop | LiPathRectFlags_KeepBot);
@@ -284,7 +288,8 @@ PD_API void Menu::DrawBaseLayout() {
                                UI7LytAdd_Front);
   }
   if (!(Flags & UI7MenuFlags_NoTitlebar)) {
-    Container* r = new DynObj(
+    DynObj* r = pIO.DynObjPool.Allocate();
+    *r = UI7::DynObj(
         [=, this](UI7::IO* io, Li::Drawlist* l, UI7::Container* self) {
           // l->Layer(20);
           /** Header Bar */
@@ -307,8 +312,9 @@ PD_API void Menu::DrawBaseLayout() {
 
     /** Collapse Sym */
     if (!(Flags & UI7MenuFlags_NoCollapse)) {
-      r = new DynObj([=, this](UI7::IO* io, Li::Drawlist* l,
-                               UI7::Container* self) {
+      DynObj* r = pIO.DynObjPool.Allocate();
+      *r = UI7::DynObj([=, this](UI7::IO* io, Li::Drawlist* l,
+                                 UI7::Container* self) {
         /** This sym actually requires layer 21 (i dont know why) */
         // l->Layer(21);
         /**
@@ -383,7 +389,8 @@ PD_API bool Menu::BeginTreeNode(const ID& id) {
   }
 
   // Object
-  auto r = new DynObj([=, this](IO* io, Li::Drawlist* l, Container* self) {
+  DynObj* r = pIO.DynObjPool.Allocate();
+  *r = UI7::DynObj([=, this](IO* io, Li::Drawlist* l, Container* self) {
     fvec2 ts = self->FinalPos() + fvec2(0, 7);
     fvec2 pl[2] = {fvec2(10, 5), fvec2(0, 10)};
     if (n->second) {

@@ -31,16 +31,14 @@ SOFTWARE.
 #include <pd/ui7/viewport.hpp>
 
 namespace PD {
-class Context;
 namespace UI7 {
+class Label;
+class Image;
+class DynObj;
 class PD_API IO {
  public:
-  IO() : DeltaStats(60), CurrentViewPort("", 0) {
-    /** Probably not the best solution i guess */
-    // CurrentViewPort =
-    //   ViewPort::New("Default", ivec4(ivec2(0, 0), pCtx.Gfx()->ViewPort));
-  }
-  ~IO() {}
+  IO();
+  ~IO();
 
   /**
    * IO Update Internal Variables
@@ -83,6 +81,11 @@ class PD_API IO {
   u32 NumVertices = 0;  ///< Debug Vertices Num
   u32 NumIndices = 0;   ///< Debug Indices Num
   std::vector<u32> MenuOrder;
+
+  // Pools
+  PD::Pool<UI7::Label> LabelPool;
+  PD::Pool<UI7::Image> ImagePool;
+  PD::Pool<UI7::DynObj> DynObjPool;
 
   // DrawlistApi
   void RegisterDrawlist(const UI7::ID& id, Li::Drawlist* v) {
