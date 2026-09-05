@@ -53,26 +53,27 @@ PD_API void ColorEdit::Draw() {
       layout = new UI7::Layout(GetID(), *io);
     }
     layout->SetPosition(FinalPos());
-    layout->AddObjectEx(
-        new DynObj([=, this](UI7::IO* io, Li::Drawlist* l, Container* thiz) {
-          thiz->SetSize(layout->GetSize());
-          // l->Layer(30);
-          l->PathRect(thiz->GetPos(), thiz->GetPos() + thiz->GetSize(),
-                      io->FrameRounding);
-          l->PathFill(io->Theme.Get(UI7Color_FrameBackground));
-        }),
-        UI7LytAdd_Front | UI7LytAdd_NoCursorUpdate | UI7LytAdd_NoScrollHandle);
-    auto obj =
-        new DynObj([=, this](UI7::IO* io, Li::Drawlist* l, Container* thiz) {
-          l->PathRect(thiz->FinalPos(), thiz->FinalPos() + io->ItemRowHeight,
-                      io->FrameRounding);
-          l->PathFill(*color_ref);
-          l->DrawText(
-              thiz->FinalPos() + fvec2(io->ItemSpace.x + io->ItemRowHeight, 0),
-              label.c_str(), io->Theme.Get(UI7Color_Text));
-        });
-    obj->SetSize(PD::fvec2(200, io->ItemRowHeight));
-    layout->AddObject(obj);
+    DynObj* r = io->DynObjPool.Allocate();
+    *r = UI7::DynObj([=, this](UI7::IO* io, Li::Drawlist* l, Container* thiz) {
+      thiz->SetSize(layout->GetSize());
+      // l->Layer(30);
+      l->PathRect(thiz->GetPos(), thiz->GetPos() + thiz->GetSize(),
+                  io->FrameRounding);
+      l->PathFill(io->Theme.Get(UI7Color_FrameBackground));
+    });
+    layout->AddObjectEx(r, UI7LytAdd_Front | UI7LytAdd_NoCursorUpdate |
+                               UI7LytAdd_NoScrollHandle);
+    r = io->DynObjPool.Allocate();
+    *r = UI7::DynObj([=, this](UI7::IO* io, Li::Drawlist* l, Container* thiz) {
+      l->PathRect(thiz->FinalPos(), thiz->FinalPos() + io->ItemRowHeight,
+                  io->FrameRounding);
+      l->PathFill(*color_ref);
+      l->DrawText(
+          thiz->FinalPos() + fvec2(io->ItemSpace.x + io->ItemRowHeight, 0),
+          label.c_str(), io->Theme.Get(UI7Color_Text));
+    });
+    r->SetSize(PD::fvec2(200, io->ItemRowHeight));
+    layout->AddObject(r);
     layout->Label("RGBA: ({}, {}, {}, {})", *((u8*)color_ref),
                   *(((u8*)color_ref) + 1), *(((u8*)color_ref) + 2),
                   *(((u8*)color_ref) + 3));

@@ -32,6 +32,7 @@ namespace UI7 {
  */
 class PD_API Image : public Container {
  public:
+  Image() {}
   /**
    * Constructor for the Image Object
    * @param img Image Texture Reference
@@ -56,6 +57,13 @@ class PD_API Image : public Container {
    * @note This function is usally called by Menu::Update
    * */
   void Draw() override;
+
+  void Reset() override {
+    Container::Reset();
+    img = Li::Texture();
+    newsize = 0.f;
+    cuv = Li::Rect();
+  }
 
  private:
   Li::Texture img;      ///< Texture
