@@ -38,6 +38,7 @@ namespace UI7 {
  */
 class PD_API DynObj : public Container {
  public:
+  DynObj() {}
   /**
    * Button Object constructor
    * @param label Label of the Button
@@ -68,6 +69,14 @@ class PD_API DynObj : public Container {
 
   /** Function to Update Size if framepadding changes */
   void Update() override;
+
+  void Reset() override {
+    Container::Reset();
+    color = UI7Color_Button;
+    pressed = false;
+    pRenFun = nullptr;
+    pInp = nullptr;
+  }
 
  private:
   UI7Color color = UI7Color_Button;  ///< current button color

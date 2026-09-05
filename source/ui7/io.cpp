@@ -23,9 +23,22 @@ SOFTWARE.
 
 #include <pd/core/core.hpp>
 #include <pd/drivers/drivers.hpp>
+#include <pd/ui7/containers.hpp>
 #include <pd/ui7/io.hpp>
 
 namespace PD {
+
+PD_API UI7::IO::IO() : DeltaStats(60), CurrentViewPort("", 0) {
+  /** Probably not the best solution i guess */
+  // CurrentViewPort =
+  //   ViewPort::New("Default", ivec4(ivec2(0, 0), pCtx.Gfx()->ViewPort));
+  // Start a little larger on these
+  LabelPool.Init(512);
+  DynObjPool.Init(512);
+}
+
+PD_API UI7::IO::~IO() {}
+
 PD_API void UI7::IO::Update() {
   /** Todo: find out if we even still use the Drawlist regestry */
   u64 current = PD::Os::GetTimeNano();
@@ -41,5 +54,8 @@ PD_API void UI7::IO::Update() {
   // RegisterDrawList("CtxBackList", Back);
   NumIndices = 0;   // FDL.pNumIndices;
   NumVertices = 0;  // FDL.pNumVertices;
+  LabelPool.ResetFast();
+  DynObjPool.ResetFast();
+  ImagePool.ResetFast();
 }
 }  // namespace PD
