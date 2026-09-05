@@ -31,6 +31,7 @@ void HorizonCtr::Init() {
   }
   link3dsStdio();
   romfsInit();
+  osSetSpeedupEnable(true);
   gfxInitDefault();
   consoleInit(GFX_BOTTOM, nullptr);
   C3D_Init(C3D_DEFAULT_CMDBUF_SIZE);
