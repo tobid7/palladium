@@ -20,6 +20,7 @@ class Command {
 
   int Layer = 0;
   ptr Tex = 0;
+  bool SDF = false;
   size_t FirstVertex = 0;
   size_t FirstIndex = 0;
   size_t VertexCount = 0;
