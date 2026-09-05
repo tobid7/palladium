@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <iostream>
 #include <pd/drivers/gfx.hpp>
 #include <pd/lithium/drawlist.hpp>
@@ -19,19 +20,26 @@ PD_API void Drawlist::Copy(Drawlist& other) {
   pCommands.AppendCopy(other.pCommands);
 }
 
-PD_API void Drawlist::Optimize() {}
+PD_API void Drawlist::Optimize() {
+  if (pCommands.size() <= 1) return;
+  std::stable_sort(pCommands.begin(), pCommands.end(),
+                   [](const Command& a, const Command& b) {
+                     if (a.Layer != b.Layer) return a.Layer < b.Layer;
+                     if (a.SDF != b.SDF) return a.SDF < b.SDF;
+                     return a.Tex < b.Tex;
+                   });
+}
 
 PD_API void Drawlist::Clear() {
   UnbindTexture();
   pPath.ResetFast();
-  pVertices.ResetFast();
-  pIndices.ResetFast();
-  pCommands.ResetFast();
+  pCommands.NoReset();
 }
 
 /** Command Allocation */
 PD_API Command& Drawlist::NewCommand() {
   auto cmd = pCommands.Allocate(1);
+  cmd->Reset();
   cmd->Tex = pCurrentTexture.GetID();
   return *cmd;
 }

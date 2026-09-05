@@ -52,6 +52,7 @@ set(PD_SOURCES
     source/lithium/drawlist.cpp
     source/lithium/font.cpp
     source/lithium/math.cpp
+    source/lithium/pools.cpp
 
     # UI7
     source/ui7/io.cpp
