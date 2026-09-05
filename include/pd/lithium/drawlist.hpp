@@ -98,6 +98,8 @@ class PD_API Drawlist {
   void DrawText(const fvec2& p, const char* text, const PD::Color& color);
   void DrawTextEx(const fvec2& p, const char* text, const PD::Color& color,
                   LiTextFlags flags, const fvec2& box = fvec2(0.f));
+  void DrawLine(const fvec2& a, const fvec2& b, const PD::Color& color,
+                int thickness = 1);
 
   void DrawPolyLine(const Pool<fvec2>& points, const PD::Color& color,
                     LiDrawFlags flags = LiDrawFlags_None, int t = 1);
