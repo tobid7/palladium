@@ -125,7 +125,8 @@ class GfxDriverBase : public GfxDriver {
       while (index < commands.size() &&
              CurrentTexIsSDF == commands[index].SDF &&
              (CurrentTex == commands[index].Tex ||
-              (CurrentTex == pWhite.GetID() && commands[index].Tex == 0))) {
+              (CurrentTex == pWhite.GetID() && commands[index].Tex == 0)) &&
+             commands[index].FirstIndex == startidx + num_indices) {
         num_indices += commands[index].IndexCount;
         index++;
       }
