@@ -217,6 +217,7 @@ int main(int argc, char** argv) {
     PD::TT::Beg("MainRaw");
     PD::Hid::Update();
     PD::Gfx::NewFrame();
+    PD::Li::ResetPools();
     // app.Update(pOs->GetViewport(), pList);
     pList.SetFontscale(0.7);
     if (PD::Hid::IsEvent(PD::Hid::Event::Down, PD::Hid::Gamepad::CPLeft |
@@ -297,7 +298,6 @@ int main(int argc, char** argv) {
           "#ff00ff");
     }
     pList.SetFont(&font);
-#ifndef __3DS__
     PD::TT::Beg("BuildUI7Menus");
     if (auto m = ui7.BeginMenu("Test")) {
       m->Label("Hello World!");
@@ -318,11 +318,10 @@ int main(int argc, char** argv) {
     PD::TT::Beg("UI7::Context::Update");
     ui7.Update();
     PD::TT::End("UI7::Context::Update");
-#endif
     PD::Gfx::Reset();
     PD::TT::Beg("PD::Gfx::Draw");
-    PD::Gfx::Draw(pList);
     PD::Gfx::Draw(ui7.GetDrawData());
+    PD::Gfx::Draw(pList);
     PD::TT::End("PD::Gfx::Draw");
     pList.Clear();
     PD::TT::End("MainRaw");

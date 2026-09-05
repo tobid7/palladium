@@ -1,23 +1,48 @@
 #include <pd/drivers/gfx.hpp>
 #include <pd/lithium/command.hpp>
+#include <pd/lithium/pools.hpp>
 
 namespace PD {
 namespace Li {
 
 void Command::Reserve(size_t vtx, size_t idx) {
+  auto& vpool = GetVertexPool();
+  auto& ipool = GetIndexPool();
   if (VertexCountMax == 0) {
-    FirstVertex = Gfx::AllocateVertices(vtx, (PD::ptr)this);
+    FirstVertex = vpool.size();
+    vpool.Allocate(vtx);
     VertexCountMax = vtx;
   } else {
-    Gfx::ExpandVertices(vtx, (PD::ptr)this);
-    VertexCountMax += vtx;
+    if (vpool.size() == FirstVertex + VertexCountMax) {
+      vpool.Allocate(vtx);
+      VertexCountMax += vtx;
+    } else {
+      size_t tmp = FirstVertex;
+      FirstVertex = vpool.size();
+      vpool.Allocate(VertexCountMax + vtx);
+      for (size_t i = 0; i < VertexCount; i++) {
+        vpool[FirstVertex + i] = vpool[tmp + i];
+      }
+      VertexCountMax += vtx;
+    }
   }
   if (IndexCountMax == 0) {
-    FirstIndex = Gfx::AllocateIndices(idx, (PD::ptr)this);
+    FirstIndex = ipool.size();
+    ipool.Allocate(idx);
     IndexCountMax = idx;
   } else {
-    Gfx::ExpandIndices(idx, (PD::ptr)this);
-    IndexCountMax += idx;
+    if (ipool.size() == FirstIndex + IndexCountMax) {
+      ipool.Allocate(idx);
+      IndexCountMax += idx;
+    } else {
+      size_t tmp = FirstIndex;
+      FirstIndex = ipool.size();
+      ipool.Allocate(IndexCountMax + idx);
+      for (size_t i = 0; i < IndexCount; i++) {
+        ipool[FirstIndex + i] = ipool[tmp + i];
+      }
+      IndexCountMax += idx;
+    }
   }
 }
 
@@ -34,22 +59,25 @@ void Command::Reset() {
 }
 
 Command& Command::Add(const Vertex& vtx) {
-  if (VertexCount <= VertexCountMax)
-    Gfx::PutVertex(FirstVertex + VertexCount++, vtx, (PD::ptr)this);
+  if (VertexCount < VertexCountMax) {
+    GetVertexPool()[FirstVertex + VertexCount++] = vtx;
+  }
   return *this;
 }
 Command& Command::Add(u16 idx) {
-  if (IndexCount <= IndexCountMax)
-    Gfx::PutIndex(FirstIndex + IndexCount++, FirstVertex + VertexCount + idx,
-                  (PD::ptr)this);
+  if (IndexCount < IndexCountMax) {
+    GetIndexPool()[FirstIndex + IndexCount++] =
+        static_cast<u16>(VertexCount + idx);
+  }
   return *this;
 }
 Command& Command::Add(u16 a, u16 b, u16 c) {
   if (IndexCount + 3 <= IndexCountMax) {
+    auto& ip = GetIndexPool();
     size_t idx = FirstIndex + IndexCount;
-    Gfx::PutIndex(idx + 0, FirstVertex + VertexCount + a, (PD::ptr)this);
-    Gfx::PutIndex(idx + 1, FirstVertex + VertexCount + b, (PD::ptr)this);
-    Gfx::PutIndex(idx + 2, FirstVertex + VertexCount + c, (PD::ptr)this);
+    ip[idx + 0] = static_cast<u16>(VertexCount + a);
+    ip[idx + 1] = static_cast<u16>(VertexCount + b);
+    ip[idx + 2] = static_cast<u16>(VertexCount + c);
     IndexCount += 3;
   }
   return *this;
