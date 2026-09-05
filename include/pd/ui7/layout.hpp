@@ -47,7 +47,7 @@ class PD_API Layout {
     Size = 0;
     WorkRect = fvec4(IO.MenuPadding, Size - (fvec2(2) * IO.MenuPadding));
   }
-  ~Layout() = default;
+  ~Layout();
 
   /** SECTION CONTAINERS */
   /**
