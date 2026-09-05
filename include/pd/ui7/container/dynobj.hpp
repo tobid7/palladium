@@ -23,9 +23,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+#include <functional>
 #include <pd/ui7/container/container.hpp>
 #include <pd/ui7/io.hpp>
-#include <functional>
 
 namespace PD {
 namespace UI7 {

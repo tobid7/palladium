@@ -21,10 +21,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
+#include <algorithm>
 #include <pd/ui7/container/dragdata.hpp>
 #include <pd/ui7/container/label.hpp>
 #include <type_traits>
-#include <algorithm>
 
 namespace PD {
 namespace UI7 {
@@ -93,8 +93,8 @@ PD_API void DragData<T>::Draw() {
     // list->LayerDown();
     off_x += td.x + io->ItemSpace.x + io->FramePadding.x;
   }
-  list->DrawText(FinalPos() + fvec2(off_x, io->FramePadding.y * 0.5), label.c_str(),
-                 io->Theme.Get(UI7Color_Text));
+  list->DrawText(FinalPos() + fvec2(off_x, io->FramePadding.y * 0.5),
+                 label.c_str(), io->Theme.Get(UI7Color_Text));
 }
 
 template <typename T>
