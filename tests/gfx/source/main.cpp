@@ -1,9 +1,9 @@
+#include <future>
 #include <os/desktopos.hpp>
 #include <os/horizon-ctr.hpp>
 #include <os/horizon-nx.hpp>
 #include <palladium>
 #include <thread>
-#include <future>
 
 ////
 #include <pd/ultra/elems/button.hpp>
@@ -169,8 +169,12 @@ struct Cursor {
 };
 
 int main(int argc, char** argv) {
-  // PD::LogFilter(PD::LogLevel::Warning);
+// PD::LogFilter(PD::LogLevel::Warning);
+#ifdef __APPLE__
+  Driver drv = Driver::OpenGL2;  // default gl2
+#else
   Driver drv = Driver::OpenGL3;
+#endif
   if (argc == 2) {
     if (std::string(argv[1]) == "gl2") {
       drv = Driver::OpenGL2;
@@ -193,22 +197,30 @@ int main(int argc, char** argv) {
   PD::Image img(ResourcePath("icon.png"));
   auto pTex = PD::Gfx::LoadTexture(img, img.Width(), img.Height());
   PD::Li::Font font;
-  std::future<void> __f = std::async(std::launch::async, [&]() {
-    font.LoadTTF(ResourcePath("default.ttf"), 32,
-                 LiFontFlags_SDF | LiFontFlags_Monospace);
-  });
+  PD::Li::Font debug_font;
+    font.LoadTTF(ResourcePath("default.ttf"), 32, LiFontFlags_SDF);
+    debug_font.LoadTTF(ResourcePath("JetBrainsMono-Medium.ttf"), 32,
+                       LiFontFlags_SDF | LiFontFlags_Monospace);
   pList.SetFont(&font);
   App app(font);
   Cursor LeftStick;
   Cursor RightStick;
   RightStick.pColor = "#00ffff";
+  PD::UI7::Context ui7;
+  ui7.GetIO().Font = &font;
+  ui7.AddViewPort("Default", PD::ivec4(0, 0, 1280, 720));
+  ui7.UseViewPort("Default");
   while (pOs->Mainloop()) {
     PD::TT::Scope __st("MainLoop");
     PD::Hid::Update();
     PD::Gfx::NewFrame();
     pOs->ClearViewPort();
-    app.Update(pOs->GetViewport(), pList);
+    // app.Update(pOs->GetViewport(), pList);
     pList.SetFontscale(0.7);
+    if (auto m = ui7.BeginMenu("Test")) {
+      m->Label("Hello World!");
+      ui7.EndMenu();
+    }
     if (PD::Hid::IsEvent(PD::Hid::Event::Down, PD::Hid::Gamepad::CPLeft |
                                                    PD::Hid::Gamepad::CPRight)) {
       LeftStick.pPos.x += PD::Hid::GetLeftStick().x * 15;
@@ -274,8 +286,9 @@ int main(int argc, char** argv) {
 #ifdef __3DS__
     pList.SetFontscale(0.4);
 #else
-    pList.SetFontscale();
+    pList.SetFontscale(0.6f);
 #endif
+    pList.SetFont(&debug_font);
     int __i = 0;
     for (auto& it : PD::TT::GetTraceMap()) {
       pList.DrawText(
@@ -285,9 +298,15 @@ int main(int argc, char** argv) {
               .c_str(),
           "#ff00ff");
     }
+    pList.SetFont(&font);
+    ui7.MetricsMenu();
+    PD::TT::Beg("UI7::Context::Update");
+    ui7.Update();
+    PD::TT::End("UI7::Context::Update");
     PD::Gfx::Reset();
     PD::TT::Beg("PD::Gfx::Draw");
     PD::Gfx::Draw(pList);
+    PD::Gfx::Draw(ui7.GetDrawData());
     PD::TT::End("PD::Gfx::Draw");
     pList.Clear();
     pOs->SwapBuffers();

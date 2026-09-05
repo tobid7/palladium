@@ -1,5 +1,3 @@
-#pragma once
-
 /*
 MIT License
 Copyright (c) 2024 - 2026 René Amthor (tobid7)
@@ -23,8 +21,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/core/core.hpp>
-#include <pd/drivers/drivers.hpp>
-#include <pd/image/image.hpp>
-#include <pd/lithium/lithium.hpp>
-#include <pd/ui7/ui7.hpp>
+#include <pd/ui7/container/image.hpp>
+
+namespace PD {
+namespace UI7 {
+PD_API void Image::Draw() {
+  // Assert(io.get() && list.get(), "Did you run Container::Init correctly?");
+  // Assert(img.get(), "Image is nullptr!");
+  // io->Ren->OnScreen(screen);
+  // list->LayerUp();
+  list->BindTexture(img);
+  list->DrawRectFilled(FinalPos(), newsize, 0xffffffff);
+  list->UnbindTexture();
+  //list->LayerDown();
+}
+}  // namespace UI7
+}  // namespace PD
