@@ -38,10 +38,15 @@ const char* GfxOpenGL2::pFragCode = R"(
   
   uniform sampler2D tex;
   uniform bool alfa;
+  uniform bool is_sdf;
       
   void main() {
     vec4 tc = texture2D(tex, oUV);
-    if (alfa) {
+    if (is_sdf) {
+      float dist = tc.a;
+      float alpha = smoothstep(0.45, 0.55, dist);
+      gl_FragColor = vec4(oColor.rgb, alpha * oColor.a);
+    } else if (alfa) {
       gl_FragColor = vec4(oColor.rgb, tc.a * oColor.a);
     } else {
       gl_FragColor = tc * oColor;
@@ -78,6 +83,7 @@ void GfxOpenGL2::SysInit() {
   pSetupShaderAttribs(pShader);
   pLocTex = glGetUniformLocation(pShader, "tex");
   pLocAlfa = glGetUniformLocation(pShader, "alfa");
+  pLocIsSDF = glGetUniformLocation(pShader, "is_sdf");
   pLocProjection = glGetUniformLocation(pShader, "projection");
 
   glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -114,6 +120,7 @@ void GfxOpenGL2::BindTexture(TextureID id) {
   GLint fmt = 0;
   glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_INTERNAL_FORMAT, &fmt);
   glUniform1i(pLocAlfa, fmt == GL_ALPHA);
+  glUniform1i(pLocIsSDF, CurrentTexIsSDF);
 }
 
 void GfxOpenGL2::SysReset() {

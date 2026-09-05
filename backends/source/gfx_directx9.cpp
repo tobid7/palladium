@@ -15,41 +15,45 @@ static const char* g_vsCode = R"(
 float4x4 projection;
 
 struct VS_IN {
-    float2 pos : POSITION0;
-    float2 uv  : TEXCOORD0;
-    float4 col : COLOR0;
+  float2 pos : POSITION0;
+  float2 uv  : TEXCOORD0;
+  float4 col : COLOR0;
 };
 
 struct VS_OUT {
-    float4 pos : POSITION0;
-    float2 uv  : TEXCOORD0;
-    float4 col : COLOR0;
+  float4 pos : POSITION0;
+  float2 uv  : TEXCOORD0;
+  float4 col : COLOR0;
 };
 
 VS_OUT main(VS_IN input) {
-    VS_OUT o;
-    o.pos = mul(projection, float4(input.pos, 0.0, 1.0)); 
-    o.uv = input.uv;
-    o.col = input.col.bgra;
-    return o;
+  VS_OUT o;
+  o.pos = mul(projection, float4(input.pos, 0.0, 1.0)); 
+  o.uv = input.uv;
+  o.col = input.col.bgra;
+  return o;
 }
 )";
 
 static const char* g_psCode = R"(
 sampler2D tex : register(s0);
-float alfa;
+float alfa : register(c1);
+float is_sdf : register(c2);
 
 struct PS_IN {
-    float2 uv  : TEXCOORD0;
-    float4 col : COLOR0;
+  float2 uv  : TEXCOORD0;
+  float4 col : COLOR0;
 };
 
 float4 main(PS_IN input) : COLOR0 {
-    float4 tc = tex2D(tex, input.uv);
-    if (alfa > 0.5)
-        return float4(input.col.rgb, tc.a * input.col.a);
-    else
-        return tc * input.col;
+  float4 tc = tex2D(tex, input.uv);
+  if (is_sdf > 0.5) {
+    float alpha = smoothstep(0.45, 0.55, tc.a);
+    return float4(input.col.rgb, alpha * input.col.a);
+  } else if (alfa > 0.5)
+    return float4(input.col.rgb, tc.a * input.col.a);
+  else
+    return tc * input.col;
 }
 )";
 
@@ -159,6 +163,9 @@ void GfxDirectX9::BindTexture(TextureID id) {
 
   float v = a8 ? 1.0f : 0.0f;
   impl->Device->SetPixelShaderConstantF(0, &v, 1);
+
+  float sdf = CurrentTexIsSDF ? 1.0f : 0.0f;
+  impl->Device->SetPixelShaderConstantF(1, &sdf, 1);
 }
 
 void GfxDirectX9::SysReset() {

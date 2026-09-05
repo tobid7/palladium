@@ -76,7 +76,9 @@ class PD_API GfxDriver : public DriverInterface {
   size_t CurrentVertex = 0;
   size_t pCountDrawcalls = 0;
   size_t pCountCommands = 0;
+  // State Variables oder so
   TextureID CurrentTex = 0;
+  bool CurrentTexIsSDF = false;
   Mat4 Projection;
   ivec2 ViewPort;
   std::unordered_map<TextureID, Li::Texture> pTextureRegestry;
@@ -114,12 +116,14 @@ class GfxDriverBase : public GfxDriver {
     UploadPools();
     while (index < commands.size()) {
       CurrentTex = commands[index].Tex;
+      CurrentTexIsSDF = commands[index].SDF;
       if (!CurrentTex) {
         CurrentTex = pWhite.GetID();
       }
       size_t startidx = commands[index].FirstIndex;
       size_t num_indices = 0;
       while (index < commands.size() &&
+             CurrentTexIsSDF == commands[index].SDF &&
              (CurrentTex == commands[index].Tex ||
               (CurrentTex == pWhite.GetID() && commands[index].Tex == 0))) {
         num_indices += commands[index].IndexCount;
