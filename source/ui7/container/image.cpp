@@ -33,7 +33,7 @@ PD_API void Image::Draw() {
   list->BindTexture(img);
   list->DrawRectFilled(FinalPos(), newsize, 0xffffffff);
   list->UnbindTexture();
-  //list->LayerDown();
+  // list->LayerDown();
 }
 }  // namespace UI7
 }  // namespace PD

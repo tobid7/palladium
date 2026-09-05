@@ -309,7 +309,7 @@ int main(int argc, char** argv) {
       m->Label("LI  Draw Comamnds: {}", PD::Gfx::GetNumCommands());
       m->Label("GFX Draw Calls: {}", PD::Gfx::GetNumDrawcalls());
       m->Label("GFX Vertices: {}", PD::Gfx::GetNumVertices());
-      m->Label("GFX Triangles: {}", PD::Gfx::GetNumVertices()/3);
+      m->Label("GFX Triangles: {}", PD::Gfx::GetNumVertices() / 3);
       m->Label("GFX Indices: {}", PD::Gfx::GetNumIndices());
       ui7.EndMenu();
     }

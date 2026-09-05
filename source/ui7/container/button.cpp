@@ -51,7 +51,7 @@ PD_API void Button::Draw() {
   // io->Ren->OnScreen(screen);
   list->PathRect(FinalPos(), FinalPos() + size, io->FrameRounding);
   list->PathFill(io->Theme.Get(color));
- // list->LayerUp();
+  // list->LayerUp();
   list->DrawText(FinalPos() + size * 0.5 - tdim * 0.5, label.c_str(),
                  io->Theme.Get(UI7Color_Text));
   // list->LayerDown();

@@ -21,9 +21,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+#include <algorithm>
 #include <pd/ui7/containers.hpp>
 #include <pd/ui7/menu.hpp>
-#include <algorithm>
 
 namespace PD {
 namespace UI7 {
@@ -84,8 +84,8 @@ PD_API void Menu::ColorEdit(const std::string& label, u32& clr) {
 
 PD_API void Menu::Separator() {
   // Dynamic Objects are very simple...
-  Container* r = new DynObj(
-      [=, this](UI7::IO* io, Li::Drawlist* l, UI7::Container* self) {
+  Container* r =
+      new DynObj([=, this](UI7::IO* io, Li::Drawlist* l, UI7::Container* self) {
         l->DrawRectFilled(self->FinalPos(), self->GetSize(),
                           pIO.Theme.Get(UI7Color_TextDead));
       });
@@ -99,7 +99,7 @@ PD_API void Menu::Separator() {
 PD_API void Menu::SeparatorText(const std::string& label) {
   // Also note to use [=] instead of [&] to not undefined access label
   Container* r = new DynObj([=, this](UI7::IO* io, Li::Drawlist* l,
-                                       UI7::Container* self) {
+                                      UI7::Container* self) {
     fvec2 size = self->GetSize();
     fvec2 tdim = io->Font->GetTextBounds(label.c_str(), io->FontScale);
     fvec2 pos = self->FinalPos();
@@ -135,7 +135,7 @@ PD_API void Menu::HandleFocus() {
        PD::Hid::IsEvent(Hid::Event::Down, Hid::Keyboard::MouseLeft)) &&
       Li::Math::InBounds(PD::Hid::MousePos(), newarea) &&
       !Li::Math::InBounds(PD::Hid::MousePos(),
-                           pIO.InputHandler.FocusedMenuRect)) {
+                          pIO.InputHandler.FocusedMenuRect)) {
     pIO.InputHandler.FocusedMenu = pID;
   }
   if (pIO.InputHandler.FocusedMenu == pID) {
@@ -188,7 +188,7 @@ PD_API void Menu::HandleTitlebarActions() {
     vec2 cpos = pLayout.Pos + pIO.FramePadding;
     // clr_collapse_tri = UI7Color_FrameBackground;
     if (pIO.InputHandler.DragObject(UI7::ID(pID.GetName() + "clbse"),
-                                     fvec4(cpos, fvec2(18, TitleBarHeight)))) {
+                                    fvec4(cpos, fvec2(18, TitleBarHeight)))) {
       if (pIO.InputHandler.DragReleased) {
         pIsOpen = !pIsOpen;
       }
@@ -204,7 +204,7 @@ PD_API void Menu::HandleTitlebarActions() {
 
     // clr_close_btn = UI7Color_FrameBackground;
     if (pIO.InputHandler.DragObject(UI7::ID(pID.GetName() + "clse"),
-                                     fvec4(cpos, size))) {
+                                    fvec4(cpos, size))) {
       if (pIO.InputHandler.DragReleased) {
         *pIsShown = !(*pIsShown);
       }
@@ -217,7 +217,7 @@ PD_API void Menu::HandleTitlebarActions() {
 
     // clr_close_btn = UI7Color_FrameBackground;
     if (pIO.InputHandler.DragObject(UI7::ID(pID.GetName() + "rszs"),
-                                     fvec4(cpos, fvec2(20)))) {
+                                    fvec4(cpos, fvec2(20)))) {
       fvec2 szs = pLayout.Size + (pIO.InputHandler.DragPosition -
                                   pIO.InputHandler.DragLastPosition);
       if (szs.x < 30) szs.x = 30;
@@ -268,8 +268,8 @@ PD_API void Menu::DrawBaseLayout() {
 
     /** Background */
     Container* r = new DynObj([](IO* io, Li::Drawlist* l,
-                                  UI7::Container* self) {
-      //l->Layer(0);
+                                 UI7::Container* self) {
+      // l->Layer(0);
       l->PathRectEx(self->FinalPos(), self->FinalPos() + self->GetSize(), 10.f,
                     LiPathRectFlags_KeepTop | LiPathRectFlags_KeepBot);
       l->PathFill(io->Theme.Get(UI7Color_Background));
@@ -284,13 +284,13 @@ PD_API void Menu::DrawBaseLayout() {
                                UI7LytAdd_Front);
   }
   if (!(Flags & UI7MenuFlags_NoTitlebar)) {
-    Container* r = new  DynObj(
+    Container* r = new DynObj(
         [=, this](UI7::IO* io, Li::Drawlist* l, UI7::Container* self) {
-          //l->Layer(20);
+          // l->Layer(20);
           /** Header Bar */
           l->DrawRectFilled(self->FinalPos(), self->GetSize(),
                             io->Theme.Get(UI7Color_Header));
-          //l->Layer(21);
+          // l->Layer(21);
           /** Inline if statement to shift the Text if collapse sym is shown */
           /** What the hell is this code btw (didn't found a better way) */
           l->DrawText(self->FinalPos() +
@@ -308,9 +308,9 @@ PD_API void Menu::DrawBaseLayout() {
     /** Collapse Sym */
     if (!(Flags & UI7MenuFlags_NoCollapse)) {
       r = new DynObj([=, this](UI7::IO* io, Li::Drawlist* l,
-                                UI7::Container* self) {
+                               UI7::Container* self) {
         /** This sym actually requires layer 21 (i dont know why) */
-        //l->Layer(21);
+        // l->Layer(21);
         /**
          * Symbol (Position Swapping set by pIsOpen ? openpos : closepos;)
          */
@@ -339,10 +339,10 @@ PD_API void Menu::DrawBaseLayout() {
           fvec2(pLayout.Pos.x + pLayout.Size.x - size.x - pIO.FramePadding.x,
                 pLayout.Pos.y + pIO.FramePadding.y);
       pLayout.DrawList.DrawLine(cpos, cpos + size,
-                                 pIO.Theme.Get(UI7Color_FrameBackground), 2);
+                                pIO.Theme.Get(UI7Color_FrameBackground), 2);
       pLayout.DrawList.DrawLine(cpos + fvec2(0, size.y),
-                                 cpos + fvec2(size.x, 0),
-                                 pIO.Theme.Get(UI7Color_FrameBackground), 2);
+                                cpos + fvec2(size.x, 0),
+                                pIO.Theme.Get(UI7Color_FrameBackground), 2);
     }
   }
 }
@@ -394,14 +394,13 @@ PD_API bool Menu::BeginTreeNode(const ID& id) {
     l->DrawTriangleFilled(ts, ts + pl[0], ts + pl[1],
                           io->Theme.Get(UI7Color_FrameBackground));
 
-    l->DrawText(self->FinalPos() + fvec2(10 + io->ItemSpace.x, 0), id.GetName().c_str(),
-                io->Theme.Get(UI7Color_Text));
+    l->DrawText(self->FinalPos() + fvec2(10 + io->ItemSpace.x, 0),
+                id.GetName().c_str(), io->Theme.Get(UI7Color_Text));
   });
   /** Yes this new function handler was created for tree nodes */
   r->AddInputHandler([=, this](IO* io, Container* self) {
-    if (io->InputHandler.DragObject(
-            ID(pID.GetName() + id.GetName()),
-            fvec4(self->FinalPos(), self->GetSize()))) {
+    if (io->InputHandler.DragObject(ID(pID.GetName() + id.GetName()),
+                                    fvec4(self->FinalPos(), self->GetSize()))) {
       if (io->InputHandler.DragReleased) {
         n->second = !n->second;
       }

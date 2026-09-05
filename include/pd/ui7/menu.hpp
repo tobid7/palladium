@@ -82,7 +82,7 @@ class PD_API Menu {
     Container* r = pLayout.FindObject(id);
     if (!r) {
       r = new UI7::DragData<T>(label, data, num_elms, pIO, min, max, step,
-                                precision);
+                               precision);
       // Isnt This exactly the same line???
       // r = UI7::DragData<T>::New(label, data, num_elms, pIO, min, max, step,
       //                          precision);
