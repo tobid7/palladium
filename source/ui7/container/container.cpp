@@ -1,5 +1,3 @@
-#pragma once
-
 /*
 MIT License
 Copyright (c) 2024 - 2026 René Amthor (tobid7)
@@ -23,8 +21,37 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/core/core.hpp>
-#include <pd/drivers/drivers.hpp>
-#include <pd/image/image.hpp>
-#include <pd/lithium/lithium.hpp>
-#include <pd/ui7/ui7.hpp>
+#include <pd/ui7/container/container.hpp>
+
+namespace PD {
+namespace UI7 {
+PD_API void Container::HandleScrolling(fvec2 scrolling, fvec4 viewport) {
+  if (last_use != 0 && PD::Os::GetTime() - last_use > 5000) {
+    rem = true;
+  }
+  last_use = PD::Os::GetTime();
+  pos -= fvec2(0, scrolling.y);
+  skippable = !Li::Math::InBounds(
+      pos, size,
+      fvec4(viewport.x, viewport.y, viewport.x + viewport.z,
+            viewport.y + viewport.w));
+}
+
+PD_API void Container::HandleInternalInput() {
+  /** Requires Handle Scrolling First */
+}
+
+/** Internal function */
+PD_API void Container::PreDraw() {
+  if (pCLipRectUsed) {
+    // list->PushClipRect(pClipRect);
+  }
+}
+/** Internal function */
+PD_API void Container::PostDraw() {
+  if (pCLipRectUsed) {
+    // list->PopClipRect();
+  }
+}
+}  // namespace UI7
+}  // namespace PD

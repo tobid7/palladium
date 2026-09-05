@@ -23,8 +23,41 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/core/core.hpp>
-#include <pd/drivers/drivers.hpp>
-#include <pd/image/image.hpp>
-#include <pd/lithium/lithium.hpp>
-#include <pd/ui7/ui7.hpp>
+#include <pd/ui7/container/container.hpp>
+
+namespace PD {
+namespace UI7 {
+/**
+ * Label [Text] Object
+ */
+class PD_API Label : public Container {
+ public:
+  /**
+   * Constructor for Label Object
+   * @param label Label [Text] to Draw
+   * @param lr Renderer Reference
+   */
+  Label(const std::string& label, IO& io) {
+    this->label = label;
+    this->tdim = io.Font->GetTextBounds(label.c_str(), io.FontScale);
+    this->SetSize(tdim);
+  }
+  ~Label() = default;
+
+  /**
+   * Override for the Rendering Handler
+   * @note This function is usally called by Menu::Update
+   * */
+  void Draw() override;
+  /**
+   * Override Update func to support Text modifications
+   */
+  void Update() override;
+
+ private:
+  fvec2 tdim;                      ///< Text Size
+  UI7Color color = UI7Color_Text;  ///< Color
+  std::string label;               ///< Text to Render
+};
+}  // namespace UI7
+}  // namespace PD

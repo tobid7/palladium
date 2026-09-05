@@ -1,5 +1,3 @@
-#pragma once
-
 /*
 MIT License
 Copyright (c) 2024 - 2026 René Amthor (tobid7)
@@ -21,10 +19,20 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
- */
+*/
 
-#include <pd/core/core.hpp>
-#include <pd/drivers/drivers.hpp>
-#include <pd/image/image.hpp>
-#include <pd/lithium/lithium.hpp>
-#include <pd/ui7/ui7.hpp>
+#include <pd/ui7/container/dynobj.hpp>
+
+namespace PD {
+namespace UI7 {
+PD_API void DynObj::Draw() { pRenFun(io, list, this); }
+
+PD_API void DynObj::HandleInput() {
+  if (pInp) {
+    pInp(io, this);
+  }
+}
+
+PD_API void DynObj::Update() {}
+}  // namespace UI7
+}  // namespace PD
