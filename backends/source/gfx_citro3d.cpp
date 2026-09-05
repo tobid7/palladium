@@ -84,7 +84,7 @@ struct GfxCitro3D::Impl {
     }
   }
 
-  void SetupPixelStage() {
+  void SetupPixelStage(bool sdf) {
     shaderProgramUse(&pShader);
     C3D_BindProgram(&pShader);
     C3D_SetAttrInfo(&pAttr);
@@ -92,25 +92,46 @@ struct GfxCitro3D::Impl {
     if (!CurrentTex) return;
     C3D_TexEnv* env = C3D_GetTexEnv(0);
     C3D_TexEnvInit(env);
-    switch (CurrentTex->fmt) {
-      case GPU_A4:
-      case GPU_A8:
-      case GPU_L4:
-      case GPU_L8:
-        C3D_TexEnvSrc(env, C3D_Alpha, GPU_TEXTURE0);
-        C3D_TexEnvFunc(env, C3D_RGB, GPU_REPLACE);
-        C3D_TexEnvFunc(env, C3D_Alpha, GPU_MODULATE);
-        break;
-      case GPU_RGB565:
-        C3D_TexEnvSrc(env, C3D_Alpha, GPU_TEXTURE0);
-        C3D_TexEnvFunc(env, C3D_RGB, GPU_MODULATE);
-        C3D_TexEnvFunc(env, C3D_Alpha, GPU_REPLACE);
-        break;
+    C3D_TexEnv* env1 = C3D_GetTexEnv(1);
+    C3D_TexEnvInit(env1);
 
-      default:
-        C3D_TexEnvSrc(env, C3D_Both, GPU_TEXTURE0);
-        C3D_TexEnvFunc(env, C3D_Both, GPU_MODULATE);
-        break;
+    if (sdf) {
+      C3D_TexEnvSrc(env, C3D_RGB, GPU_PRIMARY_COLOR);
+      C3D_TexEnvFunc(env, C3D_RGB, GPU_REPLACE);
+
+      C3D_TexEnvColor(env, 0x60606060);
+      C3D_TexEnvSrc(env, C3D_Alpha, GPU_TEXTURE0, GPU_CONSTANT);
+      C3D_TexEnvOpAlpha(env, GPU_TEVOP_A_SRC_ALPHA, GPU_TEVOP_A_SRC_ALPHA);
+      C3D_TexEnvFunc(env, C3D_Alpha, GPU_SUBTRACT);
+      C3D_TexEnvScale(env, C3D_Alpha, GPU_TEVSCALE_4);
+
+      C3D_TexEnvSrc(env1, C3D_RGB, GPU_PREVIOUS);
+      C3D_TexEnvFunc(env1, C3D_RGB, GPU_REPLACE);
+
+      C3D_TexEnvSrc(env1, C3D_Alpha, GPU_PREVIOUS, GPU_PRIMARY_COLOR);
+      C3D_TexEnvOpAlpha(env, GPU_TEVOP_A_SRC_ALPHA, GPU_TEVOP_A_SRC_ALPHA);
+      C3D_TexEnvFunc(env1, C3D_Alpha, GPU_MODULATE);
+    } else {
+      switch (CurrentTex->fmt) {
+        case GPU_A4:
+        case GPU_A8:
+        case GPU_L4:
+        case GPU_L8:
+          C3D_TexEnvSrc(env, C3D_Alpha, GPU_TEXTURE0);
+          C3D_TexEnvFunc(env, C3D_RGB, GPU_REPLACE);
+          C3D_TexEnvFunc(env, C3D_Alpha, GPU_MODULATE);
+          break;
+        case GPU_RGB565:
+          C3D_TexEnvSrc(env, C3D_Alpha, GPU_TEXTURE0);
+          C3D_TexEnvFunc(env, C3D_RGB, GPU_MODULATE);
+          C3D_TexEnvFunc(env, C3D_Alpha, GPU_REPLACE);
+          break;
+
+        default:
+          C3D_TexEnvSrc(env, C3D_Both, GPU_TEXTURE0);
+          C3D_TexEnvFunc(env, C3D_Both, GPU_MODULATE);
+          break;
+      }
     }
   }
 };
@@ -146,7 +167,7 @@ void GfxCitro3D::SysDeinit() {
 void GfxCitro3D::Submit(size_t count, size_t start) {
   if (!impl) return;
   BindTexture(CurrentTex);
-  impl->SetupPixelStage();  // needs to be called after
+  impl->SetupPixelStage(CurrentTexIsSDF);  // needs to be called after
   C3D_Mtx proj;
   Mtx_OrthoTilt(&proj, 0.f, ViewPort.x, ViewPort.y, 0.f, 1.f, -1.f, false);
   C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, impl->uLocProjection, &proj);

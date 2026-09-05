@@ -24,6 +24,7 @@ void Command::Reserve(size_t vtx, size_t idx) {
 void Command::Reset() {
   Layer = 0;
   Tex = 0;
+  SDF = false;
   FirstIndex = 0;
   FirstVertex = 0;
   IndexCount = 0;
