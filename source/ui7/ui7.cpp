@@ -51,15 +51,14 @@ PD_API void Context::UseViewPort(const ID& id) {
   pIO.CurrentViewPort = pIO.ViewPorts[id.RawID()];
 }
 
-PD_API Menu* Context::BeginMenu(const ID& id, UI7MenuFlags flags,
-                                    bool* pShow) {
+PD_API Menu* Context::BeginMenu(const ID& id, UI7MenuFlags flags, bool* pShow) {
   if (pCurrent) {
     PDERR("UI7: You are already in {} Menu!", pCurrent->pID.GetName());
     return nullptr;
   }
   if (std::find(pCurrentMenus.begin(), pCurrentMenus.end(), (u32)id) !=
       pCurrentMenus.end()) {
-        PDERR("UI7: Menu {} already exists!", id.GetName());
+    PDERR("UI7: Menu {} already exists!", id.GetName());
     return nullptr;
   }
   pCurrent = pGetOrCreateMenu(id);
@@ -208,18 +207,18 @@ PD_API void Context::MetricsMenu(bool* show) {
     m->Label("Renderer: {}", PD::Gfx::GetDriverName());
     if (m->BeginTreeNode(
             std::string(std::string("Input: ") + PD::Hid::GetDriverName()))) {
-     /* if (pIO.pCtx.Hid()->Flags & PD::HidDriver::Flags_HasKeyboard) {
-        m->Label("- Keyboard Supported");
-      }
-      if (pIO.pCtx.Hid()->Flags & PD::HidDriver::Flags_HasMouse) {
-        m->Label("- Mouse Supported");
-      }
-      if (pIO.pCtx.Hid()->Flags & PD::HidDriver::Flags_HasTouch) {
-        m->Label("- Touch Supported");
-      }
-      if (pIO.pCtx.Hid()->Flags & PD::HidDriver::FLags_HasGamepad) {
-        m->Label("- Gamepad Supported");
-      }*/
+      /* if (pIO.pCtx.Hid()->Flags & PD::HidDriver::Flags_HasKeyboard) {
+         m->Label("- Keyboard Supported");
+       }
+       if (pIO.pCtx.Hid()->Flags & PD::HidDriver::Flags_HasMouse) {
+         m->Label("- Mouse Supported");
+       }
+       if (pIO.pCtx.Hid()->Flags & PD::HidDriver::Flags_HasTouch) {
+         m->Label("- Touch Supported");
+       }
+       if (pIO.pCtx.Hid()->Flags & PD::HidDriver::FLags_HasGamepad) {
+         m->Label("- Gamepad Supported");
+       }*/
       m->EndTreeNode();
     }
     /** Section IO */
@@ -256,8 +255,7 @@ PD_API void Context::MetricsMenu(bool* show) {
           m->Label(std::format("Cursor: {}", pMenus[it]->pLayout.Cursor));
           if (m->BeginTreeNode(
                   "ID Objects (" +
-                  std::to_string(pMenus[it]->pLayout.IDObjects.size()) +
-                  ")")) {
+                  std::to_string(pMenus[it]->pLayout.IDObjects.size()) + ")")) {
             for (auto& jt : pMenus[it]->pLayout.IDObjects) {
               m->Label(std::format("{:08X}", jt->GetID()));
             }
@@ -321,7 +319,7 @@ PD_API void UI7::Context::StyleEditor(bool* show) {
     }
     /// Small trick to print without prefix
 #define ts(x) m->ColorEdit(std::string(#x).substr(9), pIO.Theme.GetRef(x));
-#define ts2(x)                                                                 \
+#define ts2(x)                                                                \
   m->DragData(std::string(#x).substr(9), (u8*)&pIO.Theme.GetRef(x), 4, (u8)0, \
               (u8)255);
     ts(UI7Color_Background);

@@ -31,10 +31,10 @@ PD_API void Container::HandleScrolling(fvec2 scrolling, fvec4 viewport) {
   }
   last_use = PD::Os::GetTime();
   pos -= fvec2(0, scrolling.y);
-  skippable = !Li::Math::InBounds(
-      pos, size,
-      fvec4(viewport.x, viewport.y, viewport.x + viewport.z,
-            viewport.y + viewport.w));
+  skippable =
+      !Li::Math::InBounds(pos, size,
+                          fvec4(viewport.x, viewport.y, viewport.x + viewport.z,
+                                viewport.y + viewport.w));
 }
 
 PD_API void Container::HandleInternalInput() {
