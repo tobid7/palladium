@@ -261,27 +261,27 @@ void GfxDirectX9::UploadPools() {
   if (!impl->VBO || impl->VertexBufferSize != GetVertexPoolSize()) {
     if (impl->VBO) impl->VBO->Release();
     impl->Device->CreateVertexBuffer(GetVertexPoolSize() * sizeof(Li::Vertex),
-                                     D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY, 0,
-                                     D3DPOOL_DEFAULT, &impl->VBO, nullptr);
+                                     D3DUSAGE_WRITEONLY, 0, D3DPOOL_MANAGED,
+                                     &impl->VBO, nullptr);
     impl->VertexBufferSize = GetVertexPoolSize();
   }
 
   if (!impl->IBO || impl->IndexBufferSize != GetIndexPoolSize()) {
     if (impl->IBO) impl->IBO->Release();
-    impl->Device->CreateIndexBuffer(
-        GetIndexPoolSize() * sizeof(u16), D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY,
-        D3DFMT_INDEX16, D3DPOOL_DEFAULT, &impl->IBO, nullptr);
+    impl->Device->CreateIndexBuffer(GetIndexPoolSize() * sizeof(u16),
+                                    D3DUSAGE_WRITEONLY, D3DFMT_INDEX16,
+                                    D3DPOOL_MANAGED, &impl->IBO, nullptr);
     impl->IndexBufferSize = GetIndexPoolSize();
   }
 
   void* vptr;
-  impl->VBO->Lock(0, 0, &vptr, D3DLOCK_DISCARD);
+  impl->VBO->Lock(0, 0, &vptr, 0);
   memcpy(vptr, GetVertexBufPtr(0),
          GetVertexPoolSize() * sizeof(PD::Li::Vertex));
   impl->VBO->Unlock();
 
   void* iptr;
-  impl->IBO->Lock(0, 0, &iptr, D3DLOCK_DISCARD);
+  impl->IBO->Lock(0, 0, &iptr, 0);
   memcpy(iptr, GetIndexBufPtr(0), GetIndexPoolSize() * sizeof(u16));
   impl->IBO->Unlock();
 }
