@@ -198,9 +198,9 @@ int main(int argc, char** argv) {
   auto pTex = PD::Gfx::LoadTexture(img, img.Width(), img.Height());
   PD::Li::Font font;
   PD::Li::Font debug_font;
-    font.LoadTTF(ResourcePath("default.ttf"), 32, LiFontFlags_SDF);
-    debug_font.LoadTTF(ResourcePath("JetBrainsMono-Medium.ttf"), 32,
-                       LiFontFlags_SDF | LiFontFlags_Monospace);
+  font.LoadTTF(ResourcePath("default.ttf"), 32, LiFontFlags_SDF);
+  debug_font.LoadTTF(ResourcePath("JetBrainsMono-Medium.ttf"), 32,
+                     LiFontFlags_SDF | LiFontFlags_Monospace);
   pList.SetFont(&font);
   App app(font);
   Cursor LeftStick;
@@ -297,10 +297,20 @@ int main(int argc, char** argv) {
           "#ff00ff");
     }
     pList.SetFont(&font);
-    #ifndef __3DS__
+#ifndef __3DS__
     PD::TT::Beg("BuildUI7Menus");
     if (auto m = ui7.BeginMenu("Test")) {
       m->Label("Hello World!");
+      ui7.EndMenu();
+    }
+    if (auto m = ui7.BeginMenu("LI DBG INFO")) {
+      m->Label("Gfx Driver: {}", PD::Gfx::GetDriverName());
+      m->Separator();
+      m->Label("LI  Draw Comamnds: {}", PD::Gfx::GetNumCommands());
+      m->Label("GFX Draw Calls: {}", PD::Gfx::GetNumDrawcalls());
+      m->Label("GFX Vertices: {}", PD::Gfx::GetNumVertices());
+      m->Label("GFX Triangles: {}", PD::Gfx::GetNumVertices()/3);
+      m->Label("GFX Indices: {}", PD::Gfx::GetNumIndices());
       ui7.EndMenu();
     }
     ui7.MetricsMenu();
@@ -308,7 +318,7 @@ int main(int argc, char** argv) {
     PD::TT::Beg("UI7::Context::Update");
     ui7.Update();
     PD::TT::End("UI7::Context::Update");
-    #endif
+#endif
     PD::Gfx::Reset();
     PD::TT::Beg("PD::Gfx::Draw");
     PD::Gfx::Draw(pList);
@@ -320,6 +330,7 @@ int main(int argc, char** argv) {
     PD::TT::Beg("OSCTX::MainLoop");
   }
   font.Delete();
+  debug_font.Delete();
   PD::Gfx::DeleteTexture(pTex);
   PD::Gfx::Deinit();
   pOs->Deinit();
