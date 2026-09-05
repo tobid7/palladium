@@ -68,7 +68,7 @@ class PD_API ColorEdit : public Container {
   u32* color_ref = nullptr;  ///< Color Reference
   u32 initial_color;         ///< Initial Color
   std::string label;         ///< Label of the Button
-  Layout* layout;            ///< Layout to open
+  Layout* layout = nullptr;  ///< Layout to open
   bool is_shown = false;     ///< AHow Layout Editor
 };
 }  // namespace UI7
