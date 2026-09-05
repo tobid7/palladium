@@ -23,8 +23,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/core/core.hpp>
-#include <pd/drivers/drivers.hpp>
-#include <pd/image/image.hpp>
-#include <pd/lithium/lithium.hpp>
-#include <pd/ui7/ui7.hpp>
+#include <pd/ui7/container/button.hpp>
+#include <pd/ui7/container/checkbox.hpp>
+#include <pd/ui7/container/coloredit.hpp>
+#include <pd/ui7/container/dragdata.hpp>
+#include <pd/ui7/container/dynobj.hpp>
+#include <pd/ui7/container/image.hpp>
+#include <pd/ui7/container/label.hpp>
+#include <pd/ui7/container/slider.hpp>

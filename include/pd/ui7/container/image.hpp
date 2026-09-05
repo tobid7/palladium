@@ -23,8 +23,44 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/core/core.hpp>
-#include <pd/drivers/drivers.hpp>
-#include <pd/image/image.hpp>
-#include <pd/lithium/lithium.hpp>
-#include <pd/ui7/ui7.hpp>
+#include <pd/ui7/container/container.hpp>
+
+namespace PD {
+namespace UI7 {
+/**
+ * Image Object
+ */
+class PD_API Image : public Container {
+ public:
+  /**
+   * Constructor for the Image Object
+   * @param img Image Texture Reference
+   * @param size Custom Size of the Image
+   */
+  Image(Li::Texture img, fvec2 size = 0.f, Li::Rect uv = fvec4(0.f)) {
+    this->img = img;
+    if (size == fvec2(0.f)) {
+      size = img.GetSize();
+    }
+    if (uv == Li::Rect(fvec4(0.f))) {
+      uv = img.GetUV();
+    }
+    this->cuv = uv;
+    this->newsize = size;
+    SetSize(size);
+  }
+  ~Image() = default;
+
+  /**
+   * Override for the Rendering Handler
+   * @note This function is usally called by Menu::Update
+   * */
+  void Draw() override;
+
+ private:
+  Li::Texture img;      ///< Texture
+  fvec2 newsize = 0.f;  ///< New Size
+  Li::Rect cuv;         ///< Custom UV
+};
+}  // namespace UI7
+}  // namespace PD

@@ -1,5 +1,3 @@
-#pragma once
-
 /*
 MIT License
 Copyright (c) 2024 - 2026 René Amthor (tobid7)
@@ -23,8 +21,32 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/core/core.hpp>
-#include <pd/drivers/drivers.hpp>
-#include <pd/image/image.hpp>
-#include <pd/lithium/lithium.hpp>
-#include <pd/ui7/ui7.hpp>
+#include <pd/ui7/container/label.hpp>
+
+namespace PD {
+namespace UI7 {
+PD_API void Label::Draw() {
+  // Assert(io.get() && list.get(), "Did you run Container::Init correctly?");
+  // io->Ren->OnScreen(screen);
+  list->DrawTextEx(FinalPos(), label.c_str(), io->Theme.Get(UI7Color_Text),
+                   LiTextFlags_NoOOS,
+                   PD::fvec2(0, io->CurrentViewPort.pSize.w));
+}
+
+PD_API void Label::Update() {
+  /**
+   * Todo: This is a hacky workaround
+   * Needs proper optimisation
+   * Needs a max size (to support sligning dynaically by the window size)
+   */
+  if (io->WrapLabels) {
+    this->label = io->Font->pWrapText(
+        this->label, io->FontScale,
+        PD::fvec2(io->CurrentViewPort.pSize.z - FinalPos().x * 4,
+                  io->CurrentViewPort.pSize.w),
+        this->tdim);
+    SetSize(tdim);
+  }
+}
+}  // namespace UI7
+}  // namespace PD
