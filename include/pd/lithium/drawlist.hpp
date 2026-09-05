@@ -43,6 +43,18 @@ class PD_API Drawlist {
   void Optimize();
   void Clear();
 
+  size_t GetNumVertices() const {
+    size_t count = 0;
+    for (const auto& cmd : pCommands) count += cmd.VertexCount;
+    return count;
+  }
+
+  size_t GetNumIndices() const {
+    size_t count = 0;
+    for (const auto& cmd : pCommands) count += cmd.IndexCount;
+    return count;
+  }
+
   /** Command Allocation */
   Command& NewCommand();
   bool HasCommands() { return pCommands.size() > 0; }
