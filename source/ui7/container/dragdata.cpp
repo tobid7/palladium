@@ -24,6 +24,7 @@ SOFTWARE.
 #include <pd/ui7/container/dragdata.hpp>
 #include <pd/ui7/container/label.hpp>
 #include <type_traits>
+#include <algorithm>
 
 namespace PD {
 namespace UI7 {
