@@ -25,4 +25,3 @@ SOFTWARE.
 
 #include <pd/core/core.hpp>
 #include <pd/drivers/drivers.hpp>
-#include <pd/lithium/lithium.hpp>

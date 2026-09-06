@@ -7,23 +7,15 @@ option(PD_ENABLE_OPENGL3 "Enable OpenGL 3.3 (On Supported Hardware)" ON)
 option(PD_ENABLE_VULKAN "Not implemented yet" OFF)
 
 add_library(pd-system STATIC
-	${CMAKE_CURRENT_SOURCE_DIR}/source/gfx_opengl.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/gfx_opengl.cpp
 )
-
 target_include_directories(pd-system
-	PUBLIC
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-		$<INSTALL_INTERFACE:include>
+    PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
 )
-
-target_compile_options(pd-system
-	PUBLIC
-		-fmacro-prefix-map=${CMAKE_CURRENT_SOURCE_DIR}/source=source
-		-fmacro-prefix-map=${CMAKE_CURRENT_SOURCE_DIR}/include=include
-)
-
 target_link_libraries(pd-system
-	PUBLIC
-		palladium::palladium
-		glad
+    PUBLIC
+    palladium::palladium
+    glad
 )

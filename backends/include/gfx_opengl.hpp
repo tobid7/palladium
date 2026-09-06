@@ -17,7 +17,7 @@ struct GfxOpenGLConfig {
 };
 class GfxOpenGL : public GfxDriverBase<GfxOpenGLConfig> {
  public:
-  GfxOpenGL(): GfxDriverBase("OpenGL2") {}
+  GfxOpenGL() {}
   ~GfxOpenGL() {}
 
   void SysInit() override;

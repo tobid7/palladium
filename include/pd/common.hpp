@@ -25,7 +25,6 @@ SOFTWARE.
 
 #include <chrono>
 #include <cmath>
-#include <cstddef>
 #include <exception>
 #include <format>
 #include <fstream>
@@ -43,17 +42,4 @@ using u16 = unsigned short;
 using u32 = unsigned int;
 using u64 = unsigned long long;
 using ptr = uintptr_t;
-void Log(const std::string& txt);
-template <typename... Args>
-void Log(std::format_string<Args...> fmt, Args&&... args) {
-  std::string msg = std::format(fmt, std::forward<Args>(args)...);
-  Log(msg);
-}
 }  // namespace PD
-
-#ifdef PD_DEBUG
-#define PDLOG(fmt, ...) \
-  PD::Log("[{}:{}]: " fmt, __FILE__, __LINE__, ##__VA_ARGS__)
-#else
-#define PDLOG(fmt, ...)
-#endif

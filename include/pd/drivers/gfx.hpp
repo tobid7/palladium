@@ -29,7 +29,6 @@ class PD_API GfxDriver : public DriverInterface {
   virtual ~GfxDriver() = default;
 
   virtual void Init() {}
-  virtual void Deinit() { SysDeinit(); }
 
   void SetViewPort(const ivec2& size);
   void SetViewPort(int x, int y);
@@ -94,6 +93,7 @@ class PD_API GfxDriverBase : public GfxDriver {
 
   void Draw(const Pool<Li::Command>& commands) override {
     CountCommands += commands.size();
+    Projection = Mat4::Ortho(0.f, ViewPort.x, ViewPort.y, 0.f, 1.f, -1.f);
     size_t index = 0;
     while (index < commands.size()) {
       CurrentTex = commands[index].Tex;
@@ -143,22 +143,6 @@ class PD_API Gfx {
     // assert(driver == nullptr && "OS Driver already set");
     driver = std::make_unique<T>(std::forward<Args>(args)...);
   }
-
-  static void Init() { driver->Init(); }
-  static void Deinit() { driver->Deinit(); }
-  static void SetViewPort(const ivec2& vp) { driver->SetViewPort(vp); }
-  static void SetViewPort(int w, int h) { driver->SetViewPort(w, h); }
-  static void Reset() { driver->Reset(); }
-  static void Draw(const Pool<Li::Command>& commands) {
-    driver->Draw(commands);
-  }
-  static TextureID LoadTexture(const std::vector<PD::u8>& pixels, int w, int h,
-                               TextureFormat type = TextureFormat::RGBA32,
-                               TextureFilter filter = TextureFilter::Linear) {
-    return driver->LoadTexture(pixels, w, h, type, filter);
-  }
-
-  static const char* GetDriverName() { return driver->GetName(); }
 
  private:
   static std::unique_ptr<GfxDriver> driver;
