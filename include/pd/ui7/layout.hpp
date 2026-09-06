@@ -163,6 +163,8 @@ class PD_API Layout {
   void SetAlign(UI7Align a) { Alignment = a; }
   void NextAlign(UI7Align a) { TempAlign = a; }
 
+  void HandleScrolling();
+
   void Update();
 
   fvec2 DbgScrollOffset() { return ScrollOffset; }
