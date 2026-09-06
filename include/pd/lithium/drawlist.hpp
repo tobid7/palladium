@@ -55,9 +55,8 @@ class PD_API Drawlist {
    *       only for special use cases
    */
   void PathReserve(size_t num) { pPath.ExpandIf(num); }
-  void PathStroke(const PD::Color& color, int t = 1,
-                  LiDrawFlags flags = LiDrawFlags_None);
-  void PathFill(const PD::Color& color);
+  void PathStroke(u32 color, int t = 1, LiDrawFlags flags = LiDrawFlags_None);
+  void PathFill(u32 color);
   void PathArcToN(const fvec2& c, float r, float amin, float amax, int s);
   void PathFastArcToN(const fvec2& c, float r, float amin, float amax, int s);
   void PathRect(const fvec2& tl, const fvec2& br, float r = 0.f);
@@ -78,30 +77,27 @@ class PD_API Drawlist {
   operator const Pool<Command>&() const { return pCommands; }
 
   /** Drawing functions */
-  void DrawRect(const fvec2& pos, const fvec2& size, const PD::Color& color,
-                int t = 1);
-  void DrawRectFilled(const fvec2& pos, const fvec2& size,
-                      const PD::Color& color);
-  void DrawTriangle(const fvec2& a, const fvec2& b, const fvec2& c,
-                    const PD::Color& color, int t = 1);
+  void DrawRect(const fvec2& pos, const fvec2& size, u32 color, int t = 1);
+  void DrawRectFilled(const fvec2& pos, const fvec2& size, u32 color);
+  void DrawTriangle(const fvec2& a, const fvec2& b, const fvec2& c, u32 color,
+                    int t = 1);
   void DrawTriangleFilled(const fvec2& a, const fvec2& b, const fvec2& c,
-                          const PD::Color& color);
-  void DrawCircle(const fvec2& center, float rad, const PD::Color& color,
-                  int num_segments, int t = 1);
-  void DrawCircleFilled(const fvec2& center, float rad, const PD::Color& color,
+                          u32 color);
+  void DrawCircle(const fvec2& center, float rad, u32 color, int num_segments,
+                  int t = 1);
+  void DrawCircleFilled(const fvec2& center, float rad, u32 color,
                         int num_segments);
-  void DrawText(const fvec2& p, const char* text, const PD::Color& color);
-  void DrawTextEx(const fvec2& p, const char* text, const PD::Color& color,
+  void DrawText(const fvec2& p, const char* text, u32 color);
+  void DrawTextEx(const fvec2& p, const char* text, u32 color,
                   LiTextFlags flags, const fvec2& box = fvec2(0.f));
 
-  void DrawPolyLine(const Pool<fvec2>& points, const PD::Color& color,
+  void DrawPolyLine(const Pool<fvec2>& points, u32 color,
                     LiDrawFlags flags = LiDrawFlags_None, int t = 1);
-  void DrawConvexPolyFilled(const Pool<fvec2>& points, const PD::Color& color);
+  void DrawConvexPolyFilled(const Pool<fvec2>& points, u32 color);
 
-  void PrimQuad(Command& cmd, const Rect& quad, const Rect& uv,
-                const PD::Color& color);
+  void PrimQuad(Command& cmd, const Rect& quad, const Rect& uv, u32 color);
   void PrimTriangle(Command& cmd, const fvec2& a, const fvec2& b,
-                    const fvec2& c, const PD::Color& color);
+                    const fvec2& c, u32 color);
 
  private:
   Texture pCurrentTexture;
