@@ -12,12 +12,20 @@ PD_API Drawlist::Drawlist() { Clear(); }
 PD_API Drawlist::~Drawlist() { Clear(); }
 
 PD_API void Drawlist::Merge(Drawlist& other) {
+  size_t start = pCommands.size();
   pCommands.AppendMove(other.pCommands);
+  for (size_t i = start; i < pCommands.size(); i++) {
+    pCommands[i].Layer += this->pCurrentLayer;
+  }
   other.Clear();
 }
 
 PD_API void Drawlist::Copy(Drawlist& other) {
+  int start = pCommands.size();
   pCommands.AppendCopy(other.pCommands);
+  for (size_t i = start; i < pCommands.size(); i++) {
+    pCommands[i].Layer += this->pCurrentLayer;
+  }
 }
 
 PD_API void Drawlist::Optimize() {
@@ -34,12 +42,14 @@ PD_API void Drawlist::Clear() {
   UnbindTexture();
   pPath.ResetFast();
   pCommands.NoReset();
+  pCurrentLayer = 0;
 }
 
 /** Command Allocation */
 PD_API Command& Drawlist::NewCommand() {
   auto cmd = pCommands.Allocate(1);
   cmd->Reset();
+  cmd->Layer = pCurrentLayer;
   cmd->Tex = pCurrentTexture.GetID();
   return *cmd;
 }

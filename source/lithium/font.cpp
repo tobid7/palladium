@@ -288,7 +288,8 @@ PD_API void Font::CmdTextEx(Drawlist& dl, const fvec2& pos, u32 color,
     }
 
     if (cp.Size.x > 0 && cp.Size.y > 0) {
-      if (cmd == nullptr || cmd->Tex != Textures[cp.Tex]) {
+      if (cmd == nullptr || cmd->Tex != Textures[cp.Tex] ||
+          cmd->Layer != dl.GetLayer()) {
         if (cp.Tex >= Textures.size()) continue;
         cmd = &dl.NewCommand();
         cmd->Tex = Textures[cp.Tex];
