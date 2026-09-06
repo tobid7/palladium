@@ -26,8 +26,6 @@ class PD_API Os {
   static u64 GetTime() { return driver->GetTime(); }
   static u64 GetTimeNano() { return driver->GetTimeNano(); }
 
-  static const char* GetDriverName() { return driver->GetName(); }
-
  private:
   static std::unique_ptr<OsDriver> driver;
 };
