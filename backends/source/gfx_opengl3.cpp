@@ -11,18 +11,14 @@
 
 namespace PD {
 void GfxOpenGL3::SysInit() {
-  std::string vcode = SpirvHelper::SPV2GLSL(
-      std::vector<unsigned int>(
-          Shaders::VertexShader,
-          Shaders::VertexShader +
-              (sizeof(Shaders::VertexShader) / sizeof(unsigned int))),
-      330, false);
-  std::string fcode = SpirvHelper::SPV2GLSL(
-      std::vector<unsigned int>(
-          Shaders::FragmentShader,
-          Shaders::FragmentShader +
-              (sizeof(Shaders::FragmentShader) / sizeof(unsigned int))),
-      330, false);
+  SpirvHelper::Init();
+  auto vshader =
+      SpirvHelper::GLSL2SPV(SpirvHelper::Stage::Vertex, Shaders::VertCode);
+  auto fshader =
+      SpirvHelper::GLSL2SPV(SpirvHelper::Stage::Fragment, Shaders::FragCode);
+  SpirvHelper::Finalize();
+  std::string vcode = SpirvHelper::SPV2GLSL(vshader, 330, false);
+  std::string fcode = SpirvHelper::SPV2GLSL(fshader, 330, false);
   PDLOG("Vertex: \n{}", vcode);
   PDLOG("Fragment: \n{}", fcode);
   pShader = CreateShaderProgram(vcode.c_str(), fcode.c_str());

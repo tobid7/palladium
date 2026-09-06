@@ -1,28 +1,17 @@
 #if defined(PD_ENABLE_SPIRV_HELPER)
-#if defined(PD_INCLUDE_GLSLANG)
 #include <SPIRV/GlslangToSpv.h>
-#include <glslang/Public/ResourceLimits.h>
-#include <glslang/Public/ShaderLang.h>
-#else
-struct TBuiltInResource {};
-#endif
+
 #include <pd_system/spirv-helper.hpp>
 #include <spirv.hpp>
 #include <spirv_glsl.hpp>
 #include <spirv_hlsl.hpp>
 
 namespace PD {
-#if defined(PD_INCLUDE_GLSLANG)
 void SpirvHelper::Init() { glslang::InitializeProcess(); }
 
 void SpirvHelper::Finalize() { glslang::FinalizeProcess(); }
-#else
-void SpirvHelper::Init() {}
 
-void SpirvHelper::Finalize() {}
-#endif
 void SpirvHelper::SetupResources(TBuiltInResource& resources) {
-#if defined(PD_INCLUDE_GLSLANG)
   resources.maxLights = 32;
   resources.maxClipPlanes = 6;
   resources.maxTextureUnits = 32;
@@ -124,13 +113,11 @@ void SpirvHelper::SetupResources(TBuiltInResource& resources) {
   resources.limits.generalSamplerIndexing = 1;
   resources.limits.generalVariableIndexing = 1;
   resources.limits.generalConstantMatrixVectorIndexing = 1;
-#endif
 }
 
 std::vector<PD::u32> SpirvHelper::GLSL2SPV(Stage stage, const char* code,
                                            bool vulkan_mode) {
   std::vector<PD::u32> spv;
-#if defined(PD_INCLUDE_GLSLANG)
   EShLanguage estage = static_cast<EShLanguage>(stage);
   glslang::TShader shader(estage);
   glslang::TProgram program;
@@ -161,7 +148,6 @@ std::vector<PD::u32> SpirvHelper::GLSL2SPV(Stage stage, const char* code,
   }
 
   glslang::GlslangToSpv(*program.getIntermediate(estage), spv);
-#endif
   return spv;
 }
 
@@ -200,7 +186,6 @@ std::string SpirvHelper::SPV2HLSL(const std::vector<PD::u32>& spirv,
 }
 }  // namespace PD
 #else
-struct TBuiltInResource {};
 namespace PD {
 void SpirvHelper::Init() { glslang::InitializeProcess(); }
 void SpirvHelper::Finalize() { glslang::FinalizeProcess(); }

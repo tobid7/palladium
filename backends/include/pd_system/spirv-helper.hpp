@@ -1,8 +1,10 @@
 #pragma once
 
+#include <glslang/Public/ResourceLimits.h>
+#include <glslang/Public/ShaderLang.h>
+
 #include <pd/common.hpp>
 
-struct TBuiltInResource;
 namespace PD {
 class SpirvHelper {
  public:
