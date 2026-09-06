@@ -98,8 +98,6 @@ enum Gamepad : GamepadKey {
   ZL = 1 << 20,              ///< ZL
   ZR = 1 << 21,              ///< ZR
   Touch = 1 << 22,           ///< Touch
-  LStick = 1 << 23,          ///< Left Stick
-  RStick = 1 << 24,          ///< Right Stick
   Up = DUp | CPUp,           ///< DPad or CPad Up
   Down = DDown | CPDown,     ///< DPad or CPad Down
   Left = DLeft | CPLeft,     ///< DPad or CPad Left
