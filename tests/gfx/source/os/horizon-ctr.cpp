@@ -43,7 +43,7 @@ void HorizonCtr::Init() {
   C3D_RenderTargetSetOutput(impl->Bottom, GFX_BOTTOM, GFX_LEFT,
                             DisplayTransferFlags);
   PD::Gfx::UseDriver<PD::GfxCitro3D>();
-  PD::Hid::UseDriver<PD::Hid3DS>();
+  PD::Hid::UseDriver<PD::HidDriver>();
 }
 
 void HorizonCtr::Deinit() {

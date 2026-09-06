@@ -65,7 +65,7 @@ HidGlfw::HidGlfw(GLFWwindow* win) : HidDriver("HidGlfw") {
   }
 }
 
-HidGlfw::~HidGlfw() { delete impl; }
+HidGlfw::~HidGlfw() {}
 
 void HidGlfw::Update() {
   HidDriver::Update();  // clear stats
