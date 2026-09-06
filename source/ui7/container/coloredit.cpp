@@ -62,7 +62,6 @@ PD_API void ColorEdit::Draw() {
       l->PathRect(thiz->GetPos(), thiz->GetPos() + thiz->GetSize(),
                   io->FrameRounding);
       l->PathFill(io->Theme.Get(UI7Color_FrameBackground));
-      l->SetLayer(0);
     });
     layout->AddObjectEx(r, UI7LytAdd_Front | UI7LytAdd_NoCursorUpdate |
                                UI7LytAdd_NoScrollHandle);
@@ -88,9 +87,7 @@ PD_API void ColorEdit::Draw() {
     layout->Slider<u8>("B", ((u8*)color_ref) + 2);
     layout->Slider<u8>("A", ((u8*)color_ref) + 3);
     layout->Update();
-    list->SetLayer(50);
     list->Merge(layout->GetDrawList());
-    list->SetLayer(0);
     // io->RegisterDrawList(GetID(), layout->GetDrawList());
   }
 }

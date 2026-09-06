@@ -224,7 +224,6 @@ PD_API void Menu::DrawBaseLayout() {
         l->PathAdd(self->FinalPos() + self->GetSize());
         l->PathAdd(self->FinalPos() + self->GetSize() - fvec2(20, 0));
         l->PathFill(io->Theme.Get(UI7Color_Button));
-        l->SetLayer(0);
       });
       r->SetSize(
           fvec2(pLayout.GetSize().x, pLayout.GetSize().y - TitleBarHeight));
@@ -269,7 +268,6 @@ PD_API void Menu::DrawBaseLayout() {
                                        (io->FramePadding.x * 2)),
                                 2),
                       pID.GetName().c_str(), io->Theme.Get(UI7Color_Text));
-          l->SetLayer(0);
         });
     r->SetSize(fvec2(pLayout.GetSize().x, TitleBarHeight));
     r->SetPos(0);
@@ -292,7 +290,6 @@ PD_API void Menu::DrawBaseLayout() {
             self->FinalPos() +
                 fvec2(pIsOpen ? self->GetSize().x * 0.5 : 0, self->GetSize().y),
             io->Theme.Get(UI7Color_FrameBackground));
-        l->SetLayer(0);
       });
       r->SetSize(TitleBarHeight - pIO.FramePadding.y * 2);
       r->SetPos(pIO.FramePadding);
