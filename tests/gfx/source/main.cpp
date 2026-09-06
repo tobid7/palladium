@@ -1,4 +1,4 @@
-#if defined(__3DS__)
+#ifdef __3DS__
 #include <3ds.h>
 #include <citro3d.h>
 const u32 DisplayTransferFlags =
@@ -6,22 +6,6 @@ const u32 DisplayTransferFlags =
      GX_TRANSFER_RAW_COPY(0) | GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGBA8) |
      GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB8) |
      GX_TRANSFER_SCALING(GX_TRANSFER_SCALE_NO));
-#elif defined(__SWITCH__)
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
-#include <glad/glad.h>
-#include <stdio.h>
-#include <switch.h>
-
-static void errorCallback(int errorCode, const char* description) {
-  printf("Glfw Error %d: %s\n", errorCode, description);
-}
-
-#define PASSERT(x)                             \
-  if (!x) {                                    \
-    printf("%s: %s", __PRETTY_FUNCTION__, #x); \
-    exit(0);                                   \
-  }
 #else
 #include <glad/glad.h>
 //////////////////////////
@@ -60,32 +44,7 @@ class App {
  public:
   App(Driver d = Driver::OpenGL3) : pDriver(d) {
     PD::Os::UseDriver<PD::OsDriver>();
-#if defined(__3DS__)
-    romfsInit();
-    gfxInitDefault();
-    consoleInit(GFX_BOTTOM, nullptr);
-    C3D_Init(C3D_DEFAULT_CMDBUF_SIZE);
-    Top =
-        C3D_RenderTargetCreate(240, 400, GPU_RB_RGBA8, GPU_RB_DEPTH24_STENCIL8);
-    Bottom =
-        C3D_RenderTargetCreate(240, 320, GPU_RB_RGBA8, GPU_RB_DEPTH24_STENCIL8);
-    C3D_RenderTargetSetOutput(Top, GFX_TOP, GFX_LEFT, DisplayTransferFlags);
-    C3D_RenderTargetSetOutput(Bottom, GFX_BOTTOM, GFX_LEFT,
-                              DisplayTransferFlags);
-    PD::Gfx::UseDriver<PD::GfxCitro3D>();
-#elif defined(__SWITCH__)
-    PASSERT(glfwInit());
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    window =
-        glfwCreateWindow(1280, 720, "gfx_test (OpenGL3)", nullptr, nullptr);
-    PASSERT(window);
-    glfwMakeContextCurrent(window);
-    PASSERT(gladLoadGL());
-    glfwSwapInterval(1);
-    PD::Gfx::UseDriver<PD::GfxOpenGL3>();
-#else
+#ifndef __3DS__
     glfwInit();
     std::string winname = "gfx_test";
     if (d == Driver::OpenGL2) {
@@ -135,10 +94,22 @@ class App {
     }
 #endif
     glfwSwapInterval(1);
+#else
+    gfxInitDefault();
+    consoleInit(GFX_BOTTOM, nullptr);
+    C3D_Init(C3D_DEFAULT_CMDBUF_SIZE);
+    Top =
+        C3D_RenderTargetCreate(240, 400, GPU_RB_RGBA8, GPU_RB_DEPTH24_STENCIL8);
+    Bottom =
+        C3D_RenderTargetCreate(240, 320, GPU_RB_RGBA8, GPU_RB_DEPTH24_STENCIL8);
+    C3D_RenderTargetSetOutput(Top, GFX_TOP, GFX_LEFT, DisplayTransferFlags);
+    C3D_RenderTargetSetOutput(Bottom, GFX_BOTTOM, GFX_LEFT,
+                              DisplayTransferFlags);
+    PD::Gfx::UseDriver<PD::GfxCitro3D>();
 #endif
     PD::Gfx::Init();
-#if defined(__3DS__) || defined(__SWITCH__)
-    pTex = LoadTex("romfs:/icon.png");
+#ifdef __3DS__
+    pTex = LoadTex("sdmc:/icon.png");
 #else
     pTex = LoadTex("icon.png");
 #endif
@@ -153,30 +124,19 @@ class App {
   ~App() {
     PD::Gfx::DeleteTexture(pTex);
     PD::Gfx::Deinit();
-#if !defined(__3DS__)
+#ifndef __3DS__
+    glfwDestroyWindow(window);
     glfwTerminate();
 #endif
   }
 
   void Run() {
-#if defined(__3DS__)
+#ifdef __3DS__
     while (aptMainLoop()) {
       PD::Gfx::SetViewPort(400, 240);
       C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
       C3D_FrameDrawOn(Top);
       C3D_RenderTargetClear(Top, C3D_CLEAR_ALL, PD::Color(25, 25, 25, 25), 0);
-#elif defined(__SWITCH__)
-    while (!glfwWindowShouldClose(window)) {
-      GLFWgamepadstate _gs;
-      if (glfwGetGamepadState(GLFW_JOYSTICK_1, &_gs)) {
-        if (_gs.buttons[GLFW_GAMEPAD_BUTTON_START] == GLFW_PRESS) {
-          glfwSetWindowShouldClose(window, GLFW_TRUE);
-        }
-      }
-      PD::Gfx::SetViewPort(1280, 720);
-      glClearColor(0.1, 0.1, 0.1, 0.1);
-      glClear(GL_COLOR_BUFFER_BIT);
-      glViewport(0, 0, 1280, 720);
 #else
     while (!glfwWindowShouldClose(window)) {
       int ww, wh;
@@ -199,7 +159,7 @@ class App {
       PD::Gfx::Reset();
 
       PD::Gfx::Draw(pList);
-#if defined(__3DS__)
+#ifdef __3DS__
       C3D_FrameEnd(0);
 #else
       glfwPollEvents();
@@ -218,7 +178,7 @@ class App {
   }
 
  private:
-#if defined(__3DS__)
+#ifdef __3DS__
   C3D_RenderTarget* Top = nullptr;
   C3D_RenderTarget* Bottom = nullptr;
 #else
@@ -234,13 +194,6 @@ class App {
 };
 
 int main(int argc, char** argv) {
-#if defined(__SWITCH__)
-  socketInitializeDefault();
-  nxlinkStdio();
-  romfsInit();
-  printf("Starting Palladium GFX Tests...\n");
-  glfwSetErrorCallback(errorCallback);
-#endif
   Driver drv = Driver::OpenGL3;
   if (argc == 2) {
     if (std::string(argv[1]) == "gl2") {
@@ -251,8 +204,7 @@ int main(int argc, char** argv) {
       drv = Driver::DirectX9;
     }
   }
-  App* app = new App(drv);
-  app->Run();
-  delete app;
+  App app(drv);
+  app.Run();
   return 0;
 }
