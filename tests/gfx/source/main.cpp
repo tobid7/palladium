@@ -2,8 +2,6 @@
 #include <os/horizon-ctr.hpp>
 #include <os/horizon-nx.hpp>
 #include <palladium>
-#include <thread>
-#include <future>
 
 ////
 #include <pd/ultra/elems/button.hpp>
@@ -193,10 +191,7 @@ int main(int argc, char** argv) {
   PD::Image img(ResourcePath("icon.png"));
   auto pTex = PD::Gfx::LoadTexture(img, img.Width(), img.Height());
   PD::Li::Font font;
-  std::future<void> __f = std::async(std::launch::async, [&]() {
-    font.LoadTTF(ResourcePath("default.ttf"), 32,
-                 LiFontFlags_SDF | LiFontFlags_Monospace);
-  });
+  font.LoadTTF(ResourcePath("default.ttf"), 64);
   pList.SetFont(&font);
   App app(font);
   Cursor LeftStick;
