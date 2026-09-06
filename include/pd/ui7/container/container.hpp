@@ -155,11 +155,11 @@ class PD_API Container {
   /** Container Size*/
   fvec2 size;
   /** Reference to the Drawlist to Draw to*/
-  Li::Drawlist* list = nullptr;
+  Li::Drawlist* list;
   /** IO Reference for Renderer and Theme */
-  UI7::IO* io = nullptr;
+  UI7::IO* io;
   /** Reference to the parent container*/
-  Container* parent = nullptr;
+  Container* parent;
   /** Object ID (0 if unused)*/
   u32 id = 0;
   /** Internal Flags */
