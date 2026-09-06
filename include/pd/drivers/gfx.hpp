@@ -3,6 +3,7 @@
 #include <pd/core/mat.hpp>
 #include <pd/drivers/interface.hpp>
 #include <pd/lithium/command.hpp>
+#include <pd/lithium/pools.hpp>
 #include <pd/lithium/texture.hpp>
 
 using PDGfxBackendFlags = PD::u32;
@@ -45,17 +46,6 @@ class PD_API GfxDriver : public DriverInterface {
   size_t GetNumIndices() const { return CountIndices; }
   size_t GetNumDrawcalls() const { return CountDrawcalls; }
   size_t GetNumCommands() const { return CountCommands; }
-
-  // Global Pool Interface
-  virtual size_t AllocateVertices(size_t count, PD::ptr accessor) = 0;
-  virtual size_t AllocateIndices(size_t count, PD::ptr accessor) = 0;
-  virtual bool ExpandVertices(size_t count, PD::ptr accessor) = 0;
-  virtual bool ExpandIndices(size_t count, PD::ptr accessor) = 0;
-  virtual void PutVertex(size_t loc, const Li::Vertex& vtx,
-                         PD::ptr accessor) = 0;
-  virtual void PutIndex(size_t loc, u16 idx, PD::ptr accessor) = 0;
-  virtual const Li::Vertex& GetVertex(size_t loc) const = 0;
-  virtual const u16& GetIndex(size_t loc) const = 0;
 
  protected:
   virtual void SysDeinit() {}
@@ -115,60 +105,27 @@ class GfxDriverBase : public GfxDriver {
       if (!CurrentTex) {
         CurrentTex = pWhite.GetID();
       }
-      size_t startidx = commands[index].FirstIndex;
-      size_t num_indices = 0;
+      size_t startidx = CurrentIndex;
       while (index < commands.size() &&
              (CurrentTex == commands[index].Tex ||
               (CurrentTex == pWhite.GetID() && commands[index].Tex == 0))) {
-        num_indices += commands[index].IndexCount;
+        const auto& c = commands[index];
+        auto pIdx = pIdxPool.Allocate(c.IndexCount);
+        auto pVtx = pVtxPool.Allocate(c.VertexCount);
+        for (size_t i = 0; i < c.IndexCount; i++) {
+          pIdx[i] = CurrentVertex + Li::GetIndex(c.FirstIndex + i);
+        }
+        CurrentIndex += c.IndexCount;
+        CurrentVertex += c.VertexCount;
+        for (size_t i = 0; i < c.VertexCount; i++) {
+          pVtx[i] = Li::GetVertex(c.FirstVertex + i);
+        }
         index++;
       }
-      Submit(num_indices, startidx);
+      Submit(CurrentIndex - startidx, startidx);
       pCountDrawcalls++;
     }
   }
-
-  size_t AllocateVertices(size_t count, PD::ptr accessor) override {
-    pVertexAccessor = accessor;
-    size_t loc = pVtxPool.size();
-    pVtxPool.Allocate(count);
-    return loc;
-  }
-
-  size_t AllocateIndices(size_t count, PD::ptr accessor) override {
-    pIndexAccessor = accessor;
-    size_t loc = pIdxPool.size();
-    pIdxPool.Allocate(count);
-    return loc;
-  }
-
-  bool ExpandVertices(size_t count, PD::ptr accessor) override {
-    if (pVertexAccessor != accessor) return false;
-    pVtxPool.Allocate(count);
-    return true;
-  }
-
-  bool ExpandIndices(size_t count, PD::ptr accessor) override {
-    if (pIndexAccessor != accessor) return false;
-    pIdxPool.Allocate(count);
-    return true;
-  }
-
-  void PutVertex(size_t loc, const Li::Vertex& vtx, PD::ptr accessor) override {
-    if (pVertexAccessor != accessor) return;
-    pVtxPool.Put(loc, vtx);
-  }
-
-  void PutIndex(size_t loc, u16 idx, PD::ptr accessor) override {
-    if (pIndexAccessor != accessor) return;
-    pIdxPool.Put(loc, idx);
-  }
-
-  const Li::Vertex& GetVertex(size_t loc) const override {
-    return pVtxPool[loc];
-  }
-
-  const u16& GetIndex(size_t loc) const override { return pIdxPool[loc]; }
 
  protected:
   u16* GetIndexBufPtr(size_t start) { return &pIdxPool[start]; }
@@ -176,15 +133,13 @@ class GfxDriverBase : public GfxDriver {
   size_t GetVertexPoolSize() const { return pVtxPool.size(); }
   size_t GetIndexPoolSize() const { return pIdxPool.size(); }
   void ResetPools() override {
-    pVtxPool.NoReset();
-    pIdxPool.NoReset();
+    pVtxPool.ResetFast();
+    pIdxPool.ResetFast();
   }
 
  private:
   VtxPool pVtxPool;
   IdxPool pIdxPool;
-  PD::ptr pVertexAccessor = 0;
-  PD::ptr pIndexAccessor = 0;
 };
 
 class PD_API Gfx {
@@ -227,37 +182,6 @@ class PD_API Gfx {
   static size_t GetNumIndices() { return driver->GetNumIndices(); }
   static size_t GetNumDrawcalls() { return driver->GetNumDrawcalls(); }
   static size_t GetNumCommands() { return driver->GetNumCommands(); }
-
-  // Gloabal Pool Interface
-  static size_t AllocateVertices(size_t count, PD::ptr accessor) {
-    return driver->AllocateVertices(count, accessor);
-  }
-
-  static size_t AllocateIndices(size_t count, PD::ptr accessor) {
-    return driver->AllocateIndices(count, accessor);
-  }
-
-  static bool ExpandVertices(size_t count, PD::ptr accessor) {
-    return driver->ExpandVertices(count, accessor);
-  }
-
-  static bool ExpandIndices(size_t count, PD::ptr accessor) {
-    return driver->ExpandIndices(count, accessor);
-  }
-
-  static void PutVertex(size_t loc, const Li::Vertex& vtx, PD::ptr accessor) {
-    driver->PutVertex(loc, vtx, accessor);
-  }
-
-  static void PutIndex(size_t loc, u16 idx, PD::ptr accessor) {
-    driver->PutIndex(loc, idx, accessor);
-  }
-
-  static const Li::Vertex& GetVertex(size_t loc) {
-    return driver->GetVertex(loc);
-  }
-
-  static const u16& GetIndex(size_t loc) { return driver->GetIndex(loc); }
 
  private:
   static std::unique_ptr<GfxDriver> driver;
