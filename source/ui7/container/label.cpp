@@ -28,6 +28,7 @@ namespace UI7 {
 PD_API void Label::Draw() {
   // Assert(io.get() && list.get(), "Did you run Container::Init correctly?");
   // io->Ren->OnScreen(screen);
+  list->SetFont(GetFont());
   list->DrawTextEx(FinalPos(), label.c_str(), io->Theme.Get(UI7Color_Text),
                    LiTextFlags_NoOOS,
                    PD::fvec2(0, io->CurrentViewPort.pSize.w));

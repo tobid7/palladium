@@ -44,6 +44,7 @@ PD_API void ColorEdit::HandleInput() {
 PD_API void ColorEdit::Draw() {
   // Assert(io.get() && list.get(), "Did you run Container::Init correctly?");
   // io->Ren->OnScreen(screen);
+  list->SetFont(GetFont());
   list->PathRect(FinalPos(), FinalPos() + io->ItemRowHeight, io->FrameRounding);
   list->PathFill(*color_ref);
   list->DrawText(FinalPos() + fvec2(io->ItemSpace.x + io->ItemRowHeight, 0),
@@ -55,6 +56,7 @@ PD_API void ColorEdit::Draw() {
     layout->SetPosition(FinalPos());
     DynObj* r = io->DynObjPool.Allocate();
     *r = UI7::DynObj([=, this](UI7::IO* io, Li::Drawlist* l, Container* thiz) {
+      list->SetFont(thiz->GetFont());
       thiz->SetSize(layout->GetSize());
       // l->Layer(30);
       l->PathRect(thiz->GetPos(), thiz->GetPos() + thiz->GetSize(),
@@ -65,6 +67,7 @@ PD_API void ColorEdit::Draw() {
                                UI7LytAdd_NoScrollHandle);
     r = io->DynObjPool.Allocate();
     *r = UI7::DynObj([=, this](UI7::IO* io, Li::Drawlist* l, Container* thiz) {
+      list->SetFont(thiz->GetFont());
       l->PathRect(thiz->FinalPos(), thiz->FinalPos() + io->ItemRowHeight,
                   io->FrameRounding);
       l->PathFill(*color_ref);
