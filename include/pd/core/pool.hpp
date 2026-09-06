@@ -8,7 +8,7 @@ class Pool {
  public:
   using value_type = T;
   using iterator = T*;
-  using const_iterator = const T*;
+  using const_iterator = const iterator*;
 
   Pool() = default;
   ~Pool() {
@@ -36,34 +36,21 @@ class Pool {
   Pool& operator=(Pool&&) = delete;
 
   T* Allocate(size_t num = 1) {
-    ExpandIf(num);
+    if (CheckLimits(num)) return nullptr;
     T* ret = &pData[pPos];
     pPos += num;
     return ret;
   }
 
-  void Push(const T& elem) {
-    T* e = Allocate(1);
-    *e = elem;
-  }
-
-  void ExpandIf(size_t req) {
-    if ((pPos + req) <= pCap) return;
-    size_t ncap = std::max(pCap * 2, pPos + req);
-    T* nu = pAlloc.allocate(ncap);
-    if (pData) {
-      for (size_t i = 0; i < pPos; i++) {
-        std::allocator_traits<Alloc>::construct(
-            pAlloc, &nu[i], std::move_if_noexcept(pData[i]));
-      }
-      pAlloc.deallocate(pData, pCap);
+  bool CheckLimits(size_t num) {
+    if ((pPos + num) >= pCap) {
+      throw std::runtime_error(
+          std::format("[PD::Pool]: Trying to allocate {} elements but this is "
+                      "going out of range ({}/{})",
+                      num, pPos + num, pCap));
+      return true;
     }
-    for (size_t i = pPos; i < ncap; i++) {
-        std::allocator_traits<Alloc>::construct(pAlloc, &nu[i]);
-      }
-    PDLOG("Pool::ExpandIf({}): {} -> {}", req, pCap, ncap);
-    pData = nu;
-    pCap = ncap;
+    return false;
   }
 
   void Reset() {
@@ -80,10 +67,6 @@ class Pool {
   size_t capacity() const { return pCap; }
   T& at(size_t idx) { return pData[idx]; }
   const T& at(size_t idx) const { return pData[idx]; }
-  iterator begin() { return pData; }
-  iterator end() { return pData + pPos; }
-  const_iterator begin() const { return pData; }
-  const_iterator end() const { return pData + pPos; }
 
   T& operator[](size_t idx) { return at(idx); }
   const T& operator[](size_t idx) const { return at(idx); }
