@@ -4,11 +4,9 @@
 #include <palladium>
 
 ////
-#include <pd/ultra/elems/image.hpp>
 #include <pd/ultra/elems/rect.hpp>
 #include <pd/ultra/elems/text.hpp>
 #include <pd/ultra/layout.hpp>
-
 ////
 
 PD::OsCtx* pOs = nullptr;
@@ -67,18 +65,15 @@ int main(int argc, char** argv) {
   PD::Ultra::Layout lyt;
   lyt.GetCanvas().SetVirtualViewport(PD::fvec2(400, 240));
   lyt.SetFont(font);
-  PD::Ultra::Rect rr(
-      0, 0, 90, 60, PD::Color("#ffff00"), 12.f,
-      UltraAlignment_CenterHorizontal | UltraAlignment_CenterVertical);
+  PD::Ultra::Rect rr;
   PD::Ultra::Text txt;
-  PD::Ultra::Image _img(&pTex, 10, 10, 5.f, UltraAlignment_BotRight);
-  _img.SetSize(90);  // Override size
+  rr.SetPosition(12, 20);
+  rr.SetSize(90, 60);
+  rr.SetColor(PD::Color("#ff00ff"));
   lyt.Add(rr);
-  lyt.Add(_img);
   txt.SetPosition(0);
   txt.SetColor(0xffffffff);
   txt.SetText("const std::string &text");
-  txt.SetAlignment(UltraAlignment_TopLeft);
   lyt.Add(txt);
   while (pOs->Mainloop()) {
     lyt.GetCanvas().SetViewport(pOs->GetViewport());
