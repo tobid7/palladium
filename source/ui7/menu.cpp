@@ -147,6 +147,45 @@ PD_API void Menu::HandleFocus() {
   }
 }
 
+/** Todo: (func name is self describing) */
+PD_API void Menu::HandleScrolling() {
+  if (Flags & UI7MenuFlags_VtScrolling) {
+    bool allowed =
+        pLayout.MaxPosition.y > (pLayout.WorkRect.w - pLayout.WorkRect.y);
+    if (allowed) {
+      if (PD::Hid::IsEvent(Hid::Event::Down, PD::Hid::Gamepad::Touch)) {
+        pLayout.ScrollStart = pLayout.ScrollOffset;
+      }
+      if (pIO.InputHandler.DragObject(
+              "sbg" + pID.GetName(),
+              fvec4(pLayout.Pos, fvec2(0.f)) + pLayout.WorkRect)) {
+        if (pIO.InputHandler.DragReleasedAW) {
+        } else {
+          pLayout.ScrollOffset.y = std::clamp(
+              pLayout.ScrollStart.y + pIO.InputHandler.DragSourcePos.y -
+                  pIO.InputHandler.DragPosition.y,
+              -20.f, pLayout.MaxPosition.y - 220);
+        }
+      }
+    } else {
+      pLayout.ScrollOffset.y = 0.f;
+    }
+
+    if (pLayout.ScrollOffset.y > pLayout.MaxPosition.y - 240) {
+      pLayout.ScrollOffset.y -= 1.5;
+      if (pLayout.ScrollOffset.y < pLayout.MaxPosition.y - 240) {
+        pLayout.ScrollOffset.y = pLayout.MaxPosition.y - 240;
+      }
+    }
+    if (pLayout.ScrollOffset.y < 0) {
+      pLayout.ScrollOffset.y += 1.5;
+      if (pLayout.ScrollOffset.y > 0) {
+        pLayout.ScrollOffset.y = 0;
+      }
+    }
+  }
+}
+
 PD_API void Menu::HandleTitlebarActions() {
   // Collapse
   if (!(Flags & UI7MenuFlags_NoCollapse)) {
@@ -319,10 +358,6 @@ PD_API void Menu::Update() {
   if (pLayout.Size == fvec2(0.f) || Flags & UI7MenuFlags_AlwaysAutoSize) {
     pLayout.Size = fvec2(pLayout.MaxPosition) + pIO.MenuPadding * 2;
   }
-  if (Flags & UI7MenuFlags_VtScrolling)
-    pLayout.Flags |= UI7LayoutFlags_VtScrolling;
-  if (Flags & UI7MenuFlags_HzScrolling)
-    pLayout.Flags |= UI7LayoutFlags_HzScrolling;
   if (!(Flags & UI7MenuFlags_NoTitlebar)) {
     TitleBarHeight = pIO.FontScale * pIO.Font->PixelHeight + pIO.MenuPadding.y;
     pLayout.WorkRect.y = 5.f + TitleBarHeight;
@@ -333,6 +368,9 @@ PD_API void Menu::Update() {
   }
   DrawBaseLayout();
   pLayout.Update();
+  if (Flags & UI7MenuFlags_VtScrolling || Flags & UI7MenuFlags_HzScrolling) {
+    HandleScrolling();
+  }
 }
 
 PD_API bool Menu::BeginTreeNode(const ID& id) {

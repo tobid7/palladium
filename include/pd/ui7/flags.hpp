@@ -58,8 +58,6 @@ enum UI7MenuFlags_ {
 enum UI7LayoutFlags_ {
   UI7LayoutFlags_None = 0,              ///< No Flags used
   UI7LayoutFlags_UseClipRect = 1 << 0,  ///< Enable ClipRect
-  UI7LayoutFlags_HzScrolling = 1 << 1,  ///< Scrolling Horizontal
-  UI7LayoutFlags_VtScrolling = 1 << 2,  ///< Scrolling Vertical
 };
 
 /** UI7 Context Flags */

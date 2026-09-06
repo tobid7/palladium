@@ -110,6 +110,7 @@ class PD_API Menu {
   void EndTreeNode();
 
   void HandleFocus();
+  void HandleScrolling();
   void HandleTitlebarActions();
   void DrawBaseLayout();
 
