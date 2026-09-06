@@ -16,7 +16,6 @@ const char* ResourcePath(const char* in) {
 }
 
 int main(int argc, char** argv) {
-  PD::LogFilter(PD::LogLevel::Warning);
   Driver drv = Driver::OpenGL3;
   if (argc == 2) {
     if (std::string(argv[1]) == "gl2") {
@@ -37,22 +36,16 @@ int main(int argc, char** argv) {
   pOs->Init();
   PD::Gfx::Init();
   PD::Li::Drawlist pList;
-  PD::Image img(ResourcePath("icon.png"));
-  auto pTex = PD::Gfx::LoadTexture(img, img.Width(), img.Height());
   while (pOs->Mainloop()) {
     pOs->ClearViewPort();
     PD::Li::ResetPools();
     pList.PathRect(pOs->SizeTranslate(0.05), pOs->SizeTranslate(0.4f), 10.f);
     pList.PathFill(0xff00ffff);
-    pList.BindTexture(pTex);
-    pList.DrawRectFilled(pOs->SizeTranslate(PD::fvec2(0.02f, 0.5f)),
-                         pOs->SizeTranslate(PD::fvec2(0.14, 0.3)), 0xffffffff);
     PD::Gfx::Reset();
     PD::Gfx::Draw(pList);
     pList.Clear();
     pOs->SwapBuffers();
   }
-  PD::Gfx::DeleteTexture(pTex);
   PD::Gfx::Deinit();
   pOs->Deinit();
   delete pOs;

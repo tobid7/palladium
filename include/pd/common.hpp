@@ -44,7 +44,6 @@ SOFTWARE.
 
 namespace PD {
 enum class LogLevel {
-  None,
   Info,
   Warning,
   Error,
@@ -57,7 +56,6 @@ using u16 = unsigned short;
 using u32 = unsigned int;
 using u64 = unsigned long long;
 using ptr = uintptr_t;
-PD_API void LogFilter(LogLevel minimum);
 PD_API void Log(const std::string& txt, LogLevel lvl = LogLevel::Info);
 template <typename... Args>
 void Log(std::format_string<Args...> fmt, Args&&... args) {
