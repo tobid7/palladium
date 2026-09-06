@@ -143,8 +143,11 @@ PD_API void Context::Update() {
     pMenus[it]->Update(); /** Render */
     this->pIO.InputHandler.CurrentMenu = 0;
   }
+  int base_layer = 0;
   for (int i = (int)FinalList.size() - 1; i >= 0; i--) {
+    pIO.FDL.SetLayer(base_layer);
     pIO.FDL.Merge(pMenus[FinalList[i]]->pLayout.GetDrawList());
+    base_layer += 100;
   }
   pCurrentMenus.clear();
   pIO.Update();
