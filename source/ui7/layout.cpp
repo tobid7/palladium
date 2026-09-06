@@ -26,15 +26,6 @@ SOFTWARE.
 
 namespace PD {
 namespace UI7 {
-
-PD_API Layout::~Layout() {
-  // We all love managing memory i guess
-  for (Container* obj : IDObjects) {
-    delete obj;
-  }
-  IDObjects.clear();
-}
-
 PD_API void Layout::CursorInit() { Cursor = fvec2(WorkRect.x, WorkRect.y); }
 
 PD_API void Layout::SameLine() {
@@ -145,7 +136,6 @@ PD_API void Layout::Update() {
 
   for (auto it = IDObjects.begin(); it != IDObjects.end();) {
     if ((*it)->Removable()) {
-      delete *it;
       it = IDObjects.erase(it);
     } else {
       it++;

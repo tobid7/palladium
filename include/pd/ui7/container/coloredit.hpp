@@ -47,9 +47,7 @@ class PD_API ColorEdit : public Container {
     this->initial_color = *color;
     this->tdim = io.Font->GetTextBounds(label.c_str(), io.FontScale);
   }
-  ~ColorEdit() {
-    if (layout) delete layout;
-  }
+  ~ColorEdit() = default;
 
   /**
    * Override for the Input Handler
