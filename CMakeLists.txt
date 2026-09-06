@@ -50,12 +50,6 @@ set(PD_SOURCES
 	source/lithium/font.cpp
 	source/lithium/math.cpp
 	source/lithium/pools.cpp
-
-	# Ultra
-	source/ultra/canvas.cpp
-	source/ultra/layout.cpp
-	source/ultra/elems/rect.cpp
-	source/ultra/elems/text.cpp
 )
 
 if(${PD_BUILD_SHARED})
