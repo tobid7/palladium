@@ -3,7 +3,6 @@
 #include <pd/core/mat.hpp>
 #include <pd/drivers/interface.hpp>
 #include <pd/lithium/command.hpp>
-#include <pd/lithium/pools.hpp>
 #include <pd/lithium/texture.hpp>
 
 using PDBackendFlags = PD::u32;
@@ -106,12 +105,12 @@ class GfxDriverBase : public GfxDriver {
         auto pIdx = pIdxPool.Allocate(c.IndexCount);
         auto pVtx = pVtxPool.Allocate(c.VertexCount);
         for (size_t i = 0; i < c.IndexCount; i++) {
-          pIdx[i] = CurrentVertex + Li::GetIndex(c.FirstIndex + i);
+          pIdx[i] = CurrentVertex + c.FirstIndex[i];
         }
         CurrentIndex += c.IndexCount;
         CurrentVertex += c.VertexCount;
         for (size_t i = 0; i < c.VertexCount; i++) {
-          pVtx[i] = Li::GetVertex(c.FirstVertex + i);
+          pVtx[i] = c.FirstVertex[i];
         }
         index++;
       }
@@ -125,8 +124,8 @@ class GfxDriverBase : public GfxDriver {
   size_t GetVertexPoolSize() const { return pVtxPool.size(); }
   size_t GetIndexPoolSize() const { return pIdxPool.size(); }
   void ResetPools() override {
-    pVtxPool.ResetFast();
-    pIdxPool.ResetFast();
+    pVtxPool.Reset();
+    pIdxPool.Reset();
   }
 
  private:

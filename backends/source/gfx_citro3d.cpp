@@ -236,7 +236,7 @@ void GfxCitro3D::DeleteTexture(const Li::Texture& tex) {
 #else
 namespace PD {
 void GfxCitro3D::SysInit() {
-  PDERR(
+  PDLOG(
       "GfxCitro3D::SysInit: Citro3D Driver is not included in "
       "palladium-system");
 }

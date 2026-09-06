@@ -145,7 +145,7 @@ class App {
     pList.DrawRectFilled(0, 50, 0xff00ffff);
     pList.BindTexture(pTex);
     pList.DrawRectFilled(50, pTex.GetSize(), 0xffffffff);
-    pList.DrawCircleFilled(PD::fvec2(700, 500), 100, 0xffffffff, 50);
+    pList.DrawCircleFilled(500, 100, 0xffffffff, 50);
     // pList.PathRect(300, 700, 40.f);
     //  pList.PathFill(0xffffffff);
     std::cout << "GfxDriver: " << PD::Gfx::GetDriverName() << std::endl;

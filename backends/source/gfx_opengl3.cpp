@@ -52,6 +52,10 @@ void GfxOpenGL3::SysInit() {
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
   glBindVertexArray(0);
+  PDLOG(
+      "GfxOpenGL3::SysInit():\n  pShader = {}\n  pLocTex = {}\n  pLocAlfa = "
+      "{}\n  pLocProjection = {}\n  VBO = {}\n  IBO = {}, VAO = {}",
+      pShader, pLocTex, pLocAlfa, pLocProjection, VBO, IBO, VAO);
 }
 
 void GfxOpenGL3::SysDeinit() {
@@ -138,7 +142,7 @@ void GfxOpenGL3::DeleteTexture(const Li::Texture& tex) {
 #else
 namespace PD {
 void GfxOpenGL3::SysInit() {
-  PDERR(
+  PDLOG(
       "GfxOpenGL3::SysInit: OpenGL3 Driver is not included in "
       "palladium-system");
 }
