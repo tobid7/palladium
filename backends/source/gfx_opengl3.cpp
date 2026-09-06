@@ -80,7 +80,7 @@ void GfxOpenGL3::BindTexture(TextureID id) {
   glUniform1i(pLocTex, 0);
   GLint fmt = 0;
   glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_INTERNAL_FORMAT, &fmt);
-  glUniform1i(pLocAlfa, fmt == GL_R8);
+  glUniform1i(pLocAlfa, fmt == GL_ALPHA);
 }
 
 void GfxOpenGL3::SysReset() {
@@ -104,23 +104,13 @@ Li::Texture GfxOpenGL3::LoadTexture(const std::vector<PD::u8>& pixels, int w,
 
   // Set base format (Always using RGBA as base)
   GLenum fmt = GL_RGBA;
-  GLenum ifmt = GL_RGBA8;
   if (type == TextureFormat::RGB24) {
-    ifmt = GL_RGB8;
     fmt = GL_RGB;
   } else if (type == TextureFormat::A8) {
-    ifmt = GL_R8;
-    fmt = GL_RED;
+    fmt = GL_ALPHA;
   }
-  glTexImage2D(GL_TEXTURE_2D, 0, ifmt, w, h, 0, fmt, GL_UNSIGNED_BYTE,
+  glTexImage2D(GL_TEXTURE_2D, 0, fmt, w, h, 0, fmt, GL_UNSIGNED_BYTE,
                pixels.data());
-
-  if (type == TextureFormat::A8) {
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_A, GL_RED);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R, GL_ONE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_G, GL_ONE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B, GL_ONE);
-  }
   if (filter == TextureFilter::Linear) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
