@@ -33,7 +33,7 @@ void HorizonCtr::Init() {
   romfsInit();
   osSetSpeedupEnable(true);
   gfxInitDefault();
-  // consoleInit(GFX_BOTTOM, nullptr);
+  consoleInit(GFX_BOTTOM, nullptr);
   C3D_Init(C3D_DEFAULT_CMDBUF_SIZE);
   impl->Top =
       C3D_RenderTargetCreate(240, 400, GPU_RB_RGBA8, GPU_RB_DEPTH24_STENCIL8);
@@ -63,12 +63,12 @@ bool HorizonCtr::Mainloop() {
   pViewPort = ivec2(400, 240);
   hidScanInput();
   bool _kill = hidKeysUp() & KEY_START;
-  C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
   return aptMainLoop() && !_kill;
 }
 
 void HorizonCtr::ClearViewPort() {
   PD::Gfx::SetViewPort(pViewPort);
+  C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
   C3D_FrameDrawOn(impl->Top);
   C3D_RenderTargetClear(impl->Top, C3D_CLEAR_ALL, PD::Color(25, 25, 25, 25), 0);
 }

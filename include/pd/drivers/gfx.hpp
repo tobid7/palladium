@@ -2,8 +2,7 @@
 
 #include <pd/core/mat.hpp>
 #include <pd/drivers/interface.hpp>
-#include <pd/lithium/drawlist.hpp>
-#include <pd/lithium/pools.hpp>
+#include <pd/lithium/command.hpp>
 #include <pd/lithium/texture.hpp>
 
 using PDGfxBackendFlags = PD::u32;
@@ -38,7 +37,7 @@ class PD_API GfxDriver : public DriverInterface {
     return Li::Texture();
   }
   virtual void DeleteTexture(const Li::Texture& tex) {}
-  virtual void Draw(const Li::Drawlist& commands) {}
+  virtual void Draw(const Pool<Li::Command>& commands) {}
   Li::Texture::Ptr GetWhiteTexture() { return &pWhite; }
   PDGfxBackendFlags GetFlags() { return Flags; }
 
@@ -111,67 +110,28 @@ class GfxDriverBase : public GfxDriver {
     pWhite = LoadTexture(img, 16, 16);
   }
 
-  void Draw(const Li::Drawlist& dl) override {
-    const auto& commands = dl.Data();
-    if (commands.size() == 0) return;
+  void Draw(const Pool<Li::Command>& commands) override {
     pCountCommands += commands.size();
-
-    size_t vtotal = dl.GetNumVertices();
-    size_t itotal = dl.GetNumIndices();
-
-    size_t start_vtx = pVtxPool.size();
-    pVtxPool.Allocate(vtotal);
-    CurrentVertex += vtotal;
-
-    size_t start_idx = pIdxPool.size();
-    pIdxPool.Allocate(itotal);
-    CurrentIndex += itotal;
-
-    size_t current_vtx = start_vtx;
-    size_t current_idx = start_idx;
-
-    const auto& vpool = Li::GetVertexPool();
-    const auto& ipool = Li::GetIndexPool();
-    /** Build Pools */
-    for (size_t i = 0; i < commands.size(); i++) {
-      const auto& cmd = commands[i];
-      if (cmd.VertexCount > 0) {
-        std::memcpy(pVtxPool.begin() + current_vtx,
-                    vpool.begin() + cmd.FirstVertex,
-                    cmd.VertexCount * sizeof(Li::Vertex));
-      }
-      for (size_t idx = 0; idx < cmd.IndexCount; idx++) {
-        u16 local_idx = ipool[cmd.FirstIndex + idx];
-        pIdxPool[current_idx + idx] = static_cast<u16>(current_vtx + local_idx);
-      }
-      current_vtx += cmd.VertexCount;
-      current_idx += cmd.IndexCount;
-    }
-
-    UploadPools();
-
     size_t index = 0;
-    size_t ioff = start_idx;
-
+    UploadPools();
     while (index < commands.size()) {
       CurrentTex = commands[index].Tex;
       CurrentTexIsSDF = commands[index].SDF;
       if (!CurrentTex) {
         CurrentTex = pWhite.GetID();
       }
+      size_t startidx = commands[index].FirstIndex;
       size_t num_indices = 0;
       while (index < commands.size() &&
              CurrentTexIsSDF == commands[index].SDF &&
              (CurrentTex == commands[index].Tex ||
-              (CurrentTex == pWhite.GetID() && commands[index].Tex == 0))) {
+              (CurrentTex == pWhite.GetID() && commands[index].Tex == 0)) &&
+             commands[index].FirstIndex == startidx + num_indices) {
         num_indices += commands[index].IndexCount;
         index++;
       }
-      if (num_indices > 0) {
-        Submit(num_indices, ioff);
-        ioff += num_indices;
-        pCountDrawcalls++;
-      }
+      Submit(num_indices, startidx);
+      pCountDrawcalls++;
     }
   }
 
@@ -251,7 +211,9 @@ class PD_API Gfx {
   static void SetViewPort(const ivec2& vp) { driver->SetViewPort(vp); }
   static void SetViewPort(int w, int h) { driver->SetViewPort(w, h); }
   static void Reset() { driver->Reset(); }
-  static void Draw(const Li::Drawlist& dl) { driver->Draw(dl); }
+  static void Draw(const Pool<Li::Command>& commands) {
+    driver->Draw(commands);
+  }
   static Li::Texture LoadTexture(const std::vector<PD::u8>& pixels, int w,
                                  int h,
                                  TextureFormat type = TextureFormat::RGBA32,
