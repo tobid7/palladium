@@ -5,21 +5,11 @@
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
 
-#ifdef _WIN32
-#include <d3d9.h>
-#define GLFW_EXPOSE_NATIVE_WIN32
-#include <GLFW/glfw3native.h>
-#endif
-
 #include <pdsystem>
 
 namespace PD {
 struct DesktopOS::Impl {
   GLFWwindow* win = nullptr;
-#if WIN32
-  IDirect3D9* d3d = nullptr;
-  IDirect3DDevice9* dx9_device = nullptr;
-#endif
 };
 
 void DesktopOS::Init() {
@@ -55,21 +45,21 @@ void DesktopOS::Init() {
   }
 #ifdef _WIN32
   if (pDriver == Driver::DirectX9) {
-    impl->d3d = Direct3DCreate9(D3D_SDK_VERSION);
+    d3d = Direct3DCreate9(D3D_SDK_VERSION);
     auto hwnd = glfwGetWin32Window(impl->win);
     D3DPRESENT_PARAMETERS d3dpp = {};
     d3dpp.Windowed = TRUE;
     d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
     d3dpp.hDeviceWindow = hwnd;
 
-    HRESULT hr = impl->d3d->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hwnd,
+    HRESULT hr = d3d->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hwnd,
                                    D3DCREATE_HARDWARE_VERTEXPROCESSING, &d3dpp,
-                                   &impl->dx9_device);
+                                   &dx9_device);
     if (FAILED(hr)) {
       MessageBoxW(nullptr, L"Failed to create D3D9 device", L"Error", MB_OK);
       std::abort();
     }
-    PD::Gfx::UseDriver<PD::GfxDirectX9>(impl->dx9_device);
+    PD::Gfx::UseDriver<PD::GfxDirectX9>(dx9_device);
   }
 #endif
   glfwSwapInterval(1);
