@@ -1,6 +1,4 @@
-#include <pd/lithium/formatters.hpp>
 #include <pd_system/gfx_opengl3.hpp>
-
 #if defined(PD_ENABLE_OPENGL3)
 #include <glad/glad.h>
 
@@ -126,9 +124,9 @@ void GfxOpenGL3::SysReset() {
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
-Li::Texture GfxOpenGL3::LoadTexture(const std::vector<PD::u8>& pixels, int w,
-                                    int h, TextureFormat type,
-                                    TextureFilter filter) {
+TextureID GfxOpenGL3::LoadTexture(const std::vector<PD::u8>& pixels, int w,
+                                  int h, TextureFormat type,
+                                  TextureFilter filter) {
   GLuint texID;
   glGenTextures(1, &texID);
   glBindTexture(GL_TEXTURE_2D, texID);
@@ -150,18 +148,13 @@ Li::Texture GfxOpenGL3::LoadTexture(const std::vector<PD::u8>& pixels, int w,
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   }
   glBindTexture(GL_TEXTURE_2D, 0);
-  Li::Texture res;
-  res.SetID(texID);
-  res.SetSize(w, h);
-  res.SetUV(0.f, 0.f, 1.f, 1.f);
-  RegisterTexture(res);
-  PDLOG("GfxOpenGL3::LoadTexture -> {{ {} }}, [{}, {}]", res, type, filter);
-  return res;
+  PDLOG("GfxOpenGL3::LoadTexture -> [{}] {}, [{}, {}]", PD::ivec2(w, h), texID,
+        type, filter);
+  return texID;
 }
 
-void GfxOpenGL3::DeleteTexture(const Li::Texture& tex) {
-  UnregisterTexture(tex);
-  GLuint tex_ = tex.GetID();
+void GfxOpenGL3::DeleteTexture(const TextureID& tex) {
+  GLuint tex_ = tex;
   glDeleteTextures(1, &tex_);
 }
 }  // namespace PD
@@ -176,11 +169,12 @@ void GfxOpenGL3::SysDeinit() {}
 void GfxOpenGL3::Submit(size_t count, size_t start) {}
 void GfxOpenGL3::BindTexture(TextureID id) {}
 void GfxOpenGL3::SysReset() {}
-Li::Texture GfxOpenGL3::LoadTexture(const std::vector<PD::u8>& pixels, int w,
-                                    int h, TextureFormat type,
-                                    TextureFilter filter) {
-  return Li::Texture();
+TextureID GfxOpenGL3::LoadTexture(const std::vector<PD::u8>& pixels, int w,
+                                  int h, TextureFormat type,
+                                  TextureFilter filter) {
+  return 0;
 }
-void GfxOpenGL3::DeleteTexture(const Li::Texture& tex) {}
+void GfxOpenGL3::DeleteTexture(const TextureID& tex) {}
+void GfxOpenGL3::pSetupShaderAttribs(u32 shader) {}
 }  // namespace PD
 #endif

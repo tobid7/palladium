@@ -1,13 +1,15 @@
-#ifndef __3DS__
 #include <glad/glad.h>
 //////////////////////////
 #include <GLFW/glfw3.h>
-#endif
 
 #include <format>
 #include <iostream>
 #include <palladium>
 #include <pdsystem>
+
+#include "pd/core/vec2.hpp"
+#include "pd/lithium/pools.hpp"
+#include "pd/lithium/vertex.hpp"
 
 #ifdef _WIN32
 #include <d3d9.h>
@@ -25,7 +27,7 @@ enum class Driver {
   DirectX9 = 3,
 };
 
-PD::Li::Texture LoadTex(const std::string& path) {
+PD::TextureID LoadTex(const std::string& path) {
   int w, h, c;
   stbi_uc* buf = stbi_load(path.c_str(), &w, &h, &c, 4);
   return PD::Gfx::LoadTexture(std::vector<PD::u8>(buf, buf + (w * h * 4)), w,
@@ -36,7 +38,6 @@ class App {
  public:
   App(Driver d = Driver::OpenGL3) : pDriver(d) {
     PD::Os::UseDriver<PD::OsDriver>();
-#ifndef __3DS__
     glfwInit();
     std::string winname = "gfx_test";
     if (d == Driver::OpenGL2) {
@@ -79,16 +80,9 @@ class App {
     }
 #endif
     glfwSwapInterval(1);
-#else
-    PD::Gfx::UseDriver<PD::GfxCitro3D>();
-#endif
     PD::Gfx::Init();
     PD::Li::InitPools(8192);
-#ifdef __3DS__
-    pTex = LoadTex("sdmc:/icon.png");
-#else
     pTex = LoadTex("icon.png");
-#endif
     /*std::vector<PD::u8> img(16 * 16 * 4, 0xff);
     pTex = PD::Gfx::LoadTexture(img, 16, 16);*/
     std::cout << "GfxDriver: " << PD::Gfx::GetDriverName() << std::endl;
@@ -98,27 +92,18 @@ class App {
     cmd->Add(0, 1, 2);
     cmd->Add(0, 2, 3);
     cmd->Add(PD::Li::Vertex(PD::fvec2(0, 0), PD::fvec2(0, 0), 0xffffffff));
-    cmd->Add(PD::Li::Vertex(PD::fvec2(pTex.GetSize().x, 0), PD::fvec2(1, 0),
-                            0xffffffff));
-    cmd->Add(PD::Li::Vertex(PD::fvec2(pTex.GetSize().x, pTex.GetSize().y),
-                            PD::fvec2(1, 1), 0xffffffff));
-    cmd->Add(PD::Li::Vertex(PD::fvec2(0, pTex.GetSize().y), PD::fvec2(0, 1),
-                            0xffffffff));
-    cmd->Tex = pTex.GetID();
+    cmd->Add(PD::Li::Vertex(PD::fvec2(256, 0), PD::fvec2(1, 0), 0xffffffff));
+    cmd->Add(PD::Li::Vertex(PD::fvec2(256, 256), PD::fvec2(1, 1), 0xffffffff));
+    cmd->Add(PD::Li::Vertex(PD::fvec2(0, 256), PD::fvec2(0, 1), 0xffffffff));
+    cmd->Tex = pTex;
   }
   ~App() {
-    PD::Gfx::DeleteTexture(pTex);
     PD::Gfx::Deinit();
-#ifndef __3DS__
     glfwDestroyWindow(window);
     glfwTerminate();
-#endif
   }
 
   void Run() {
-#ifdef __3DS__
-    while (aptMainLoop()) {
-#else
     while (!glfwWindowShouldClose(window)) {
       if (pDriver == Driver::OpenGL2 || pDriver == Driver::OpenGL3) {
         glClearColor(0.1, 0.1, 0.1, 0.1);
@@ -133,12 +118,9 @@ class App {
         }
 #endif
       }
-#endif
       PD::Gfx::Reset();
       PD::Gfx::SetViewPort(1280, 720);
       PD::Gfx::Draw(pPool);
-#ifdef __3DS__
-#else
       glfwPollEvents();
       if (pDriver == Driver::DirectX9) {
 #ifdef _WIN32
@@ -150,16 +132,13 @@ class App {
       } else {
         glfwSwapBuffers(window);
       }
-#endif
     }
   }
 
  private:
-#ifndef __3DS__
   GLFWwindow* window = nullptr;
-#endif
   PD::Pool<PD::Li::Command> pPool;
-  PD::Li::Texture pTex;
+  PD::ptr pTex = 0;
   Driver pDriver;
 #ifdef _WIN32
   IDirect3D9* d3d = nullptr;

@@ -1,6 +1,5 @@
 // Well yes, i finally try it
 
-#include <pd/lithium/formatters.hpp>
 #include <pd_system/gfx_directx9.hpp>
 
 // Sicher ist sicher
@@ -183,9 +182,9 @@ void GfxDirectX9::SysReset() {
   impl->Device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
 }
 
-Li::Texture GfxDirectX9::LoadTexture(const std::vector<PD::u8>& pixels, int w,
-                                     int h, TextureFormat type,
-                                     TextureFilter filter) {
+TextureID GfxDirectX9::LoadTexture(const std::vector<PD::u8>& pixels, int w,
+                                   int h, TextureFormat type,
+                                   TextureFilter filter) {
   if (!impl || !impl->Device) return 0;
   IDirect3DTexture9* tex = nullptr;
   D3DFORMAT fmt = D3DFMT_A8R8G8B8;
@@ -235,19 +234,15 @@ Li::Texture GfxDirectX9::LoadTexture(const std::vector<PD::u8>& pixels, int w,
   }
 
   tex->UnlockRect(0);
-  Li::Texture res;
-  res.SetID((TextureID)tex);
-  res.SetSize(w, h);
-  res.SetUV(0.f, 0.f, 1.f, 1.f);
-  RegisterTexture(res);
-  PDLOG("GfxDirectX9::LoadTexture -> {{ {} }}, [{}, {}]", res, type, filter);
-  return res;
+
+  PDLOG("GfxDirectX9::LoadTexture -> [{}] 0x{:X}, [{}, {}]", PD::ivec2(w, h),
+        (TextureID)tex, type, filter);
+  return (TextureID)tex;
 }
 
-void GfxDirectX9::DeleteTexture(const Li::Texture& tex) {
-  if (!tex.GetID()) return;
-  UnRegisterTexture(tex);
-  IDirect3DTexture9* t = (IDirect3DTexture9*)tex.GetID();
+void GfxDirectX9::DeleteTexture(const TextureID& tex) {
+  if (!tex) return;
+  IDirect3DTexture9* t = (IDirect3DTexture9*)tex;
   t->Release();
 }
 }  // namespace PD
@@ -262,11 +257,11 @@ void GfxDirectX9::SysDeinit() {}
 void GfxDirectX9::Submit(size_t count, size_t start) {}
 void GfxDirectX9::BindTexture(TextureID id) {}
 void GfxDirectX9::SysReset() {}
-Li::Texture GfxDirectX9::LoadTexture(const std::vector<PD::u8>& pixels, int w,
-                                     int h, TextureFormat type,
-                                     TextureFilter filter) {
-  return Li::Texture();
+TextureID GfxDirectX9::LoadTexture(const std::vector<PD::u8>& pixels, int w,
+                                   int h, TextureFormat type,
+                                   TextureFilter filter) {
+  return 0;
 }
-void GfxDirectX9::DeleteTexture(const Li::Texture& tex) {}
+void GfxDirectX9::DeleteTexture(const TextureID& tex) {}
 }  // namespace PD
 #endif

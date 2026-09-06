@@ -25,11 +25,10 @@ class GfxOpenGL3 : public GfxDriverBase<GfxOpenGL3Config> {
   void Submit(size_t count, size_t start) override;
   void BindTexture(TextureID id) override;
   void SysReset() override;
-  Li::Texture LoadTexture(
-      const std::vector<PD::u8>& pixels, int w, int h,
-      TextureFormat type = TextureFormat::RGBA32,
-      TextureFilter filter = TextureFilter::Linear) override;
-  void DeleteTexture(const Li::Texture& tex) override;
+  TextureID LoadTexture(const std::vector<PD::u8>& pixels, int w, int h,
+                        TextureFormat type = TextureFormat::RGBA32,
+                        TextureFilter filter = TextureFilter::Linear) override;
+  void DeleteTexture(const TextureID& tex) override;
 
  private:
   u32 pShader = 0;
