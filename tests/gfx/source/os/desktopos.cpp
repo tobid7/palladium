@@ -18,7 +18,6 @@ struct DesktopOS::Impl {
 #if WIN32
   IDirect3D9* d3d = nullptr;
   IDirect3DDevice9* dx9_device = nullptr;
-  D3DPRESENT_PARAMETERS d3dpp = {};
 #endif
 };
 
@@ -57,18 +56,17 @@ void DesktopOS::Init() {
   if (pDriver == Driver::DirectX9) {
     impl->d3d = Direct3DCreate9(D3D_SDK_VERSION);
     auto hwnd = glfwGetWin32Window(impl->win);
-
-    impl->d3dpp = D3DPRESENT_PARAMETERS{};
-    impl->d3dpp.Windowed = TRUE;
-    impl->d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
-    impl->d3dpp.hDeviceWindow = hwnd;
-    impl->d3dpp.BackBufferFormat = D3DFMT_UNKNOWN;
-    impl->d3dpp.EnableAutoDepthStencil = TRUE;
-    impl->d3dpp.AutoDepthStencilFormat = D3DFMT_D16;
+    D3DPRESENT_PARAMETERS d3dpp = {};
+    d3dpp.Windowed = TRUE;
+    d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
+    d3dpp.hDeviceWindow = hwnd;
+    d3dpp.BackBufferFormat = D3DFMT_UNKNOWN;
+    d3dpp.EnableAutoDepthStencil = TRUE;
+    d3dpp.AutoDepthStencilFormat = D3DFMT_D16;
 
     HRESULT hr = impl->d3d->CreateDevice(
         D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hwnd,
-        D3DCREATE_HARDWARE_VERTEXPROCESSING, &impl->d3dpp, &impl->dx9_device);
+        D3DCREATE_HARDWARE_VERTEXPROCESSING, &d3dpp, &impl->dx9_device);
     if (FAILED(hr)) {
       MessageBoxW(nullptr, L"Failed to create D3D9 device", L"Error", MB_OK);
       std::abort();
@@ -102,15 +100,7 @@ void DesktopOS::ClearViewPort() {
     glViewport(0, 0, pViewPort.x, pViewPort.y);
   } else if (pDriver == Driver::DirectX9) {
 #ifdef _WIN32
-    // Resize the swapchain to match the window size
-    if (impl->dx9_device && pViewPort.x > 0 && pViewPort.y > 0) {
-      if (impl->d3dpp.BackBufferWidth != (UINT)pViewPort.x ||
-          impl->d3dpp.BackBufferHeight != (UINT)pViewPort.y) {
-        impl->d3dpp.BackBufferWidth = pViewPort.x;
-        impl->d3dpp.BackBufferHeight = pViewPort.y;
-        impl->dx9_device->Reset(&impl->d3dpp);
-      }
-
+    if (impl->dx9_device) {
       impl->dx9_device->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER,
                               D3DCOLOR_XRGB(25, 25, 25), 1.0f, 0);
       impl->dx9_device->BeginScene();
@@ -122,8 +112,7 @@ void DesktopOS::ClearViewPort() {
 void DesktopOS::SwapBuffers() {
   if (pDriver == Driver::DirectX9) {
 #ifdef _WIN32
-    // yes we schould use some safetey checks
-    if (impl->dx9_device && pViewPort.x > 0 && pViewPort.y > 0) {
+    if (impl->dx9_device) {
       impl->dx9_device->EndScene();
       impl->dx9_device->Present(nullptr, nullptr, nullptr, nullptr);
     }
