@@ -175,10 +175,6 @@ void GfxDirectX9::SysReset() {
   impl->Device->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
   impl->Device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
   impl->Device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
-
-  impl->Device->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
-  impl->Device->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
-  impl->Device->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR);
 }
 
 Li::Texture GfxDirectX9::LoadTexture(const std::vector<PD::u8>& pixels, int w,
