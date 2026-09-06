@@ -11,7 +11,7 @@ struct HidNX::Impl {
 
 HidNX::HidNX() : HidDriver("HidNX") { impl = new Impl; }
 
-HidNX::~HidNX() {}
+HidNX::~HidNX() { delete impl; }
 
 void HidNX::Update() {
   HidDriver::Update();  // clear stats

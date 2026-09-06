@@ -9,6 +9,7 @@ option(PD_ENABLE_CITRO3D "Enable Citro3D Support (3DS)" OFF)
 option(PD_ENABLE_VULKAN "Not implemented yet" OFF)
 option(PD_ENABLE_HID_GLFW "Enable GLFW Input Driver" ON)
 option(PD_ENABLE_HID_NX "Enable NX Input Driver" OFF)
+option(PD_ENABLE_HID3DS "Enable 3ds Input Driver" OFF)
 
 if(NOT WIN32) # cause we are not on windows...
     set(PD_ENABLE_DIRECTX9 OFF)
@@ -21,6 +22,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Nintendo3DS")
     set(PD_ENABLE_CITRO3D ON)
     set(PD_ENABLE_HID_GLFW OFF)
     set(PD_ENABLE_HID_NX OFF)
+    set(PD_ENABLE_HID3DS ON)
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "NintendoSwitch")
     set(PD_ENABLE_OPENGL2 OFF)
     set(PD_ENABLE_OPENGL3 ON)
@@ -36,6 +38,7 @@ add_library(pd-system STATIC
     ${CMAKE_CURRENT_SOURCE_DIR}/source/gfx_opengl3.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/source/gfx_directx9.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/source/gfx_citro3d.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/hid_3ds.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/source/hid_glfw.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/source/hid_nx.cpp
 )
@@ -64,6 +67,7 @@ target_compile_definitions(pd-system
     $<$<BOOL:${PD_ENABLE_CITRO3D}>:PD_ENABLE_CITRO3D>
     $<$<BOOL:${PD_ENABLE_HID_GLFW}>:PD_ENABLE_HID_GLFW>
     $<$<BOOL:${PD_ENABLE_HID_NX}>:PD_ENABLE_HID_NX>
+    $<$<BOOL:${PD_ENABLE_HID3DS}>:PD_ENABLE_HID3DS>
 )
 
 # Palladium

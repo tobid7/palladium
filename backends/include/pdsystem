@@ -7,4 +7,5 @@
 #include <pd_system/gfx_opengl3.hpp>
 
 // Hid
+#include <pd_system/hid_3ds.hpp>
 #include <pd_system/hid_glfw.hpp>
