@@ -42,12 +42,11 @@ int main(int argc, char** argv) {
   while (pOs->Mainloop()) {
     pOs->ClearViewPort();
     PD::Li::ResetPools();
-    pList.PathRect(pOs->PositionTranslate(0.05), pOs->PositionTranslate(0.4f),
-                   10.f);
+    pList.PathRect(pOs->SizeTranslate(0.05), pOs->SizeTranslate(0.4f), 10.f);
     pList.PathFill(0xff00ffff);
     pList.BindTexture(pTex);
-    pList.DrawRectFilled(pOs->PositionTranslate(PD::fvec2(0.02f, 0.5f)),
-                         pOs->SizeTranslate(PD::fvec2(0.3)), 0xffffffff);
+    pList.DrawRectFilled(pOs->SizeTranslate(PD::fvec2(0.02f, 0.5f)),
+                         pOs->SizeTranslate(PD::fvec2(0.14, 0.3)), 0xffffffff);
     PD::Gfx::Reset();
     PD::Gfx::Draw(pList);
     pList.Clear();

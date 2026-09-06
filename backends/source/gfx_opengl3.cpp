@@ -99,13 +99,6 @@ void GfxOpenGL3::SysReset() {
 Li::Texture GfxOpenGL3::LoadTexture(const std::vector<PD::u8>& pixels, int w,
                                     int h, TextureFormat type,
                                     TextureFilter filter) {
-  if (pixels.size() !=
-      static_cast<size_t>(w * h * Li::TextureFormat2Bpp(type))) {
-    PDERR("Failed to load Texture due to Size mismatch: {} != {}",
-          pixels.size(),
-          static_cast<size_t>(w * h * Li::TextureFormat2Bpp(type)));
-    return Li::Texture();
-  }
   GLuint texID;
   glGenTextures(1, &texID);
   glBindTexture(GL_TEXTURE_2D, texID);

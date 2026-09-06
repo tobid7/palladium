@@ -75,8 +75,7 @@ PD_API void Drawlist::PathRect(const fvec2& tl, const fvec2& br, float r) {
     PathAdd(br);
     PathAdd(vec2(tl.x, br.y));
   } else {
-    float r = 0.f;
-    r = std::min({r, (br.x - tl.x) * 0.5f, (br.y - tl.y) * 0.5f});
+    float r = std::min({r, (br.x - tl.x) * 0.5f, (br.y - tl.y) * 0.5f});
     /** Calculate Optimal segment count automatically */
     float corner = M_PI * 0.5f;
     int segments = std::max(3, int(std::ceil(corner / (6.0f * M_PI / 180.0f))));

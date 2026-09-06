@@ -16,18 +16,6 @@ enum class TextureFormat {
   A8,
 };
 namespace Li {
-static int TextureFormat2Bpp(TextureFormat fmt) {
-  switch (fmt) {
-    case PD::TextureFormat::A8:
-      return 1;
-    case PD::TextureFormat::RGB24:
-      return 3;
-    case PD::TextureFormat::RGBA32:
-      return 4;
-    default:
-      return 0;
-  }
-}
 class Texture {
  public:
   using Ptr = Texture*;

@@ -21,12 +21,8 @@ class OsCtx {
   virtual bool Mainloop() { return false; }
   virtual void ClearViewPort() {}
   virtual void SwapBuffers() {}
-  PD::fvec2 PositionTranslate(PD::fvec2 in) {
-    return fvec2(in.x * pViewPort.x, in.y * pViewPort.y);
-  }
-
   PD::fvec2 SizeTranslate(PD::fvec2 in) {
-    return fvec2(in.x * pViewPort.y, in.y * pViewPort.y);
+    return fvec2(in.x * pViewPort.x, in.y * pViewPort.y);
   }
 
  protected:

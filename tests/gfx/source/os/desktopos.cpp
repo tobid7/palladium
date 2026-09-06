@@ -1,5 +1,4 @@
 #include <os/desktopos.hpp>
-#include <pdsystem>
 
 #if !defined(__SWITCH__) && !defined(__3DS__)
 #define GLFW_INCLUDE_NONE
@@ -11,6 +10,8 @@
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
 #endif
+
+#include <pdsystem>
 
 namespace PD {
 struct DesktopOS::Impl {
@@ -61,9 +62,9 @@ void DesktopOS::Init() {
     d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
     d3dpp.hDeviceWindow = hwnd;
 
-    HRESULT hr = impl->d3d->CreateDevice(
-        D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hwnd,
-        D3DCREATE_HARDWARE_VERTEXPROCESSING, &d3dpp, &impl->dx9_device);
+    HRESULT hr = impl->d3d->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hwnd,
+                                   D3DCREATE_HARDWARE_VERTEXPROCESSING, &d3dpp,
+                                   &impl->dx9_device);
     if (FAILED(hr)) {
       MessageBoxW(nullptr, L"Failed to create D3D9 device", L"Error", MB_OK);
       std::abort();
@@ -90,19 +91,9 @@ bool DesktopOS::Mainloop() {
 
 void DesktopOS::ClearViewPort() {
   PD::Gfx::SetViewPort(pViewPort);
-  if (pDriver == Driver::OpenGL3 || pDriver == Driver::OpenGL2) {
-    glClearColor(0.1, 0.1, 0.1, 0.1);
-    glClear(GL_COLOR_BUFFER_BIT);
-    glViewport(0, 0, pViewPort.x, pViewPort.y);
-  } else if (pDriver == Driver::DirectX9) {
-#ifdef _WIN32
-    if (impl->dx9_device) {
-      impl->dx9_device->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER,
-                              D3DCOLOR_XRGB(25, 25, 25), 1.0f, 0);
-      impl->dx9_device->BeginScene();
-    }
-#endif
-  }
+  glClearColor(0.1, 0.1, 0.1, 0.1);
+  glClear(GL_COLOR_BUFFER_BIT);
+  glViewport(0, 0, pViewPort.x, pViewPort.y);
 }
 
 void DesktopOS::SwapBuffers() { glfwSwapBuffers(impl->win); }
