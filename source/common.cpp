@@ -7,7 +7,9 @@ constexpr const char* pColorYellow = "\033[33m";
 constexpr const char* pColorRed = "\033[31m";
 static LogLevel pFilter = LogLevel::Info;
 
-PD_API void LogFilter(LogLevel lvl) { pFilter = lvl; }
+PD_API void LogFilter(LogLevel lvl) {
+  pFilter = lvl;
+}
 
 PD_API void Log(const std::string& txt, LogLevel lvl) {
   if ((int)lvl < (int)pFilter) return;

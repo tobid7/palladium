@@ -65,11 +65,6 @@ class PD_API Font {
                  const char* text, LiTextFlags flags = 0, const fvec2& box = 0);
 
   /**
-   * Cleanup Font and unload Textures
-   */
-  void Delete();
-
-  /**
    * Garbage collection for TextMapSystem
    */
   void CleanupTMS();
@@ -85,7 +80,7 @@ class PD_API Font {
 
   /** Data Section */
   int PixelHeight = 0;
-  int DefaultPixelHeight = 32;
+  int DefaultPixelHeight = 24;
   std::vector<TextureID> Textures;
   /**
    * 32Bit Codepoint Dataholder reference map
