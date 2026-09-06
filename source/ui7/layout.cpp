@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
+#include <algorithm>
 #include <pd/ui7/containers.hpp>
 #include <pd/ui7/layout.hpp>
 
@@ -122,6 +123,42 @@ PD_API fvec2 Layout::AlignPosition(fvec2 pos, fvec2 size, fvec4 area,
   return p;
 }
 
+PD_API void Layout::HandleScrolling() {
+  if (Flags & UI7LayoutFlags_VtScrolling) {
+    bool allowed = MaxPosition.y > WorkRect.w;
+    if (allowed) {
+      if (PD::Hid::IsEvent(Hid::Event::Down, PD::Hid::Gamepad::Touch) ||
+          PD::Hid::IsEvent(Hid::Event::Down, PD::Hid::Keyboard::MouseLeft)) {
+        ScrollStart = ScrollOffset;
+      }
+      if (IO.InputHandler.DragObject(UI7::ID("sbg" + ID.GetName()),
+                                     fvec4(Pos, fvec2(0.f)) + WorkRect)) {
+        if (!IO.InputHandler.DragReleasedAW) {
+          ScrollOffset.y =
+              std::clamp(ScrollStart.y + IO.InputHandler.DragSourcePos.y -
+                             IO.InputHandler.DragPosition.y,
+                         -20.f, MaxPosition.y - WorkRect.w + 20.f);
+        }
+      }
+    } else {
+      ScrollOffset.y = 0.f;
+    }
+
+    if (ScrollOffset.y > MaxPosition.y - WorkRect.w) {
+      ScrollOffset.y -= 1.5f;
+      if (ScrollOffset.y < MaxPosition.y - WorkRect.w) {
+        ScrollOffset.y = MaxPosition.y - WorkRect.w;
+      }
+    }
+    if (ScrollOffset.y < 0) {
+      ScrollOffset.y += 1.5f;
+      if (ScrollOffset.y > 0) {
+        ScrollOffset.y = 0;
+      }
+    }
+  }
+}
+
 PD_API void Layout::Update() {
   if (Size == fvec2(0.f)) {
     Size = fvec2(MaxPosition) + IO.MenuPadding * 2;
@@ -155,6 +192,7 @@ PD_API void Layout::Update() {
   Objects.clear();
   WorkRect = fvec4(fvec2(WorkRect.x, WorkRect.y), Size - IO.MenuPadding);
   CursorInit();
+  HandleScrolling();
 }
 
 /** SECTION CONTAINERS (STOLEN FROM FORMER MENU) */
