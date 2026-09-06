@@ -23,7 +23,6 @@ SOFTWARE.
 
 #include <pd/ui7/containers.hpp>
 #include <pd/ui7/menu.hpp>
-#include <algorithm>
 
 namespace PD {
 namespace UI7 {
