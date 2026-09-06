@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/core/common.hpp>
+#include <pd/common.hpp>
 #include <pd/core/strings.hpp>
 
 namespace PD {
@@ -72,6 +72,12 @@ class PD_API Color {
   constexpr Color(const std::string_view& hex) { Hex(hex); }
 
   /**
+   * Constructor for Hex Input (is abel to run at compile time xD)
+   * @param hex Hex String in `#ffffff` or `#ffffffff` format
+   */
+  constexpr Color(const char* hex) { Hex(std::string_view{hex}); }
+
+  /**
    * Create Color Object by Hex String (at compile time btw)
    * @param hex Hex String in `#ffffff` or `#ffffffff` format
    * @return Color class itself
@@ -116,6 +122,20 @@ class PD_API Color {
   }
 
   /**
+   * Lerp
+   * @param v Target color
+   * @param t interpolation factor
+   * @return Class Reference
+   */
+  constexpr Color& Lerp(const Color& v, float t) {
+    a = static_cast<u8>(a + (v.a - a) * t);
+    b = static_cast<u8>(b + (v.b - b) * t);
+    g = static_cast<u8>(g + (v.g - g) * t);
+    r = static_cast<u8>(r + (v.r - r) * t);
+    return *this;
+  }
+
+  /**
    * Get 32Bit Color Value
    * @return 32Bit Color Value (ABGR iirc)
    */
@@ -139,6 +159,11 @@ class PD_API Color {
    * @return 32Bit Color Value
    */
   constexpr operator u32() const { return Get(); }
+
+  const float rf() const { return static_cast<float>(r) / 255.f; }
+  const float gf() const { return static_cast<float>(g) / 255.f; }
+  const float bf() const { return static_cast<float>(b) / 255.f; }
+  const float af() const { return static_cast<float>(a) / 255.f; }
 
   /** Public Access Data section */
   u8 r;

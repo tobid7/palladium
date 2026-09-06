@@ -1,47 +1,32 @@
-/*
-MIT License
-Copyright (c) 2024 - 2026 René Amthor (tobid7)
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
- */
-
 #include <pd/drivers/hid.hpp>
 
 namespace PD {
-PD_API bool HidDriver::IsEvent(Event e, Key keys) {
-  return KeyEvents[0][e] & keys;
+PD_API std::unique_ptr<HidDriver> Hid::driver;
+
+PD_API HidDriver::HidDriver(std::string_view name) : DriverInterface(name) {}
+
+PD_API HidDriver::~HidDriver() {}
+
+PD_API bool HidDriver::IsEvent(Event e, HidInternal::GamepadKey keys) {
+  return pGamepadEvents[0][e] & keys;
 }
 
-PD_API bool HidDriver::IsEvent(Event e, KbKey keys) {
-  return KbKeyEvents[0][e].Has(keys);
+PD_API bool HidDriver::IsEvent(Event e, HidInternal::Keyboard::Key keys) {
+  return pKeyboardEvents[0][e].Has(keys);
 }
-
+/**
+ * Todo: Keyboard support
+ */
 PD_API void HidDriver::SwapTab() {
-  auto tkd = KeyEvents[1][Event_Down];
-  auto tkh = KeyEvents[1][Event_Held];
-  auto tku = KeyEvents[1][Event_Up];
-  KeyEvents[1][Event_Down] = KeyEvents[0][Event_Down];
-  KeyEvents[1][Event_Held] = KeyEvents[0][Event_Held];
-  KeyEvents[1][Event_Up] = KeyEvents[0][Event_Up];
-  KeyEvents[0][Event_Down] = tkd;
-  KeyEvents[0][Event_Held] = tkh;
-  KeyEvents[0][Event_Up] = tku;
+  auto tkd = pGamepadEvents[1][Event::Down];
+  auto tkh = pGamepadEvents[1][Event::Held];
+  auto tku = pGamepadEvents[1][Event::Up];
+  pGamepadEvents[1][Event::Down] = pGamepadEvents[0][Event::Down];
+  pGamepadEvents[1][Event::Held] = pGamepadEvents[0][Event::Held];
+  pGamepadEvents[1][Event::Up] = pGamepadEvents[0][Event::Up];
+  pGamepadEvents[0][Event::Down] = tkd;
+  pGamepadEvents[0][Event::Held] = tkh;
+  pGamepadEvents[0][Event::Up] = tku;
 }
 
 /**
@@ -51,12 +36,13 @@ PD_API void HidDriver::SwapTab() {
 PD_API void HidDriver::Update() {
   // Clear States
   for (int i = 0; i < 2; i++) {
-    KeyEvents[i][Event_Down] = 0;
-    KeyEvents[i][Event_Held] = 0;
-    KeyEvents[i][Event_Up] = 0;
-    for (auto& it : KbKeyEvents[i]) {
-      it.second = Event_Null;
+    pGamepadEvents[i][Event::Down] = 0;
+    pGamepadEvents[i][Event::Held] = 0;
+    pGamepadEvents[i][Event::Up] = 0;
+    for (auto& it : pKeyboardEvents[i]) {
+      it.second = 0;  // ? why was this Event_Null
     }
   }
+  pMouse[1] = pMouse[0];  // cycle here
 }
 }  // namespace PD

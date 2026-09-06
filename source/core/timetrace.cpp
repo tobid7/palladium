@@ -22,16 +22,30 @@ SOFTWARE.
  */
 
 #include <pd/core/timetrace.hpp>
-#include <pd/drivers/drivers.hpp>
+#include <pd/drivers/os.hpp>
 
 namespace PD::TT {
-PD_API void Beg(OsDriver& os, const std::string& id) {
-  auto trace = os.GetTraceRef(id);
-  trace->SetStart(os.GetNanoTime());
+static TraceMap pTraces;
+
+PD_API TraceMap& GetTraceMap() { return pTraces; }
+
+PD_API TT::Res& GetTraceRef(const std::string& id) {
+  if (!pTraces.count(id)) {
+    pTraces[id] = TT::Res();
+    pTraces[id].SetID(id);
+  }
+  return pTraces[id];
 }
 
-PD_API void End(OsDriver& os, const std::string& id) {
-  auto trace = os.GetTraceRef(id);
-  trace->SetEnd(os.GetNanoTime());
+PD_API bool TraceExist(const std::string& id) { return pTraces.count(id); }
+
+PD_API void Beg(const std::string& id) {
+  auto& trace = GetTraceRef(id);
+  trace.SetStart(PD::Os::GetTimeNano());
+}
+
+PD_API void End(const std::string& id) {
+  auto& trace = GetTraceRef(id);
+  trace.SetEnd(PD::Os::GetTimeNano());
 }
 }  // namespace PD::TT

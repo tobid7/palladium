@@ -1,26 +1,52 @@
-/*
-MIT License
-Copyright (c) 2024 - 2026 René Amthor (tobid7)
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
- */
-
 #include <pd/drivers/gfx.hpp>
+#include <pd/lithium/formatters.hpp>
 
-namespace PD {}  // namespace PD
+namespace PD {
+PD_API std::unique_ptr<GfxDriver> Gfx::driver;
+
+PD_API GfxDriver::GfxDriver(std::string_view name) : DriverInterface(name) {}
+
+PD_API GfxDriver::~GfxDriver() {
+  if (pTextureRegestry.size()) {
+    PDERR("GfxDriver: {} is still holding {} texture{}!", GetName(),
+          pTextureRegestry.size(), (pTextureRegestry.size() == 1 ? "" : "s"));
+  }
+}
+
+PD_API void GfxDriver::SetViewPort(const ivec2& size) {
+  ViewPort = size;
+  Projection = Mat4::Ortho(0.f, ViewPort.x, ViewPort.y, 0.f, 1.f, -1.f);
+}
+
+PD_API void GfxDriver::SetViewPort(int x, int y) {
+  ViewPort.x = x;
+  ViewPort.y = y;
+  Projection = Mat4::Ortho(0.f, ViewPort.x, ViewPort.y, 0.f, 1.f, -1.f);
+}
+
+PD_API void GfxDriver::Reset() {
+  CountIndices = CurrentIndex;
+  CountVertices = CurrentVertex;
+  CurrentVertex = 0;
+  CurrentIndex = 0;
+  CountCommands = pCountCommands;
+  CountDrawcalls = pCountDrawcalls;
+  pCountCommands = 0;
+  pCountDrawcalls = 0;
+  SysReset();
+}
+
+PD_API void GfxDriver::RegisterTexture(const Li::Texture& tex) {
+  pTextureRegestry[tex.GetID()] = tex;
+}
+
+PD_API void GfxDriver::UnregisterTexture(const Li::Texture& tex) {
+  if (pTextureRegestry.count(tex.GetID())) {
+    pTextureRegestry.erase(pTextureRegestry.find(tex.GetID()));
+    PDLOG("GfxDriver: Texture {{ {} }} has been deleted!", tex);
+  } else {
+    PDWARN("GfxDriver: WARNING Texture {{ {} }} does not exist in regestry!",
+           tex);
+  }
+}
+}  // namespace PD

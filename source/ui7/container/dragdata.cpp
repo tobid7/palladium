@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
+#include <algorithm>
 #include <pd/ui7/container/dragdata.hpp>
 #include <pd/ui7/container/label.hpp>
 #include <type_traits>
@@ -52,14 +53,14 @@ PD_API void DragData<T>::HandleInput() {
     } else {
       p = std::format("{}", data[i]);
     }
-    vec2 tdim = io->Font->GetTextBounds(p, io->FontScale);
+    vec2 tdim = io->Font->GetTextBounds(p.c_str(), io->FontScale);
     // Unsafe but is the fastest solution
-    if (io->InputHandler->DragObject(
+    if (io->InputHandler.DragObject(
             this->GetID() + i + 1,
             fvec4(FinalPos() + fvec2(off_x, 0), tdim + io->FramePadding))) {
       data[i] = std::clamp(
-          T(data[i] + (step * (io->InputHandler->DragPosition.x -
-                               io->InputHandler->DragLastPosition.x))),
+          T(data[i] + (step * (io->InputHandler.DragPosition.x -
+                               io->InputHandler.DragLastPosition.x))),
           this->min, this->max);
     }
     off_x += tdim.x + io->ItemSpace.x + io->FramePadding.x;
@@ -80,26 +81,27 @@ PD_API void DragData<T>::Draw() {
     } else {
       p = std::format("{}", data[i]);
     }
-    vec2 td = io->Font->GetTextBounds(p, io->FontScale);
+    vec2 td = io->Font->GetTextBounds(p.c_str(), io->FontScale);
     list->PathRect(FinalPos() + fvec2(off_x, 0),
                    FinalPos() + fvec2(off_x, 0) + td + io->FramePadding,
                    io->FrameRounding);
-    list->PathFill(io->Theme->Get(UI7Color_Button));
+    list->PathFill(io->Theme.Get(UI7Color_Button));
     list->LayerUp();
-    list->DrawTextEx(FinalPos() + fvec2(off_x, 0), p,
-                     io->Theme->Get(UI7Color_Text), LiTextFlags_AlignMid,
+    list->DrawTextEx(FinalPos() + fvec2(off_x, 0), p.c_str(),
+                     io->Theme.Get(UI7Color_Text), LiTextFlags_AlignMid,
                      td + io->FramePadding);
     list->LayerDown();
     off_x += td.x + io->ItemSpace.x + io->FramePadding.x;
   }
-  list->DrawText(FinalPos() + fvec2(off_x, io->FramePadding.y * 0.5), label,
-                 io->Theme->Get(UI7Color_Text));
+  list->DrawText(FinalPos() + fvec2(off_x, io->FramePadding.y * 0.5),
+                 label.c_str(), io->Theme.Get(UI7Color_Text));
 }
 
 template <typename T>
 PD_API void DragData<T>::Update() {
   // Assert(io.get(), "Did you run Container::Init correctly?");
   //  Probably need to find a faster solution (caching sizes calculated here)
+  list->SetFont(GetFont());
   float off_x = 0;
   for (size_t i = 0; i < elm_count; i++) {
     std::string p;
@@ -108,7 +110,7 @@ PD_API void DragData<T>::Update() {
     } else {
       p = std::format("{}", data[i]);
     }
-    vec2 tdim = io->Font->GetTextBounds(p, io->FontScale);
+    vec2 tdim = io->Font->GetTextBounds(p.c_str(), io->FontScale);
     off_x += tdim.x + io->ItemSpace.x + io->FramePadding.x;
   }
   this->SetSize(vec2(tdim.x + off_x, tdim.y + io->FramePadding.y));

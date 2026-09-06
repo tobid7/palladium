@@ -50,16 +50,16 @@ class PD_API Container {
       : pos(fvec2(box.x, box.y)), size(fvec2(box.z - box.x, box.w - box.y)) {}
   ~Container() = default;
 
-  PD_SHARED(Container);
   /**
    * Init Function Required by every Object that uses
    * Render or Input functions
    * @param io IO Reference
-   * @param l DrawList Reference
+   * @param l Drawlist Reference
    */
-  void Init(UI7::IO::Ref io, Li::DrawList::Ref l) {
+  void Init(UI7::IO* io, Li::Drawlist* l) {
     list = l;
     this->io = io;
+    pFont = io->Font;
     // this->screen = io->Ren->CurrentScreen();
   }
 
@@ -76,6 +76,7 @@ class PD_API Container {
   fvec2 GetPos() { return pos; }
   /** Getter for Size */
   fvec2 GetSize() { return size; }
+  Li::Font* GetFont() { return pFont; }
   /**
    * Get the Containers Final Position
    * for Rendering and Input (if it has a parent Object)
@@ -90,9 +91,9 @@ class PD_API Container {
   }
 
   /** Setter for Parent Container */
-  void SetParent(Container::Ref v) { parent = v; }
+  void SetParent(Container* v) { parent = v; }
   /** Getter for Parent Container */
-  Container::Ref GetParent() { return parent; }
+  Container* GetParent() { return parent; }
 
   /** Check if Rendering can be skipped */
   bool Skippable() const { return skippable; }
@@ -112,6 +113,25 @@ class PD_API Container {
   virtual void Draw() {}
   /** Template function to update internal data (if needed) */
   virtual void Update() {}
+  /** Template as well as base func for Pool based Containers */
+  virtual void Reset() {
+    pos = 0;
+    size = 0;
+    parent = nullptr;
+    id = 0;
+    pFlags = 0;
+    skippable = false;
+    rem = false;
+    inp_done = false;
+    pSelected = false;
+    pPressed = false;
+    pPressedTwice = false;
+    pCLipRectUsed = false;
+    pClipRect = 0;
+    io = nullptr;
+    list = nullptr;
+    last_use = 0;
+  }
 
   /** Internal function */
   void PreDraw();
@@ -138,7 +158,7 @@ class PD_API Container {
   void SetID(u32 id) { this->id = id; }
 
   /** Get a reference to IO */
-  UI7::IO::Ref GetIO() { return io; }
+  UI7::IO* GetIO() { return io; }
 
  protected:
   /** used to skip Input/Render preocessing ot not*/
@@ -156,11 +176,11 @@ class PD_API Container {
   /** Container Size*/
   fvec2 size;
   /** Reference to the Drawlist to Draw to*/
-  Li::DrawList::Ref list;
+  Li::Drawlist* list = nullptr;
   /** IO Reference for Renderer and Theme */
-  UI7::IO::Ref io;
+  UI7::IO* io = nullptr;
   /** Reference to the parent container*/
-  Container::Ref parent;
+  Container* parent = nullptr;
   /** Object ID (0 if unused)*/
   u32 id = 0;
   /** Internal Flags */
@@ -175,6 +195,7 @@ class PD_API Container {
   fvec4 pClipRect;
   /** Clip Rect used */
   bool pCLipRectUsed = false;
+  Li::Font* pFont = nullptr;
 };
 }  // namespace UI7
 }  // namespace PD

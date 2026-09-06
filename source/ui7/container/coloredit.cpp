@@ -33,9 +33,8 @@ PD_API void ColorEdit::HandleInput() {
   }
   // Assert(screen.get(), "Screen is not set up!");
   // if (screen->ScreenType() == Screen::Bottom) {
-  if (io->InputHandler->DragObject(this->GetID() + 2,
-                                   fvec4(FinalPos(), size))) {
-    if (io->InputHandler->DragReleasedAW) {
+  if (io->InputHandler.DragObject(this->GetID() + 2, fvec4(FinalPos(), size))) {
+    if (io->InputHandler.DragReleasedAW) {
       is_shown = !is_shown;
     }
   }
@@ -45,36 +44,40 @@ PD_API void ColorEdit::HandleInput() {
 PD_API void ColorEdit::Draw() {
   // Assert(io.get() && list.get(), "Did you run Container::Init correctly?");
   // io->Ren->OnScreen(screen);
+  list->SetFont(GetFont());
   list->PathRect(FinalPos(), FinalPos() + io->ItemRowHeight, io->FrameRounding);
   list->PathFill(*color_ref);
   list->DrawText(FinalPos() + fvec2(io->ItemSpace.x + io->ItemRowHeight, 0),
-                 label, io->Theme->Get(UI7Color_Text));
+                 label.c_str(), io->Theme.Get(UI7Color_Text));
   if (is_shown) {
     if (!layout) {
-      layout = Layout::New(GetID(), io);
+      layout = new UI7::Layout(GetID(), *io);
     }
     layout->SetPosition(FinalPos());
-    layout->AddObjectEx(
-        DynObj::New(
-            [=, this](UI7::IO::Ref io, Li::DrawList::Ref l, Container* thiz) {
-              thiz->SetSize(layout->GetSize());
-              l->Layer(30);
-              l->PathRect(thiz->GetPos(), thiz->GetPos() + thiz->GetSize(),
-                          io->FrameRounding);
-              l->PathFill(io->Theme->Get(UI7Color_FrameBackground));
-            }),
-        UI7LytAdd_Front | UI7LytAdd_NoCursorUpdate | UI7LytAdd_NoScrollHandle);
-    auto obj = DynObj::New(
-        [=, this](UI7::IO::Ref io, Li::DrawList::Ref l, Container* thiz) {
-          l->PathRect(thiz->FinalPos(), thiz->FinalPos() + io->ItemRowHeight,
-                      io->FrameRounding);
-          l->PathFill(*color_ref);
-          l->DrawText(
-              thiz->FinalPos() + fvec2(io->ItemSpace.x + io->ItemRowHeight, 0),
-              label, io->Theme->Get(UI7Color_Text));
-        });
-    obj->SetSize(PD::fvec2(200, io->ItemRowHeight));
-    layout->AddObject(obj);
+    DynObj* r = io->DynObjPool.Allocate();
+    *r = UI7::DynObj([=, this](UI7::IO* io, Li::Drawlist* l, Container* thiz) {
+      list->SetFont(thiz->GetFont());
+      thiz->SetSize(layout->GetSize());
+      // l->Layer(30);
+      l->PathRect(thiz->GetPos(), thiz->GetPos() + thiz->GetSize(),
+                  io->FrameRounding);
+      l->PathFill(io->Theme.Get(UI7Color_FrameBackground));
+      l->SetLayer(0);
+    });
+    layout->AddObjectEx(r, UI7LytAdd_Front | UI7LytAdd_NoCursorUpdate |
+                               UI7LytAdd_NoScrollHandle);
+    r = io->DynObjPool.Allocate();
+    *r = UI7::DynObj([=, this](UI7::IO* io, Li::Drawlist* l, Container* thiz) {
+      list->SetFont(thiz->GetFont());
+      l->PathRect(thiz->FinalPos(), thiz->FinalPos() + io->ItemRowHeight,
+                  io->FrameRounding);
+      l->PathFill(*color_ref);
+      l->DrawText(
+          thiz->FinalPos() + fvec2(io->ItemSpace.x + io->ItemRowHeight, 0),
+          label.c_str(), io->Theme.Get(UI7Color_Text));
+    });
+    r->SetSize(PD::fvec2(200, io->ItemRowHeight));
+    layout->AddObject(r);
     layout->Label("RGBA: ({}, {}, {}, {})", *((u8*)color_ref),
                   *(((u8*)color_ref) + 1), *(((u8*)color_ref) + 2),
                   *(((u8*)color_ref) + 3));
@@ -85,7 +88,9 @@ PD_API void ColorEdit::Draw() {
     layout->Slider<u8>("B", ((u8*)color_ref) + 2);
     layout->Slider<u8>("A", ((u8*)color_ref) + 3);
     layout->Update();
+    list->SetLayer(50);
     list->Merge(layout->GetDrawList());
+    list->SetLayer(0);
     // io->RegisterDrawList(GetID(), layout->GetDrawList());
   }
 }

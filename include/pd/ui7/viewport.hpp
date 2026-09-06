@@ -30,10 +30,9 @@ namespace PD {
 namespace UI7 {
 class ViewPort {
  public:
+  ViewPort() : pID(""), pSize(0) {}
   ViewPort(const ID& id, const ivec4& size) : pID(id), pSize(size) {}
   ~ViewPort() {}
-
-  PD_SHARED(ViewPort);
 
   ID GetID() const { return pID; }
   ivec4& GetSize() { return pSize; }

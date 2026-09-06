@@ -36,7 +36,7 @@ SOFTWARE.
  *         Major Minor Patch Build
  * 0x01010000 -> 1.1.0-0
  */
-#define UI7_VERSION 0x00060000
+#define UI7_VERSION 0x00070000
 
 namespace PD {
 namespace UI7 {
@@ -49,40 +49,37 @@ PD_API std::string GetVersion(bool show_build = false);
 /** Base Context for UI7 */
 class PD_API Context {
  public:
-  Context(PD::Context& ctx) { pIO = IO::New(ctx); }
+  Context() {}
   ~Context() = default;
 
-  PD_SHARED(Context);
-
-  IO::Ref GetIO() { return pIO; }
+  IO& GetIO() { return pIO; }
   void AddViewPort(const ID& id, const ivec4& vp);
   void UseViewPort(const ID& id);
   void Update();
-  Menu::Ref BeginMenu(const ID& id, UI7MenuFlags flags = 0,
-                      bool* pShow = nullptr);
-  Menu::Ref CurrentMenu() { return pCurrent; }
+  Menu* BeginMenu(const ID& id, UI7MenuFlags flags = 0, bool* pShow = nullptr);
+  Menu* CurrentMenu() { return pCurrent; }
   void EndMenu();
   void AboutMenu(bool* show = nullptr);
   void MetricsMenu(bool* show = nullptr);
   void StyleEditor(bool* show = nullptr);
 
-  Li::DrawList::Ref GetDrawData() { return pIO->FDL; }
+  Li::Drawlist& GetDrawData() { return pIO.FDL; }
 
-  Menu::Ref pGetOrCreateMenu(const ID& id) {
+  Menu* pGetOrCreateMenu(const ID& id) {
     auto menu = pMenus.find(id);
     if (menu == pMenus.end()) {
-      pMenus[id] = Menu::New(id, pIO);
+      pMenus[id] = new Menu(id, pIO);
       menu = pMenus.find(id);
     }
     return menu->second;
   }
 
-  IO::Ref pIO;
+  IO pIO;
   /** Current Menu */
-  Menu::Ref pCurrent = nullptr;
+  Menu* pCurrent = nullptr;
   std::vector<u32> pCurrentMenus;
   std::vector<u32> pDFO; /** Debug Final Order */
-  std::unordered_map<u32, Menu::Ref> pMenus;
+  std::unordered_map<u32, Menu*> pMenus;
 };
 }  // namespace UI7
 }  // namespace PD

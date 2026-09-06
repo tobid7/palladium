@@ -35,8 +35,8 @@ PD_API void Button::HandleInput() {
   color = UI7Color_Button;
   // Assert(screen.get(), "Screen is not set up!");
   // if (screen->ScreenType() == Screen::Bottom) {
-  if (io->InputHandler->DragObject(this->GetID(), fvec4(FinalPos(), size))) {
-    if (io->InputHandler->DragReleased) {
+  if (io->InputHandler.DragObject(this->GetID(), fvec4(FinalPos(), size))) {
+    if (io->InputHandler.DragReleased) {
       color = UI7Color_ButtonActive;
       pressed = true;
     } else {
@@ -49,11 +49,12 @@ PD_API void Button::HandleInput() {
 PD_API void Button::Draw() {
   // Assert(io.get() && list.get(), "Did you run Container::Init correctly?");
   // io->Ren->OnScreen(screen);
+  list->SetFont(GetFont());
   list->PathRect(FinalPos(), FinalPos() + size, io->FrameRounding);
-  list->PathFill(io->Theme->Get(color));
+  list->PathFill(io->Theme.Get(color));
   list->LayerUp();
-  list->DrawText(FinalPos() + size * 0.5 - tdim * 0.5, label,
-                 io->Theme->Get(UI7Color_Text));
+  list->DrawText(FinalPos() + size * 0.5 - tdim * 0.5, label.c_str(),
+                 io->Theme.Get(UI7Color_Text));
   list->LayerDown();
 }
 

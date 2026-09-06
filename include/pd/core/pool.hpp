@@ -1,20 +1,41 @@
 #pragma once
 
-#include <pd/core/common.hpp>
-
+#include <memory>
+#include <pd/common.hpp>
 namespace PD {
+// lets take use of c++ 20 concepts
+// https://en.cppreference.com/w/cpp/language/constraints.html
+template <typename T>
+concept Resettable = requires(T& v) { v.Reset(); };
+
 template <typename T, typename Alloc = std::allocator<T>>
 class Pool {
  public:
+  using value_type = T;
+  using iterator = T*;
+  using const_iterator = const T*;
+
   Pool() = default;
-  ~Pool() = default;
+  ~Pool() {
+    if (pData) {
+      for (size_t i = 0; i < pCap; i++) {
+        std::allocator_traits<Alloc>::destroy(pAlloc, &pData[i]);
+      }
+      pAlloc.deallocate(pData, pCap);
+      pData = nullptr;
+    }
+  }
 
   static Pool* Create(size_t size) { return new Pool(size); }
 
   void Init(size_t size) {
     pPos = 0;
     pCap = size;
-    pPool.resize(size);
+    pData = pAlloc.allocate(size);
+    for (size_t i = 0; i < pCap; i++) {
+      std::allocator_traits<Alloc>::construct(pAlloc, &pData[i]);
+    }
+    PDLOG("Pool::Init({})", size);
   }
 
   Pool(const Pool&) = delete;
@@ -23,29 +44,123 @@ class Pool {
   Pool& operator=(Pool&&) = delete;
 
   T* Allocate(size_t num = 1) {
-    if (CheckLimits(num)) return nullptr;
-    T* ret = &pPool[pPos];
+    ExpandIf(num);
+    T* ret = &pData[pPos];
     pPos += num;
     return ret;
   }
 
-  bool CheckLimits(size_t num) {
-    if ((pPos + num) >= pCap) {
-      throw std::runtime_error(
-          std::format("[PD::Pool]: Trying to allocate {} elements but this is "
-                      "going out of range ({}/{})",
-                      num, pPos + num, pCap));
-      return true;
-    }
-    return false;
+  void Push(const T& elem) {
+    T* e = Allocate(1);
+    *e = elem;
   }
 
-  void Reset() { pPos = 0; }
+  void Put(size_t idx, const T& elem) {
+    if (idx >= pCap) ExpandIf(idx);
+    pData[idx] = elem;
+  }
+
+  void ExpandIf(size_t req) {
+    if ((pPos + req) <= pCap) return;
+    size_t ncap = std::max(pCap * 2, pPos + req);
+    T* nu = pAlloc.allocate(ncap);
+    if (pData) {
+      for (size_t i = 0; i < pPos; i++) {
+        std::allocator_traits<Alloc>::construct(
+            pAlloc, &nu[i], std::move_if_noexcept(pData[i]));
+      }
+      for (size_t i = 0; i < pCap; i++) {
+        std::allocator_traits<Alloc>::destroy(pAlloc, &pData[i]);
+      }
+      pAlloc.deallocate(pData, pCap);
+    }
+    for (size_t i = pPos; i < ncap; i++) {
+      std::allocator_traits<Alloc>::construct(pAlloc, &nu[i]);
+    }
+    PDLOG("Pool::ExpandIf({}): {} -> {}", req, pCap, ncap);
+    pData = nu;
+    pCap = ncap;
+  }
+
+  void Reset() {
+    for (size_t i = 0; i < pCap; i++) {
+      std::allocator_traits<Alloc>::destroy(pAlloc, &pData[i]);
+    }
+    pPos = 0;
+    for (size_t i = 0; i < pCap; i++) {
+      std::allocator_traits<Alloc>::construct(pAlloc, &pData[i]);
+    }
+  }
+
+  void ResetFast() {
+    if constexpr (Resettable<T>) {
+      for (size_t i = 0; i < pPos; i++) {
+        pData[i].Reset();
+      }
+    } else if constexpr (!std::is_trivially_destructible_v<T>) {
+      PDWARN(
+          "ResetFast should only be executed with a non destructible type or a "
+          "class/struct that has a Reset func! {} is not "
+          "trivially_destructible and has no reset func.",
+          TypeName<T>());
+    }
+    pPos = 0;
+  }
+
+  /** THE ILLEGAL RESET FUNC */
+  void NoReset() { pPos = 0; }
+
+  /**
+   * Copy the data of another pool
+   */
+  void AppendCopy(const Pool& v) {
+    if (!v.size()) return;
+    ExpandIf(v.size());
+    for (size_t i = 0; i < v.size(); i++) {
+      pData[pPos + i] = v.pData[i];
+    }
+    pPos += v.size();
+  }
+
+  /**
+   * Move the data of another pool
+   */
+  void AppendMove(Pool& v) {
+    if (!v.size()) return;
+    ExpandIf(v.size());
+    for (size_t i = 0; i < v.size(); i++) {
+      pData[pPos + i] = std::move(v.pData[i]);
+    }
+    pPos += v.size();
+    v.ResetFast();
+  }
+
+  size_t size() const { return pPos; }
+  size_t capacity() const { return pCap; }
+  T& at(size_t idx) { return pData[idx]; }
+  const T& at(size_t idx) const { return pData[idx]; }
+  iterator begin() { return pData; }
+  iterator end() { return pData + pPos; }
+  const_iterator begin() const { return pData; }
+  const_iterator end() const { return pData + pPos; }
+
+  T& operator[](size_t idx) { return at(idx); }
+  const T& operator[](size_t idx) const { return at(idx); }
 
  private:
-  Pool(size_t size) : pCap(size), pPos(0) { pPool.resize(size); }
+  Pool(size_t size) : pCap(size), pPos(0) {
+    pPos = 0;
+    pCap = size;
+    pData = pAlloc.allocate(size);
+    for (size_t i = 0; i < pCap; i++) {
+      std::allocator_traits<Alloc>::construct(pAlloc, &pData[i]);
+    }
+    PDLOG("Pool::Init({})", size);
+  }
+
   size_t pCap = 0;
   size_t pPos = 0;
-  std::vector<T, Alloc> pPool;
+  Alloc pAlloc;
+  T* pData = nullptr;
 };
 }  // namespace PD

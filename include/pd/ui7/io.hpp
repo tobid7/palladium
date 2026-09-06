@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
+#include <list>
 #include <pd/core/core.hpp>
 #include <pd/pd_p_api.hpp>
 #include <pd/ui7/input_api.hpp>
@@ -30,25 +31,14 @@ SOFTWARE.
 #include <pd/ui7/viewport.hpp>
 
 namespace PD {
-class Context;
 namespace UI7 {
+class Label;
+class Image;
+class DynObj;
 class PD_API IO {
  public:
-  IO(PD::Context& ctx) : pCtx(ctx) {
-    Time = Timer::New(*pCtx.Os().get());
-    InputHandler = InputHandler::New(pCtx);
-    Theme = UI7::Theme::New();
-    Back = Li::DrawList::New(pCtx);
-    Front = Li::DrawList::New(pCtx);
-    FDL = Li::DrawList::New(pCtx);
-    DeltaStats = TimeStats::New(60);
-    /** Probably not the best solution i guess */
-    CurrentViewPort =
-        ViewPort::New("Default", ivec4(ivec2(0, 0), pCtx.Gfx()->ViewPort));
-  }
-  ~IO() {}
-
-  PD_SHARED(IO);
+  IO();
+  ~IO();
 
   /**
    * IO Update Internal Variables
@@ -58,62 +48,79 @@ class PD_API IO {
   /**
    * Final Draw List for PD::Li::Gfx::RednerDrawData
    *
-   * Possible thanks to the DrawList::Merge Feature
+   * Possible thanks to the Drawlist::Merge Feature
    */
-  Li::DrawList::Ref FDL = nullptr;
-  ViewPort::Ref CurrentViewPort;
+  Li::Drawlist FDL;
+  ViewPort CurrentViewPort;
   // ivec4 CurrentViewPort = ivec4(0, 0, 0, 0);
-  std::unordered_map<u32, ViewPort::Ref> ViewPorts;
+  std::unordered_map<u32, ViewPort> ViewPorts;
   float Framerate = 0.f;
   float Delta = 0.f;
   u64 LastTime = 0;
-  TimeStats::Ref DeltaStats;
-  Timer::Ref Time;
-  Li::Font::Ref Font;
+  TimeStats DeltaStats;
+  Timer Time;
+  Li::Font* Font = nullptr;
   float FontScale = 0.7f;
-  UI7::Theme::Ref Theme;
+  UI7::Theme Theme;
   fvec2 MenuPadding = 5.f;
   fvec2 FramePadding = 5.f;
   float ItemRowHeight = 0.f;
   float FrameRounding = 0.f;
-  fvec2 ItemSpace = vec2(5.f, 2.f);
+  fvec2 ItemSpace = fvec2(5.f, 2.f);
   fvec2 MinSliderDragSize = 10.f;  // Min height (Vt) and Min Width (Hz)
   bool ShowMenuBorder = true;
   bool ShowFrameBorder = false;  // not implemented yet
   bool WrapLabels = false;       // Beta state
   float OverScrollMod = 0.15f;
   u64 DoubleClickTime = 500;  // Milliseconds
-  std::list<std::pair<UI7::ID, Li::DrawList::Ref>> DrawListRegestry;
-  // Short define for DrawKistRegestryLast
-  std::list<std::pair<UI7::ID, Li::DrawList::Ref>> pDLRL;
-  Li::DrawList::Ref Back;
-  Li::DrawList::Ref Front;
+  std::list<std::pair<UI7::ID, Li::Drawlist*>> DrawlistRegestry;
+  // Short define for DrawKLstRegestryLast
+  std::list<std::pair<UI7::ID, Li::Drawlist*>> pDLRL;
+  Li::Drawlist Back;
+  Li::Drawlist Front;
   u32 NumVertices = 0;  ///< Debug Vertices Num
   u32 NumIndices = 0;   ///< Debug Indices Num
   std::vector<u32> MenuOrder;
+  std::vector<Li::Font*> FontStack;
 
-  PD::Context& pCtx;  // Palladium base context
+  // Pools
+  PD::Pool<UI7::Label> LabelPool;
+  PD::Pool<UI7::Image> ImagePool;
+  PD::Pool<UI7::DynObj> DynObjPool;
 
-  // DrawListApi
-  void RegisterDrawList(const UI7::ID& id, Li::DrawList::Ref v) {
-    DrawListRegestry.push_back(std::make_pair(id, v));
+  // DrawlistApi
+  void RegisterDrawlist(const UI7::ID& id, Li::Drawlist* v) {
+    DrawlistRegestry.push_back(std::make_pair(id, v));
   }
 
   void AddViewPort(const ID& id, const ivec4& size) {
-    if (ViewPorts.count(id)) {
+    if (ViewPorts.count(id.RawID())) {
       return;
     }
-    ViewPorts[id] = ViewPort::New(id, size);
+    ViewPorts[id.RawID()] = ViewPort(id, size);
   }
 
-  ViewPort::Ref GetViewPort(const ID& id) {
-    if (!ViewPorts.count(id)) {
-      return nullptr;
+  ViewPort& GetViewPort(const ID& id) {
+    if (!ViewPorts.count(id.RawID())) {
+      static ViewPort err;
+      return err;
     }
-    return ViewPorts[id];
+    return ViewPorts[id.RawID()];
   }
 
-  UI7::InputHandler::Ref InputHandler;
+  void PushFont(Li::Font* f) {
+    FontStack.push_back(Font);
+    Font = f;
+  }
+
+  void PopFont() {
+    if (!FontStack.empty()) {
+      Font = FontStack.back();
+      FontStack.pop_back();
+    }
+  }
+
+  UI7::InputHandler InputHandler;
 };
 }  // namespace UI7
 }  // namespace PD

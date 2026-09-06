@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
+#include <algorithm>
 #include <pd/ui7/container/label.hpp>
 #include <pd/ui7/container/slider.hpp>
 #include <type_traits>
@@ -51,14 +52,14 @@ PD_API void Slider<T>::HandleInput() {
   }
   // Unsafe but is the fastest solution
   float xps = FinalPos().x;
-  if (io->InputHandler->DragObject(
+  if (io->InputHandler.DragObject(
           this->GetID(),
           fvec4(FinalPos() + fvec2(2, 0), fvec2(width, GetSize().y)))) {
-    if (!io->InputHandler->DragReleasedAW) {
+    if (!io->InputHandler.DragReleasedAW) {
       *data = std::clamp(
-          T(max * (std::clamp(io->InputHandler->DragLastPosition.x - xps, 0.f,
-                              width) /
-                   width)),
+          T(max *
+            (std::clamp(io->InputHandler.DragLastPosition.x - xps, 0.f, width) /
+             width)),
           this->min, this->max);
     }
   }
@@ -69,27 +70,28 @@ template <typename T>
 PD_API void Slider<T>::Draw() {
   // Assert(io.get() && list.get(), "Did you run Container::Init correctly?");
   // io->Ren->OnScreen(screen);
+  list->SetFont(GetFont());
   std::string p;
   if constexpr (std::is_floating_point_v<T>) {
     p = std::format("{:.{}f}", *data, precision);
   } else {
     p = std::format("{}", *data);
   }
-  fvec2 td = io->Font->GetTextBounds(p, io->FontScale);
+  fvec2 td = io->Font->GetTextBounds(p.c_str(), io->FontScale);
   list->PathRect(FinalPos(), FinalPos() + fvec2(width, td.y) + io->FramePadding,
                  io->FrameRounding);
-  list->PathFill(io->Theme->Get(UI7Color_Button));
+  list->PathFill(io->Theme.Get(UI7Color_Button));
   list->PathRect(FinalPos() + 2 + PD::fvec2(slp, 0),
                  FinalPos() + fvec2(slp + slw - 2, td.y - 2) + io->FramePadding,
                  io->FrameRounding);
-  list->PathFill(io->Theme->Get(UI7Color_ButtonActive));
+  list->PathFill(io->Theme.Get(UI7Color_ButtonActive));
   list->LayerUp();
-  list->DrawTextEx(FinalPos(), p, io->Theme->Get(UI7Color_Text),
+  list->DrawTextEx(FinalPos(), p.c_str(), io->Theme.Get(UI7Color_Text),
                    LiTextFlags_AlignMid, fvec2(width, td.y) + io->FramePadding);
   list->LayerDown();
   list->DrawText(FinalPos() + fvec2(width + io->FramePadding.x * 2.f,
                                     io->FramePadding.y * 0.5),
-                 label, io->Theme->Get(UI7Color_Text));
+                 label.c_str(), io->Theme.Get(UI7Color_Text));
 }
 
 template <typename T>
@@ -98,7 +100,7 @@ PD_API void Slider<T>::Update() {
   //  Probably need to find a faster solution (caching sizes calculated here)
   slw = std::clamp(static_cast<float>(width / max), 3.f, width);
   slp = static_cast<float>((float)*data / (float)max) * (width - slw);
-  fvec2 tdim = io->Font->GetTextBounds(label, io->FontScale);
+  fvec2 tdim = io->Font->GetTextBounds(label.c_str(), io->FontScale);
 
   this->SetSize(
       fvec2(width + tdim.x + io->ItemSpace.x * 2, tdim.y + io->FramePadding.y));

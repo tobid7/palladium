@@ -43,12 +43,11 @@ class PD_API Button : public Container {
    * @param pos Base Position
    * @param lr Reference to the Renderer
    */
-  Button(const std::string& label, UI7::IO::Ref io) {
+  Button(const std::string& label, UI7::IO& io) {
     this->label = label;
-    this->tdim = io->Font->GetTextBounds(label, io->FontScale);
+    this->tdim = io.Font->GetTextBounds(label.c_str(), io.FontScale);
   }
   ~Button() = default;
-  PD_SHARED(Button);
 
   /** Return true if butten is pressed*/
   bool IsPressed() { return pressed; }

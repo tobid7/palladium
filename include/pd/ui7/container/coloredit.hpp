@@ -40,15 +40,16 @@ class PD_API ColorEdit : public Container {
    * @param pos Base Position
    * @param lr Reference to the Renderer
    */
-  ColorEdit(const std::string& label, u32* color, UI7::IO::Ref io) {
+  ColorEdit(const std::string& label, u32* color, UI7::IO& io) {
     // PD::Assert(color != nullptr, "Input Color Address is null!");
     this->label = label;
     this->color_ref = color;
     this->initial_color = *color;
-    this->tdim = io->Font->GetTextBounds(label, io->FontScale);
+    this->tdim = io.Font->GetTextBounds(label.c_str(), io.FontScale);
   }
-  ~ColorEdit() = default;
-  PD_SHARED(ColorEdit);
+  ~ColorEdit() {
+    if (layout) delete layout;
+  }
 
   /**
    * Override for the Input Handler
@@ -69,7 +70,7 @@ class PD_API ColorEdit : public Container {
   u32* color_ref = nullptr;  ///< Color Reference
   u32 initial_color;         ///< Initial Color
   std::string label;         ///< Label of the Button
-  Layout::Ref layout;        ///< Layout to open
+  Layout* layout = nullptr;  ///< Layout to open
   bool is_shown = false;     ///< AHow Layout Editor
 };
 }  // namespace UI7

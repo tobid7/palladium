@@ -1,6 +1,12 @@
-[submodule "backends/desktop/glfw"]
-	path = backends/desktop/glfw
-	url = https://github.com/glfw/glfw
-[submodule "backends/3ds/libpicasso"]
-	path = backends/3ds/libpicasso
-	url = https://github.com/npid7/libpicasso
+[submodule "vendor/stb"]
+	path = vendor/stb
+	url = https://github.com/nothings/stb.git
+[submodule "vendor/glfw"]
+	path = vendor/glfw
+	url = https://github.com/glfw/glfw.git
+[submodule "vendor/libpicasso"]
+	path = vendor/libpicasso
+	url = https://github.com/tobid7/libpicasso
+[submodule "vendor/spirv-helper"]
+	path = vendor/spirv-helper
+	url = https://github.com/tobid7/spirv-helper.git

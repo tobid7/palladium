@@ -64,7 +64,6 @@ class PD_API Theme {
    */
   Theme() { Default(*this); }
   ~Theme() {}
-  PD_SHARED(Theme);
 
   /**
    * Simple static Loader for the Default Theme

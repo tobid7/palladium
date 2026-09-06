@@ -1,0 +1,67 @@
+#pragma once
+
+#ifdef __3DS__
+#include <3ds.h>
+#endif
+
+#include <limits>
+#include <memory>
+#include <stdexcept>
+
+// Custom C++ Allocator class to interface with libctru linear heap memory
+// based on this guide:
+// https://johnfarrier.com/custom-allocators-in-c-high-performance-memory-management/
+
+namespace PD {
+template <typename T>
+class LinearAllocator {
+ public:
+  using value_type = T;
+  LinearAllocator() noexcept = default;
+  template <typename U>
+  constexpr LinearAllocator(const LinearAllocator<U>&) noexcept {}
+
+  T* allocate(std::size_t n) {
+    if (n > max_size()) {
+      throw std::runtime_error("[PD] LinearAllocator: Bad alloc!");
+    }
+#ifdef __3DS__
+    return static_cast<T*>(linearAlloc(n * sizeof(T)));
+#else
+    return static_cast<T*>(malloc(n * sizeof(T)));
+#endif
+  }
+#ifdef __3DS__
+  void deallocate(T* p, std::size_t) noexcept { linearFree(p); }
+#else
+  void deallocate(T* p, std::size_t) noexcept { free(p); }
+#endif
+
+  template <class U, class... Args>
+  void construct(U* p, Args&&... args) {
+    ::new ((void*)p) U(std::forward<Args>(args)...);
+  }
+
+  template <class U>
+  void destroy(U* p) {
+    p->~U();
+  }
+
+  friend bool operator==(const LinearAllocator, const LinearAllocator) {
+    return true;
+  }
+  friend bool operator!=(const LinearAllocator, const LinearAllocator) {
+    return false;
+  }
+
+#ifdef __3DS__
+  // Use linearSpace free as max_size to not allocate out of bounds
+  // or to b eable to see a crash report screen.
+  size_t max_size() const noexcept { return linearSpaceFree(); }
+#else
+  size_t max_size() const noexcept {
+    return std::numeric_limits<size_t>::max();
+  }
+#endif
+};
+}  // namespace PD

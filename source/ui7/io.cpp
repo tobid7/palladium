@@ -22,23 +22,40 @@ SOFTWARE.
  */
 
 #include <pd/core/core.hpp>
+#include <pd/drivers/drivers.hpp>
+#include <pd/ui7/containers.hpp>
 #include <pd/ui7/io.hpp>
 
 namespace PD {
+
+PD_API UI7::IO::IO() : DeltaStats(60), CurrentViewPort("", 0) {
+  /** Probably not the best solution i guess */
+  // CurrentViewPort =
+  //   ViewPort::New("Default", ivec4(ivec2(0, 0), pCtx.Gfx()->ViewPort));
+  // Start a little larger on these
+  LabelPool.Init(512);
+  DynObjPool.Init(512);
+}
+
+PD_API UI7::IO::~IO() {}
+
 PD_API void UI7::IO::Update() {
   /** Todo: find out if we even still use the Drawlist regestry */
-  u64 current = pCtx.Os()->GetNanoTime();
+  u64 current = PD::Os::GetTimeNano();
   Delta = static_cast<float>(current - LastTime) / 1000000.f;
   LastTime = current;
-  DeltaStats->Add(Delta * 1000);
-  Time->Update();
-  InputHandler->Update();
+  DeltaStats.Add(Delta * 1000);
+  Time.Update();
+  InputHandler.Update();
   Framerate = 1000.f / Delta;
-  DrawListRegestry.clear();
-  DrawListRegestry.push_front(std::make_pair("CtxBackList", Back));
+  DrawlistRegestry.clear();
+  DrawlistRegestry.push_front(std::make_pair("CtxBackList", &Back));
   if (Font) ItemRowHeight = FontScale * Font->PixelHeight;
   // RegisterDrawList("CtxBackList", Back);
-  NumIndices = FDL->pNumIndices;
-  NumVertices = FDL->pNumVertices;
+  NumIndices = FDL.GetNumIndices();
+  NumVertices = FDL.GetNumVertices();
+  LabelPool.ResetFast();
+  DynObjPool.ResetFast();
+  ImagePool.ResetFast();
 }
 }  // namespace PD

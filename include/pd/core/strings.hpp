@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/core/common.hpp>
+#include <pd/common.hpp>
 
 namespace PD {
 /**
@@ -92,9 +92,7 @@ PD_API const std::string PathRemoveExtension(const std::string& path);
  */
 template <typename T>
 inline const std::string ToHex(const T& v) {
-  std::stringstream s;
-  s << "0x" << std::setfill('0') << std::setw(sizeof(v) * 2) << std::hex << v;
-  return s.str();
+  return std::format("{0:0{1}X}", v, sizeof(v) * 2);
 }
 /**
  * Generate a Hash out of a string
@@ -107,24 +105,22 @@ PD_API u32 FastHash(const std::string& s);
  * Based on their Macros
  * @return CompilerName: Version
  */
-inline const std::string GetCompilerVersion() {
-  /// As the function looks like this Project is meant to
-  /// Be ported to other systems as well
-  std::stringstream res;
+inline const char* GetCompilerVersion() {
+/// As the function looks like this Project is meant to
+/// Be ported to other systems as well
+#define __mks(x) #x
+#define mkstring(x) __mks(x)
 #ifdef __clang__  // Check clang first
-  res << "Clang: " << __clang_major__ << ".";
-  res << __clang_minor__ << ".";
-  res << __clang_patchlevel__;
+  return "Clang: " mkstring(__clang_major__) "." mkstring(
+      __clang_minor__) "." mkstring(__clang_patchlevel__);
 #elif __GNUC__
-  res << "GCC: " << __GNUC__;
-  res << "." << __GNUC_MINOR__ << ".";
-  res << __GNUC_PATCHLEVEL__;
+  return "GCC: " mkstring(__GNUC__) "." mkstring(__GNUC_MINOR__) "." mkstring(
+      __GNUC_PATCHLEVEL__);
 #elif _MSC_VER
-  res << "MSVC: " << _MSC_VER;
+  return "MSVC; " mkstring(_MSC_VER);
 #else
-  res << "Unknown Compiler";
+  return "Unknown Compiler";
 #endif
-  return res.str();
 }
 }  // namespace Strings
 class U8Iterator {
@@ -153,7 +149,7 @@ class U8Iterator {
   }
 
   bool PeekNext32(u32& ret) {
-    // if ((ptr + 1) == 0 || *(ptr + 1) == 0) return false;
+    if (ptr == nullptr || *(ptr + 1) == 0) return false;
     u8 c = *ptr;
     if (c < 0x80) {
       ret = c;

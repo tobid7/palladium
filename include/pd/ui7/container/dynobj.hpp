@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+#include <functional>
 #include <pd/ui7/container/container.hpp>
 #include <pd/ui7/io.hpp>
 
@@ -37,21 +38,19 @@ namespace UI7 {
  */
 class PD_API DynObj : public Container {
  public:
+  DynObj() {}
   /**
    * Button Object constructor
    * @param label Label of the Button
    * @param pos Base Position
    * @param lr Reference to the Renderer
    */
-  DynObj(std::function<void(UI7::IO::Ref, Li::DrawList::Ref, Container*)>
-             RenderFunc) {
+  DynObj(std::function<void(UI7::IO*, Li::Drawlist*, Container*)> RenderFunc) {
     pRenFun = RenderFunc;
   }
   ~DynObj() = default;
 
-  PD_SHARED(DynObj);
-
-  void AddInputHandler(std::function<void(UI7::IO::Ref, Container*)> inp) {
+  void AddInputHandler(std::function<void(UI7::IO*, Container*)> inp) {
     pInp = inp;
   }
 
@@ -71,11 +70,19 @@ class PD_API DynObj : public Container {
   /** Function to Update Size if framepadding changes */
   void Update() override;
 
+  void Reset() override {
+    Container::Reset();
+    color = UI7Color_Button;
+    pressed = false;
+    pRenFun = nullptr;
+    pInp = nullptr;
+  }
+
  private:
   UI7Color color = UI7Color_Button;  ///< current button color
   bool pressed = false;              ///< ispressed value
-  std::function<void(UI7::IO::Ref, Li::DrawList::Ref, Container*)> pRenFun;
-  std::function<void(UI7::IO::Ref, Container*)> pInp;
+  std::function<void(UI7::IO*, Li::Drawlist*, Container*)> pRenFun;
+  std::function<void(UI7::IO*, Container*)> pInp;
 };
 }  // namespace UI7
 }  // namespace PD

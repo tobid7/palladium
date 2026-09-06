@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include <pd/core/common.hpp>
+#include <pd/common.hpp>
 #include <pd/core/vec3.hpp>
 
 namespace PD {
@@ -106,6 +106,16 @@ struct PD_API Mat4 {
     ret(1, 1) = y;
     ret(2, 2) = z;
     ret(3, 3) = 1.f;
+    return ret;
+  }
+
+  constexpr Mat4 Transpose() const {
+    Mat4 ret;
+    for (int i = 0; i < 4; ++i) {
+      for (int j = 0; j < 4; ++j) {
+        ret(i, j) = (*this)(j, i);
+      }
+    }
     return ret;
   }
 

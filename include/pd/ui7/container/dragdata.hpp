@@ -46,7 +46,7 @@ class PD_API DragData : public Container {
    * @param step To set the modifier for drag movement
    * @param precision for float and double to set precision
    */
-  DragData(const std::string& label, T* data, size_t num_elms, UI7::IO::Ref io,
+  DragData(const std::string& label, T* data, size_t num_elms, UI7::IO& io,
            T min = std::numeric_limits<T>::min(),
            T max = std::numeric_limits<T>::max(), T step = 1,
            int precision = 1) {
@@ -58,12 +58,10 @@ class PD_API DragData : public Container {
     this->max = max;
     this->step = step;
     this->precision = precision;
-    this->tdim = io->Font->GetTextBounds(label, io->FontScale);
+    this->tdim = io.Font->GetTextBounds(label.c_str(), io.FontScale);
   }
   ~DragData() = default;
 
-  /** Als ob das funktioniert... */
-  PD_SHARED(DragData<T>);
   /**
    * Override for the Input Handler
    * @note This function is usally called by Menu::Update

@@ -1,115 +1,90 @@
-/*
-MIT License
-Copyright (c) 2024 - 2026 René Amthor (tobid7)
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
- */
-
+#include <algorithm>
+#include <iostream>
+#include <pd/drivers/gfx.hpp>
 #include <pd/lithium/drawlist.hpp>
-#include <pd/lithium/renderer.hpp>
-
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
+#include <pd/lithium/formatters.hpp>
+#include <pd/lithium/math.hpp>
 
 namespace PD {
 namespace Li {
-PD_API DrawList::DrawList(Context& ctx, int initial_size) : pCtx(&ctx) {
-  DrawSolid();
-  pPool.Init(initial_size);
-}
+PD_API Drawlist::Drawlist() { Clear(); }
 
-PD_API DrawList::~DrawList() {
-  Clear();
-  pPool.Deinit();
-}
+PD_API Drawlist::~Drawlist() { Clear(); }
 
-PD_API void DrawList::DrawSolid() { CurrentTex = pCtx->GetSolidTex(); }
-
-PD_API void DrawList::Clear() {
-  pNumIndices = 0;
-  pNumVertices = 0;
-  pPool.Reset();
-  pPath.clear();
-  if (pCurrentFont) {
-    pCurrentFont->CleanupTMS();
+PD_API void Drawlist::Merge(Drawlist& other) {
+  size_t start = pCommands.size();
+  pCommands.AppendMove(other.pCommands);
+  for (size_t i = start; i < pCommands.size(); i++) {
+    pCommands[i].Layer += this->pCurrentLayer;
   }
-  while (!pClipRects.empty()) {
-    pClipRects.pop();
-  }
-  DrawSolid();
+  other.Clear();
 }
 
-PD_API void DrawList::Merge(DrawList::Ref list) {
-  pPool.Merge(list->pPool);
-  /*for (size_t i = 0; i < list->pDrawList.size(); i++) {
-    pNumIndices += list->pDrawList[i]->IndexBuffer.size();
-    pNumVertices += list->pDrawList[i]->VertexBuffer.size();
-    auto cmd = pPool.NewCmd();
-    pDrawList.push_back(list->pDrawList[i]);
-  }*/
-  /** Make sure The list gets cleared */
-  list->Clear();
-}
-
-PD_API void DrawList::Copy(DrawList::Ref list) { pPool.Copy(list->pPool); }
-
-PD_API void DrawList::Optimize() {
-  pPool.Sort();
-  /*std::sort(pDrawList.begin(), pDrawList.end(),
-            [](const PD::Li::Command::Ref &a, const PD::Li::Command::Ref &b) {
-              if (a->Layer == b->Layer) {  // Same layer
-                if (a->Tex == b->Tex) {    // same tex
-                  return a->Index < b->Index;
-                }
-                return a->Tex < b->Tex;  // order by address
-              }
-              return a->Layer < b->Layer;  // Order by layer
-            });*/
-}
-
-PD_API Command::Ref DrawList::GetNewCmd() {
-  Command::Ref cmd = pPool.NewCmd();
-  cmd->Index = pPool.Size() - 1;
-  cmd->Tex = CurrentTex->Address;
-  pClipCmd(cmd);
-  return cmd;
-}
-
-PD_API void DrawList::pClipCmd(Command::Ref cmd) {
-  if (!pClipRects.empty()) {
-    cmd->ScissorOn = true;
-    cmd->ScissorRect = ivec4(pClipRects.top());
+PD_API void Drawlist::Copy(Drawlist& other) {
+  int start = pCommands.size();
+  pCommands.AppendCopy(other.pCommands);
+  for (size_t i = start; i < pCommands.size(); i++) {
+    pCommands[i].Layer += this->pCurrentLayer;
   }
 }
 
-PD_API void DrawList::PathArcToN(const fvec2& c, float radius, float a_min,
-                                 float a_max, int segments) {
+PD_API void Drawlist::Optimize() {
+  if (pCommands.size() <= 1) return;
+  std::stable_sort(pCommands.begin(), pCommands.end(),
+                   [](const Command& a, const Command& b) {
+                     if (a.Layer != b.Layer) return a.Layer < b.Layer;
+                     if (a.SDF != b.SDF) return a.SDF < b.SDF;
+                     return a.Tex < b.Tex;
+                   });
+}
+
+PD_API void Drawlist::Clear() {
+  UnbindTexture();
+  pPath.ResetFast();
+  pCommands.NoReset();
+  pCurrentLayer = 0;
+}
+
+/** Command Allocation */
+PD_API Command& Drawlist::NewCommand() {
+  auto cmd = pCommands.Allocate(1);
+  cmd->Reset();
+  cmd->Layer = pCurrentLayer;
+  cmd->Tex = pCurrentTexture.GetID();
+  return *cmd;
+}
+
+PD_API void Drawlist::BindTexture(const Texture& tex) { pCurrentTexture = tex; }
+
+/** Path API */
+PD_API void Drawlist::PathStroke(const PD::Color& color, int t,
+                                 LiDrawFlags flags) {
+  DrawPolyLine(pPath, color, flags, t);
+  PathClear();
+}
+
+PD_API void Drawlist::PathFill(const PD::Color& color) {
+  DrawConvexPolyFilled(pPath, color);
+  PathClear();
+}
+
+PD_API void Drawlist::PathFillGradient(const PD::Color& a, const PD::Color& b,
+                                       float rad) {
+  DrawConvexPolyFilled(pPath, a, b, rad);
+  PathClear();
+}
+
+PD_API void Drawlist::PathArcToN(const fvec2& c, float r, float amin,
+                                 float amax, int s) {
   // Path.push_back(c);
-  PathReserve(segments + 1);
-  for (int i = 0; i < segments; i++) {
-    float a = a_min + ((float)i / (float)segments) * (a_max - a_min);
-    PathAdd(vec2(c.x + std::cos(a) * radius, c.y + std::sin(a) * radius));
+  PathReserve(s + 1);
+  for (int i = 0; i < s; i++) {
+    float a = amin + ((float)i / (float)s) * (amax - amin);
+    PathAdd(vec2(c.x + std::cos(a) * r, c.y + std::sin(a) * r));
   }
 }
 
-PD_API void DrawList::PathFastArcToN(const fvec2& c, float r, float amin,
+PD_API void Drawlist::PathFastArcToN(const fvec2& c, float r, float amin,
                                      float amax, int s) {
   /**
    * Funcion with less division overhead
@@ -123,14 +98,15 @@ PD_API void DrawList::PathFastArcToN(const fvec2& c, float r, float amin,
   }
 }
 
-PD_API void DrawList::PathRect(fvec2 a, fvec2 b, float rounding) {
+PD_API void Drawlist::PathRect(const fvec2& tl, const fvec2& br,
+                               float rounding) {
   if (rounding == 0.f) {
-    PathAdd(a);
-    PathAdd(vec2(b.x, a.y));
-    PathAdd(b);
-    PathAdd(vec2(a.x, b.y));
+    PathAdd(tl);
+    PathAdd(vec2(br.x, tl.y));
+    PathAdd(br);
+    PathAdd(vec2(tl.x, br.y));
   } else {
-    float r = std::min({rounding, (b.x - a.x) * 0.5f, (b.y - a.y) * 0.5f});
+    float r = std::min({rounding, (br.x - tl.x) * 0.5f, (br.y - tl.y) * 0.5f});
     /** Calculate Optimal segment count automatically */
     float corner = M_PI * 0.5f;
     int segments = std::max(3, int(std::ceil(corner / (6.0f * M_PI / 180.0f))));
@@ -140,29 +116,30 @@ PD_API void DrawList::PathRect(fvec2 a, fvec2 b, float rounding) {
      * The Commands need to be setup clockwise
      */
     /** Top Left */
-    PathAdd(vec2(a.x + r, a.y));
-    PathFastArcToN(vec2(b.x - r, a.y + r), r, -M_PI / 2.0f, 0.0f, segments);
+    PathAdd(vec2(tl.x + r, tl.y));
+    PathFastArcToN(vec2(br.x - r, tl.y + r), r, -M_PI / 2.0f, 0.0f, segments);
     /** Top Right */
-    PathAdd(vec2(b.x, b.y - r));
-    PathFastArcToN(vec2(b.x - r, b.y - r), r, 0.0f, M_PI / 2.0f, segments);
+    PathAdd(vec2(br.x, br.y - r));
+    PathFastArcToN(vec2(br.x - r, br.y - r), r, 0.0f, M_PI / 2.0f, segments);
     /** Bottom Right */
-    PathAdd(vec2(a.x + r, b.y));
-    PathFastArcToN(vec2(a.x + r, b.y - r), r, M_PI / 2.0f, M_PI, segments);
+    PathAdd(vec2(tl.x + r, br.y));
+    PathFastArcToN(vec2(tl.x + r, br.y - r), r, M_PI / 2.0f, M_PI, segments);
     /** Bottom Left */
-    PathAdd(vec2(a.x, a.y + r));
-    PathFastArcToN(vec2(a.x + r, a.y + r), r, M_PI, 3.0f * M_PI / 2.0f,
+    PathAdd(vec2(tl.x, tl.y + r));
+    PathFastArcToN(vec2(tl.x + r, tl.y + r), r, M_PI, 3.0f * M_PI / 2.0f,
                    segments);
   }
 }
 
-PD_API void DrawList::PathRectEx(fvec2 a, fvec2 b, float rounding, u32 flags) {
+PD_API void Drawlist::PathRectEx(const fvec2& tl, const fvec2& br,
+                                 float rounding, LiPathRectFlags flags) {
   if (rounding == 0.f) {
-    PathAdd(a);
-    PathAdd(vec2(b.x, a.y));
-    PathAdd(b);
-    PathAdd(vec2(a.x, b.y));
+    PathAdd(tl);
+    PathAdd(vec2(br.x, tl.y));
+    PathAdd(br);
+    PathAdd(vec2(tl.x, br.y));
   } else {
-    float r = std::min({rounding, (b.x - a.x) * 0.5f, (b.y - a.y) * 0.5f});
+    float r = std::min({rounding, (br.x - tl.x) * 0.5f, (br.y - tl.y) * 0.5f});
     /** Calculate Optimal segment count automatically */
     float corner = M_PI * 0.5f;
     int segments = std::max(3, int(std::ceil(corner / (6.0f * M_PI / 180.0f))));
@@ -173,78 +150,84 @@ PD_API void DrawList::PathRectEx(fvec2 a, fvec2 b, float rounding, u32 flags) {
      */
     /** Top Left */
     if (flags & LiPathRectFlags_KeepTopLeft) {
-      PathAdd(a);
+      PathAdd(tl);
     } else {
-      PathAdd(vec2(a.x + r, a.y));
-      PathFastArcToN(vec2(b.x - r, a.y + r), r, -M_PI / 2.0f, 0.0f, segments);
+      PathAdd(vec2(tl.x + r, tl.y));
+      PathFastArcToN(vec2(br.x - r, tl.y + r), r, -M_PI / 2.0f, 0.0f, segments);
     }
 
     /** Top Right */
     if (flags & LiPathRectFlags_KeepTopRight) {
-      PathAdd(vec2(b.x, a.y));
+      PathAdd(vec2(br.x, tl.y));
     } else {
-      PathAdd(vec2(b.x, b.y - r));
-      PathFastArcToN(vec2(b.x - r, b.y - r), r, 0.0f, M_PI / 2.0f, segments);
+      PathAdd(vec2(br.x, br.y - r));
+      PathFastArcToN(vec2(br.x - r, br.y - r), r, 0.0f, M_PI / 2.0f, segments);
     }
     /** Bottom Right */
     if (flags & LiPathRectFlags_KeepBotRight) {
-      PathAdd(b);
+      PathAdd(br);
     } else {
-      PathAdd(vec2(a.x + r, b.y));
-      PathFastArcToN(vec2(a.x + r, b.y - r), r, M_PI / 2.0f, M_PI, segments);
+      PathAdd(vec2(tl.x + r, br.y));
+      PathFastArcToN(vec2(tl.x + r, br.y - r), r, M_PI / 2.0f, M_PI, segments);
     }
     /** Bottom Left */
     if (flags & LiPathRectFlags_KeepBotLeft) {
-      PathAdd(vec2(a.x, b.y));
+      PathAdd(vec2(tl.x, br.y));
     } else {
-      PathAdd(vec2(a.x, a.y + r));
-      PathFastArcToN(vec2(a.x + r, a.y + r), r, M_PI, 3.0f * M_PI / 2.0f,
+      PathAdd(vec2(tl.x, tl.y + r));
+      PathFastArcToN(vec2(tl.x + r, tl.y + r), r, M_PI, 3.0f * M_PI / 2.0f,
                      segments);
     }
   }
 }
 
-PD_API void DrawList::DrawRect(const fvec2& pos, const fvec2& size, u32 color,
-                               int thickness) {
+/** Drawing functions */
+PD_API void Drawlist::DrawRect(const fvec2& pos, const fvec2& size,
+                               const PD::Color& color, int t) {
   PathRect(pos, pos + size);
-  // Flags is currently hardcoded (1 = close)
-  PathStroke(color, thickness, 1);
+  PathStroke(color, t, LiDrawFlags_Close);
 }
-void DrawList::DrawRectFilled(const fvec2& pos, const fvec2& size, u32 color) {
+
+PD_API void Drawlist::DrawRectFilled(const fvec2& pos, const fvec2& size,
+                                     const PD::Color& color) {
   PathRect(pos, pos + size);
   PathFill(color);
 }
 
-PD_API void DrawList::DrawTriangle(const fvec2& a, const fvec2& b,
-                                   const fvec2& c, u32 color, int thickness) {
+PD_API void Drawlist::DrawTriangle(const fvec2& a, const fvec2& b,
+                                   const fvec2& c, const PD::Color& color,
+                                   int t) {
   PathAdd(a);
   PathAdd(b);
   PathAdd(c);
-  PathStroke(color, thickness, 1);
+  PathStroke(color, t, LiDrawFlags_Close);
 }
 
-PD_API void DrawList::DrawTriangleFilled(const fvec2& a, const fvec2& b,
-                                         const fvec2& c, u32 color) {
+PD_API void Drawlist::DrawTriangleFilled(const fvec2& a, const fvec2& b,
+                                         const fvec2& c,
+                                         const PD::Color& color) {
   PathAdd(a);
   PathAdd(b);
   PathAdd(c);
   PathFill(color);
 }
 
-PD_API void DrawList::DrawCircle(const fvec2& center, float rad, u32 color,
-                                 int num_segments, int thickness) {
+PD_API void Drawlist::DrawCircle(const fvec2& center, float rad,
+                                 const PD::Color& color, int num_segments,
+                                 int t) {
   if (num_segments <= 0) {
     // Auto Segment
   } else {
     float am = (M_PI * 2.0f) * ((float)num_segments) / (float)num_segments;
     PathArcToN(center, rad, 0.f, am, num_segments);
   }
-  DrawSolid();  // Only Solid Color Supported
-  PathStroke(color, thickness, (1 << 0));
+  UnbindTexture();  // Only Solid Color Supported
+  PathStroke(color, t, LiDrawFlags_Close);
 }
 
-PD_API void DrawList::DrawCircleFilled(const fvec2& center, float rad,
-                                       u32 color, int num_segments) {
+PD_API void Drawlist::DrawCircleFilled(const fvec2& center, float rad,
+                                       const PD::Color& color,
+                                       int num_segments) {
   if (num_segments <= 0) {
     // Auto Segment
   } else {
@@ -254,61 +237,156 @@ PD_API void DrawList::DrawCircleFilled(const fvec2& center, float rad,
   PathFill(color);
 }
 
-// TODO: Don't render OOS
-PD_API void DrawList::DrawPolyLine(const std::vector<fvec2>& points, u32 clr,
-                                   u32 flags, int thickness) {
+PD_API void Drawlist::DrawText(const fvec2& p, const char* text,
+                               const PD::Color& color) {
+  if (!pFont) return;
+  pFont->CmdTextEx(*this, p, color, pFontScale, text);
+}
+
+PD_API void Drawlist::DrawTextEx(const fvec2& p, const char* text,
+                                 const PD::Color& color, LiTextFlags flags,
+                                 const fvec2& box) {
+  if (!pFont) return;
+  pFont->CmdTextEx(*this, p, color, pFontScale, text, flags, box);
+}
+
+PD_API void Drawlist::DrawLine(const fvec2& a, const fvec2& b,
+                               const PD::Color& color, int thickness) {
+  this->PathAdd(a);
+  this->PathAdd(b);
+  this->PathStroke(color, thickness);
+}
+
+PD_API void Drawlist::DrawPolyLine(const Pool<fvec2>& points,
+                                   const PD::Color& color, LiDrawFlags flags,
+                                   int t) {
   if (points.size() < 2) {
     return;
   }
-  DrawSolid();
-  auto cmd = GetNewCmd();
-  bool close = (flags & (1 << 0));
+  UnbindTexture();
+  auto& cmd = NewCommand();
+  bool close = (flags & LiDrawFlags_Close);
   int num_points = close ? (int)points.size() : (int)points.size() - 1;
-  if (flags & (1 << 1)) {
+  if (flags & LiDrawFlags_AA) {
     // TODO: Find a way to draw less garbage looking lines
   } else {
     // Non antialiased lines look awful when rendering with thickness != 1
     for (int i = 0; i < num_points; i++) {
       int j = (i + 1) == (int)points.size() ? 0 : (i + 1);
-      auto line = Renderer::PrimLine(points[i], points[j], thickness);
-      Renderer::CmdQuad(cmd, line, vec4(0.f, 1.f, 1.f, 0.f), clr);
+      auto line = Math::PrimLine(points[i], points[j], t);
+      this->PrimQuad(cmd, line, vec4(0.f, 1.f, 1.f, 0.f), color);
     }
   }
 }
 
-PD_API void DrawList::DrawConvexPolyFilled(const std::vector<fvec2>& points,
-                                           u32 clr) {
+PD_API void Drawlist::DrawConvexPolyFilled(const Pool<fvec2>& points,
+                                           const PD::Color& color) {
   if (points.size() < 3) {
     return;  // Need at least three points
   }
-  auto cmd = GetNewCmd();
-  Renderer::CmdConvexPolyFilled(cmd, points, clr, CurrentTex);
-}
 
-PD_API void DrawList::DrawText(const fvec2& pos, const std::string& text,
-                               u32 color) {
-  if (!pCurrentFont) {
-    return;
+  // Support for Custom Textures (UV calculation)
+  float minX = points[0].x, minY = points[0].y;
+  float maxX = minX, maxY = minY;
+  // Check for the max and min Positions
+  for (const auto& it : points) {
+    if (it.x < minX) minX = it.x;
+    if (it.y < minY) minY = it.y;
+    if (it.x > maxX) maxX = it.x;
+    if (it.y > maxY) maxY = it.y;
   }
-  pCurrentFont->CmdTextEx(*this, pos, color, pFontScale, text);
-}
+  // Get Short defines for UV
+  // (Bottom Right is not required)
+  auto uv_tl = pCurrentTexture.GetUV().TopLeft();
+  auto uv_tr = pCurrentTexture.GetUV().TopRight();
+  auto uv_bl = pCurrentTexture.GetUV().BotLeft();
 
-PD_API void DrawList::DrawTextEx(const fvec2& p, const std::string& text,
-                                 u32 color, LiTextFlags flags,
-                                 const fvec2& box) {
-  if (!pCurrentFont) {
-    return;
+  auto& cmd = NewCommand();
+  cmd.Reserve(points.size(), (points.size() - 2) * 3);
+  // Render
+  for (int i = 2; i < (int)points.size(); i++) {
+    cmd.Add(0, i, i - 1);
   }
-  pCurrentFont->CmdTextEx(*this, p, color, pFontScale, text, flags, box);
+
+  for (int i = 0; i < (int)points.size(); i++) {
+    // Calculate U and V coords
+    float u =
+        uv_tl.x + ((points[i].x - minX) / (maxX - minX)) * (uv_tr.x - uv_tl.x);
+    float v =
+        uv_tl.y + ((points[i].y - minY) / (maxY - minY)) * (uv_bl.y - uv_tl.y);
+    cmd.Add(Vertex(points[i], fvec2(u, v), color));
+  }
 }
 
-PD_API void DrawList::DrawLine(const fvec2& a, const fvec2& b, u32 color,
-                               int t) {
-  PathAdd(a);
-  PathAdd(b);
-  PathStroke(color, t);
+PD_API void Drawlist::DrawConvexPolyFilled(const Pool<fvec2>& points,
+                                           const PD::Color& a,
+                                           const PD::Color b, float rad) {
+  if (points.size() < 3) {
+    return;  // Need at least three points
+  }
+
+  fvec2 dir = fvec2(std::cos(rad), std::sin(rad));
+  // Support for Custom Textures (UV calculation)
+  float minX = points[0].x, minY = points[0].y;
+  float maxX = minX, maxY = minY;
+  // Check for the max and min Positions
+  for (const auto& it : points) {
+    if (it.x < minX) minX = it.x;
+    if (it.y < minY) minY = it.y;
+    if (it.x > maxX) maxX = it.x;
+    if (it.y > maxY) maxY = it.y;
+  }
+  // Get Short defines for UV
+  // (Bottom Right is not required)
+  auto uv_tl = pCurrentTexture.GetUV().TopLeft();
+  auto uv_tr = pCurrentTexture.GetUV().TopRight();
+  auto uv_bl = pCurrentTexture.GetUV().BotLeft();
+
+  // Gradient
+  float tmin = std::numeric_limits<float>::max();
+  float tmax = std::numeric_limits<float>::lowest();
+  for (const auto& p : points) {
+    float t = p.x * dir.x + p.y * dir.y;
+    if (t < tmin) tmin = t;
+    if (t > tmax) tmax = t;
+  }
+  // potential div0
+  float irange = (tmax != tmin) ? (1.0f / (tmax - tmin)) : 0.0f;
+  // Command building (oder so)
+  auto& cmd = NewCommand();
+  cmd.Reserve(points.size(), (points.size() - 2) * 3);
+  // Render
+  for (int i = 2; i < (int)points.size(); i++) {
+    cmd.Add(0, i, i - 1);
+  }
+  // Why was this for loop not used in normal Convex Poly filled???
+  for (auto& it : points) {
+    // Calculate U and V coords
+    float u = uv_tl.x + ((it.x - minX) / (maxX - minX)) * (uv_tr.x - uv_tl.x);
+    float v = uv_tl.y + ((it.y - minY) / (maxY - minY)) * (uv_bl.y - uv_tl.y);
+    float t = it.x * dir.x + it.y * dir.y;
+    cmd.Add(Vertex(it, fvec2(u, v), PD::Color(a).Lerp(b, (t - tmin) * irange)));
+  }
 }
 
-PD_API void DrawList::DrawTexture(Texture::Ref tex) { CurrentTex = tex; }
+PD_API void Drawlist::PrimQuad(Command& cmd, const Rect& quad, const Rect& uv,
+                               const PD::Color& color) {
+  cmd.Reserve(4, 6);
+  cmd.Add(2, 1, 0);
+  cmd.Add(3, 2, 0);
+  cmd.Add(Vertex(quad.TopLeft(), uv.TopLeft(), color));
+  cmd.Add(Vertex(quad.TopRight(), uv.TopRight(), color));
+  cmd.Add(Vertex(quad.BotRight(), uv.BotRight(), color));
+  cmd.Add(Vertex(quad.BotLeft(), uv.BotLeft(), color));
+}
+
+PD_API void Drawlist::PrimTriangle(Command& cmd, const fvec2& a, const fvec2& b,
+                                   const fvec2& c, const PD::Color& color) {
+  cmd.Reserve(3, 3);
+  cmd.Add(2, 1, 0);
+  cmd.Add(Vertex(a, vec2(0.f, 1.f), color));
+  cmd.Add(Vertex(b, vec2(1.f, 1.f), color));
+  cmd.Add(Vertex(c, vec2(1.f, 0.f), color));
+}
 }  // namespace Li
 }  // namespace PD

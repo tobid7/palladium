@@ -26,15 +26,15 @@ SOFTWARE.
 namespace PD {
 namespace UI7 {
 PD_API void Container::HandleScrolling(fvec2 scrolling, fvec4 viewport) {
-  if (last_use != 0 && io->pCtx.Os()->GetTime() - last_use > 5000) {
+  if (last_use != 0 && PD::Os::GetTime() - last_use > 5000) {
     rem = true;
   }
-  last_use = io->pCtx.Os()->GetTime();
+  last_use = PD::Os::GetTime();
   pos -= fvec2(0, scrolling.y);
-  skippable = !Li::Renderer::InBox(
-      pos, size,
-      fvec4(viewport.x, viewport.y, viewport.x + viewport.z,
-            viewport.y + viewport.w));
+  skippable =
+      !Li::Math::InBounds(pos, size,
+                          fvec4(viewport.x, viewport.y, viewport.x + viewport.z,
+                                viewport.y + viewport.w));
 }
 
 PD_API void Container::HandleInternalInput() {
@@ -44,13 +44,13 @@ PD_API void Container::HandleInternalInput() {
 /** Internal function */
 PD_API void Container::PreDraw() {
   if (pCLipRectUsed) {
-    list->PushClipRect(pClipRect);
+    // list->PushClipRect(pClipRect);
   }
 }
 /** Internal function */
 PD_API void Container::PostDraw() {
   if (pCLipRectUsed) {
-    list->PopClipRect();
+    // list->PopClipRect();
   }
 }
 }  // namespace UI7

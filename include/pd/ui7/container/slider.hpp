@@ -46,7 +46,7 @@ class PD_API Slider : public Container {
    * @param step To set the modifier for drag movement
    * @param precision for float and double to set precision
    */
-  Slider(const std::string& label, T* data, UI7::IO::Ref io,
+  Slider(const std::string& label, T* data, UI7::IO& io,
          T min = std::numeric_limits<T>::min(),
          T max = std::numeric_limits<T>::max(), int precision = 1) {
     // PD::Assert(data != nullptr, "Input Data Address is null!");
@@ -55,13 +55,11 @@ class PD_API Slider : public Container {
     this->min = min;
     this->max = max;
     this->precision = precision;
-    this->width = io->CurrentViewPort->pSize.z * 0.3f;
-    this->tdim = io->Font->GetTextBounds(label, io->FontScale);
+    this->width = io.CurrentViewPort.pSize.z * 0.3f;
+    this->tdim = io.Font->GetTextBounds(label.c_str(), io.FontScale);
   }
   ~Slider() = default;
 
-  /** Als ob das funktioniert... */
-  PD_SHARED(Slider<T>);
   /**
    * Override for the Input Handler
    * @note This function is usally called by Menu::Update

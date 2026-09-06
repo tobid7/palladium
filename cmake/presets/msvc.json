@@ -1,0 +1,24 @@
+{
+    "version": 10,
+    "configurePresets": [
+        {
+            "name": "msvc",
+            "cmakeExecutable": "C:\\Program Files\\CMake\\bin\\cmake.exe",
+            "displayName": "MSVC",
+            "generator": "Visual Studio 17 2022",
+            "binaryDir": "${sourceDir}/build/msvc-build"
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "msvc-release",
+            "configuration": "Release",
+            "configurePreset": "msvc"
+        },
+        {
+            "name": "msvc-debug",
+            "configuration": "Debug",
+            "configurePreset": "msvc"
+        }
+    ]
+}

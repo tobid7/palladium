@@ -32,19 +32,18 @@ namespace UI7 {
  */
 class PD_API Label : public Container {
  public:
+  Label() {}
   /**
    * Constructor for Label Object
    * @param label Label [Text] to Draw
    * @param lr Renderer Reference
    */
-  Label(const std::string& label, IO::Ref io) {
+  Label(const std::string& label, IO& io) {
     this->label = label;
-    this->tdim = io->Font->GetTextBounds(label, io->FontScale);
+    this->tdim = io.Font->GetTextBounds(label.c_str(), io.FontScale);
     this->SetSize(tdim);
   }
   ~Label() = default;
-
-  PD_SHARED(Label);
 
   /**
    * Override for the Rendering Handler
@@ -55,6 +54,13 @@ class PD_API Label : public Container {
    * Override Update func to support Text modifications
    */
   void Update() override;
+
+  void Reset() override {
+    Container::Reset();
+    tdim = 0;
+    color = UI7Color_Text;
+    label.clear();
+  }
 
  private:
   fvec2 tdim;                      ///< Text Size

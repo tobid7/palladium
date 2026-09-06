@@ -35,10 +35,8 @@ namespace PD {
 namespace UI7 {
 class PD_API Menu {
  public:
-  Menu(const UI7::ID& id, UI7::IO::Ref pIO);
+  Menu(const UI7::ID& id, UI7::IO& pIO);
   ~Menu() {}
-
-  PD_SHARED(Menu);
 
   /**
    * Render a Simple Label
@@ -66,7 +64,7 @@ class PD_API Menu {
    * @param img Texture reference of the image
    * @param size a Custom Size if needed
    */
-  void Image(Li::Texture::Ref img, fvec2 size = 0.f, Li::Rect uv = fvec4(0));
+  void Image(Li::Texture img, fvec2 size = 0.f, Li::Rect uv = fvec4(0));
   /**
    * Render a Drag Object witth any supported type:
    * [`int`, `float`, `double`, `u8`, `u16`, `u32`]
@@ -81,59 +79,61 @@ class PD_API Menu {
                 T max = std::numeric_limits<T>::max(), T step = 1,
                 int precision = 1) {
     u32 id = Strings::FastHash("drd" + label + std::to_string((uintptr_t)data));
-    Container::Ref r = pLayout->FindObject(id);
+    Container* r = pLayout.FindObject(id);
     if (!r) {
-      r = UI7::DragData<T>::New(label, data, num_elms, pIO, min, max, step,
-                                precision);
+      r = new UI7::DragData<T>(label, data, num_elms, pIO, min, max, step,
+                               precision);
       // Isnt This exactly the same line???
       // r = UI7::DragData<T>::New(label, data, num_elms, pIO, min, max, step,
       //                          precision);
       r->SetID(id);
     }
-    pLayout->AddObject(r);
+    pLayout.AddObject(r);
   }
   template <typename T>
   void Slider(const std::string& label, T* data,
               T min = std::numeric_limits<T>::min(),
               T max = std::numeric_limits<T>::max(), int precision = 1) {
     u32 id = Strings::FastHash("drd" + label + std::to_string((uintptr_t)data));
-    Container::Ref r = pLayout->FindObject(id);
+    Container* r = pLayout.FindObject(id);
     if (!r) {
-      r = UI7::Slider<T>::New(label, data, pIO, min, max, precision);
+      r = new UI7::Slider<T>(label, data, pIO, min, max, precision);
       r->SetID(id);
     }
-    pLayout->AddObject(r);
+    pLayout.AddObject(r);
   }
   void ColorEdit(const std::string& label, u32& clr);
-  void SameLine() { pLayout->SameLine(); }
+  void SameLine() { pLayout.SameLine(); }
   void Separator();
   void SeparatorText(const std::string& label);
   bool BeginTreeNode(const ID& id);
   void EndTreeNode();
 
   void HandleFocus();
-  void HandleScrolling();
   void HandleTitlebarActions();
   void DrawBaseLayout();
 
-  void AddObject(PD::UI7::Container::Ref obj) { pLayout->AddObject(obj); }
-  void AddObjectEx(PD::UI7::Container::Ref obj, PD::u32 flags) {
-    pLayout->AddObjectEx(obj, flags);
+  void AddObject(PD::UI7::Container* obj) { pLayout.AddObject(obj); }
+  void AddObjectEx(PD::UI7::Container* obj, PD::u32 flags) {
+    pLayout.AddObjectEx(obj, flags);
   }
-  Container::Ref FindObject(u32 id) { return pLayout->FindObject(id); }
+  Container* FindObject(u32 id) { return pLayout.FindObject(id); }
+
+  void PushFont(Li::Font* f) { pIO.PushFont(f); }
+  void PopFont() { pIO.PopFont(); }
 
   void Update();
 
-  void SetSize(PD::fvec2 size) { pLayout->SetSize(size); }
-  void SetPosition(PD::fvec2 pos) { pLayout->SetPosition(pos); }
-  const PD::fvec2& GetSize() const { return pLayout->GetSize(); }
-  const PD::fvec2& GetPosition() const { return pLayout->GetPosition(); }
+  void SetSize(PD::fvec2 size) { pLayout.SetSize(size); }
+  void SetPosition(PD::fvec2 pos) { pLayout.SetPosition(pos); }
+  const PD::fvec2& GetSize() const { return pLayout.GetSize(); }
+  const PD::fvec2& GetPosition() const { return pLayout.GetPosition(); }
 
   /** Data Section */
 
   UI7MenuFlags Flags = 0;
-  Layout::Ref pLayout;
-  IO::Ref pIO;
+  Layout pLayout;
+  IO& pIO;
   ID pID;
   bool* pIsShown = nullptr;
   bool pIsOpen = true;

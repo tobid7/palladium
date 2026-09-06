@@ -34,8 +34,8 @@ PD_API void Checkbox::HandleInput() {
   /// Ensure it gets sed to false and stays if not pressed
   // Assert(screen.get(), "Screen is not set up!");
   // if (screen->ScreenType() == Screen::Bottom) {
-  if (io->InputHandler->DragObject(this->GetID(), fvec4(FinalPos(), size))) {
-    if (io->InputHandler->DragReleased) {
+  if (io->InputHandler.DragObject(this->GetID(), fvec4(FinalPos(), size))) {
+    if (io->InputHandler.DragReleased) {
       color = UI7Color_FrameBackgroundHovered;
       usr_ref = !usr_ref;
     } else {
@@ -48,15 +48,16 @@ PD_API void Checkbox::HandleInput() {
 PD_API void Checkbox::Draw() {
   // Assert(list.get() && io.get(), "Did you run Container::Init correctly?");
   // io->Ren->OnScreen(screen);
+  list->SetFont(GetFont());
   list->PathRect(FinalPos(), FinalPos() + cbs, io->FrameRounding);
-  list->PathFill(io->Theme->Get(color));
+  list->PathFill(io->Theme.Get(color));
   if (usr_ref) {
     list->PathRect(FinalPos() + 2, FinalPos() + cbs - 2, io->FrameRounding);
-    list->PathFill(io->Theme->Get(UI7Color_Checkmark));
+    list->PathFill(io->Theme.Get(UI7Color_Checkmark));
   }
   list->DrawText(
       FinalPos() + fvec2(cbs.x + io->ItemSpace.x, cbs.y * 0.5 - tdim.y * 0.5),
-      label, io->Theme->Get(UI7Color_Text));
+      label.c_str(), io->Theme.Get(UI7Color_Text));
 }
 
 PD_API void Checkbox::Update() {

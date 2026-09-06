@@ -32,19 +32,19 @@ namespace UI7 {
  */
 class PD_API Image : public Container {
  public:
+  Image() {}
   /**
    * Constructor for the Image Object
    * @param img Image Texture Reference
    * @param size Custom Size of the Image
    */
-  Image(Li::Texture::Ref img, fvec2 size = 0.f, Li::Rect uv = fvec4(0.f)) {
-    if (!img) return;
+  Image(Li::Texture img, fvec2 size = 0.f, Li::Rect uv = fvec4(0.f)) {
     this->img = img;
     if (size == fvec2(0.f)) {
-      size = img->GetSize();
+      size = img.GetSize();
     }
     if (uv == Li::Rect(fvec4(0.f))) {
-      uv = img->GetUV();
+      uv = img.GetUV();
     }
     this->cuv = uv;
     this->newsize = size;
@@ -52,18 +52,23 @@ class PD_API Image : public Container {
   }
   ~Image() = default;
 
-  PD_SHARED(Image);
-
   /**
    * Override for the Rendering Handler
    * @note This function is usally called by Menu::Update
    * */
   void Draw() override;
 
+  void Reset() override {
+    Container::Reset();
+    img = Li::Texture();
+    newsize = 0.f;
+    cuv = Li::Rect();
+  }
+
  private:
-  Li::Texture::Ref img = nullptr;  ///< Texture reference to the Image
-  fvec2 newsize = 0.f;             ///< New Size
-  Li::Rect cuv;                    ///< Custom UV
+  Li::Texture img;      ///< Texture
+  fvec2 newsize = 0.f;  ///< New Size
+  Li::Rect cuv;         ///< Custom UV
 };
 }  // namespace UI7
 }  // namespace PD

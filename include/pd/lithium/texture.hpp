@@ -1,75 +1,59 @@
 #pragma once
 
-/*
-MIT License
-Copyright (c) 2024 - 2026 René Amthor (tobid7)
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
- */
-
 #include <pd/core/core.hpp>
 #include <pd/lithium/rect.hpp>
 
 namespace PD {
+using TextureID = ptr;
+enum class TextureFilter {
+  Linear,
+  Nearest,
+};
+
+enum class TextureFormat {
+  RGBA32,
+  RGB24,
+  A8,
+};
 namespace Li {
-/** Use so address type for TexAddress */
-using TexAddress = uintptr_t;
+inline int TextureFormat2Bpp(TextureFormat fmt) {
+  switch (fmt) {
+    case PD::TextureFormat::A8:
+      return 1;
+    case PD::TextureFormat::RGB24:
+      return 3;
+    case PD::TextureFormat::RGBA32:
+      return 4;
+    default:
+      return 0;
+  }
+}
 class Texture {
  public:
-  /** Texture Types */
-  enum Type {
-    RGBA32,  ///< Rgba 32Bit
-    RGB24,   ///< Rgb 24 Bit
-    A8,      ///< A8 8Bit alpha
-  };
-  /** Texture Filters */
-  enum Filter {
-    NEAREST,  ///< Nearest
-    LINEAR,   ///< Linear
-  };
-  /** Constructor */
-  Texture() : Address(0), Size(0), UV(fvec4(0.f, 0.f, 1.f, 1.f)) {}
-  Texture(TexAddress addr, ivec2 size,
-          Li::Rect uv = fvec4(0.f, 0.f, 1.f, 1.f)) {
-    Address = addr;
-    Size = size;
-    UV = uv;
+  using Ptr = Texture*;
+  Texture() : pID(0), pSize(0, 0), pUV(fvec4(0, 0, 1, 1)) {}
+  Texture(TextureID id, ivec2 size)
+      : pID(id), pSize(size), pUV(fvec4(0, 0, 1, 1)) {}
+
+  const ivec2& GetSize() const { return pSize; }
+  TextureID GetID() { return pID; }
+  const TextureID& GetID() const { return pID; }
+  const Rect& GetUV() const { return pUV; }
+
+  void SetSize(int x, int y) {
+    pSize.x = x;
+    pSize.y = y;
   }
+  void SetSize(const ivec2& size) { pSize = size; }
+  void SetID(TextureID id) { pID = id; }
+  void SetUV(const Rect& uv) { pUV = uv; }
+  void SetUV(const fvec4& uv) { pUV = uv; }
+  void SetUV(float t, float l, float b, float r) { SetUV(fvec4(t, l, b, r)); }
 
-  PD_SHARED(Texture);
-
-  void CopyFrom(Texture::Ref tex) {
-    Address = tex->Address;
-    Size = tex->Size;
-    UV = tex->UV;
-  }
-
-  /** Left in Code getter (should be remoevd) */
-  ivec2 GetSize() const { return Size; }
-  Li::Rect GetUV() const { return UV; }
-
-  operator ivec2() const { return Size; }
-  operator Li::Rect() const { return UV; }
-
-  TexAddress Address;
-  ivec2 Size;
-  Li::Rect UV;
+ private:
+  TextureID pID;
+  ivec2 pSize;
+  Rect pUV;
 };
 }  // namespace Li
 }  // namespace PD

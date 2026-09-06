@@ -1,201 +1,164 @@
-/*
-MIT License
-Copyright (c) 2024 - 2026 René Amthor (tobid7)
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
- */
-
-#ifdef PD_IMAGE_BUILD_SHARED
-#define PD_IMAGE_IMPLEMENTATION
-#endif
-
-#include <cstring>
-#include <memory>
-#include <pd/external/stb_image.hpp>
+#include <pd/image/convert.hpp>
 #include <pd/image/image.hpp>
-#include <pd/image/img_convert.hpp>
+
+#if defined(PD_INCLUDE_STB_IMAGE)
+#define STB_IMAGE_IMPLEMENTATION
+#endif
+#include <stb_image.h>
 
 namespace PD {
+PD_API Image::Image() {}
+
+PD_API Image::Image(const std::string& path) { Load(path); }
+
+PD_API Image::Image(const std::vector<u8>& buf) { Load(buf); }
+
+PD_API Image::Image(const std::vector<u8>& pixels, int w, int h, int bpp) {
+  Copy(pixels, w, h, bpp);
+}
+
+PD_API Image::~Image() {}
+
+PD_API void Image::Load(const u8* buf, size_t size) {
+  int w = 0, h = 0, c = 0;
+  u8* img = stbi_load_from_memory(buf, size, &w, &h, &c, 4);
+  if (c == 3) {
+    stbi_image_free(img);
+    img = stbi_load_from_memory(buf, size, &w, &h, &c, 3);
+    pFormat = Format::RGB;
+  }
+  pData.assign(img, img + (w * h * c));
+  pSize = ivec2(w, h);
+  stbi_image_free(img);
+}
+
 PD_API void Image::Load(const std::string& path) {
-  u8* img = pdi_load(path.c_str(), &pWidth, &pHeight, &fmt, 4);
-  if (fmt == 3) {
-    pdi_image_free(img);
-    img = pdi_load(path.c_str(), &pWidth, &pHeight, &fmt, 3);
-    pBuffer = std::vector<PD::u8>(img, img + (pWidth * pHeight * 3));
-    pFmt = RGB;
-    pdi_image_free(img);
-  } else if (fmt == 4) {
-    pBuffer = std::vector<PD::u8>(img, img + (pWidth * pHeight * 4));
-    pFmt = RGBA;
-    pdi_image_free(img);
+  int w = 0, h = 0, c = 0;
+  u8* img = stbi_load(path.c_str(), &w, &h, &c, 4);
+  if (c == 3) {
+    stbi_image_free(img);
+    img = stbi_load(path.c_str(), &w, &h, &c, 3);
+    pFormat = Format::RGB;
   }
+  pData.assign(img, img + (w * h * c));
+  pSize = ivec2(w, h);
+  stbi_image_free(img);
 }
+
 PD_API void Image::Load(const std::vector<u8>& buf) {
-  u8* img =
-      pdi_load_from_memory(buf.data(), buf.size(), &pWidth, &pHeight, &fmt, 4);
-  if (fmt == 3) {
-    pdi_image_free(img);
-    img = pdi_load_from_memory(buf.data(), buf.size(), &pWidth, &pHeight, &fmt,
-                               3);
-    pBuffer = std::vector<PD::u8>(img, img + (pWidth * pHeight * 3));
-    pFmt = RGB;
-    pdi_image_free(img);
-  } else if (fmt == 4) {
-    pBuffer = std::vector<PD::u8>(img, img + (pWidth * pHeight * 4));
-    pdi_image_free(img);
-    pFmt = RGBA;
-  }
+  Load(buf.data(), buf.size());
 }
-PD_API void Image::Copy(const std::vector<u8>& buf, int w, int h, int bpp) {
-  this->fmt = bpp;
-  if (buf.size() != (size_t)w * h * bpp) {
-    // Size Error
+
+PD_API void Image::Copy(const std::vector<u8>& pixels, int w, int h, int bpp) {
+  pData = pixels;
+  pSize = ivec2(w, h);
+  pFormat = GuessFmtFromBpp(bpp);
+}
+
+PD_API void Image::Convert(Format dst) {
+  if (pFormat == dst) {
     return;
-  }
-  this->pBuffer.resize(w * h * bpp);
-  for (size_t i = 0; i < this->pBuffer.size(); i++) {
-    pBuffer[i] = buf[i];
-  }
-}
-
-PD_API void Image::FlipHorizontal() {
-  /**
-   * Dont know if i am brain dead but i think this code
-   * should Horizpntal flip an image
-   * Probably this needs some optimisation like not always calling
-   * Fmt2Bpp and use `* 0.5` instead of `/ 2` i guess
-   */
-  for (int i = 0; i < pWidth / 2; i++) {
-    for (int j = 0; j < pHeight; j++) {
-      int src = (j * pWidth + i) * Fmt2Bpp(pFmt);
-      int dst = (j * pWidth + (pWidth - 1 - i)) * Fmt2Bpp(pFmt);
-      for (int k = 0; k < Fmt2Bpp(pFmt); k++) {
-        PD::u8 tmp = pBuffer[dst + k];
-        pBuffer[dst + k] = pBuffer[src + k];
-        pBuffer[src + k] = tmp;
-      }
+  } else if (pFormat == Format::RGB && dst == Format::BGR) {
+    ImgConvert::ReverseBuf(pData, 3, pSize.x, pSize.y);
+    pFormat = Format::BGR;
+  } else if (pFormat == Format::RGB && dst == Format::RGBA) {
+    std::vector<PD::u8> cpy = pData;
+    pData.resize(pSize.x * pSize.y * 4);
+    ImgConvert::RGB24toRGBA32(pData, cpy, pSize.x, pSize.y);
+    pFormat = Format::RGBA;
+  } else if (pFormat == Format::RGBA && dst == Format::RGB) {
+    std::vector<PD::u8> cpy = pData;
+    pData.resize(pSize.x * pSize.y * 3);
+    ImgConvert::RGB32toRGBA24(pData, cpy, pSize.x, pSize.y);
+    pFormat = Format::RGB;
+  } else if (pFormat == Format::RGBA && dst == Format::BGRA) {
+    for (int i = 0; i < (pSize.x * pSize.y * 4); i += 4) {
+      u8 _tmp = pData[i + 0];
+      pData[i + 0] = pData[i + 2];
+      pData[i + 2] = _tmp;
     }
-  }
-}
-
-PD_API void Image::FlipVertical() {
-  /**
-   * Dont know if i am brain dead but i think this code
-   * should Vertical flip an image
-   * Probably this needs some optimisation like not always calling
-   * Fmt2Bpp and use `* 0.5` instead of `/ 2` i guess
-   */
-  for (int i = 0; i < pWidth; i++) {
-    for (int j = 0; j < pHeight / 2; j++) {
-      int src = (j * pWidth + i) * Fmt2Bpp(pFmt);
-      int dst = ((pHeight - 1 - j) * pWidth + i) * Fmt2Bpp(pFmt);
-      for (int k = 0; k < Fmt2Bpp(pFmt); k++) {
-        PD::u8 tmp = pBuffer[dst + k];
-        pBuffer[dst + k] = pBuffer[src + k];
-        pBuffer[src + k] = tmp;
-      }
-    }
-  }
-}
-
-PD_API void Image::Convert(Image::Ref img, Image::Format dst) {
-  if (img->pFmt == dst) {
-    return;
-  } else if (img->pFmt == Image::RGB && dst == Image::BGR) {
-    ImgConvert::ReverseBuf(img->pBuffer, 3, img->pWidth, img->pHeight);
-    img->pFmt = BGR;
-  } else if (img->pFmt == Image::RGB && dst == Image::RGBA) {
-    std::vector<PD::u8> cpy = img->pBuffer;
-    img->pBuffer.resize(img->pWidth * img->pHeight * 4);
-    ImgConvert::RGB24toRGBA32(img->pBuffer, cpy, img->pWidth, img->pHeight);
-    img->pFmt = RGBA;
-  } else if (img->pFmt == Image::RGBA && dst == Image::RGB) {
-    std::vector<PD::u8> cpy = img->pBuffer;
-    img->pBuffer.resize(img->pWidth * img->pHeight * 3);
-    ImgConvert::RGB32toRGBA24(img->pBuffer, cpy, img->pWidth, img->pHeight);
-    img->pFmt = RGB;
-  } else if (img->pFmt == Image::RGBA && dst == Image::BGRA) {
-    for (int i = 0; i < (img->pWidth * img->pHeight * 4); i += 4) {
-      u8 _tmp = img->pBuffer[i + 0];
-      img->pBuffer[i + 0] = img->pBuffer[i + 2];
-      img->pBuffer[i + 2] = _tmp;
-    }
-  } else if (img->pFmt == Image::RGBA && dst == Image::RGB565) {
-    Convert(img, Image::RGB);
-    Convert(img, Image::RGB565);
-  } else if (img->pFmt == Image::RGB && dst == Image::RGB565) {
+  } else if (pFormat == Format::RGBA && dst == Format::RGB565) {
+    Convert(Format::RGB);
+    Convert(Format::RGB565);
+  } else if (pFormat == Format::RGB && dst == Format::RGB565) {
     auto f = [](u8 r, u8 g, u8 b) -> u16 {
       u16 _r = (r >> 3);
       u16 _g = (g >> 2);
       u16 _b = (b >> 3);
       return (_r << 11) | (_g << 5) | _b;
     };
-    std::vector<PD::u8> cpy = img->pBuffer;
-    img->pBuffer.resize(img->pWidth * img->pHeight * 2);
-    for (int y = 0; y < img->pWidth; y++) {
-      for (int x = 0; x < img->pHeight; x++) {
-        int src = (y * img->pWidth + x) * 3;
-        int dst = (y * img->pWidth + x) * 2;
+    std::vector<PD::u8> cpy = pData;
+    pData.resize(pSize.x * pSize.y * 2);
+    for (int y = 0; y < pSize.x; y++) {
+      for (int x = 0; x < pSize.y; x++) {
+        int src = (y * pSize.x + x) * 3;
+        int dst = (y * pSize.x + x) * 2;
         u16 new_px = f(cpy[src + 0], cpy[src + 1], cpy[src + 2]);
-        img->pBuffer[dst + 0] = new_px >> 8;
-        img->pBuffer[dst + 1] = new_px & 0xff;
+        pData[dst + 0] = new_px >> 8;
+        pData[dst + 1] = new_px & 0xff;
       }
     }
-    img->pFmt = RGB565;
+    pFormat = Format::RGB565;
   }
 }
 
-PD_API int Image::Fmt2Bpp(Format fmt) {
+PD_API int Image::Format2Bpp(Format fmt) {
   switch (fmt) {
-    case RGBA:
-    case ABGR:
+    case Format::RGBA:
+    case Format::ABGR:
+    case Format::BGRA:
       return 4;
-      break;
-    case RGB:
-    case BGR:
+    case Format::BGR:
+    case Format::RGB:
       return 3;
-      break;
-    case RGB565:
+    case Format::RGB565:
       return 2;
-      break;
+  }
+  return 0;
+}
 
+PD_API Image::Format Image::GuessFmtFromBpp(int bpp) {
+  /** Only return defaults here */
+  switch (bpp) {
+    case 4:
+      return Format::RGBA;
+    case 3:
+      return Format::RGB;
+    case 2:
+      return Format::RGB565;
     default:
-      return 0;
-      break;
+      return Format::RGBA;
   }
 }
 
-PD_API void Image::ReTile(Image::Ref img,
-                          std::function<u32(int x, int y, int w)> src,
-                          std::function<u32(int x, int y, int w)> dst) {
-  std::vector<PD::u8> cpy = img->pBuffer;
-  /** could use fmt here but for 565 that woulnt work as it is not supported by
-   * file loading where fmt is used */
-  int bpp = Fmt2Bpp(img->pFmt);
-  for (int y = 0; y < img->pHeight; y++) {
-    for (int x = 0; x < img->pWidth; x++) {
-      int src_idx = src(x, y, img->pWidth);
-      int dst_idx = dst(x, y, img->pWidth);
-      for (int i = 0; i < bpp; i++) {
-        img->pBuffer[dst_idx + i] = cpy[src_idx + i];
+PD_API void Image::Flip(bool hz, bool vt) {
+  auto bpp = Format2Bpp(pFormat);
+  int rlen = pSize.x * bpp;  // calculate as less as possible
+  if (hz) {
+    for (int j = 0; j < pSize.y; j++) {
+      int roff = j * rlen;
+      for (int i = 0; i < pSize.x / 2; i++) {
+        int src = roff + (i * bpp);
+        int dst = roff + (pSize.x - 1 - i) * bpp;
+        for (int k = 0; k < bpp; k++) {
+          PD::u8 tmp = pData[dst + k];
+          pData[dst + k] = pData[src + k];
+          pData[src + k] = tmp;
+        }
+      }
+    }
+  }
+  if (vt) {
+    for (int j = 0; j < pSize.y / 2; j++) {
+      int rsrc = j * rlen;
+      int rdst = (pSize.y - 1 - j) * rlen;
+      for (int i = 0; i < rlen; i++) {  // swap the entire row
+        PD::u8 tmp = pData[rdst + i];
+        pData[rdst + i] = pData[rsrc + i];
+        pData[rsrc + i] = tmp;
       }
     }
   }
 }
+
 }  // namespace PD

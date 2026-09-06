@@ -41,13 +41,12 @@ class PD_API Checkbox : public Container {
    * @param usr_ref Reference to the bool value to update
    * @param io IO Reference
    */
-  Checkbox(const std::string& label, bool& usr_ref, UI7::IO::Ref io)
+  Checkbox(const std::string& label, bool& usr_ref, UI7::IO& io)
       : usr_ref(usr_ref) {
     this->label = label;
-    this->tdim = io->Font->GetTextBounds(label, io->FontScale);
+    this->tdim = io.Font->GetTextBounds(label.c_str(), io.FontScale);
   }
   ~Checkbox() = default;
-  PD_SHARED(Checkbox);
   /**
    * Override for the Input Handler
    * @note This function is usally called by Menu::Update

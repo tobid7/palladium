@@ -37,21 +37,17 @@ namespace UI7 {
 class Context;
 class PD_API Layout {
  public:
-  Layout(const ID& id, IO::Ref io) : ID(id) {
-    this->IO = io;
-    DrawList = Li::DrawList::New(io->pCtx);
-    DrawList->SetFont(IO->Font);
-    DrawList->SetFontScale(io->FontScale);
+  Layout(const ID& id, IO& io) : ID(id), IO(io) {
+    DrawList.SetFont(IO.Font);
+    DrawList.SetFontscale(io.FontScale);
     Scrolling[0] = false;
     Scrolling[1] = false;
     CursorInit();
-    Pos = fvec2(io->CurrentViewPort->pSize.x, io->CurrentViewPort->pSize.y);
+    Pos = fvec2(io.CurrentViewPort.pSize.x, io.CurrentViewPort.pSize.y);
     Size = 0;
-    WorkRect = fvec4(IO->MenuPadding, Size - (fvec2(2) * IO->MenuPadding));
+    WorkRect = fvec4(IO.MenuPadding, Size - (fvec2(2) * IO.MenuPadding));
   }
-  ~Layout() = default;
-
-  PD_SHARED(Layout);
+  ~Layout();
 
   /** SECTION CONTAINERS */
   /**
@@ -80,7 +76,7 @@ class PD_API Layout {
    * @param img Texture reference of the image
    * @param size a Custom Size if needed
    */
-  void Image(Li::Texture::Ref img, fvec2 size = 0.f, Li::Rect uv = fvec4(0));
+  void Image(Li::Texture img, fvec2 size = 0.f, Li::Rect uv = fvec4(0));
   /**
    * Render a Drag Object witth any supported type:
    * [`int`, `float`, `double`, `u8`, `u16`, `u32`]
@@ -95,10 +91,10 @@ class PD_API Layout {
                 T max = std::numeric_limits<T>::max(), T step = 1,
                 int precision = 1) {
     u32 id = Strings::FastHash("drd" + label + std::to_string((uintptr_t)data));
-    Container::Ref r = FindObject(id);
+    Container* r = FindObject(id);
     if (!r) {
-      r = UI7::DragData<T>::New(label, data, num_elms, this->IO, min, max, step,
-                                precision);
+      r = new UI7::DragData<T>(label, data, num_elms, this->IO, min, max, step,
+                               precision);
       r->SetID(id);
     }
     AddObject(r);
@@ -108,9 +104,9 @@ class PD_API Layout {
               T min = std::numeric_limits<T>::min(),
               T max = std::numeric_limits<T>::max(), int precision = 1) {
     u32 id = Strings::FastHash("drd" + label + std::to_string((uintptr_t)data));
-    Container::Ref r = FindObject(id);
+    Container* r = FindObject(id);
     if (!r) {
-      r = UI7::Slider<T>::New(label, data, this->IO, min, max, precision);
+      r = new UI7::Slider<T>(label, data, this->IO, min, max, precision);
       r->SetID(id);
     }
     AddObject(r);
@@ -126,11 +122,13 @@ class PD_API Layout {
   const fvec2& GetSize() const { return Size; }
   void SetSize(const fvec2& v) { Size = v; }
 
-  Li::DrawList::Ref GetDrawList() { return DrawList; }
+  Li::Drawlist& GetDrawList() { return DrawList; }
 
   void CursorInit();
   void SameLine();
   void CursorMove(const fvec2& size);
+  void PushFont(Li::Font* f) { IO.PushFont(f); }
+  void PopFont() { IO.PopFont(); }
 
   bool ObjectWorkPos(fvec2& movpos);
 
@@ -141,13 +139,13 @@ class PD_API Layout {
    * AddObject function is faster
    * Using Flags for its features cause dont want to have too much args
    */
-  void AddObjectEx(Container::Ref obj, u32 Flags);
+  void AddObjectEx(Container* obj, u32 Flags);
   /**
    * Fast Function to Add Object in Layout SPace like
    * button Label images etc
    */
-  void AddObject(Container::Ref obj);
-  Container::Ref FindObject(u32 id);
+  void AddObject(Container* obj);
+  Container* FindObject(u32 id);
   void ClearIDObjects() { IDObjects.clear(); }
 
   fvec2 AlignPosition(fvec2 pos, fvec2 size, fvec4 area, UI7Align alignment);
@@ -167,6 +165,8 @@ class PD_API Layout {
   void SetAlign(UI7Align a) { Alignment = a; }
   void NextAlign(UI7Align a) { TempAlign = a; }
 
+  void HandleScrolling();
+
   void Update();
 
   fvec2 DbgScrollOffset() { return ScrollOffset; }
@@ -177,8 +177,8 @@ class PD_API Layout {
   friend class ReMenu;
   // Base Components
   UI7::ID ID;
-  UI7::IO::Ref IO;
-  Li::DrawList::Ref DrawList;
+  UI7::IO& IO;
+  Li::Drawlist DrawList;
   UI7LayoutFlags Flags;
 
   // Positioning
@@ -204,8 +204,8 @@ class PD_API Layout {
   bool Scrolling[2];
 
   // Objects
-  std::list<Container::Ref> Objects;
-  std::vector<Container::Ref> IDObjects;
+  std::list<Container*> Objects;
+  std::vector<Container*> IDObjects;
 };
 }  // namespace UI7
 }  // namespace PD

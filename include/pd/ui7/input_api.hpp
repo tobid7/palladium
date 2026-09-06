@@ -24,6 +24,7 @@ SOFTWARE.
  */
 
 #include <pd/core/core.hpp>
+#include <pd/drivers/drivers.hpp>
 #include <pd/lithium/lithium.hpp>
 #include <pd/pd_p_api.hpp>
 #include <pd/ui7/id.hpp>
@@ -32,12 +33,8 @@ namespace PD {
 namespace UI7 {
 class InputHandler {
  public:
-  InputHandler(PD::Context& ctx) : pCtx(ctx) {
-    DragTime = Timer::New(*pCtx.Os().get(), false);
-  }
+  InputHandler() {}
   ~InputHandler() = default;
-
-  PD_SHARED(InputHandler);
 
   /**
    * Function to Check if current Object is dragged
@@ -57,11 +54,12 @@ class InputHandler {
       }
     }
     // Get a Short define for touch pos
-    fvec2 p = pCtx.Hid()->MousePos();
+    fvec2 p = PD::Hid::MousePos();
     // Check if Drag starts in the area position
-    if ((pCtx.Hid()->IsDown(pCtx.Hid()->Key::Touch) ||
-         pCtx.Hid()->IsEvent(PD::HidDriver::Event_Down, HidKb::Kb_MouseLeft)) &&
-        Li::Renderer::InBox(p, area)) {
+    if ((PD::Hid::IsEvent(PD::Hid::Event::Down, PD::Hid::Gamepad::Touch) ||
+         PD::Hid::IsEvent(PD::Hid::Event::Down,
+                          PD::Hid::Keyboard::MouseLeft)) &&
+        Li::Math::InBounds(p, area)) {
       // Set ID and iniatial Positions
       DraggedObject = id;
       DragSourcePos = p;
@@ -69,19 +67,20 @@ class InputHandler {
       DragLastPosition = p;
       DragDestination = area;
       // Reset and Start DragTimer
-      DragTime->Reset();
-      DragTime->Rseume();
+      DragTime.Reset();
+      DragTime.Rseume();
       return false;  // To make sure the Object is "Dragged"
-    } else if ((pCtx.Hid()->IsHeld(pCtx.Hid()->Key::Touch) ||
-                pCtx.Hid()->IsEvent(PD::HidDriver::Event_Held,
-                                    HidKb::Kb_MouseLeft)) &&
+    } else if ((PD::Hid::IsEvent(PD::Hid::Event::Held,
+                                 PD::Hid::Gamepad::Touch) ||
+                PD::Hid::IsEvent(PD::Hid::Event::Held,
+                                 PD::Hid::Keyboard::MouseLeft)) &&
                IsObjectDragged()) {
       // Update DragLast and DragPoisition
       DragLastPosition = DragPosition;
       DragPosition = p;
-    } else if ((pCtx.Hid()->IsUp(pCtx.Hid()->Key::Touch) ||
-                pCtx.Hid()->IsEvent(PD::HidDriver::Event_Up,
-                                    HidKb::Kb_MouseLeft)) &&
+    } else if ((PD::Hid::IsEvent(PD::Hid::Event::Up, PD::Hid::Gamepad::Touch) ||
+                PD::Hid::IsEvent(PD::Hid::Event::Up,
+                                 PD::Hid::Keyboard::MouseLeft)) &&
                IsObjectDragged()) {
       // Released... Everything gets reset
       DraggedObject = 0;
@@ -91,9 +90,9 @@ class InputHandler {
       DragDestination = fvec4(0);
       // Set Drag released to true (only one frame)
       // and Only if still in Box
-      DragReleased = Li::Renderer::InBox(pCtx.Hid()->MousePosLast(), area);
+      DragReleased = Li::Math::InBounds(PD::Hid::MousePosLast(), area);
       DragReleasedAW = true;  // Advanced
-      u64 d_rel = pCtx.Os()->GetTime();
+      u64 d_rel = PD::Os::GetTime();
       if (d_rel - DragLastReleased < DoubleClickTime) {
         DragDoubleRelease = true;
         DragLastReleased = 0;  // Set 0 to prevent double exec
@@ -101,8 +100,8 @@ class InputHandler {
         DragLastReleased = d_rel;
       }
       // Ensure timer is paused
-      DragTime->Pause();
-      DragTime->Reset();
+      DragTime.Pause();
+      DragTime.Reset();
       // Still return The Object is Dragged to ensure
       // the DragReleased var can be used
       return true;
@@ -111,7 +110,7 @@ class InputHandler {
   }
 
   void Update() {
-    DragTime->Update();
+    DragTime.Update();
     DragReleased = false;
     DragReleasedAW = false;
     DragDoubleRelease = false;
@@ -127,12 +126,11 @@ class InputHandler {
   fvec2 DragLastPosition = 0;
   /** Fvec4 has an constructor problem currently */
   fvec4 DragDestination = fvec4(0);
-  Timer::Ref DragTime;
+  Timer DragTime;
   u64 DragLastReleased = 0;
   bool DragReleased = false;       ///< Drag Releaded in Box
   bool DragReleasedAW = false;     ///< Drag Released Anywhere
   bool DragDoubleRelease = false;  ///< Double Click
-  PD::Context& pCtx;
   /** Check if an object is Dragged already */
   bool IsObjectDragged() const { return DraggedObject != 0; }
 };
