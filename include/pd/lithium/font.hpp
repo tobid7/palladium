@@ -20,12 +20,12 @@ class Drawlist;
 class PD_API Font {
  public:
   struct Codepoint {
-    u32 pCodepoint = 0;
+    u32 pCodepoint;
     fvec4 SimpleUV;
-    size_t Tex = 0;
+    size_t Tex;
     fvec2 Size;
     float Offset = 0.f;
-    bool pInvalid = false;
+    bool pInvalid;
   };
   Font() {}
   ~Font() {}
