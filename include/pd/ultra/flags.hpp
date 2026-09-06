@@ -15,6 +15,4 @@ enum UltraAlignment_ {
   UltraAlignment_TopRight = UltraAlignment_Top | UltraAlignment_Right,
   UltraAlignment_BotLeft = UltraAlignment_Bot | UltraAlignment_Left,
   UltraAlignment_BotRight = UltraAlignment_Bot | UltraAlignment_Right,
-  UltraAlignment_Center =
-      UltraAlignment_CenterVertical | UltraAlignment_CenterHorizontal,
 };

@@ -11,15 +11,7 @@ class PD_API Layout : public Container {
   Layout() {}
   ~Layout() {}
 
-  /**
-   * Set a fallback font if you dont want to explicitly set a font for every
-   * objectt individually
-   */
-  void SetFont(PD::Li::Font& font) { pFont = &font; }
   void Render(PD::Li::Drawlist& list);
-
- private:
-  PD::Li::Font* pFont = nullptr;
 };
 }  // namespace Ultra
 }  // namespace PD
