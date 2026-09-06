@@ -1,5 +1,4 @@
 CompileFlags:
-  CompilationDatabase: build/default-release
   Add: []
 
 Completion:

@@ -1,0 +1,35 @@
+{
+    "version": 10,
+    "configurePresets": [
+        {
+            "name": "mingw-release",
+            "displayName": "MinGW",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/mingw-release",
+            "cacheVariables": {
+                "SPV_EXCLUDE_GLSLANG": "ON",
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "name": "mingw-debug",
+            "displayName": "MinGW",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/mingw-debug",
+            "cacheVariables": {
+                "SPV_EXCLUDE_GLSLANG": "ON",
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "mingw-release",
+            "configurePreset": "mingw-release"
+        },
+        {
+            "name": "mingw-debug",
+            "configurePreset": "mingw-debug"
+        }
+    ]
+}

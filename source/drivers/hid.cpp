@@ -43,6 +43,5 @@ PD_API void HidDriver::Update() {
       it.second = 0;  // ? why was this Event_Null
     }
   }
-  pMouse[1] = pMouse[0];  // cycle here
 }
 }  // namespace PD
