@@ -45,12 +45,6 @@ PD_API void Drawlist::PathFill(const PD::Color& color) {
   PathClear();
 }
 
-PD_API void Drawlist::PathFillGradient(const PD::Color& a, const PD::Color& b,
-                                       float rad) {
-  DrawConvexPolyFilled(pPath, a, b, rad);
-  PathClear();
-}
-
 PD_API void Drawlist::PathArcToN(const fvec2& c, float r, float amin,
                                  float amax, int s) {
   // Path.push_back(c);
@@ -235,9 +229,9 @@ PD_API void Drawlist::DrawPolyLine(const Pool<fvec2>& points,
   }
   UnbindTexture();
   auto& cmd = NewCommand();
-  bool close = (flags & LiDrawFlags_Close);
+  bool close = (flags & (1 << 0));
   int num_points = close ? (int)points.size() : (int)points.size() - 1;
-  if (flags & LiDrawFlags_AA) {
+  if (flags & (1 << 1)) {
     // TODO: Find a way to draw less garbage looking lines
   } else {
     // Non antialiased lines look awful when rendering with thickness != 1
@@ -285,57 +279,6 @@ PD_API void Drawlist::DrawConvexPolyFilled(const Pool<fvec2>& points,
     float v =
         uv_tl.y + ((points[i].y - minY) / (maxY - minY)) * (uv_bl.y - uv_tl.y);
     cmd.Add(Vertex(points[i], fvec2(u, v), color));
-  }
-}
-
-PD_API void Drawlist::DrawConvexPolyFilled(const Pool<fvec2>& points,
-                                           const PD::Color& a,
-                                           const PD::Color b, float rad) {
-  if (points.size() < 3) {
-    return;  // Need at least three points
-  }
-
-  fvec2 dir = fvec2(std::cos(rad), std::sin(rad));
-  // Support for Custom Textures (UV calculation)
-  float minX = points[0].x, minY = points[0].y;
-  float maxX = minX, maxY = minY;
-  // Check for the max and min Positions
-  for (const auto& it : points) {
-    if (it.x < minX) minX = it.x;
-    if (it.y < minY) minY = it.y;
-    if (it.x > maxX) maxX = it.x;
-    if (it.y > maxY) maxY = it.y;
-  }
-  // Get Short defines for UV
-  // (Bottom Right is not required)
-  auto uv_tl = pCurrentTexture.GetUV().TopLeft();
-  auto uv_tr = pCurrentTexture.GetUV().TopRight();
-  auto uv_bl = pCurrentTexture.GetUV().BotLeft();
-
-  // Gradient
-  float tmin = std::numeric_limits<float>::max();
-  float tmax = std::numeric_limits<float>::lowest();
-  for (const auto& p : points) {
-    float t = p.x * dir.x + p.y * dir.y;
-    if (t < tmin) tmin = t;
-    if (t > tmax) tmax = t;
-  }
-  // potential div0
-  float irange = (tmax != tmin) ? (1.0f / (tmax - tmin)) : 0.0f;
-  // Command building (oder so)
-  auto& cmd = NewCommand();
-  cmd.Reserve(points.size(), (points.size() - 2) * 3);
-  // Render
-  for (int i = 2; i < (int)points.size(); i++) {
-    cmd.Add(0, i, i - 1);
-  }
-  // Why was this for loop not used in normal Convex Poly filled???
-  for (auto& it : points) {
-    // Calculate U and V coords
-    float u = uv_tl.x + ((it.x - minX) / (maxX - minX)) * (uv_tr.x - uv_tl.x);
-    float v = uv_tl.y + ((it.y - minY) / (maxY - minY)) * (uv_bl.y - uv_tl.y);
-    float t = it.x * dir.x + it.y * dir.y;
-    cmd.Add(Vertex(it, fvec2(u, v), PD::Color(a).Lerp(b, (t - tmin) * irange)));
   }
 }
 

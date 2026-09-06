@@ -166,52 +166,6 @@ struct Cursor {
   }
 };
 
-void DrawRectGradient135(PD::Li::Drawlist& l, const PD::fvec2& pos,
-                         const PD::fvec2& size, const PD::Color& colA,
-                         const PD::Color& colB) {
-  PD::fvec2 p0 = pos;
-  PD::fvec2 p1 = PD::fvec2(pos.x + size.x, pos.y);
-  PD::fvec2 p2 = PD::fvec2(pos.x + size.x, pos.y + size.y);
-  PD::fvec2 p3 = PD::fvec2(pos.x, pos.y + size.y);
-
-  // 135° direction
-  PD::fvec2 dir = PD::fvec2(-0.70710678f, 0.70710678f);
-
-  // Project all corners
-  float t0 = p0.x * dir.x + p0.y * dir.y;
-  float t1 = p1.x * dir.x + p1.y * dir.y;
-  float t2 = p2.x * dir.x + p2.y * dir.y;
-  float t3 = p3.x * dir.x + p3.y * dir.y;
-
-  float tmin = std::min({t0, t1, t2, t3});
-  float tmax = std::max({t0, t1, t2, t3});
-
-  auto normalize = [&](float t) { return (t - tmin) / (tmax - tmin); };
-
-  auto lerpColor = [&](float t) {
-    return PD::Color(colA.rf() + (colB.rf() - colA.rf()) * t,
-                     colA.gf() + (colB.gf() - colA.gf()) * t,
-                     colA.bf() + (colB.bf() - colA.bf()) * t,
-                     colA.af() + (colB.af() - colA.af()) * t);
-  };
-
-  PD::Color c0 = lerpColor(normalize(t0));
-  PD::Color c1 = lerpColor(normalize(t1));
-  PD::Color c2 = lerpColor(normalize(t2));
-  PD::Color c3 = lerpColor(normalize(t3));
-
-  auto& cmd = l.NewCommand();
-  cmd.Reserve(4, 6);
-
-  cmd.Add(2, 1, 0);
-  cmd.Add(3, 2, 0);
-
-  cmd.Add(PD::Li::Vertex(p0, PD::fvec2(0, 0), c0));
-  cmd.Add(PD::Li::Vertex(p1, PD::fvec2(1, 0), c1));
-  cmd.Add(PD::Li::Vertex(p2, PD::fvec2(1, 1), c2));
-  cmd.Add(PD::Li::Vertex(p3, PD::fvec2(0, 1), c3));
-}
-
 int main(int argc, char** argv) {
   // PD::LogFilter(PD::LogLevel::Warning);
   Driver drv = Driver::OpenGL3;
@@ -298,17 +252,6 @@ int main(int argc, char** argv) {
         "#ffffff");
     LeftStick.Render(pList);
     RightStick.Render(pList);
-    pList.UnbindTexture();
-    pList.PathRect(50, PD::fvec2(450, 240));
-    pList.PathFillGradient("#ff0000", "#990000", PD::Radians(135));
-    pList.PathAdd(PD::fvec2(100, 120));
-    pList.PathAdd(PD::fvec2(250, 260));
-    pList.PathAdd(PD::fvec2(420, 180));
-    pList.PathAdd(PD::fvec2(600, 320));
-    pList.PathAdd(PD::fvec2(820, 220));
-    pList.PathAdd(PD::fvec2(1000, 360));
-
-    pList.PathStroke("#ff00ff", 10, LiDrawFlags_AA);
     PD::Gfx::Reset();
     PD::Gfx::Draw(pList);
     pList.Clear();
