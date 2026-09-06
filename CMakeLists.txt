@@ -53,22 +53,6 @@ set(PD_SOURCES
     source/lithium/font.cpp
     source/lithium/math.cpp
 
-    # UI7
-    source/ui7/io.cpp
-    source/ui7/layout.cpp
-    source/ui7/menu.cpp
-    source/ui7/theme.cpp
-    source/ui7/ui7.cpp
-    source/ui7/container/button.cpp
-    source/ui7/container/checkbox.cpp
-    source/ui7/container/coloredit.cpp
-    source/ui7/container/container.cpp
-    source/ui7/container/dragdata.cpp
-    source/ui7/container/dynobj.cpp
-    source/ui7/container/image.cpp
-    source/ui7/container/label.cpp
-    source/ui7/container/slider.cpp
-
     # Ultra
     source/ultra/canvas.cpp
     source/ultra/layout.cpp
