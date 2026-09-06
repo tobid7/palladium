@@ -1,32 +1,53 @@
 #pragma once
 
-#include <pd/drivers/interface.hpp>
+/*
+MIT License
+Copyright (c) 2024 - 2026 René Amthor (tobid7)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+ */
+
+#include <pd/core/common.hpp>
+#include <pd/core/timetrace.hpp>
+#include <pd/drivers/types.hpp>
+#include <pd/pd_p_api.hpp>
 
 namespace PD {
-class PD_API OsDriver : public DriverInterface {
+using TraceMap = std::map<std::string, TT::Res::Ref>;
+
+class PD_API OsDriver {
  public:
-  OsDriver(std::string_view name = "Default") : DriverInterface(name) {}
-  virtual ~OsDriver() {}
+  OsDriver(const std::string& name = "StdPd") : pName(name) {}
+  OsDriver(PDDriverData data) : pName("StdPd") {}
+  virtual ~OsDriver() = default;
+  PD_SHARED(OsDriver);
 
-  virtual u64 GetTime() const;
-  virtual u64 GetTimeNano() const;
-};
+  virtual u64 GetTime();
+  virtual u64 GetNanoTime();
+  TraceMap& GetTraceMap();
+  TT::Res::Ref& GetTraceRef(const std::string& id);
+  bool TraceExist(const std::string& id);
+  const std::string& GetName() const { return pName; }
 
-class PD_API Os {
- public:
-  Os() = default;
-  ~Os() = default;
-
-  template <typename T, typename... Args>
-  static void UseDriver(Args&&... args) {
-    // assert(driver == nullptr && "OS Driver already set");
-    driver = std::make_unique<T>(std::forward<Args>(args)...);
-  }
-
-  static u64 GetTime() { return driver->GetTime(); }
-  static u64 GetTimeNano() { return driver->GetTimeNano(); }
+  TraceMap pTraces;
 
  private:
-  static std::unique_ptr<OsDriver> driver;
+  const std::string pName = "StdPd";
 };
 }  // namespace PD

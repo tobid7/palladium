@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/common.hpp>
+#include <pd/core/common.hpp>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846

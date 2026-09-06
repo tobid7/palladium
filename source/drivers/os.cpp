@@ -1,16 +1,52 @@
+/*
+MIT License
+Copyright (c) 2024 - 2026 René Amthor (tobid7)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+ */
+
 #include <pd/drivers/os.hpp>
 
 namespace PD {
-PD_API std::unique_ptr<OsDriver> Os::driver;
+PD_API TT::Res::Ref& OsDriver::GetTraceRef(const std::string& id) {
+  if (!pTraces.count(id)) {
+    pTraces[id] = TT::Res::New();
+    pTraces[id]->SetID(id);
+  }
+  return pTraces[id];
+}
 
-PD_API u64 OsDriver::GetTime() const {
+PD_API TraceMap& OsDriver::GetTraceMap() { return pTraces; }
+
+PD_API bool OsDriver::TraceExist(const std::string& id) {
+  return pTraces.count(id);
+}
+
+/** Standart Driver */
+PD_API u64 OsDriver::GetTime() {
   return std::chrono::duration_cast<std::chrono::milliseconds>(
              std::chrono::steady_clock::now().time_since_epoch())
       .count();
 }
 
-PD_API u64 OsDriver::GetTimeNano() const {
-  return std::chrono::duration_cast<std::chrono::milliseconds>(
+PD_API u64 OsDriver::GetNanoTime() {
+  return std::chrono::duration_cast<std::chrono::nanoseconds>(
              std::chrono::steady_clock::now().time_since_epoch())
       .count();
 }

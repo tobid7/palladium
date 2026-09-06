@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/common.hpp>
+#include <pd/core/common.hpp>
 
 namespace PD {
 /**
@@ -92,7 +92,9 @@ PD_API const std::string PathRemoveExtension(const std::string& path);
  */
 template <typename T>
 inline const std::string ToHex(const T& v) {
-  return std::format("{0:0{1}X}", v, sizeof(v) * 2);
+  std::stringstream s;
+  s << "0x" << std::setfill('0') << std::setw(sizeof(v) * 2) << std::hex << v;
+  return s.str();
 }
 /**
  * Generate a Hash out of a string
@@ -105,22 +107,24 @@ PD_API u32 FastHash(const std::string& s);
  * Based on their Macros
  * @return CompilerName: Version
  */
-inline const char* GetCompilerVersion() {
-/// As the function looks like this Project is meant to
-/// Be ported to other systems as well
-#define __mks(x) #x
-#define mkstring(x) __mks(x)
+inline const std::string GetCompilerVersion() {
+  /// As the function looks like this Project is meant to
+  /// Be ported to other systems as well
+  std::stringstream res;
 #ifdef __clang__  // Check clang first
-  return "Clang: " mkstring(__clang_major__) "." mkstring(
-      __clang_minor__) "." mkstring(__clang_patchlevel__);
+  res << "Clang: " << __clang_major__ << ".";
+  res << __clang_minor__ << ".";
+  res << __clang_patchlevel__;
 #elif __GNUC__
-  return "GCC: " mkstring(__GNUC__) "." mkstring(__GNUC_MINOR__) "." mkstring(
-      __GNUC_PATCHLEVEL__);
+  res << "GCC: " << __GNUC__;
+  res << "." << __GNUC_MINOR__ << ".";
+  res << __GNUC_PATCHLEVEL__;
 #elif _MSC_VER
-  return "MSVC; " mkstring(_MSC_VER);
+  res << "MSVC: " << _MSC_VER;
 #else
-  return "Unknown Compiler";
+  res << "Unknown Compiler";
 #endif
+  return res.str();
 }
 }  // namespace Strings
 class U8Iterator {

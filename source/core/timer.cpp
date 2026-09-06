@@ -22,25 +22,22 @@ SOFTWARE.
  */
 
 #include <pd/core/timer.hpp>
+#include <pd/drivers/drivers.hpp>
 
 namespace PD {
-PD_API Timer::Timer(bool autostart) {
+PD_API Timer::Timer(OsDriver& os, bool autostart) : pOs(os) {
   pIsRunning = autostart;
   Reset();
 }
 
 PD_API void Timer::Reset() {
-  pStart = std::chrono::duration_cast<std::chrono::milliseconds>(
-               std::chrono::steady_clock::now().time_since_epoch())
-               .count();
+  pStart = pOs.GetTime();
   pNow = pStart;
 }
 
 PD_API void Timer::Update() {
   if (pIsRunning) {
-    pNow = std::chrono::duration_cast<std::chrono::milliseconds>(
-               std::chrono::steady_clock::now().time_since_epoch())
-               .count();
+    pNow = pOs.GetTime();
   }
 }
 

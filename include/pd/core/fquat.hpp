@@ -25,7 +25,7 @@ SOFTWARE.
 
 // This file is based on fvec4
 
-#include <pd/common.hpp>
+#include <pd/core/common.hpp>
 #include <pd/core/vec4.hpp>
 
 namespace PD {

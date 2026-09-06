@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <pd/common.hpp>
+#include <pd/core/common.hpp>
 #include <pd/core/vec2.hpp>
 #include <pd/core/vec3.hpp>
 #include <pd/core/vec4.hpp>

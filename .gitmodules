@@ -1,3 +1,6 @@
-[submodule "vendor/stb"]
-	path = vendor/stb
-	url = https://github.com/nothings/stb.git
+[submodule "backends/desktop/glfw"]
+	path = backends/desktop/glfw
+	url = https://github.com/glfw/glfw
+[submodule "backends/3ds/libpicasso"]
+	path = backends/3ds/libpicasso
+	url = https://github.com/npid7/libpicasso
