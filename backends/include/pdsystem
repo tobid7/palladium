@@ -1,10 +1,6 @@
 #pragma once
 
-// Gfx
 #include <pd_system/gfx_citro3d.hpp>
 #include <pd_system/gfx_directx9.hpp>
 #include <pd_system/gfx_opengl2.hpp>
 #include <pd_system/gfx_opengl3.hpp>
-
-// Hid
-#include <pd_system/hid_glfw.hpp>

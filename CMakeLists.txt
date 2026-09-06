@@ -15,72 +15,70 @@ option(PD_BUILD_TOOLS "Build Palladium Tools" OFF)
 option(PD_INCLUDE_STB_IMAGE "Inlude stb image symbols in palladium" ON)
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Nintendo3DS")
-    add_compile_options(-Wno-psabi)
+	add_compile_options(-Wno-psabi)
 endif()
 
 if(${PD_BUILD_TOOLS})
-    add_subdirectory(tools)
+	add_subdirectory(tools)
 endif()
 
 add_subdirectory(vendor)
 
 # # Include Library Source
 set(PD_SOURCES
-    # Common
-    source/common.cpp
+	# Common
+	source/common.cpp
 
-    # Core
-    source/core/bits.cpp
-    source/core/color.cpp
-    source/core/io.cpp
-    source/core/mat.cpp
-    source/core/strings.cpp
-    source/core/timer.cpp
-    source/core/timetrace.cpp
+	# Core
+	source/core/bits.cpp
+	source/core/color.cpp
+	source/core/io.cpp
+	source/core/mat.cpp
+	source/core/strings.cpp
+	source/core/timer.cpp
+	source/core/timetrace.cpp
 
-    # Image
-    source/image/image.cpp
+	# Image
+	source/image/image.cpp
 
-    # Drivers
-    source/drivers/os.cpp
-    source/drivers/gfx.cpp
-    source/drivers/hid.cpp
+	# Drivers
+	source/drivers/os.cpp
+	source/drivers/gfx.cpp
 
-    # Lithium
-    source/lithium/drawlist.cpp
-    source/lithium/font.cpp
-    source/lithium/math.cpp
-    source/lithium/pools.cpp
+	# Lithium
+	source/lithium/drawlist.cpp
+	source/lithium/font.cpp
+	source/lithium/math.cpp
+	source/lithium/pools.cpp
 
-    # Ultra
-    source/ultra/canvas.cpp
-    source/ultra/layout.cpp
-    source/ultra/elems/element.cpp
-    source/ultra/elems/rect.cpp
-    source/ultra/elems/text.cpp
-    source/ultra/elems/image.cpp
-    source/ultra/elems/button.cpp
+	# Ultra
+	source/ultra/canvas.cpp
+	source/ultra/layout.cpp
+	source/ultra/elems/element.cpp
+	source/ultra/elems/rect.cpp
+	source/ultra/elems/text.cpp
+	source/ultra/elems/image.cpp
 )
 
 if(${PD_BUILD_SHARED})
-    add_library(palladium SHARED ${PD_SOURCES})
-    target_compile_definitions(palladium PRIVATE PD_BUILD_SHARED)
+	add_library(palladium SHARED ${PD_SOURCES})
+	target_compile_definitions(palladium PRIVATE PD_BUILD_SHARED)
 else()
-    add_library(palladium STATIC ${PD_SOURCES})
-    target_compile_definitions(palladium PUBLIC PD_BUILD_STATIC)
+	add_library(palladium STATIC ${PD_SOURCES})
+	target_compile_definitions(palladium PUBLIC PD_BUILD_STATIC)
 endif()
 
 target_link_libraries(palladium
-    PUBLIC stb
+	PUBLIC stb
 )
 
 target_compile_definitions(palladium
-    PUBLIC
-    PD_DEBUG
-    $<$<OR:$<BOOL:${PD_INCLUDE_STB_IMAGE}>,$<BOOL:${PD_BUILD_SHARED}>>:PD_INCLUDE_STB_IMAGE> # Always on in shared build
+	PUBLIC
+		PD_DEBUG
+		$<$<OR:$<BOOL:${PD_INCLUDE_STB_IMAGE}>,$<BOOL:${PD_BUILD_SHARED}>>:PD_INCLUDE_STB_IMAGE> # Always on in shared build
 )
 target_compile_options(palladium
-    PUBLIC $<$<CXX_COMPILER_ID:GNU,Clang>:
+	PUBLIC $<$<CXX_COMPILER_ID:GNU,Clang>:
     -fmacro-prefix-map=${CMAKE_CURRENT_SOURCE_DIR}/source=source
     -fmacro-prefix-map=${CMAKE_CURRENT_SOURCE_DIR}/include=include
     >
@@ -89,75 +87,75 @@ target_compile_options(palladium
 add_library(palladium::palladium ALIAS palladium)
 
 target_include_directories(palladium
-    PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include>
+	PUBLIC
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+		$<INSTALL_INTERFACE:include>
 )
 
 target_compile_options(palladium
-    PRIVATE
-    $<$<AND:$<CONFIG:Debug>,$<CXX_COMPILER_ID:GNU,Clang>>:-O0 -g>
-    $<$<AND:$<CONFIG:Release>,$<CXX_COMPILER_ID:GNU,Clang>>:-O3>
+	PRIVATE
+		$<$<AND:$<CONFIG:Debug>,$<CXX_COMPILER_ID:GNU,Clang>>:-O0 -g>
+		$<$<AND:$<CONFIG:Release>,$<CXX_COMPILER_ID:GNU,Clang>>:-O3>
 
-    $<$<AND:$<CONFIG:Debug>,$<CXX_COMPILER_ID:MSVC>>:/Od /Zi>
-    $<$<AND:$<CONFIG:Release>,$<CXX_COMPILER_ID:MSVC>>:/O2>
+		$<$<AND:$<CONFIG:Debug>,$<CXX_COMPILER_ID:MSVC>>:/Od /Zi>
+		$<$<AND:$<CONFIG:Release>,$<CXX_COMPILER_ID:MSVC>>:/O2>
 )
 
 install(
-    TARGETS palladium
-    EXPORT palladiumTargets
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+	TARGETS palladium
+	EXPORT palladiumTargets
+	ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 install(
-    DIRECTORY include/
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+	DIRECTORY include/
+	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 install(EXPORT palladiumTargets
-    FILE palladiumTargets.cmake
-    NAMESPACE palladium::
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/palladium
+	FILE palladiumTargets.cmake
+	NAMESPACE palladium::
+	DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/palladium
 )
 
 include(CMakePackageConfigHelpers)
 configure_package_config_file(
-    cmake/palladiumConfig.cmake.in
-    ${CMAKE_CURRENT_BINARY_DIR}/palladiumConfig.cmake
-    INSTALL_DESTINATION
-    ${CMAKE_INSTALL_LIBDIR}/cmake/palladium
+	cmake/palladiumConfig.cmake.in
+	${CMAKE_CURRENT_BINARY_DIR}/palladiumConfig.cmake
+	INSTALL_DESTINATION
+	${CMAKE_INSTALL_LIBDIR}/cmake/palladium
 )
 
 write_basic_package_version_file(
-    ${CMAKE_CURRENT_BINARY_DIR}/palladiumConfigVersion.cmake
-    VERSION
-    ${PROJECT_VERSION}
-    COMPATIBILITY
-    SameMajorVersion
+	${CMAKE_CURRENT_BINARY_DIR}/palladiumConfigVersion.cmake
+	VERSION
+	${PROJECT_VERSION}
+	COMPATIBILITY
+	SameMajorVersion
 )
 
 install(
-    FILES
-    ${CMAKE_CURRENT_BINARY_DIR}/palladiumConfig.cmake
-    ${CMAKE_CURRENT_BINARY_DIR}/palladiumConfigVersion.cmake
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/palladium
+	FILES
+		${CMAKE_CURRENT_BINARY_DIR}/palladiumConfig.cmake
+		${CMAKE_CURRENT_BINARY_DIR}/palladiumConfigVersion.cmake
+	DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/palladium
 )
 
 find_program(CLANG_FORMAT clang-format)
 
 file(GLOB_RECURSE PD_FMTFILES
-    CONFIGURE_DEPENDS
-    ${CMAKE_CURRENT_SOURCE_DIR}/source/*.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/backends/source/*.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/backends/include/*.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/tests/core/source/*.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/tests/gfx/source/*.cpp
+	CONFIGURE_DEPENDS
+	${CMAKE_CURRENT_SOURCE_DIR}/source/*.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/backends/source/*.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/backends/include/*.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/tests/core/source/*.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/tests/gfx/source/*.cpp
 )
 
 add_custom_target(pd-clang-format
-    COMMAND ${CLANG_FORMAT} --style=file -i ${PD_FMTFILES}
-    COMMENT "Formatting Project Sources"
+	COMMAND ${CLANG_FORMAT} --style=file -i ${PD_FMTFILES}
+	COMMENT "Formatting Project Sources"
 )
 
 add_subdirectory(backends)

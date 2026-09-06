@@ -88,12 +88,9 @@ int main(int argc, char** argv) {
   pList.SetFont(&font);
   App app(font);
   while (pOs->Mainloop()) {
-    PD::Hid::Update();
     pOs->ClearViewPort();
     PD::Li::ResetPools();  // Move to other place (or refactor this)
     app.Update(pOs->GetViewport(), pList);
-    pList.DrawText(5, std::format("Mouse: {}", PD::Hid::MousePos()).c_str(),
-                   PD::Color("#ffffffff"));
     PD::Gfx::Reset();
     PD::Gfx::Draw(pList);
     pList.Clear();
