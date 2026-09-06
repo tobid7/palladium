@@ -52,8 +52,8 @@ PD_API void UI7::IO::Update() {
   DrawlistRegestry.push_front(std::make_pair("CtxBackList", &Back));
   if (Font) ItemRowHeight = FontScale * Font->PixelHeight;
   // RegisterDrawList("CtxBackList", Back);
-  NumIndices = FDL.GetNumIndices();
-  NumVertices = FDL.GetNumVertices();
+  NumIndices = 0;   // FDL.pNumIndices;
+  NumVertices = 0;  // FDL.pNumVertices;
   LabelPool.ResetFast();
   DynObjPool.ResetFast();
   ImagePool.ResetFast();
