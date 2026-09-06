@@ -50,19 +50,12 @@ class App {
     if (d == Driver::OpenGL2) {
       glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
       glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
-#ifdef __APPLE__
-      glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, 0);
-#endif
       PD::Gfx::UseDriver<PD::GfxOpenGL2>();
       winname += " (OpenGL2)";
     } else if (d == Driver::OpenGL3) {
       glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
       glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
       glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-#ifdef __APPLE__
-      glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, 0);
-      glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, 1);
-#endif
       PD::Gfx::UseDriver<PD::GfxOpenGL3>();
       winname += " (OpenGL3)";
     } else if (d == Driver::DirectX9) {
@@ -149,13 +142,11 @@ class App {
       C3D_RenderTargetClear(Top, C3D_CLEAR_ALL, PD::Color(25, 25, 25, 25), 0);
 #else
     while (!glfwWindowShouldClose(window)) {
-      int ww, wh;
-      glfwGetFramebufferSize(window, &ww, &wh);
-      PD::Gfx::SetViewPort(ww, wh);
+      PD::Gfx::SetViewPort(1280, 720);
       if (pDriver == Driver::OpenGL2 || pDriver == Driver::OpenGL3) {
         glClearColor(0.1, 0.1, 0.1, 0.1);
         glClear(GL_COLOR_BUFFER_BIT);
-        glViewport(0, 0, ww, wh);
+        glViewport(0, 0, 1280, 720);
       } else if (pDriver == Driver::DirectX9) {
 #ifdef _WIN32
         if (dx9_device) {

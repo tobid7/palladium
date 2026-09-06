@@ -16,6 +16,3 @@ add_executable(lazyvec
     source/lazyswap.cpp
 )
 target_include_directories(lazyvec PUBLIC include)
-install(
-    TARGETS lazyvec
-)

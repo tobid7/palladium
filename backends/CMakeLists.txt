@@ -11,7 +11,6 @@ option(PD_ENABLE_VULKAN "Not implemented yet" OFF)
 if(NOT WIN32) # cause we are not on windows...
     set(PD_ENABLE_DIRECTX9 OFF)
 endif()
-
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Nintendo3DS")
     set(PD_ENABLE_OPENGL2 OFF)
     set(PD_ENABLE_OPENGL3 OFF)
@@ -25,6 +24,7 @@ add_library(pd-system STATIC
     ${CMAKE_CURRENT_SOURCE_DIR}/source/gfx_opengl3.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/source/gfx_directx9.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/source/gfx_citro3d.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/spirv-helper.cpp
 )
 
 target_include_directories(pd-system
@@ -47,6 +47,7 @@ target_compile_definitions(pd-system
     $<$<BOOL:${PD_ENABLE_VULKAN}>:PD_ENABLE_VULKAN>
     $<$<BOOL:${PD_ENABLE_DIRECTX9}>:PD_ENABLE_DIRECTX9>
     $<$<BOOL:${PD_ENABLE_CITRO3D}>:PD_ENABLE_CITRO3D>
+    $<$<OR:$<BOOL:${PD_ENABLE_OPENGL2}>,$<BOOL:${PD_ENABLE_OPENGL3}>,$<BOOL:${PD_ENABLE_VULKAN}>>:PD_ENABLE_SPIRV_HELPER>
 )
 
 # Palladium
@@ -78,6 +79,12 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Nintendo3DS")
 else()
     target_link_libraries(pd-system
         PUBLIC
-        spirv-helper
+        spirv-cross-core
+        spirv-cross-cpp
+        spirv-cross-glsl
+        spirv-cross-hlsl
+        spirv-cross-msl
+        spirv-cross-reflect
+        spirv-cross-util
     )
 endif()

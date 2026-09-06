@@ -9,7 +9,3 @@ set(CMAKE_CXX_STANDARD_REQUIRED true)
 add_executable(pdfm
     source/main.cpp
 )
-
-install(
-    TARGETS pdfm
-)
