@@ -23,7 +23,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <array>
 #include <chrono>
 #include <cmath>
 #include <cstddef>
@@ -44,7 +43,7 @@ using u16 = unsigned short;
 using u32 = unsigned int;
 using u64 = unsigned long long;
 using ptr = uintptr_t;
-PD_API void Log(const std::string& txt);
+void Log(const std::string& txt);
 template <typename... Args>
 void Log(std::format_string<Args...> fmt, Args&&... args) {
   std::string msg = std::format(fmt, std::forward<Args>(args)...);
