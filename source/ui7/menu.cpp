@@ -104,7 +104,6 @@ PD_API void Menu::SeparatorText(const std::string& label) {
   DynObj* r = pIO.DynObjPool.Allocate();
   *r = UI7::DynObj([=, this](UI7::IO* io, Li::Drawlist* l,
                              UI7::Container* self) {
-    l->SetFont(self->GetFont());
     fvec2 size = self->GetSize();
     fvec2 tdim = io->Font->GetTextBounds(label.c_str(), io->FontScale);
     fvec2 pos = self->FinalPos();
@@ -219,7 +218,7 @@ PD_API void Menu::DrawBaseLayout() {
     if (!(Flags & UI7MenuFlags_NoResize)) {
       DynObj* r = pIO.DynObjPool.Allocate();
       *r = UI7::DynObj([](IO* io, Li::Drawlist* l, UI7::Container* self) {
-        l->SetLayer(1);
+        // //l->Layer(1);
         l->PathAdd(self->FinalPos() + self->GetSize() - fvec2(0, 20));
         l->PathAdd(self->FinalPos() + self->GetSize());
         l->PathAdd(self->FinalPos() + self->GetSize() - fvec2(20, 0));
@@ -235,7 +234,7 @@ PD_API void Menu::DrawBaseLayout() {
     /** Background */
     DynObj* r = pIO.DynObjPool.Allocate();
     *r = UI7::DynObj([](IO* io, Li::Drawlist* l, UI7::Container* self) {
-      l->SetLayer(0);
+      // l->Layer(0);
       l->PathRectEx(self->FinalPos(), self->FinalPos() + self->GetSize(), 10.f,
                     LiPathRectFlags_KeepTop | LiPathRectFlags_KeepBot);
       l->PathFill(io->Theme.Get(UI7Color_Background));
@@ -253,12 +252,11 @@ PD_API void Menu::DrawBaseLayout() {
     DynObj* r = pIO.DynObjPool.Allocate();
     *r = UI7::DynObj(
         [=, this](UI7::IO* io, Li::Drawlist* l, UI7::Container* self) {
-          l->SetFont(self->GetFont());
-          l->SetLayer(20);
+          // l->Layer(20);
           /** Header Bar */
           l->DrawRectFilled(self->FinalPos(), self->GetSize(),
                             io->Theme.Get(UI7Color_Header));
-          l->SetLayer(21);
+          // l->Layer(21);
           /** Inline if statement to shift the Text if collapse sym is shown */
           /** What the hell is this code btw (didn't found a better way) */
           l->DrawText(self->FinalPos() +
@@ -279,7 +277,7 @@ PD_API void Menu::DrawBaseLayout() {
       *r = UI7::DynObj([=, this](UI7::IO* io, Li::Drawlist* l,
                                  UI7::Container* self) {
         /** This sym actually requires layer 21 (i dont know why) */
-        l->SetLayer(21);
+        // l->Layer(21);
         /**
          * Symbol (Position Swapping set by pIsOpen ? openpos : closepos;)
          */
@@ -355,7 +353,6 @@ PD_API bool Menu::BeginTreeNode(const ID& id) {
   // Object
   DynObj* r = pIO.DynObjPool.Allocate();
   *r = UI7::DynObj([=, this](IO* io, Li::Drawlist* l, Container* self) {
-    l->SetFont(self->GetFont());
     fvec2 ts = self->FinalPos() + fvec2(0, 7);
     fvec2 pl[2] = {fvec2(10, 5), fvec2(0, 10)};
     if (n->second) {

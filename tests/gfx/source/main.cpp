@@ -304,7 +304,6 @@ int main(int argc, char** argv) {
       ui7.EndMenu();
     }
     if (auto m = ui7.BeginMenu("LI DBG INFO")) {
-      m->PushFont(&debug_font);
       m->Label("Gfx Driver: {}", PD::Gfx::GetDriverName());
       m->Separator();
       m->Label("LI  Draw Comamnds: {}", PD::Gfx::GetNumCommands());
@@ -312,7 +311,6 @@ int main(int argc, char** argv) {
       m->Label("GFX Vertices: {}", PD::Gfx::GetNumVertices());
       m->Label("GFX Triangles: {}", PD::Gfx::GetNumVertices() / 3);
       m->Label("GFX Indices: {}", PD::Gfx::GetNumIndices());
-      m->PopFont();
       ui7.EndMenu();
     }
     ui7.MetricsMenu();

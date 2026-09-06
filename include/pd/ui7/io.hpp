@@ -81,7 +81,6 @@ class PD_API IO {
   u32 NumVertices = 0;  ///< Debug Vertices Num
   u32 NumIndices = 0;   ///< Debug Indices Num
   std::vector<u32> MenuOrder;
-  std::vector<Li::Font*> FontStack;
 
   // Pools
   PD::Pool<UI7::Label> LabelPool;
@@ -106,18 +105,6 @@ class PD_API IO {
       return err;
     }
     return ViewPorts[id.RawID()];
-  }
-
-  void PushFont(Li::Font* f) {
-    FontStack.push_back(Font);
-    Font = f;
-  }
-
-  void PopFont() {
-    if (!FontStack.empty()) {
-      Font = FontStack.back();
-      FontStack.pop_back();
-    }
   }
 
   UI7::InputHandler InputHandler;

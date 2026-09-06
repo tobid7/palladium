@@ -59,7 +59,6 @@ class PD_API Container {
   void Init(UI7::IO* io, Li::Drawlist* l) {
     list = l;
     this->io = io;
-    pFont = io->Font;
     // this->screen = io->Ren->CurrentScreen();
   }
 
@@ -76,7 +75,6 @@ class PD_API Container {
   fvec2 GetPos() { return pos; }
   /** Getter for Size */
   fvec2 GetSize() { return size; }
-  Li::Font* GetFont() { return pFont; }
   /**
    * Get the Containers Final Position
    * for Rendering and Input (if it has a parent Object)
@@ -195,7 +193,6 @@ class PD_API Container {
   fvec4 pClipRect;
   /** Clip Rect used */
   bool pCLipRectUsed = false;
-  Li::Font* pFont = nullptr;
 };
 }  // namespace UI7
 }  // namespace PD

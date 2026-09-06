@@ -119,9 +119,6 @@ class PD_API Menu {
   }
   Container* FindObject(u32 id) { return pLayout.FindObject(id); }
 
-  void PushFont(Li::Font* f) { pIO.PushFont(f); }
-  void PopFont() { pIO.PopFont(); }
-
   void Update();
 
   void SetSize(PD::fvec2 size) { pLayout.SetSize(size); }

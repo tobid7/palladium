@@ -70,7 +70,6 @@ template <typename T>
 PD_API void Slider<T>::Draw() {
   // Assert(io.get() && list.get(), "Did you run Container::Init correctly?");
   // io->Ren->OnScreen(screen);
-  list->SetFont(GetFont());
   std::string p;
   if constexpr (std::is_floating_point_v<T>) {
     p = std::format("{:.{}f}", *data, precision);
@@ -85,10 +84,10 @@ PD_API void Slider<T>::Draw() {
                  FinalPos() + fvec2(slp + slw - 2, td.y - 2) + io->FramePadding,
                  io->FrameRounding);
   list->PathFill(io->Theme.Get(UI7Color_ButtonActive));
-  list->LayerUp();
+  // list->LayerUp();
   list->DrawTextEx(FinalPos(), p.c_str(), io->Theme.Get(UI7Color_Text),
                    LiTextFlags_AlignMid, fvec2(width, td.y) + io->FramePadding);
-  list->LayerDown();
+  // list->LayerDown();
   list->DrawText(FinalPos() + fvec2(width + io->FramePadding.x * 2.f,
                                     io->FramePadding.y * 0.5),
                  label.c_str(), io->Theme.Get(UI7Color_Text));
