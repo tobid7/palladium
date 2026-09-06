@@ -59,10 +59,10 @@ int main(int argc, char** argv) {
   r.SetPosition(250, 150);
   r.SetSize(100, 70);
   PD::Ultra::Rect rr;
-  rr.SetColor(0x880000ff);
-  rr.SetRounding(10.f);
-  rr.SetPosition(250, 150);
-  rr.SetSize(100, 70);
+  r.SetColor(0xff0000ff);
+  r.SetRounding(10.f);
+  r.SetPosition(250, 150);
+  r.SetSize(100, 70);
   lyt.Push(&rr);
   lyt.Push(&r);
   PD::Ultra::Text txt;
@@ -72,7 +72,6 @@ int main(int argc, char** argv) {
   lyt.Push(&txt);
   while (pOs->Mainloop()) {
     pOs->ClearViewPort();
-    lyt.SetViewport(pOs->GetViewport());
     PD::Li::ResetPools();
     pList.DrawRectFilled(150, 50, 0x88ffffff);
     pList.DrawRect(150, 50, 0xffffffff);

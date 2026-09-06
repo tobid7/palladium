@@ -1,4 +1,4 @@
-#include <pd/ultra/container.hpp>
+#include <pd/ultra/canvas.hpp>
 #include <pd/ultra/elems/element.hpp>
 
 namespace PD {
@@ -10,11 +10,6 @@ PD_API bool ElementBase::RevisionUpdate(PD::u32 req) {
   } else {
     return false;
   }
-}
-PD_API void ElementBase::Update() {
-  if (!pParent) pRenderspace = PD::fvec4(pPos, pPos + pSize);
-  pRenderspace = PD::fvec4(pParent->GetTopLeft() + pPos,
-                           pParent->GetTopLeft() + pPos + pSize);
 }
 }  // namespace Ultra
 }  // namespace PD

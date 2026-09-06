@@ -17,7 +17,6 @@ class PD_API ElementBase {
    * Reset Function (for PD::Pool::FastReset)
    */
   virtual void Reset() {}
-  void Update();
 
   void SetAlignment(UltraAlignment a) { pAlignment = a; }
   void SetPosition(const PD::fvec2& pos) { pPos = pos; }
@@ -34,7 +33,6 @@ class PD_API ElementBase {
   UltraAlignment pAlignment = 0;
   PD::fvec2 pPos;
   PD::fvec2 pSize;
-  PD::Li::Rect pRenderspace;
 };
 }  // namespace Ultra
 }  // namespace PD
