@@ -4,7 +4,7 @@
         {
             "name": "switch-debug",
             "generator": "Ninja",
-            "displayName": "Nintendo Switch Debug",
+            "displayName": "Nintendo Switch",
             "binaryDir": "${sourceDir}/build/switch-debug",
             "toolchainFile": "/opt/devkitPro/cmake/Switch.cmake",
             "cacheVariables": {
@@ -15,7 +15,7 @@
         {
             "name": "switch-release",
             "generator": "Ninja",
-            "displayName": "Nintendo Switch Release",
+            "displayName": "Nintendo Switch",
             "binaryDir": "${sourceDir}/build/switch-release",
             "toolchainFile": "/opt/devkitPro/cmake/Switch.cmake",
             "cacheVariables": {

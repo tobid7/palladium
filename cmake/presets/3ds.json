@@ -4,7 +4,7 @@
         {
             "name": "3ds-debug",
             "generator": "Ninja",
-            "displayName": "Nintendo 3DS Debug",
+            "displayName": "Nintendo 3DS",
             "binaryDir": "${sourceDir}/build/3ds-debug",
             "toolchainFile": "/opt/devkitPro/cmake/3DS.cmake",
             "cacheVariables": {
@@ -14,7 +14,7 @@
         {
             "name": "3ds-release",
             "generator": "Ninja",
-            "displayName": "Nintendo 3DS Release",
+            "displayName": "Nintendo 3DS",
             "binaryDir": "${sourceDir}/build/3ds-release",
             "toolchainFile": "/opt/devkitPro/cmake/3DS.cmake",
             "cacheVariables": {
