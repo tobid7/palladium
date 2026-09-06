@@ -25,24 +25,24 @@ SOFTWARE.
 
 constexpr std::string_view _op_template = R"text(
   template <typename T1>
-  constexpr vec{0}<T>& operator{1}=(T1 v) {{
+  vec{0}<T>& operator{1}=(T1 v) {{
 {2}
     return *this;
   }}
 
   template <typename T1>
-  constexpr vec{0}<T>& operator{1}=(const vec{0}<T1>& v) {{
+  vec{0}<T>& operator{1}=(const vec{0}<T1>& v) {{
 {3}
     return *this;
   }}
 
   template <typename T1>
-  constexpr vec{0}<T> operator{1}(T1 v) const {{
+  vec{0}<T> operator{1}(T1 v) const {{
     return vec{0}<T>({4});
   }}
 
   template <typename T1>
-  constexpr vec{0}<T> operator{1}(const vec{0}<T1>& v) const {{
+  vec{0}<T> operator{1}(const vec{0}<T1>& v) const {{
     return vec{0}<T>({5});
   }}
 )text";

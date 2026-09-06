@@ -30,11 +30,11 @@ SOFTWARE.
  */
 
 constexpr std::string_view _generic_ops = R"text(
-  constexpr vec{0} operator-() const {{ return vec{0}({1}); }}
+  vec{0} operator-() const {{ return vec{0}({1}); }}
   template <typename T1>
-  constexpr bool operator==(const vec{0}<T1>& v) const {{ return {2}; }}
+  bool operator==(const vec{0}<T1>& v) const {{ return {2}; }}
   template <typename T1>
-  constexpr bool operator!=(const vec{0}<T1>& v) const {{ return !(*this == v); }}
+  bool operator!=(const vec{0}<T1>& v) const {{ return !(*this == v); }}
 )text";
 
 namespace LVec {

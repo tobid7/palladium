@@ -36,7 +36,7 @@ std::string MakeSwap(int n) {
       if (a == b || done.count(b + a)) {
         continue;
       }
-      s << "  constexpr void Swap" << (char)toupper(a[0]) << (char)toupper(b[0])
+      s << "  void Swap" << (char)toupper(a[0]) << (char)toupper(b[0])
         << "() {\n";
       s << "    T t = " << a << ";\n    " << a << " = " << b << ";\n";
       s << "    " << b << " = t;\n  }\n";
