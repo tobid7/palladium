@@ -16,7 +16,7 @@ PD_API size_t AllocateVertices(size_t count, PD::ptr accessor);
  */
 PD_API size_t AllocateIndices(size_t count, PD::ptr accessor);
 PD_API bool ExpandVertices(size_t count, PD::ptr accessor);
-PD_API bool ExpandIndices(size_t count, PD::ptr accessor);
+PD_API bool EcpandIndices(size_t count, PD::ptr accessor);
 PD_API void PutVertex(size_t loc, const Vertex& vtx, PD::ptr accessor);
 PD_API void PutIndex(size_t loc, u16 idx, PD::ptr accessor);
 PD_API const Vertex& GetVertex(size_t loc);

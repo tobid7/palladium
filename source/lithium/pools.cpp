@@ -28,9 +28,9 @@ PD_API bool ExpandVertices(size_t count, PD::ptr accessor) {
   return true;
 }
 
-PD_API bool ExpandIndices(size_t count, PD::ptr accessor) {
+PD_API bool EcpandIndices(size_t count, PD::ptr accessor) {
   if (pIndexAccessor != accessor) return false;
-  pIdxPool.Allocate(count);
+  pVtxPool.Allocate(count);
   return true;
 }
 

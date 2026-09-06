@@ -24,7 +24,7 @@ class Command {
       FirstIndex = AllocateIndices(idx, (PD::ptr)this);
       IndexCountMax = idx;
     } else {
-      ExpandIndices(idx, (PD::ptr)this);
+      ExpandVertices(idx, (PD::ptr)this);
       IndexCountMax += idx;
     }
   }
