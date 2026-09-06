@@ -61,6 +61,7 @@ void HorizonCtr::Deinit() {
 
 bool HorizonCtr::Mainloop() {
   pViewPort = ivec2(400, 240);
+  hidScanInput();
   bool _kill = hidKeysUp() & KEY_START;
   C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
   return aptMainLoop() && !_kill;
