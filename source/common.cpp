@@ -14,7 +14,6 @@ PD_API void Log(const std::string& txt, LogLevel lvl) {
   const char* clr = pColorNo;
   const char* plvl = "INFO";
   switch (lvl) {
-    case PD::LogLevel::None:
     case PD::LogLevel::Info:
       clr = pColorNo;
       plvl = "INFO";
