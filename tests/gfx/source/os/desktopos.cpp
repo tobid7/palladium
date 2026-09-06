@@ -60,9 +60,6 @@ void DesktopOS::Init() {
     d3dpp.Windowed = TRUE;
     d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
     d3dpp.hDeviceWindow = hwnd;
-    d3dpp.BackBufferFormat = D3DFMT_UNKNOWN;
-    d3dpp.EnableAutoDepthStencil = TRUE;
-    d3dpp.AutoDepthStencilFormat = D3DFMT_D16;
 
     HRESULT hr = impl->d3d->CreateDevice(
         D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hwnd,

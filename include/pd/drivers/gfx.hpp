@@ -63,7 +63,6 @@ class PD_API GfxDriver : public DriverInterface {
   virtual void SysInit() {}
   virtual void SysReset() {}
   virtual void Submit(size_t count, size_t start) {}
-  virtual void UploadPools() {}  // not every driver requires it
   void RegisterTexture(const Li::Texture& tex);
   void UnregisterTexture(const Li::Texture& tex);
 
@@ -111,7 +110,6 @@ class GfxDriverBase : public GfxDriver {
   void Draw(const Pool<Li::Command>& commands) override {
     pCountCommands += commands.size();
     size_t index = 0;
-    UploadPools();
     while (index < commands.size()) {
       CurrentTex = commands[index].Tex;
       if (!CurrentTex) {

@@ -152,6 +152,9 @@ void GfxCitro3D::Submit(size_t count, size_t start) {
   C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, impl->uLocProjection, &proj);
   // C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, impl->uLocProjection,
   //                  (C3D_Mtx*)&Projection);
+  auto buf = C3D_GetBufInfo();
+  BufInfo_Init(buf);
+  BufInfo_Add(buf, GetVertexBufPtr(0), sizeof(Li::Vertex), 3, 0x210);
   C3D_DrawElements(GPU_TRIANGLES, count, C3D_UNSIGNED_SHORT,
                    GetIndexBufPtr(start));
   impl->CurrentTex = nullptr;
@@ -237,12 +240,6 @@ void GfxCitro3D::DeleteTexture(const Li::Texture& tex) {
   C3D_TexDelete(t);
   delete t;
 }
-
-void GfxCitro3D::UploadPools() {
-  auto buf = C3D_GetBufInfo();
-  BufInfo_Init(buf);
-  BufInfo_Add(buf, GetVertexBufPtr(0), sizeof(Li::Vertex), 3, 0x210);
-}
 }  // namespace PD
 #else
 namespace PD {
@@ -261,6 +258,5 @@ Li::Texture GfxCitro3D::LoadTexture(const std::vector<PD::u8>& pixels, int w,
   return Li::Texture();
 }
 void GfxCitro3D::DeleteTexture(const Li::Texture& tex) {}
-void GfxCitro3D::UploadPools() {}
 }  // namespace PD
 #endif

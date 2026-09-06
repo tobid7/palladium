@@ -30,7 +30,7 @@ VS_OUT main(VS_IN input) {
     VS_OUT o;
     o.pos = mul(projection, float4(input.pos, 0.0, 1.0)); 
     o.uv = input.uv;
-    o.col = input.col.bgra;
+    o.col = input.col;
     return o;
 }
 )";
@@ -132,8 +132,44 @@ void GfxDirectX9::Submit(size_t count, size_t start) {
   if (!impl || !impl->Device || !impl->VBO || !impl->IBO) return;
 
   BindTexture(CurrentTex);
+  impl->Device->SetVertexShaderConstantF(
+      0, reinterpret_cast<const float*>(&Projection), 4);
 
-  impl->Device->SetVertexShaderConstantF(0, Projection.Ptr(), 4);
+  if (!impl->VBO || impl->VertexBufferSize != GetVertexPoolSize()) {
+    if (impl->VBO) {
+      impl->VBO->Release();
+      impl->VBO = nullptr;
+      impl->VertexBufferSize = 0;
+    }
+    if (impl->Device->CreateVertexBuffer(
+            GetVertexPoolSize() * sizeof(Li::Vertex),
+            D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT,
+            &impl->VBO, nullptr) < 0)
+      return;
+    impl->VertexBufferSize = GetVertexPoolSize();
+  }
+  if (!impl->IBO || impl->IndexBufferSize != GetIndexPoolSize()) {
+    if (impl->IBO) {
+      impl->IBO->Release();
+      impl->IBO = nullptr;
+      impl->IndexBufferSize = 0;
+    }
+    if (impl->Device->CreateIndexBuffer(GetVertexPoolSize() * sizeof(u16),
+                                        D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY,
+                                        D3DFMT_INDEX16, D3DPOOL_DEFAULT,
+                                        &impl->IBO, nullptr) < 0)
+      return;
+    impl->IndexBufferSize = GetIndexPoolSize();
+  }
+  void* vptr;
+  impl->VBO->Lock(0, 0, &vptr, D3DLOCK_DISCARD);
+  memcpy(vptr, GetVertexBufPtr(0), CurrentVertex * sizeof(PD::Li::Vertex));
+  impl->VBO->Unlock();
+
+  void* iptr;
+  impl->IBO->Lock(0, 0, &iptr, D3DLOCK_DISCARD);
+  memcpy(iptr, GetIndexBufPtr(0), CurrentIndex * sizeof(u16));
+  impl->IBO->Unlock();
 
   impl->Device->SetStreamSource(0, impl->VBO, 0, sizeof(PD::Li::Vertex));
   impl->Device->SetIndices(impl->IBO);
@@ -141,8 +177,8 @@ void GfxDirectX9::Submit(size_t count, size_t start) {
   impl->Device->SetVertexShader(impl->VS);
   impl->Device->SetPixelShader(impl->FS);
 
-  impl->Device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0,
-                                     GetVertexPoolSize(), start, count / 3);
+  impl->Device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, CurrentVertex,
+                                     start, count / 3);
 }
 
 void GfxDirectX9::BindTexture(TextureID id) {
@@ -164,7 +200,6 @@ void GfxDirectX9::BindTexture(TextureID id) {
 void GfxDirectX9::SysReset() {
   if (!impl || !impl->Device) return;
 
-  impl->Device->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
   impl->Device->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
   impl->Device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
   impl->Device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
@@ -244,36 +279,6 @@ void GfxDirectX9::DeleteTexture(const Li::Texture& tex) {
   IDirect3DTexture9* t = (IDirect3DTexture9*)tex.GetID();
   t->Release();
 }
-void GfxDirectX9::UploadPools() {
-  if (!impl || !impl->Device) return;
-
-  if (!impl->VBO || impl->VertexBufferSize != GetVertexPoolSize()) {
-    if (impl->VBO) impl->VBO->Release();
-    impl->Device->CreateVertexBuffer(GetVertexPoolSize() * sizeof(Li::Vertex),
-                                     D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY, 0,
-                                     D3DPOOL_DEFAULT, &impl->VBO, nullptr);
-    impl->VertexBufferSize = GetVertexPoolSize();
-  }
-
-  if (!impl->IBO || impl->IndexBufferSize != GetIndexPoolSize()) {
-    if (impl->IBO) impl->IBO->Release();
-    impl->Device->CreateIndexBuffer(
-        GetIndexPoolSize() * sizeof(u16), D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY,
-        D3DFMT_INDEX16, D3DPOOL_DEFAULT, &impl->IBO, nullptr);
-    impl->IndexBufferSize = GetIndexPoolSize();
-  }
-
-  void* vptr;
-  impl->VBO->Lock(0, 0, &vptr, D3DLOCK_DISCARD);
-  memcpy(vptr, GetVertexBufPtr(0),
-         GetVertexPoolSize() * sizeof(PD::Li::Vertex));
-  impl->VBO->Unlock();
-
-  void* iptr;
-  impl->IBO->Lock(0, 0, &iptr, D3DLOCK_DISCARD);
-  memcpy(iptr, GetIndexBufPtr(0), GetIndexPoolSize() * sizeof(u16));
-  impl->IBO->Unlock();
-}
 }  // namespace PD
 #else
 namespace PD {
@@ -292,6 +297,5 @@ Li::Texture GfxDirectX9::LoadTexture(const std::vector<PD::u8>& pixels, int w,
   return Li::Texture();
 }
 void GfxDirectX9::DeleteTexture(const Li::Texture& tex) {}
-void GfxDirectX9::UploadPools() {}
 }  // namespace PD
 #endif
