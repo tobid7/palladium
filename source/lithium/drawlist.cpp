@@ -10,14 +10,9 @@ PD_API Drawlist::Drawlist() { Clear(); }
 
 PD_API Drawlist::~Drawlist() { Clear(); }
 
-PD_API void Drawlist::Merge(Drawlist& other) {
-  pCommands.AppendMove(other.pCommands);
-  other.Clear();
-}
+PD_API void Drawlist::Merge(Drawlist& other) {}
 
-PD_API void Drawlist::Copy(Drawlist& other) {
-  pCommands.AppendCopy(other.pCommands);
-}
+PD_API void Drawlist::Copy(Drawlist& other) {}
 
 PD_API void Drawlist::Optimize() {}
 

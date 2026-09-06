@@ -16,7 +16,7 @@ enum class TextureFormat {
   A8,
 };
 namespace Li {
-inline int TextureFormat2Bpp(TextureFormat fmt) {
+static int TextureFormat2Bpp(TextureFormat fmt) {
   switch (fmt) {
     case PD::TextureFormat::A8:
       return 1;
