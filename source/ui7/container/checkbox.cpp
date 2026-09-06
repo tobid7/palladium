@@ -48,6 +48,7 @@ PD_API void Checkbox::HandleInput() {
 PD_API void Checkbox::Draw() {
   // Assert(list.get() && io.get(), "Did you run Container::Init correctly?");
   // io->Ren->OnScreen(screen);
+  list->SetFont(GetFont());
   list->PathRect(FinalPos(), FinalPos() + cbs, io->FrameRounding);
   list->PathFill(io->Theme.Get(color));
   if (usr_ref) {

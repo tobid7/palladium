@@ -127,6 +127,8 @@ class PD_API Layout {
   void CursorInit();
   void SameLine();
   void CursorMove(const fvec2& size);
+  void PushFont(Li::Font* f) { IO.PushFont(f); }
+  void PopFont() { IO.PopFont(); }
 
   bool ObjectWorkPos(fvec2& movpos);
 
