@@ -6,11 +6,11 @@
 #include <pd/lithium/pools.hpp>
 #include <pd/lithium/texture.hpp>
 
-using PDGfxBackendFlags = PD::u32;
-enum PDGfxBackendFlags_ {
-  PDGfxBackendFlags_None = 0,
-  PDGfxBackendFlags_FlipUV_Y = 1 << 0,   // Essential for font loading
-  PDGfxBackendFlags_WindingCW = 1 << 0,  // Use CW instead of CCW winding
+using PDBackendFlags = PD::u32;
+enum PDBackendFlags_ {
+  PDBackendFlags_None = 0,
+  PDBackendFlags_FlipUV_Y = 1 << 0,   // Essential for font loading
+  PDBackendFlags_WindingCW = 1 << 0,  // Use CW instead of CCW winding
 };
 
 namespace PD {
@@ -40,7 +40,7 @@ class PD_API GfxDriver : public DriverInterface {
   virtual void DeleteTexture(const Li::Texture& tex) {}
   virtual void Draw(const Pool<Li::Command>& commands) {}
   Li::Texture::Ptr GetWhiteTexture() { return &pWhite; }
-  PDGfxBackendFlags GetFlags() { return Flags; }
+  PDBackendFlags GetFlags() { return Flags; }
 
   size_t GetNumVertices() const { return CountVertices; }
   size_t GetNumIndices() const { return CountIndices; }
@@ -70,7 +70,7 @@ class PD_API GfxDriver : public DriverInterface {
   ivec2 ViewPort;
   std::unordered_map<TextureID, Li::Texture> pTextureRegestry;
   Li::Texture pWhite;
-  PDGfxBackendFlags Flags = 0;
+  PDBackendFlags Flags = 0;
 };
 
 struct DefaultGfxConfig {
@@ -174,7 +174,7 @@ class PD_API Gfx {
     return driver->GetWhiteTexture();
   }
 
-  static PDGfxBackendFlags GetFlags() { return driver->GetFlags(); }
+  static PDBackendFlags GetFlags() { return driver->GetFlags(); }
 
   static const char* GetDriverName() { return driver->GetName(); }
 
