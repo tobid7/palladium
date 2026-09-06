@@ -10,6 +10,9 @@ struct GfxDirectX9Config {
   // Index Allocator
   template <typename T>
   using IndexAlloc = std::allocator<T>;
+
+  static constexpr size_t NumVertices = 32768;  // 8192*4
+  static constexpr size_t NumIndices = 49152;   // 8192*6
 };
 
 class GfxDirectX9 : public GfxDriverBase<GfxDirectX9Config> {
