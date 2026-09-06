@@ -232,13 +232,6 @@ PD_API void Drawlist::DrawTextEx(const fvec2& p, const char* text,
   pFont->CmdTextEx(*this, p, color, pFontScale, text, flags, box);
 }
 
-PD_API void Drawlist::DrawLine(const fvec2& a, const fvec2& b,
-                               const PD::Color& color, int thickness) {
-  this->PathAdd(a);
-  this->PathAdd(b);
-  this->PathStroke(color, thickness);
-}
-
 PD_API void Drawlist::DrawPolyLine(const Pool<fvec2>& points,
                                    const PD::Color& color, LiDrawFlags flags,
                                    int t) {
