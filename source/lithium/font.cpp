@@ -20,7 +20,6 @@ PD_API void Font::LoadTTF(const std::string& path, int px_height) {
   PDLOG("Font: Loading {}...", path);
   TT::Scope st("LI_LoadTTF_" + path);
   auto font = PD::IO::LoadFile2Mem(path);
-  PDLOG("Font Size: {}", PD::Strings::FormatBytes(font.size()));
   LoadTTF(font, px_height);
 }
 

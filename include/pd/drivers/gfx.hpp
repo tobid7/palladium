@@ -42,11 +42,6 @@ class PD_API GfxDriver : public DriverInterface {
   Li::Texture::Ptr GetWhiteTexture() { return &pWhite; }
   PDBackendFlags GetFlags() { return Flags; }
 
-  size_t GetNumVertices() const { return CountVertices; }
-  size_t GetNumIndices() const { return CountIndices; }
-  size_t GetNumDrawcalls() const { return CountDrawcalls; }
-  size_t GetNumCommands() const { return CountCommands; }
-
  protected:
   virtual void SysDeinit() {}
   virtual void SysInit() {}
@@ -63,8 +58,6 @@ class PD_API GfxDriver : public DriverInterface {
   size_t CountIndices = 0;
   size_t CurrentIndex = 0;
   size_t CurrentVertex = 0;
-  size_t pCountDrawcalls = 0;
-  size_t pCountCommands = 0;
   TextureID CurrentTex = 0;
   Mat4 Projection;
   ivec2 ViewPort;
@@ -98,7 +91,7 @@ class GfxDriverBase : public GfxDriver {
   }
 
   void Draw(const Pool<Li::Command>& commands) override {
-    pCountCommands += commands.size();
+    CountCommands += commands.size();
     size_t index = 0;
     while (index < commands.size()) {
       CurrentTex = commands[index].Tex;
@@ -110,6 +103,8 @@ class GfxDriverBase : public GfxDriver {
              (CurrentTex == commands[index].Tex ||
               (CurrentTex == pWhite.GetID() && commands[index].Tex == 0))) {
         const auto& c = commands[index];
+        CountVertices += c.VertexCount;
+        CountIndices += c.IndexCount;
         auto pIdx = pIdxPool.Allocate(c.IndexCount);
         auto pVtx = pVtxPool.Allocate(c.VertexCount);
         for (size_t i = 0; i < c.IndexCount; i++) {
@@ -123,7 +118,6 @@ class GfxDriverBase : public GfxDriver {
         index++;
       }
       Submit(CurrentIndex - startidx, startidx);
-      pCountDrawcalls++;
     }
   }
 
@@ -177,11 +171,6 @@ class PD_API Gfx {
   static PDBackendFlags GetFlags() { return driver->GetFlags(); }
 
   static const char* GetDriverName() { return driver->GetName(); }
-
-  static size_t GetNumVertices() { return driver->GetNumVertices(); }
-  static size_t GetNumIndices() { return driver->GetNumIndices(); }
-  static size_t GetNumDrawcalls() { return driver->GetNumDrawcalls(); }
-  static size_t GetNumCommands() { return driver->GetNumCommands(); }
 
  private:
   static std::unique_ptr<GfxDriver> driver;
