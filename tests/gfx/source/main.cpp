@@ -57,30 +57,6 @@ std::string Key2String(PD::Hid::Gamepad gp) {
   if (gp & PD::Hid::Gamepad::DRight) {
     res += "DRight";
   }
-  if (gp & PD::Hid::Gamepad::CPDown) {
-    res += "CPDown";
-  }
-  if (gp & PD::Hid::Gamepad::CPUp) {
-    res += "CPUp";
-  }
-  if (gp & PD::Hid::Gamepad::CPLeft) {
-    res += "CPLeft";
-  }
-  if (gp & PD::Hid::Gamepad::CPRight) {
-    res += "CPRight";
-  }
-  if (gp & PD::Hid::Gamepad::CSDown) {
-    res += "CSDown";
-  }
-  if (gp & PD::Hid::Gamepad::CSUp) {
-    res += "CSUp";
-  }
-  if (gp & PD::Hid::Gamepad::CSLeft) {
-    res += "CSLeft";
-  }
-  if (gp & PD::Hid::Gamepad::CSRight) {
-    res += "CSRight";
-  }
   if (gp & PD::Hid::Gamepad::L) {
     res += "L";
   }
@@ -157,15 +133,6 @@ class App {
   MainMenu main;
 };
 
-struct Cursor {
-  PD::fvec2 pPos = 0;
-  std::string name;
-  PD::Color pColor = 0xffff00ff;
-  void Render(PD::Li::Drawlist& l) {
-    l.DrawCircleFilled(pPos, 32.f, pColor, 15);
-  }
-};
-
 int main(int argc, char** argv) {
   // PD::LogFilter(PD::LogLevel::Warning);
   Driver drv = Driver::OpenGL3;
@@ -194,39 +161,18 @@ int main(int argc, char** argv) {
   font.LoadTTF(ResourcePath("default.ttf"), 64);
   pList.SetFont(&font);
   App app(font);
-  Cursor LeftStick;
-  Cursor RightStick;
-  RightStick.pColor = "#00ffff";
   while (pOs->Mainloop()) {
     PD::Hid::Update();
     pOs->ClearViewPort();
     PD::Li::ResetPools();  // Move to other place (or refactor this)
     app.Update(pOs->GetViewport(), pList);
-    pList.SetFontscale(0.7);
-    if (PD::Hid::IsEvent(PD::Hid::Event::Down, PD::Hid::Gamepad::CPLeft |
-                                                   PD::Hid::Gamepad::CPRight)) {
-      LeftStick.pPos.x += PD::Hid::GetLeftStick().x * 15;
-    }
-    if (PD::Hid::IsEvent(PD::Hid::Event::Down,
-                         PD::Hid::Gamepad::CPUp | PD::Hid::Gamepad::CPDown)) {
-      LeftStick.pPos.y += PD::Hid::GetLeftStick().y * 15;
-    }
-    if (PD::Hid::IsEvent(PD::Hid::Event::Down, PD::Hid::Gamepad::CSLeft |
-                                                   PD::Hid::Gamepad::CSRight)) {
-      RightStick.pPos.x += PD::Hid::GetRightStick().x * 15;
-    }
-    if (PD::Hid::IsEvent(PD::Hid::Event::Down,
-                         PD::Hid::Gamepad::CSUp | PD::Hid::Gamepad::CSDown)) {
-      RightStick.pPos.y += PD::Hid::GetRightStick().y * 15;
-    }
     pList.DrawText(
         PD::fvec2(5, 37),
         std::format(
             "Input:\n  Driver: {}\n  Gamepad: {}\n    {}\n    {}\n    "
             "{}\n    {}\n    {}\n    {}\n    {}\n    {}\n    {}\n    {}\n    "
-            "{}\n    {}\n    {}\n    {}\n    {}\n    {}\n    {}\n    {}\n    "
             "{}\n    {}\n    "
-            "{}\n    {}\n    LS: [{}]\n    RS: [{}]\nLSP: {}",
+            "{}\n    {}\n",
             PD::Hid::GetDriverName(),
             bool(PD::Hid::GetFlags() & PDHidBackendFlags_HasGamepad),
             ComboGpOut(PD::Hid::Gamepad::Start),
@@ -238,20 +184,9 @@ int main(int argc, char** argv) {
             ComboGpOut(PD::Hid::Gamepad::DLeft),
             ComboGpOut(PD::Hid::Gamepad::DRight),
             ComboGpOut(PD::Hid::Gamepad::L), ComboGpOut(PD::Hid::Gamepad::R),
-            ComboGpOut(PD::Hid::Gamepad::ZL), ComboGpOut(PD::Hid::Gamepad::ZR),
-            ComboGpOut(PD::Hid::Gamepad::CPLeft),
-            ComboGpOut(PD::Hid::Gamepad::CPRight),
-            ComboGpOut(PD::Hid::Gamepad::CPUp),
-            ComboGpOut(PD::Hid::Gamepad::CPDown),
-            ComboGpOut(PD::Hid::Gamepad::CSLeft),
-            ComboGpOut(PD::Hid::Gamepad::CSRight),
-            ComboGpOut(PD::Hid::Gamepad::CSUp),
-            ComboGpOut(PD::Hid::Gamepad::CSDown), PD::Hid::GetLeftStick(),
-            PD::Hid::GetRightStick(), LeftStick.pPos)
+            ComboGpOut(PD::Hid::Gamepad::ZL), ComboGpOut(PD::Hid::Gamepad::ZR))
             .c_str(),
         "#ffffff");
-    LeftStick.Render(pList);
-    RightStick.Render(pList);
     PD::Gfx::Reset();
     PD::Gfx::Draw(pList);
     pList.Clear();
