@@ -207,17 +207,6 @@ PD_API fvec2 Font::GetTextBounds(const char* text, float scale) {
   return res;
 }
 
-PD_API void PrimTextQuad(Command& cmd, float x, float y, float w, float h,
-                         const fvec4& uv, const PD::Color& color) {
-  cmd.Reserve(4, 6);
-  cmd.Add(2, 1, 0);
-  cmd.Add(3, 2, 0);
-  cmd.Add(Vertex(x, y, uv.x, uv.y, color));
-  cmd.Add(Vertex(x + w, y, uv.z, uv.y, color));
-  cmd.Add(Vertex(x + w, y + h, uv.z, uv.w, color));
-  cmd.Add(Vertex(x, y + h, uv.x, uv.w, color));
-}
-
 PD_API void Font::CmdTextEx(Drawlist& dl, const fvec2& pos, u32 color,
                             float scale, const char* text, LiTextFlags flags,
                             const fvec2& box) {
@@ -236,7 +225,7 @@ PD_API void Font::CmdTextEx(Drawlist& dl, const fvec2& pos, u32 color,
 
   U8Iterator it(text);
   u32 c;
-  Command* cmd = dl.HasCommands() ? &dl.GetLastCommand() : nullptr;
+  Command* cmd = nullptr;
   while (it.Decode32(c)) {
     auto cp = GetCodepoint(c);
     if ((cp.pInvalid && c != L'\n' && c != L'\t' && c != L' ') && c != L'\r')
@@ -263,20 +252,15 @@ PD_API void Font::CmdTextEx(Drawlist& dl, const fvec2& pos, u32 color,
       cmd->Tex = Textures[cp.Tex];
     }
 
-    // calculating once and using PrimTextQuad to directly push
-    // saves ~42% on raw multiline text draw time 6.3 -> 3.7 ms
-    // and ~25% on the whole frametime 20.3 -> 15.2 ms
-    // tested with Craftus-Next 0.8.0 commit:
-    // 33298ccc276bf996d341710e69ecf05f99c57961
-    float cw = cp.Size.x * cfs;
-    float ch = cp.Size.y * cfs;
-    float cx = rpos.x + off.x;
-    float cy = rpos.y + off.y + (cp.Offset * cfs);
-
     if (flags & LiTextFlags_Shaddow) {
-      PrimTextQuad(*cmd, cx + 1.f, cy + 1.f, cw, ch, cp.SimpleUV, 0xff111111);
+      Rect rec = Math::PrimRect(rpos + off + fvec2(1, cp.Offset * cfs + 1),
+                                cp.Size * cfs, 0.f);
+      dl.PrimQuad(*cmd, rec, cp.SimpleUV, 0xff111111);
     }
-    PrimTextQuad(*cmd, cx, cy, cw, ch, cp.SimpleUV, color);
+
+    Rect rec = Math::PrimRect(rpos + off + fvec2(0, cp.Offset * cfs),
+                              cp.Size * cfs, 0.f);
+    dl.PrimQuad(*cmd, rec, cp.SimpleUV, color);
 
     off.x += cp.Size.x * cfs + 2 * cfs;
   }
