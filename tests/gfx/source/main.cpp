@@ -211,14 +211,16 @@ int main(int argc, char** argv) {
   ui7.AddViewPort("Default", PD::ivec4(0, 0, 1280, 720));
   ui7.UseViewPort("Default");
   while (pOs->Mainloop()) {
-    PD::TT::End("OSCTX::MainLoop");
-    pOs->ClearViewPort();
     PD::TT::Scope __st("MainLoop");
-    PD::TT::Beg("MainRaw");
     PD::Hid::Update();
     PD::Gfx::NewFrame();
+    pOs->ClearViewPort();
     // app.Update(pOs->GetViewport(), pList);
     pList.SetFontscale(0.7);
+    if (auto m = ui7.BeginMenu("Test")) {
+      m->Label("Hello World!");
+      ui7.EndMenu();
+    }
     if (PD::Hid::IsEvent(PD::Hid::Event::Down, PD::Hid::Gamepad::CPLeft |
                                                    PD::Hid::Gamepad::CPRight)) {
       LeftStick.pPos.x += PD::Hid::GetLeftStick().x * 15;
@@ -297,27 +299,17 @@ int main(int argc, char** argv) {
           "#ff00ff");
     }
     pList.SetFont(&font);
-    #ifndef __3DS__
-    PD::TT::Beg("BuildUI7Menus");
-    if (auto m = ui7.BeginMenu("Test")) {
-      m->Label("Hello World!");
-      ui7.EndMenu();
-    }
     ui7.MetricsMenu();
-    PD::TT::End("BuildUI7Menus");
     PD::TT::Beg("UI7::Context::Update");
     ui7.Update();
     PD::TT::End("UI7::Context::Update");
-    #endif
     PD::Gfx::Reset();
     PD::TT::Beg("PD::Gfx::Draw");
     PD::Gfx::Draw(pList);
     PD::Gfx::Draw(ui7.GetDrawData());
     PD::TT::End("PD::Gfx::Draw");
     pList.Clear();
-    PD::TT::End("MainRaw");
     pOs->SwapBuffers();
-    PD::TT::Beg("OSCTX::MainLoop");
   }
   font.Delete();
   PD::Gfx::DeleteTexture(pTex);
