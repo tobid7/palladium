@@ -13,10 +13,8 @@ PD_API bool ElementBase::RevisionUpdate(PD::u32 req) {
 }
 PD_API void ElementBase::Update() {
   if (!pParent) pRenderspace = PD::fvec4(pPos, pPos + pSize);
-  pRenderspace = pParent->GetCanvas().VTranslateObject(
-      pParent->GetTopLeft() + pPos, pSize, pAlignment);
-  /*pRenderspace = PD::fvec4(pParent->GetTopLeft() + pPos,
-                           pParent->GetTopLeft() + pPos + pSize);*/
+  pRenderspace = PD::fvec4(pParent->GetTopLeft() + pPos,
+                           pParent->GetTopLeft() + pPos + pSize);
 }
 }  // namespace Ultra
 }  // namespace PD
