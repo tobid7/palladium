@@ -6,22 +6,52 @@
 
 #include <pd/drivers/drivers.hpp>
 #include <pd_system/gl-helper.hpp>
-#include <pd_system/shaders.hpp>
-#include <pd_system/spirv-helper.hpp>
 
 namespace PD {
+const char* GfxOpenGL3::pVertCode = R"(
+  #version 330 core
+  
+  layout(location = 0) in vec2 pos;
+  layout(location = 1) in vec2 uv;
+  layout(location = 2) in vec4 color;
+  
+  out vec2 oUV;
+  out vec4 oColor;
+  
+  // Probably forgot about this matrix and
+  // searched hours for why the rendering isn't working :/
+  uniform mat4 projection;
+  
+  void main() {
+      gl_Position = projection*vec4(pos, 0.0, 1.0);
+      oUV = uv;
+      oColor = color;
+  }
+  )";
+
+const char* GfxOpenGL3::pFragCode = R"(
+  #version 330 core
+      
+  in vec2 oUV;
+  in vec4 oColor;
+  
+  uniform sampler2D tex;
+  uniform bool alfa;
+
+  out vec4 FragColor;
+      
+  void main() {
+    vec4 tc = texture(tex, oUV);
+    if (alfa) {
+      FragColor = vec4(oColor.rgb, tc.a * oColor.a);
+    } else {
+      FragColor = tc * oColor;
+    }
+  }
+  )";
+
 void GfxOpenGL3::SysInit() {
-  SpirvHelper::Init();
-  auto vshader =
-      SpirvHelper::GLSL2SPV(SpirvHelper::Stage::Vertex, Shaders::VertCode);
-  auto fshader =
-      SpirvHelper::GLSL2SPV(SpirvHelper::Stage::Fragment, Shaders::FragCode);
-  SpirvHelper::Finalize();
-  std::string vcode = SpirvHelper::SPV2GLSL(vshader, 330, false);
-  std::string fcode = SpirvHelper::SPV2GLSL(fshader, 330, false);
-  PDLOG("Vertex: \n{}", vcode);
-  PDLOG("Fragment: \n{}", fcode);
-  pShader = CreateShaderProgram(vcode.c_str(), fcode.c_str());
+  pShader = CreateShaderProgram(pVertCode, pFragCode);
   glUseProgram(pShader);
   glGenVertexArrays(1, &VAO);
   glBindVertexArray(VAO);
@@ -42,8 +72,8 @@ void GfxOpenGL3::SysInit() {
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
 
   pLocTex = glGetUniformLocation(pShader, "tex");
-  pLocAlfa = glGetUniformLocation(pShader, "push.alfa");
-  pLocProjection = glGetUniformLocation(pShader, "ubo.projection");
+  pLocAlfa = glGetUniformLocation(pShader, "alfa");
+  pLocProjection = glGetUniformLocation(pShader, "projection");
 
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
