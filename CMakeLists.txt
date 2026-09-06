@@ -17,11 +17,8 @@ if(${PD_BUILD_TOOLS})
     add_subdirectory(tools)
 endif()
 
-add_subdirectory(vendor)
-
 # # Include Library Source
 set(PD_SOURCES
-
     # Core
     source/core/bits.cpp
     source/core/color.cpp
@@ -29,7 +26,6 @@ set(PD_SOURCES
     source/core/strings.cpp
 
     source/drivers/os.cpp
-    source/drivers/gfx.cpp
 )
 
 if(${PD_BUILD_SHARED})
@@ -87,6 +83,7 @@ install(FILES
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/palladium
 )
 
+
 find_program(CLANG_FORMAT clang-format)
 
 file(GLOB_RECURSE PD_FMTFILES CONFIGURE_DEPENDS
@@ -99,5 +96,4 @@ add_custom_target(pd-clang-format
     COMMENT "Formatting Project Sources"
 )
 
-add_subdirectory(backends)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tests)

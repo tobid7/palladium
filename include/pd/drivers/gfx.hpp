@@ -22,78 +22,25 @@ enum class TextureFormat {
   A8,
 };
 
-// Pre interface class
 class PD_API GfxDriver : public DriverInterface {
  public:
-  GfxDriver(std::string_view name);
-  virtual ~GfxDriver() = default;
+  GfxDriver(std::string_view name = "Default") : DriverInterface(name) {}
+  virtual ~GfxDriver() {}
 
   virtual void Init() {}
-
-  void SetViewPort(const ivec2& size);
-  void SetViewPort(int x, int y);
+  virtual void Deinit() {}
+  virtual void Submit() {}
   virtual void BindTexture(TextureID id) {}
-  void Reset();
+  virtual void Reset() {}
   virtual TextureID LoadTexture(const std::vector<PD::u8>& pixels, int w, int h,
                                 TextureFormat type = TextureFormat::RGBA32,
-                                TextureFilter filter = TextureFilter::Linear) {
-    return 0;
-  }
+                                TextureFilter filter = TextureFilter::Linear) {}
   virtual void DeleteTexture(const TextureID& tex) {}
-  virtual void Draw(const Pool<Li::Command>& commands) {}
-
- protected:
-  virtual void SysDeinit() {}
-  virtual void SysInit() {}
-  virtual void SysReset() {}
-  virtual void Submit(size_t count, size_t start) {}
-  virtual void ResetPools() = 0;
-
-  // Counters
-  size_t CountDrawcalls = 0;
-  size_t CountCommands = 0;
-  size_t CountVertices = 0;
-  size_t CountIndices = 0;
-  size_t CurrentIndex = 0;
-  size_t CurrentVertex = 0;
-  TextureID CurrentTex = 0;
-  Mat4 Projection;
-  ivec2 ViewPort;
-};
-
-struct DefaultGfxConfig {
-  // Vertex Allocator
-  template <typename T>
-  using VertexAlloc = std::allocator<T>;
-  // Index Allocator
-  template <typename T>
-  using IndexAlloc = std::allocator<T>;
-  using IndexType = u16;  // Index Type
-
-  static constexpr size_t NumVertices = 32768;  // 8192*4
-  static constexpr size_t NumIndices = 49152;   // 8192*6
-};
-
-template <typename Config = DefaultGfxConfig>
-class PD_API GfxDriverBase : public GfxDriver {
- public:
-  using IndexType = Config::IndexType;
-  using VtxPool =
-      Pool<Li::Vertex, typename Config::template VertexAlloc<Li::Vertex>>;
-  using IdxPool =
-      Pool<IndexType, typename Config::template VertexAlloc<IndexType>>;
-  GfxDriverBase(std::string_view name = "Default") : GfxDriver(name) {}
-  virtual ~GfxDriverBase() {}
-
-  void Init() override {
-    pVtxPool.Init(Config::NumVertices);
-    pIdxPool.Init(Config::NumIndices);
-    SysInit();
-  }
-
-  void Draw(const Pool<Li::Command>& commands) override {
+  void Draw(const std::vector<Li::Command>& commands) {
     CountCommands += commands.size();
+    // Bind shader
     Projection = Mat4::Ortho(0.f, ViewPort.x, ViewPort.y, 0.f, 1.f, -1.f);
+    // Shader Set Mtx
     size_t index = 0;
     while (index < commands.size()) {
       CurrentTex = commands[index].Tex;
@@ -101,36 +48,21 @@ class PD_API GfxDriverBase : public GfxDriver {
         index++;
         continue;
       }
-      size_t startidx = CurrentIndex;
-      while (index < commands.size() && CurrentTex == commands[index].Tex) {
-        const auto& c = commands[index];
-        CountVertices += c.VertexCount;
-        CountIndices += c.IndexCount;
-        auto pIdx = pIdxPool.Allocate(c.IndexCount);
-        auto pVtx = pVtxPool.Allocate(c.VertexCount);
-        for (size_t i = 0; i < c.IndexCount; i++) {
-          pIdx[i] = CurrentVertex + c.FirstIndex[i];
-        }
-        for (size_t i = 0; i < c.VertexCount; i++) {
-          pVtx[i] = c.FirstVertex[i];
-        }
-        index++;
-      }
-      Submit(index - startidx, startidx);
     }
   }
 
- protected:
-  IndexType* GetIndexBufPtr(size_t start) { return &pIdxPool[start]; }
-  Li::Vertex* GetVertexBufPtr(size_t start) { return &pVtxPool[start]; }
-  void ResetPools() override {
-    pVtxPool.Reset();
-    pIdxPool.Reset();
-  }
-
  private:
-  VtxPool pVtxPool;
-  IdxPool pIdxPool;
+  size_t CurrentIndex = 0;
+  size_t CurrentVertex = 0;
+  TextureID CurrentTex = 0;
+  Mat4 Projection;
+  ivec2 ViewPort;
+
+  // Counters
+  size_t CountDrawcalls = 0;
+  size_t CountCommands = 0;
+  size_t CountVertices = 0;
+  size_t CountIndices = 0;
 };
 
 class PD_API Gfx {

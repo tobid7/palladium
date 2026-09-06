@@ -1,1 +1,2 @@
-vendor/* linguist-vendored
+include/pd/external/* linguist-vendored
+backends/desktop/glad/* linguist-vendored
