@@ -15,21 +15,11 @@ namespace PD {
 struct HorizonCtr::Impl {
   C3D_RenderTarget* Top = nullptr;
   C3D_RenderTarget* Bottom = nullptr;
-  uint32_t* pSocBuf = nullptr;
 };
 
 void HorizonCtr::Init() {
   if (impl) return;
   impl = new Impl();
-  impl->pSocBuf = (uint32_t*)std::aligned_alloc(0x1000, 0x100000);
-  if (impl->pSocBuf) {
-    Result ret = socInit(impl->pSocBuf, 0x100000);
-    if (R_FAILED(ret)) {
-      free(impl->pSocBuf);
-      impl->pSocBuf = nullptr;
-    }
-  }
-  link3dsStdio();
   romfsInit();
   gfxInitDefault();
   consoleInit(GFX_BOTTOM, nullptr);
@@ -51,7 +41,6 @@ void HorizonCtr::Deinit() {
     C3D_Fini();
     gfxExit();
     romfsExit();
-    socExit();
     delete impl;
     impl = nullptr;
   }
@@ -59,9 +48,7 @@ void HorizonCtr::Deinit() {
 
 bool HorizonCtr::Mainloop() {
   pViewPort = ivec2(400, 240);
-  hidScanInput();
-  bool _kill = hidKeysUp() & KEY_START;
-  return aptMainLoop() && !_kill;
+  return aptMainLoop();
 }
 
 void HorizonCtr::ClearViewPort() {

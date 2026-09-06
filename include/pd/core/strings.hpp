@@ -149,7 +149,7 @@ class U8Iterator {
   }
 
   bool PeekNext32(u32& ret) {
-    if (ptr == nullptr || *(ptr + 1) == 0) return false;
+    // if ((ptr + 1) == 0 || *(ptr + 1) == 0) return false;
     u8 c = *ptr;
     if (c < 0x80) {
       ret = c;

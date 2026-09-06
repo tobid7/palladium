@@ -119,7 +119,6 @@ void GfxCitro3D::SysInit() {
   if (impl) return;
   PDLOG("GfxCitro3D::SysInit();");
   impl = new Impl();
-  Flags |= PDBackendFlags_FlipUV_Y;
   impl->pShaderRaw = Pica::AssembleCode(LIShaderCTR);
   impl->pCode = DVLB_ParseFile((uint32_t*)impl->pShaderRaw.data(),
                                impl->pShaderRaw.size());

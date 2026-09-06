@@ -16,8 +16,6 @@ struct HorizonNX::Impl {
 void HorizonNX::Init() {
   if (impl) return;
   impl = new Impl();
-  socketInitializeDefault();
-  nxlinkStdio();
   romfsInit();
   glfwInit();
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);

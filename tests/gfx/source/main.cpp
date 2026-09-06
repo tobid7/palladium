@@ -16,7 +16,7 @@ const char* ResourcePath(const char* in) {
 }
 
 int main(int argc, char** argv) {
-  // PD::LogFilter(PD::LogLevel::Warning);
+  PD::LogFilter(PD::LogLevel::Warning);
   Driver drv = Driver::OpenGL3;
   if (argc == 2) {
     if (std::string(argv[1]) == "gl2") {
@@ -39,10 +39,6 @@ int main(int argc, char** argv) {
   PD::Li::Drawlist pList;
   PD::Image img(ResourcePath("icon.png"));
   auto pTex = PD::Gfx::LoadTexture(img, img.Width(), img.Height());
-  PD::Li::Font font;
-  font.LoadTTF(ResourcePath("default.ttf"));
-  pList.SetFont(&font);
-  pList.SetFontscale(0.7f);
   while (pOs->Mainloop()) {
     pOs->ClearViewPort();
     PD::Li::ResetPools();
@@ -52,7 +48,6 @@ int main(int argc, char** argv) {
     pList.BindTexture(pTex);
     pList.DrawRectFilled(pOs->PositionTranslate(PD::fvec2(0.02f, 0.5f)),
                          pOs->SizeTranslate(PD::fvec2(0.3)), 0xffffffff);
-    pList.DrawText(5, "Hello World!", 0xff0000ff);
     PD::Gfx::Reset();
     PD::Gfx::Draw(pList);
     pList.Clear();

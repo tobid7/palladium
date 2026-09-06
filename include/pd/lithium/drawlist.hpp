@@ -1,7 +1,6 @@
 #pragma once
 
 #include <pd/lithium/command.hpp>
-#include <pd/lithium/font.hpp>
 #include <pd/lithium/texture.hpp>
 
 using LiPathRectFlags = PD::u32;
@@ -26,6 +25,18 @@ using LiDrawFlags = PD::u32;
 enum LiDrawFlags_ : PD::u32 {
   LiDrawFlags_None = 0,
   LiDrawFlags_Close = 1 << 0,
+};
+
+using LiTextFlags = PD::u32;
+enum LiTextFlags_ : PD::u32 {
+  LiTextFlags_None = 0,             ///< Do nothing
+  LiTextFlags_AlignRight = 1 << 0,  ///< Align Right of position
+  LiTextFlags_AlignMid = 1 << 1,    ///< Align in the middle of pos and box
+  LiTextFlags_Shaddow = 1 << 2,     ///< Draws the text twice to create shaddow
+  LiTextFlags_Wrap = 1 << 3,        ///< Wrap Text: May be runs better with TMS
+  LiTextFlags_Short = 1 << 4,       ///< Short Text: May be runs better with TMS
+  LiTextFlags_Scroll = 1 << 5,      ///< Not implemented [scoll text if to long]
+  LiTextFlags_NoOOS = 1 << 6,       ///< No Out of Screen Rendering
 };
 
 namespace PD {
@@ -67,10 +78,6 @@ class PD_API Drawlist {
   void BindTexture(const Texture& tex);
   void UnbindTexture() { pCurrentTexture = Texture(); }
 
-  /** Font Handling */
-  void SetFont(Font* font) { pFont = font; }
-  void SetFontscale(float fontscale = 1.f) { pFontScale = fontscale; }
-
   /** Data geters */
   const Pool<Command>& Data() const { return pCommands; }
   operator const Pool<Command>&() const { return pCommands; }
@@ -104,8 +111,6 @@ class PD_API Drawlist {
   Pool<fvec2> pPath;
   Pool<Vertex> pVertices;
   Pool<u16> pIndices;
-  Font* pFont = nullptr;
-  float pFontScale = 1.f;
 };
 }  // namespace Li
 }  // namespace PD

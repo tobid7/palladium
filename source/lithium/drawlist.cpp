@@ -203,16 +203,10 @@ PD_API void Drawlist::DrawCircleFilled(const fvec2& center, float rad,
   PathFill(color);
 }
 
-PD_API void Drawlist::DrawText(const fvec2& p, const char* text, u32 color) {
-  if (!pFont) return;
-  pFont->CmdTextEx(*this, p, color, pFontScale, text);
-}
+PD_API void Drawlist::DrawText(const fvec2& p, const char* text, u32 color) {}
 
 PD_API void Drawlist::DrawTextEx(const fvec2& p, const char* text, u32 color,
-                                 LiTextFlags flags, const fvec2& box) {
-  if (!pFont) return;
-  pFont->CmdTextEx(*this, p, color, pFontScale, text, flags, box);
-}
+                                 LiTextFlags flags, const fvec2& box) {}
 
 PD_API void Drawlist::DrawPolyLine(const Pool<fvec2>& points, u32 color,
                                    LiDrawFlags flags, int t) {
@@ -276,7 +270,6 @@ PD_API void Drawlist::DrawConvexPolyFilled(const Pool<fvec2>& points,
 
 PD_API void Drawlist::PrimQuad(Command& cmd, const Rect& quad, const Rect& uv,
                                u32 color) {
-  cmd.Reserve(4, 6);
   cmd.Add(2, 1, 0);
   cmd.Add(3, 2, 0);
   cmd.Add(Vertex(quad.TopLeft(), uv.TopLeft(), color));
@@ -287,7 +280,6 @@ PD_API void Drawlist::PrimQuad(Command& cmd, const Rect& quad, const Rect& uv,
 
 PD_API void Drawlist::PrimTriangle(Command& cmd, const fvec2& a, const fvec2& b,
                                    const fvec2& c, u32 color) {
-  cmd.Reserve(3, 3);
   cmd.Add(2, 1, 0);
   cmd.Add(Vertex(a, vec2(0.f, 1.f), color));
   cmd.Add(Vertex(b, vec2(1.f, 1.f), color));
