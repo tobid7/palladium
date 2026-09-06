@@ -111,25 +111,6 @@ class PD_API Container {
   virtual void Draw() {}
   /** Template function to update internal data (if needed) */
   virtual void Update() {}
-  /** Template as well as base func for Pool based Containers */
-  virtual void Reset() {
-    pos = 0;
-    size = 0;
-    parent = nullptr;
-    id = 0;
-    pFlags = 0;
-    skippable = false;
-    rem = false;
-    inp_done = false;
-    pSelected = false;
-    pPressed = false;
-    pPressedTwice = false;
-    pCLipRectUsed = false;
-    pClipRect = 0;
-    io = nullptr;
-    list = nullptr;
-    last_use = 0;
-  }
 
   /** Internal function */
   void PreDraw();

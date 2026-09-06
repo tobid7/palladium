@@ -161,8 +161,7 @@ PD_API void Layout::Update() {
 
 PD_API void Layout::Label(const std::string& label) {
   // Layout API
-  auto r = IO.LabelPool.Allocate();
-  *r = UI7::Label(label, IO);
+  auto r = new UI7::Label(label, IO);
   r->SetClipRect(fvec4(GetPosition(), GetPosition() + GetSize()));
   AddObject(r);
 }
@@ -193,8 +192,7 @@ PD_API void Layout::Checkbox(const std::string& label, bool& v) {
 }
 
 PD_API void Layout::Image(Li::Texture img, fvec2 size, Li::Rect uv) {
-  auto r = IO.ImagePool.Allocate();
-  *r = UI7::Image(img, size, uv);
+  Container* r = new UI7::Image(img, size, uv);
   AddObject(r);
 }
 
