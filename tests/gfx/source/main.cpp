@@ -254,7 +254,7 @@ int main(int argc, char** argv) {
     // LeftStick.Render(pList);
     // RightStick.Render(pList);
     pList.UnbindTexture();
-    // pList.PathRect(50, PD::fvec2(450, 240));
+    pList.PathRect(50, PD::fvec2(450, 240));
     /*pList.PathFillGradient("#ff0000", "#990000", PD::Radians(135));
     pList.PathAdd(PD::fvec2(100, 120));
     pList.PathAdd(PD::fvec2(250, 260));
@@ -264,13 +264,6 @@ int main(int argc, char** argv) {
     pList.PathAdd(PD::fvec2(1000, 360));
 
     pList.PathStroke("#ff00ff", 10, LiDrawFlags_AA);*/
-    pList.SetFontscale(std::sin(PD::Os::GetTime() * 0.001f) * 1.85f + 2.15f);
-    pList.DrawText(PD::fvec2(5, 130), "Some text...", "#fff00fff");
-#ifdef __3DS__
-    pList.SetFontscale(0.4);
-#else
-    pList.SetFontscale();
-#endif
     int __i = 0;
     for (auto& it : PD::TT::GetTraceMap()) {
       pList.DrawText(

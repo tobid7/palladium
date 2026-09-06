@@ -8,12 +8,10 @@
 #include <stb_truetype.h>
 
 #include <map>
-#include <utility>
 
 namespace PD {
 namespace Li {
-PD_API void Font::LoadTTF(const std::string& path, int px_height,
-                          LiFontFlags flags) {
+PD_API void Font::LoadTTF(const std::string& path, int px_height) {
   /**
    * Just use LoadFile2Mem which looks way cleaner
    * and helps not having the font loading code twice
@@ -23,18 +21,16 @@ PD_API void Font::LoadTTF(const std::string& path, int px_height,
   TT::Scope st("LI_LoadTTF_" + path);
   auto font = PD::IO::LoadFile2Mem(path);
   PDLOG("Font Size: {}", PD::Strings::FormatBytes(font.size()));
-  LoadTTF(font, px_height, flags);
+  LoadTTF(font, px_height);
 }
 
-PD_API void Font::LoadTTF(const std::vector<u8>& data, int px_height,
-                          LiFontFlags flags) {
+PD_API void Font::LoadTTF(const std::vector<u8>& data, int px_height) {
   /**
    * Some additional Info:
    * Removed the stbtt get bitmapbox as we dont need to place
    * the glyps nicely in the tex. next step would be using the free
    * space on the y axis to get mor glyphs inside
    */
-  pFlags = flags;
   PixelHeight = px_height;
   int texszs = PD::Bits::GetPow2(px_height * 16);
   if (texszs > 1024) {
@@ -52,17 +48,6 @@ PD_API void Font::LoadTTF(const std::vector<u8>& data, int px_height,
   stbtt_GetFontVMetrics(&inf, &ascent, &descent, &lineGap);
   int baseline = static_cast<int>(ascent * scale);
 
-  float mono_advance = 0.f;
-  if (IsMonospace()) {
-    int a, l;
-    int rgi = stbtt_FindGlyphIndex(&inf, 'W');
-    if (rgi == 0) rgi = stbtt_FindGlyphIndex(&inf, '0');
-    if (rgi != 0) {
-      stbtt_GetGlyphHMetrics(&inf, rgi, &a, &l);
-      mono_advance = a * scale;
-    }
-  }
-
   // Cache to not render same codepoint tex twice
   std::map<u32, int> buf_cache;
 
@@ -71,112 +56,77 @@ PD_API void Font::LoadTTF(const std::vector<u8>& data, int px_height,
 
   bool empty = true;
 
-  std::vector<std::pair<u32, u32>> ranges = {
-      {0x0020, 0x007E},  // ASCII
-      {0x00A0, 0x00FF},  // LATIN-1
-  };
+  for (u32 ii = 0x0000; ii <= 0xFFFF; ii++) {
+    int gi = stbtt_FindGlyphIndex(&inf, ii);
+    if (gi == 0) continue;
+    if (stbtt_IsGlyphEmpty(&inf, gi)) continue;
 
-  for (auto& it : ranges) {
-    for (u32 ii = it.first; ii <= it.second; ii++) {
-      int gi = stbtt_FindGlyphIndex(&inf, ii);
-      if (gi == 0) continue;
+    int w = 0, h = 0, xo = 0, yo = 0;
+    unsigned char* bitmap =
+        stbtt_GetCodepointBitmap(&inf, scale, scale, ii, &w, &h, &xo, &yo);
+    if (!bitmap || w <= 0 || h <= 0) {
+      if (bitmap) free(bitmap);
+      continue;
+    }
 
-      int advance, lsb;
-      stbtt_GetGlyphHMetrics(&inf, gi, &advance, &lsb);
-      float sadvance = advance * scale;
-      float final_advance = sadvance;
-      float center_offset = 0.f;
-
-      if (IsMonospace() && mono_advance > 0.f) {
-        final_advance = mono_advance;
-        center_offset = (mono_advance - sadvance) * 0.5f;
-      }
-
-      if (stbtt_IsGlyphEmpty(&inf, gi)) {
-        Codepoint c;
-        c.AdvanceX = final_advance;
-        c.Size = fvec2(0.f);
-        c.pCodepoint = ii;
-        c.pInvalid = false;
-        CodeMap[ii] = c;
-        continue;
-      }
-
-      int w = 0, h = 0, xo = 0, yo = 0;
-      unsigned char* bitmap = nullptr;
-      if (IsSDF()) {
-        bitmap = stbtt_GetCodepointSDF(&inf, scale, ii, 5, 128, 255.f / 5.f, &w,
-                                       &h, &xo, &yo);
-      } else {
-        bitmap =
-            stbtt_GetCodepointBitmap(&inf, scale, scale, ii, &w, &h, &xo, &yo);
-      }
-      if (!bitmap || w <= 0 || h <= 0) {
-        if (bitmap) free(bitmap);
-        continue;
-      }
-
-      u32 hashed_map =
-          IO::HashMemory(std::vector<u8>(bitmap, bitmap + (w * h)));
-      if (buf_cache.find(hashed_map) != buf_cache.end()) {
-        Codepoint c = GetCodepoint(buf_cache[hashed_map]);
-        c.pCodepoint = ii;
-        CodeMap[ii] = c;
-        free(bitmap);
-        continue;
-      } else {
-        buf_cache[hashed_map] = ii;
-      }
-
-      // Next row
-      if (off.x + w > texszs) {
-        off.y += PixelHeight;
-        off.x = 0.0f;
-      }
-      // Bake cause we go out of the tex
-      if (off.y + PixelHeight > texszs) {
-        BakeAndPush(false, font_tex, texszs);
-        off = 0;
-        std::fill(font_tex.begin(), font_tex.end(), 0);
-        empty = true;
-      }
-
-      // UVs & Codepoint
-      Codepoint c;
-      fvec4 uvs;
-      // cast the ints to floats and not the floats...
-      // dont know where my mind was when creating the code
-      uvs.x = off.x / static_cast<float>(texszs);
-      uvs.y = off.y / static_cast<float>(texszs);
-      uvs.z = (off.x + w) / static_cast<float>(texszs);
-      uvs.w = (off.y + h) / static_cast<float>(texszs);
-      // Flip if needed
-      if (PD::Gfx::GetFlags() & PDGfxBackendFlags_FlipUV_Y) {
-        uvs.y = 1.f - uvs.y;
-        uvs.w = 1.f - uvs.w;
-      }
-      c.SimpleUV = uvs;
-      c.Tex = pCurrentTex;
-      c.Size = fvec2(w, h);
-      c.Offset = fvec2(xo + center_offset, baseline + yo);
-      c.AdvanceX = final_advance;
+    u32 hashed_map = IO::HashMemory(std::vector<u8>(bitmap, bitmap + (w * h)));
+    if (buf_cache.find(hashed_map) != buf_cache.end()) {
+      Codepoint c = GetCodepoint(buf_cache[hashed_map]);
       c.pCodepoint = ii;
-
-      for (int y = 0; y < h; ++y) {
-        for (int x = 0; x < w; ++x) {
-          int map_pos = ((static_cast<int>(off.y) + y) * texszs +
-                         (static_cast<int>(off.x) + x));
-          font_tex[map_pos] = bitmap[x + y * w];
-        }
-      }
-
-      empty = false;
       CodeMap[ii] = c;
       free(bitmap);
-
-      // offset by 1 (prevents visual glitches i had)
-      off.x += w + 1;
+      continue;
+    } else {
+      buf_cache[hashed_map] = ii;
     }
+
+    // Next row
+    if (off.x + w > texszs) {
+      off.y += PixelHeight;
+      off.x = 0.0f;
+    }
+    // Bake cause we go out of the tex
+    if (off.y + PixelHeight > texszs) {
+      BakeAndPush(false, font_tex, texszs);
+      off = 0;
+      std::fill(font_tex.begin(), font_tex.end(), 0);
+      empty = true;
+    }
+
+    // UVs & Codepoint
+    Codepoint c;
+    fvec4 uvs;
+    // cast the ints to floats and not the floats...
+    // dont know where my mind was when creating the code
+    uvs.x = off.x / static_cast<float>(texszs);
+    uvs.y = off.y / static_cast<float>(texszs);
+    uvs.z = (off.x + w) / static_cast<float>(texszs);
+    uvs.w = (off.y + h) / static_cast<float>(texszs);
+    // Flip if needed
+    if (PD::Gfx::GetFlags() & PDGfxBackendFlags_FlipUV_Y) {
+      uvs.y = 1.f - uvs.y;
+      uvs.w = 1.f - uvs.w;
+    }
+    c.SimpleUV = uvs;
+    c.Tex = pCurrentTex;
+    c.Size = fvec2(w, h);
+    c.Offset = baseline + yo;
+    c.pCodepoint = ii;
+
+    for (int y = 0; y < h; ++y) {
+      for (int x = 0; x < w; ++x) {
+        int map_pos = ((static_cast<int>(off.y) + y) * texszs +
+                       (static_cast<int>(off.x) + x));
+        font_tex[map_pos] = bitmap[x + y * w];
+      }
+    }
+
+    empty = false;
+    CodeMap[ii] = c;
+    free(bitmap);
+
+    // offset by 1 (prevents visual glitches i had)
+    off.x += w + 1;
   }
 
   if (!empty) {
@@ -223,19 +173,30 @@ PD_API fvec2 Font::GetTextBounds(const char* text, float scale) {
   u32 c;
   while (it.Decode32(c)) {
     auto cp = GetCodepoint(c);
-    if ((cp.pInvalid && c != L'\n' && c != L'\t' && c != L' ') && c != L'\r')
-      continue;
-    if (c == L'\n') {
-      res.y += lh;
-      res.x = std::max(res.x, x);
-      x = 0.f;
+    if (cp.pInvalid && c != '\n' && c != '\t' && c != ' ') {
       continue;
     }
-    if (c == L'\t') {
-      x += (cp.AdvanceX > 0 ? cp.AdvanceX : 16.f) * 4.f * cfs;
-      continue;
+    switch (c) {
+      case L'\n':
+        res.y += lh;
+        res.x = std::max(res.x, x);
+        x = 0.f;
+        break;
+      case L'\t':
+        x += 16 * cfs;
+        break;
+      case L' ':
+        x += 4 * cfs;
+      // Fall trough here to get the same result as in
+      // TextCommand if/else Section
+      default:
+        x += cp.Size.x * cfs;
+        // Omly passing c cause i know its not used
+        if (it.PeekNext32(c)) {
+          x += 2 * cfs;
+        }
+        break;
     }
-    x += cp.AdvanceX * cfs;
   }
   res.x = std::max(res.x, x);
   res.y += lh;
@@ -282,35 +243,38 @@ PD_API void Font::CmdTextEx(Drawlist& dl, const fvec2& pos, u32 color,
       off.x = 0.f;
       continue;
     }
+
     if (c == L'\t') {
-      off.x += (cp.AdvanceX > 0 ? cp.AdvanceX : 16.f) * 4.f * cfs;
+      off.x += 16 * cfs;
+      continue;
+    }
+    if (c == L' ') {
+      off.x += 4 * cfs;
       continue;
     }
 
-    if (cp.Size.x > 0 && cp.Size.y > 0) {
-      if (cmd == nullptr || cmd->Tex != Textures[cp.Tex]) {
-        if (cp.Tex >= Textures.size()) continue;
-        cmd = &dl.NewCommand();
-        cmd->Tex = Textures[cp.Tex];
-        cmd->SDF = IsSDF();
-      }
-
-      // calculating once and using PrimTextQuad to directly push
-      // saves ~42% on raw multiline text draw time 6.3 -> 3.7 ms
-      // and ~25% on the whole frametime 20.3 -> 15.2 ms
-      // tested with Craftus-Next 0.8.0 commit:
-      // 33298ccc276bf996d341710e69ecf05f99c57961
-      float cx = rpos.x + off.x + (cp.Offset.x * cfs);
-      float cy = rpos.y + off.y + (cp.Offset.y * cfs);
-      float cw = cp.Size.x * cfs;
-      float ch = cp.Size.y * cfs;
-
-      if (flags & LiTextFlags_Shaddow) {
-        PrimTextQuad(*cmd, cx + 1.f, cy + 1.f, cw, ch, cp.SimpleUV, 0xff111111);
-      }
-      PrimTextQuad(*cmd, cx, cy, cw, ch, cp.SimpleUV, color);
+    if (cmd == nullptr || cmd->Tex != Textures[cp.Tex]) {
+      if (cp.Tex >= Textures.size()) continue;
+      cmd = &dl.NewCommand();
+      cmd->Tex = Textures[cp.Tex];
     }
-    off.x += cp.AdvanceX * cfs;
+
+    // calculating once and using PrimTextQuad to directly push
+    // saves ~42% on raw multiline text draw time 6.3 -> 3.7 ms
+    // and ~25% on the whole frametime 20.3 -> 15.2 ms
+    // tested with Craftus-Next 0.8.0 commit:
+    // 33298ccc276bf996d341710e69ecf05f99c57961
+    float cw = cp.Size.x * cfs;
+    float ch = cp.Size.y * cfs;
+    float cx = rpos.x + off.x;
+    float cy = rpos.y + off.y + (cp.Offset * cfs);
+
+    if (flags & LiTextFlags_Shaddow) {
+      PrimTextQuad(*cmd, cx + 1.f, cy + 1.f, cw, ch, cp.SimpleUV, 0xff111111);
+    }
+    PrimTextQuad(*cmd, cx, cy, cw, ch, cp.SimpleUV, color);
+
+    off.x += cp.Size.x * cfs + 2 * cfs;
   }
 }
 

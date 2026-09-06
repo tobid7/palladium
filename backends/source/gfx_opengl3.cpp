@@ -47,7 +47,6 @@ void GfxOpenGL3::SysInit() {
 
   pLocTex = glGetUniformLocation(pShader, "tex");
   pLocAlfa = glGetUniformLocation(pShader, "push.alfa");
-  pLocIsSDF = glGetUniformLocation(pShader, "push.is_sdf");
   pLocProjection = glGetUniformLocation(pShader, "ubo.projection");
 
   glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -82,7 +81,6 @@ void GfxOpenGL3::BindTexture(TextureID id) {
   GLint fmt = 0;
   glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_INTERNAL_FORMAT, &fmt);
   glUniform1i(pLocAlfa, fmt == GL_R8);
-  glUniform1i(pLocIsSDF, CurrentTexIsSDF);
 }
 
 void GfxOpenGL3::SysReset() {

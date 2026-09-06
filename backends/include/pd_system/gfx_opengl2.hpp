@@ -36,7 +36,6 @@ class GfxOpenGL2 : public GfxDriverBase<GfxOpenGL2Config> {
   u32 IBO = 0;
   int pLocTex = 0;
   int pLocAlfa = 0;
-  int pLocIsSDF = 0;
   int pLocProjection = 0;
   static const char* pVertCode;
   static const char* pFragCode;

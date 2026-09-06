@@ -36,7 +36,6 @@ class GfxOpenGL3 : public GfxDriverBase<GfxOpenGL3Config> {
   u32 VAO = 0;
   int pLocTex = 0;
   int pLocAlfa = 0;
-  int pLocIsSDF = 0;
   int pLocProjection = 0;
 };
 }  // namespace PD

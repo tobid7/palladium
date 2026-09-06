@@ -14,13 +14,6 @@ enum LiTextFlags_ : PD::u32 {
   LiTextFlags_NoOOS = 1 << 6,       ///< No Out of Screen Rendering
 };
 
-using LiFontFlags = PD::u32;
-enum LiFontFlags_ : PD::u32 {
-  LiFontFlags_None = 0,            ///< Not special (bitmap font)
-  LiFontFlags_SDF = 1 << 0,        ///< SDF Texture (and mode)
-  LiFontFlags_Monospace = 1 << 1,  ///< Monospace Rendering
-};
-
 namespace PD {
 namespace Li {
 class Drawlist;
@@ -31,31 +24,24 @@ class PD_API Font {
     fvec4 SimpleUV;
     size_t Tex = 0;
     fvec2 Size;
-    fvec2 Offset;
-    // float Offset = 0.f;
-    float AdvanceX = 0.f;
+    float Offset = 0.f;
     bool pInvalid = false;
   };
   Font() {}
   ~Font() {}
-
-  bool IsMonospace() { return pFlags & LiFontFlags_Monospace; }
-  bool IsSDF() { return pFlags & LiFontFlags_SDF; }
 
   /**
    * Load a TTF File
    * @param path Path to the TTF file
    * @param px_height Pixelheight of the codepoints (limit by 64)
    */
-  void LoadTTF(const std::string& path, int px_height = 32,
-               LiFontFlags flags = LiFontFlags_None);
+  void LoadTTF(const std::string& path, int px_height = 32);
   /**
    * Load a TTF File from Memory
    * @param data File data
    * @param px_height Pixelheight of the codepoints (limit by 64)
    */
-  void LoadTTF(const std::vector<u8>& data, int px_height = 32,
-               LiFontFlags flags = LiFontFlags_None);
+  void LoadTTF(const std::vector<u8>& data, int px_height = 32);
   /**
    * Function that loads a default integrated font...
    * This will only work if PD_LI_INCLUDE_FONTS was set
@@ -119,7 +105,6 @@ class PD_API Font {
 
  private:
   size_t pCurrentTex = 0;
-  LiFontFlags pFlags = 0;
 };
 }  // namespace Li
 }  // namespace PD
