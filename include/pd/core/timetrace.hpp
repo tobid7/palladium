@@ -144,6 +144,8 @@ class TimeStats {
  * Timatrace Functions
  */
 namespace TT {
+class Res;
+using TraceMap = std::map<std::string, TT::Res>;
 /**
  * Data Structure for a TimeTrace Result
  */
@@ -211,7 +213,6 @@ class Res {
   /** Protocol */
   TimeStats protocol;
 };
-using TraceMap = std::map<std::string, TT::Res>;
 /**
  * Begin a Trace
  * @param id Name of the Trace
