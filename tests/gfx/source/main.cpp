@@ -1,12 +1,4 @@
-#ifdef __3DS__
-#include <3ds.h>
-#include <citro3d.h>
-const u32 DisplayTransferFlags =
-    (GX_TRANSFER_FLIP_VERT(0) | GX_TRANSFER_OUT_TILED(0) |
-     GX_TRANSFER_RAW_COPY(0) | GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGBA8) |
-     GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB8) |
-     GX_TRANSFER_SCALING(GX_TRANSFER_SCALE_NO));
-#else
+#ifndef __3DS__
 #include <glad/glad.h>
 //////////////////////////
 #include <GLFW/glfw3.h>
@@ -88,15 +80,6 @@ class App {
 #endif
     glfwSwapInterval(1);
 #else
-    gfxInitDefault();
-    C3D_Init(C3D_DEFAULT_CMDBUF_SIZE);
-    Top =
-        C3D_RenderTargetCreate(240, 400, GPU_RB_RGBA8, GPU_RB_DEPTH24_STENCIL8);
-    Bottom =
-        C3D_RenderTargetCreate(240, 320, GPU_RB_RGBA8, GPU_RB_DEPTH24_STENCIL8);
-    C3D_RenderTargetSetOutput(Top, GFX_TOP, GFX_LEFT, DisplayTransferFlags);
-    C3D_RenderTargetSetOutput(Bottom, GFX_BOTTOM, GFX_LEFT,
-                              DisplayTransferFlags);
     PD::Gfx::UseDriver<PD::GfxCitro3D>();
 #endif
     PD::Gfx::Init();
@@ -114,14 +97,13 @@ class App {
     cmd->Reserve(4, 6);
     cmd->Add(0, 1, 2);
     cmd->Add(0, 2, 3);
-    cmd->Add(
-        PD::Li::Vertex(PD::fvec2(0, 0), pTex.GetUV().TopLeft(), 0xffffffff));
-    cmd->Add(PD::Li::Vertex(PD::fvec2(pTex.GetSize().x, 0),
-                            pTex.GetUV().TopRight(), 0xffffffff));
+    cmd->Add(PD::Li::Vertex(PD::fvec2(0, 0), PD::fvec2(0, 0), 0xffffffff));
+    cmd->Add(PD::Li::Vertex(PD::fvec2(pTex.GetSize().x, 0), PD::fvec2(1, 0),
+                            0xffffffff));
     cmd->Add(PD::Li::Vertex(PD::fvec2(pTex.GetSize().x, pTex.GetSize().y),
-                            pTex.GetUV().BotRight(), 0xffffffff));
-    cmd->Add(PD::Li::Vertex(PD::fvec2(0, pTex.GetSize().y),
-                            pTex.GetUV().BotLeft(), 0xffffffff));
+                            PD::fvec2(1, 1), 0xffffffff));
+    cmd->Add(PD::Li::Vertex(PD::fvec2(0, pTex.GetSize().y), PD::fvec2(0, 1),
+                            0xffffffff));
     cmd->Tex = pTex.GetID();
   }
   ~App() {
@@ -136,13 +118,8 @@ class App {
   void Run() {
 #ifdef __3DS__
     while (aptMainLoop()) {
-      PD::Gfx::SetViewPort(400, 240);
-      C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
-      C3D_FrameDrawOn(Top);
-      C3D_RenderTargetClear(Top, C3D_CLEAR_ALL, PD::Color(25, 25, 25, 25), 0);
 #else
     while (!glfwWindowShouldClose(window)) {
-      PD::Gfx::SetViewPort(1280, 720);
       if (pDriver == Driver::OpenGL2 || pDriver == Driver::OpenGL3) {
         glClearColor(0.1, 0.1, 0.1, 0.1);
         glClear(GL_COLOR_BUFFER_BIT);
@@ -158,10 +135,9 @@ class App {
       }
 #endif
       PD::Gfx::Reset();
-
+      PD::Gfx::SetViewPort(1280, 720);
       PD::Gfx::Draw(pPool);
 #ifdef __3DS__
-      C3D_FrameEnd(0);
 #else
       glfwPollEvents();
       if (pDriver == Driver::DirectX9) {
@@ -179,10 +155,7 @@ class App {
   }
 
  private:
-#ifdef __3DS__
-  C3D_RenderTarget* Top = nullptr;
-  C3D_RenderTarget* Bottom = nullptr;
-#else
+#ifndef __3DS__
   GLFWwindow* window = nullptr;
 #endif
   PD::Pool<PD::Li::Command> pPool;
