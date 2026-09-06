@@ -42,10 +42,6 @@ class PD_API Drawlist {
   void Copy(Drawlist& other);
   void Optimize();
   void Clear();
-  void SetLayer(int layer) { pCurrentLayer = layer; }
-  void LayerUp() { pCurrentLayer++; }
-  void LayerDown() { pCurrentLayer--; }
-  int GetLayer() const { return pCurrentLayer; }
 
   size_t GetNumVertices() const {
     size_t count = 0;
@@ -130,7 +126,6 @@ class PD_API Drawlist {
 
  private:
   Texture pCurrentTexture;
-  int pCurrentLayer = 0;
   Pool<Command> pCommands;
   Pool<fvec2> pPath;
   Pool<Vertex> pVertices;
