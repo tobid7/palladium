@@ -199,7 +199,7 @@ int main(int argc, char** argv) {
   RightStick.pColor = "#00ffff";
   while (pOs->Mainloop()) {
     PD::Hid::Update();
-    PD::Gfx::NewFrame();
+    PD::Gfx::Reset();  // needs to be on top now
     pOs->ClearViewPort();
     app.Update(pOs->GetViewport(), pList);
     pList.SetFontscale(0.7);
@@ -263,7 +263,6 @@ int main(int argc, char** argv) {
     pList.PathAdd(PD::fvec2(1000, 360));
 
     pList.PathStroke("#ff00ff", 10, LiDrawFlags_AA);
-    PD::Gfx::Reset();  // needs to be on top now
     PD::Gfx::Draw(pList);
     pList.Clear();
     pOs->SwapBuffers();

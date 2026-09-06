@@ -33,6 +33,7 @@ PD_API void GfxDriver::Reset() {
   CountDrawcalls = pCountDrawcalls;
   pCountCommands = 0;
   pCountDrawcalls = 0;
+  ResetPools();
   SysReset();
 }
 
