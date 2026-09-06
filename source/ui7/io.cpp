@@ -22,8 +22,8 @@ SOFTWARE.
  */
 
 #include <pd/core/core.hpp>
-#include <pd/drivers/drivers.hpp>
 #include <pd/ui7/io.hpp>
+#include <pd/drivers/drivers.hpp>
 
 namespace PD {
 PD_API void UI7::IO::Update() {
@@ -39,7 +39,7 @@ PD_API void UI7::IO::Update() {
   DrawlistRegestry.push_front(std::make_pair("CtxBackList", &Back));
   if (Font) ItemRowHeight = FontScale * Font->PixelHeight;
   // RegisterDrawList("CtxBackList", Back);
-  NumIndices = 0;   // FDL.pNumIndices;
-  NumVertices = 0;  // FDL.pNumVertices;
+  NumIndices = 0;//FDL.pNumIndices;
+  NumVertices = 0;//FDL.pNumVertices;
 }
 }  // namespace PD

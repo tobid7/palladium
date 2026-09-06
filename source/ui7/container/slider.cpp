@@ -21,10 +21,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-#include <algorithm>
 #include <pd/ui7/container/label.hpp>
 #include <pd/ui7/container/slider.hpp>
 #include <type_traits>
+#include <algorithm>
 
 namespace PD {
 namespace UI7 {
@@ -57,9 +57,9 @@ PD_API void Slider<T>::HandleInput() {
           fvec4(FinalPos() + fvec2(2, 0), fvec2(width, GetSize().y)))) {
     if (!io->InputHandler.DragReleasedAW) {
       *data = std::clamp(
-          T(max *
-            (std::clamp(io->InputHandler.DragLastPosition.x - xps, 0.f, width) /
-             width)),
+          T(max * (std::clamp(io->InputHandler.DragLastPosition.x - xps, 0.f,
+                              width) /
+                   width)),
           this->min, this->max);
     }
   }

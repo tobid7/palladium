@@ -33,7 +33,8 @@ PD_API void ColorEdit::HandleInput() {
   }
   // Assert(screen.get(), "Screen is not set up!");
   // if (screen->ScreenType() == Screen::Bottom) {
-  if (io->InputHandler.DragObject(this->GetID() + 2, fvec4(FinalPos(), size))) {
+  if (io->InputHandler.DragObject(this->GetID() + 2,
+                                   fvec4(FinalPos(), size))) {
     if (io->InputHandler.DragReleasedAW) {
       is_shown = !is_shown;
     }
@@ -54,16 +55,17 @@ PD_API void ColorEdit::Draw() {
     }
     layout->SetPosition(FinalPos());
     layout->AddObjectEx(
-        new DynObj([=, this](UI7::IO* io, Li::Drawlist* l, Container* thiz) {
-          thiz->SetSize(layout->GetSize());
-          // l->Layer(30);
-          l->PathRect(thiz->GetPos(), thiz->GetPos() + thiz->GetSize(),
-                      io->FrameRounding);
-          l->PathFill(io->Theme.Get(UI7Color_FrameBackground));
-        }),
+        new DynObj(
+            [=, this](UI7::IO* io, Li::Drawlist* l, Container* thiz) {
+              thiz->SetSize(layout->GetSize());
+              // l->Layer(30);
+              l->PathRect(thiz->GetPos(), thiz->GetPos() + thiz->GetSize(),
+                          io->FrameRounding);
+              l->PathFill(io->Theme.Get(UI7Color_FrameBackground));
+            }),
         UI7LytAdd_Front | UI7LytAdd_NoCursorUpdate | UI7LytAdd_NoScrollHandle);
-    auto obj =
-        new DynObj([=, this](UI7::IO* io, Li::Drawlist* l, Container* thiz) {
+    auto obj = new DynObj(
+        [=, this](UI7::IO* io, Li::Drawlist* l, Container* thiz) {
           l->PathRect(thiz->FinalPos(), thiz->FinalPos() + io->ItemRowHeight,
                       io->FrameRounding);
           l->PathFill(*color_ref);
