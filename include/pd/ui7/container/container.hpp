@@ -48,7 +48,7 @@ class PD_API Container {
    */
   Container(const fvec4& box)
       : pos(fvec2(box.x, box.y)), size(fvec2(box.z - box.x, box.w - box.y)) {}
-  ~Container() = default;
+  virtual ~Container() = default;
 
   /**
    * Init Function Required by every Object that uses

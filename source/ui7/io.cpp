@@ -28,7 +28,7 @@ SOFTWARE.
 
 namespace PD {
 
-PD_API UI7::IO::IO() : DeltaStats(60), CurrentViewPort("", 0) {
+PD_API UI7::IO::IO() : CurrentViewPort("", 0), DeltaStats(60) {
   /** Probably not the best solution i guess */
   // CurrentViewPort =
   //   ViewPort::New("Default", ivec4(ivec2(0, 0), pCtx.Gfx()->ViewPort));

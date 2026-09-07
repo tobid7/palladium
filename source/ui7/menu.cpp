@@ -27,7 +27,7 @@ SOFTWARE.
 
 namespace PD {
 namespace UI7 {
-Menu::Menu(const ID& id, IO& io) : pIO(io), pID(id), pLayout(id, io) {
+Menu::Menu(const ID& id, IO& io) : pLayout(id, io), pIO(io), pID(id) {
   TitleBarHeight = pIO.FontScale * pIO.Font->PixelHeight + pIO.MenuPadding.y;
   pLayout.WorkRect.y += TitleBarHeight;
   pLayout.Flags |= UI7LayoutFlags_UseClipRect;

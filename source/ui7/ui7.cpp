@@ -158,7 +158,7 @@ PD_API void Context::AboutMenu(bool* show) {
   if (auto m = BeginMenu("About UI7", UI7MenuFlags_Scrolling, show)) {
     m->Label("Palladium UI7 " + GetVersion());
     m->Separator();
-    m->Label("(c) 2023-2025 René Amthor");
+    m->Label("(c) 2023-2026 René Amthor");
     m->Label("UI7 is licensed under the MIT License.");
     m->Label("See LICENSE for more information.");
     static bool show_build;
