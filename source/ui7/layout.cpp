@@ -172,7 +172,7 @@ PD_API void Layout::Update() {
       it->HandleInput();
       it->UnlockInput();
       if (Flags & UI7LayoutFlags_UseClipRect) {
-        it->SetClipRect(fvec4(Pos, Size));
+        it->SetClipRect(fvec4(Pos.x, Pos.y, Size.x, Size.y));
       }
       it->PreDraw();
       it->Draw();
@@ -201,7 +201,7 @@ PD_API void Layout::Label(const std::string& label) {
   // Layout API
   auto r = IO.LabelPool.Allocate();
   *r = UI7::Label(label, IO);
-  r->SetClipRect(fvec4(GetPosition(), GetPosition() + GetSize()));
+  // r->SetClipRect(fvec4(GetPosition(), GetSize()));
   AddObject(r);
 }
 

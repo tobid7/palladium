@@ -183,6 +183,16 @@ void GfxOpenGL2::UploadPools() {
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, GetIndexPoolSize() * sizeof(u16),
                GetIndexBufPtr(0), GL_DYNAMIC_DRAW);
 }
+
+void GfxOpenGL2::ClipRect() {
+  if (CurrentHasClip) {
+    glEnable(GL_SCISSOR_TEST);
+    glScissor(CurrentClip.x, ViewPort.y - (CurrentClip.y + CurrentClip.w),
+              CurrentClip.z, CurrentClip.w);
+  } else {
+    glDisable(GL_SCISSOR_TEST);
+  }
+}
 }  // namespace PD
 #else
 namespace PD {
@@ -203,5 +213,6 @@ Li::Texture GfxOpenGL2::LoadTexture(const std::vector<PD::u8>& pixels, int w,
 void GfxOpenGL2::DeleteTexture(const Li::Texture& tex) {}
 void GfxOpenGL2::pSetupShaderAttribs(u32 shader) {}
 void GfxOpenGL2::UploadPools() {}
+void GfxOpenGL2::ClipRect() {}
 }  // namespace PD
 #endif

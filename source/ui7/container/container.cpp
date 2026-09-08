@@ -44,13 +44,13 @@ PD_API void Container::HandleInternalInput() {
 /** Internal function */
 PD_API void Container::PreDraw() {
   if (pCLipRectUsed) {
-    // list->PushClipRect(pClipRect);
+    list->PushClipRect(pClipRect);
   }
 }
 /** Internal function */
 PD_API void Container::PostDraw() {
   if (pCLipRectUsed) {
-    // list->PopClipRect();
+    list->PopClipRect();
   }
 }
 }  // namespace UI7

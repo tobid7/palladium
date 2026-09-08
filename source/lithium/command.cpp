@@ -56,6 +56,8 @@ void Command::Reset() {
   VertexCount = 0;
   VertexCountMax = 0;
   IndexCountMax = 0;
+  ClipRect = 0.f;
+  ClipRectUsed = false;
 }
 
 Command& Command::Add(const Vertex& vtx) {

@@ -29,6 +29,7 @@ class GfxCitro3D : public GfxDriverBase<GfxCitro3DConfig> {
       TextureFilter filter = TextureFilter::Linear) override;
   void DeleteTexture(const Li::Texture& tex) override;
   void UploadPools() override;
+  void ClipRect() override;
 
  private:
   struct Impl;

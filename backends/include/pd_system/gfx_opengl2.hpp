@@ -28,6 +28,7 @@ class GfxOpenGL2 : public GfxDriverBase<GfxOpenGL2Config> {
       TextureFilter filter = TextureFilter::Linear) override;
   void DeleteTexture(const Li::Texture& tex) override;
   void UploadPools() override;
+  void ClipRect() override;
 
  private:
   void pSetupShaderAttribs(u32 shader);

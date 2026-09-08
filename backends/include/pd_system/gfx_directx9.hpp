@@ -29,6 +29,7 @@ class GfxDirectX9 : public GfxDriverBase<GfxDirectX9Config> {
       TextureFilter filter = TextureFilter::Linear) override;
   void DeleteTexture(const Li::Texture& tex) override;
   void UploadPools() override;
+  void ClipRect() override;
 
  private:
   struct Impl;

@@ -210,6 +210,7 @@ int main(int argc, char** argv) {
   ui7.GetIO().Font = &font;
   ui7.AddViewPort("Default", PD::ivec4(0, 0, 1280, 720));
   ui7.UseViewPort("Default");
+  bool pMetricsWin = true;
   while (pOs->Mainloop()) {
     PD::TT::End("OSCTX::MainLoop");
     pOs->ClearViewPort();
@@ -315,7 +316,8 @@ int main(int argc, char** argv) {
       m->PopFont();
       ui7.EndMenu();
     }
-    ui7.MetricsMenu();
+    ui7.MetricsMenu(&pMetricsWin);
+    ui7.StyleEditor();
     PD::TT::End("BuildUI7Menus");
     PD::TT::Beg("UI7::Context::Update");
     ui7.Update();

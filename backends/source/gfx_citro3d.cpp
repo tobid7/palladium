@@ -264,6 +264,8 @@ void GfxCitro3D::UploadPools() {
   BufInfo_Init(buf);
   BufInfo_Add(buf, GetVertexBufPtr(0), sizeof(Li::Vertex), 3, 0x210);
 }
+
+void GfxCitro3D::ClipRect() {}
 }  // namespace PD
 #else
 namespace PD {
@@ -283,5 +285,6 @@ Li::Texture GfxCitro3D::LoadTexture(const std::vector<PD::u8>& pixels, int w,
 }
 void GfxCitro3D::DeleteTexture(const Li::Texture& tex) {}
 void GfxCitro3D::UploadPools() {}
+void GfxCitro3D::ClipRect() {}
 }  // namespace PD
 #endif

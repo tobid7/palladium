@@ -285,6 +285,8 @@ void GfxDirectX9::UploadPools() {
   memcpy(iptr, GetIndexBufPtr(0), GetIndexPoolSize() * sizeof(u16));
   impl->IBO->Unlock();
 }
+
+void GfxDirectX9::ClipRect() {}
 }  // namespace PD
 #else
 namespace PD {
@@ -304,5 +306,6 @@ Li::Texture GfxDirectX9::LoadTexture(const std::vector<PD::u8>& pixels, int w,
 }
 void GfxDirectX9::DeleteTexture(const Li::Texture& tex) {}
 void GfxDirectX9::UploadPools() {}
+void GfxDirectX9::ClipRect() {}
 }  // namespace PD
 #endif

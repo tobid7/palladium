@@ -28,6 +28,9 @@ class Command {
   // Todo: implement
   size_t VertexCountMax = 0;
   size_t IndexCountMax = 0;
+  // ClipRect
+  PD::fvec4 ClipRect;
+  bool ClipRectUsed = false;
 };
 }  // namespace Li
 }  // namespace PD

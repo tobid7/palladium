@@ -43,6 +43,7 @@ PD_API void Drawlist::Clear() {
   pPath.ResetFast();
   pCommands.NoReset();
   pCurrentLayer = 0;
+  pClipRects.clear();
 }
 
 /** Command Allocation */
@@ -51,6 +52,10 @@ PD_API Command& Drawlist::NewCommand() {
   cmd->Reset();
   cmd->Layer = pCurrentLayer;
   cmd->Tex = pCurrentTexture.GetID();
+  if (HasClipRect()) {
+    cmd->ClipRectUsed = HasClipRect();
+    cmd->ClipRect = pClipRects.back();
+  }
   return *cmd;
 }
 

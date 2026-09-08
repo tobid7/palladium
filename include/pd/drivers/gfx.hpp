@@ -65,6 +65,7 @@ class PD_API GfxDriver : public DriverInterface {
   virtual void SysReset() {}
   virtual void Submit(size_t count, size_t start) {}
   virtual void UploadPools() {}  // not every driver requires it
+  virtual void ClipRect() {}
   void RegisterTexture(const Li::Texture& tex);
   void UnregisterTexture(const Li::Texture& tex);
 
@@ -80,6 +81,8 @@ class PD_API GfxDriver : public DriverInterface {
   // State Variables oder so
   TextureID CurrentTex = 0;
   bool CurrentTexIsSDF = false;
+  bool CurrentHasClip = false;
+  fvec4 CurrentClip = 0;
   Mat4 Projection;
   ivec2 ViewPort;
   std::unordered_map<TextureID, Li::Texture> pTextureRegestry;
@@ -136,7 +139,7 @@ class GfxDriverBase : public GfxDriver {
     for (size_t i = 0; i < commands.size(); i++) {
       const auto& cmd = commands[i];
       if (cmd.VertexCount > 0) {
-        std::memcpy(pVtxPool.begin() + current_vtx,
+        std::memcpy(reinterpret_cast<void*>(pVtxPool.begin() + current_vtx),
                     vpool.begin() + cmd.FirstVertex,
                     cmd.VertexCount * sizeof(Li::Vertex));
       }
@@ -156,14 +159,19 @@ class GfxDriverBase : public GfxDriver {
     while (index < commands.size()) {
       CurrentTex = commands[index].Tex;
       CurrentTexIsSDF = commands[index].SDF;
+      CurrentHasClip = commands[index].ClipRectUsed;
+      CurrentClip = commands[index].ClipRect;
       if (!CurrentTex) {
         CurrentTex = pWhite.GetID();
       }
       size_t num_indices = 0;
+      ClipRect();
       while (index < commands.size() &&
              CurrentTexIsSDF == commands[index].SDF &&
              (CurrentTex == commands[index].Tex ||
-              (CurrentTex == pWhite.GetID() && commands[index].Tex == 0))) {
+              (CurrentTex == pWhite.GetID() && commands[index].Tex == 0)) &&
+             CurrentClip == commands[index].ClipRect &&
+             CurrentHasClip == commands[index].ClipRectUsed) {
         num_indices += commands[index].IndexCount;
         index++;
       }

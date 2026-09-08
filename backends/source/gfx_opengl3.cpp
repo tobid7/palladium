@@ -159,6 +159,16 @@ void GfxOpenGL3::UploadPools() {
 
   glBindVertexArray(0);
 }
+
+void GfxOpenGL3::ClipRect() {
+  if (CurrentHasClip) {
+    glEnable(GL_SCISSOR_TEST);
+    glScissor(CurrentClip.x, ViewPort.y - (CurrentClip.y + CurrentClip.w),
+              CurrentClip.z, CurrentClip.w);
+  } else {
+    glDisable(GL_SCISSOR_TEST);
+  }
+}
 }  // namespace PD
 #else
 namespace PD {
@@ -178,5 +188,6 @@ Li::Texture GfxOpenGL3::LoadTexture(const std::vector<PD::u8>& pixels, int w,
 }
 void GfxOpenGL3::DeleteTexture(const Li::Texture& tex) {}
 void GfxOpenGL3::UploadPools() {}
+void GfxOpenGL3::ClipRect() {}
 }  // namespace PD
 #endif

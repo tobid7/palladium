@@ -128,13 +128,18 @@ class PD_API Drawlist {
   void PrimTriangle(Command& cmd, const fvec2& a, const fvec2& b,
                     const fvec2& c, const PD::Color& color);
 
+  void PushClipRect(const fvec4& r) { pClipRects.push_back(r); }
+  void PopClipRect() {
+    if (!pClipRects.empty()) pClipRects.pop_back();
+  }
+  bool HasClipRect() { return !pClipRects.empty(); }
+
  private:
   Texture pCurrentTexture;
   int pCurrentLayer = 0;
   Pool<Command> pCommands;
   Pool<fvec2> pPath;
-  Pool<Vertex> pVertices;
-  Pool<u16> pIndices;
+  std::vector<fvec4> pClipRects;
   Font* pFont = nullptr;
   float pFontScale = 1.f;
 };
