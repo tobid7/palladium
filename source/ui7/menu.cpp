@@ -310,11 +310,13 @@ PD_API void Menu::DrawBaseLayout() {
       fvec2 cpos =
           fvec2(pLayout.Pos.x + pLayout.Size.x - size.x - pIO.FramePadding.x,
                 pLayout.Pos.y + pIO.FramePadding.y);
+      pLayout.DrawList.SetLayer(21);
       pLayout.DrawList.DrawLine(cpos, cpos + size,
                                 pIO.Theme.Get(UI7Color_FrameBackground), 2);
       pLayout.DrawList.DrawLine(cpos + fvec2(0, size.y),
                                 cpos + fvec2(size.x, 0),
                                 pIO.Theme.Get(UI7Color_FrameBackground), 2);
+      pLayout.DrawList.SetLayer(0);
     }
   }
 }
