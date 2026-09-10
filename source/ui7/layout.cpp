@@ -77,6 +77,10 @@ PD_API void Layout::AddObject(Container* obj) {
   obj->Update();
   CursorMove(obj->GetSize());
   obj->HandleScrolling(ScrollOffset, WorkRect);
+  if (Flags & UI7LayoutFlags_UseClipRect) {
+    obj->SetClipRect(
+        fvec4(Pos.x, Pos.y + WorkRect.y, Size.x, Size.y - WorkRect.y));
+  }
   Objects.push_back(obj);
 }
 
@@ -92,6 +96,15 @@ PD_API void Layout::AddObjectEx(Container* obj, u32 flags) {
   }
   if (!(flags & UI7LytAdd_NoScrollHandle)) {
     obj->HandleScrolling(ScrollOffset, WorkRect);
+  }
+  if (Flags & UI7LayoutFlags_UseClipRect &&
+      !(flags & UI7LytAdd_NoGlobalClipping)) {
+    if (flags & UI7LytAdd_NoClipTitlebar) {
+      obj->SetClipRect(fvec4(Pos.x, Pos.y, Size.x, Size.y));
+    } else {
+      obj->SetClipRect(
+          fvec4(Pos.x, Pos.y + WorkRect.y, Size.x, Size.y - WorkRect.y));
+    }
   }
   if (flags & UI7LytAdd_Front) {
     Objects.push_front(obj);
@@ -171,9 +184,6 @@ PD_API void Layout::Update() {
       it->SetPos(it->GetPos() + Pos);
       it->HandleInput();
       it->UnlockInput();
-      if (Flags & UI7LayoutFlags_UseClipRect) {
-        it->SetClipRect(fvec4(Pos.x, Pos.y, Size.x, Size.y));
-      }
       it->PreDraw();
       it->Draw();
       it->PostDraw();

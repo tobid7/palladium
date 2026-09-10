@@ -248,7 +248,7 @@ PD_API void Menu::DrawBaseLayout() {
         fvec2(pLayout.GetSize().x, pLayout.GetSize().y - TitleBarHeight));
     r->SetPos(fvec2(0, TitleBarHeight));
     pLayout.AddObjectEx(r, UI7LytAdd_NoCursorUpdate | UI7LytAdd_NoScrollHandle |
-                               UI7LytAdd_Front);
+                               UI7LytAdd_Front | UI7LytAdd_NoClipTitlebar);
   }
   if (!(Flags & UI7MenuFlags_NoTitlebar)) {
     DynObj* r = pIO.DynObjPool.Allocate();
@@ -273,7 +273,8 @@ PD_API void Menu::DrawBaseLayout() {
         });
     r->SetSize(fvec2(pLayout.GetSize().x, TitleBarHeight));
     r->SetPos(0);
-    pLayout.AddObjectEx(r, UI7LytAdd_NoCursorUpdate | UI7LytAdd_NoScrollHandle);
+    pLayout.AddObjectEx(r, UI7LytAdd_NoCursorUpdate | UI7LytAdd_NoScrollHandle |
+                               UI7LytAdd_NoClipTitlebar);
 
     /** Collapse Sym */
     if (!(Flags & UI7MenuFlags_NoCollapse)) {
@@ -296,8 +297,9 @@ PD_API void Menu::DrawBaseLayout() {
       });
       r->SetSize(TitleBarHeight - pIO.FramePadding.y * 2);
       r->SetPos(pIO.FramePadding);
-      pLayout.AddObjectEx(r,
-                          UI7LytAdd_NoCursorUpdate | UI7LytAdd_NoScrollHandle);
+      pLayout.AddObjectEx(r, UI7LytAdd_NoCursorUpdate |
+                                 UI7LytAdd_NoScrollHandle |
+                                 UI7LytAdd_NoClipTitlebar);
     }
     /** Close Sym (only shown if pIsShown is not nullptr) */
     if (!(Flags & UI7MenuFlags_NoClose) && pIsShown) {
