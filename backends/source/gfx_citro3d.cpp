@@ -265,7 +265,13 @@ void GfxCitro3D::UploadPools() {
   BufInfo_Add(buf, GetVertexBufPtr(0), sizeof(Li::Vertex), 3, 0x210);
 }
 
-void GfxCitro3D::ClipRect() {}
+void GfxCitro3D::ClipRect() {
+  // This is so cursed but it works
+  C3D_SetScissor(CurrentHasClip ? GPU_SCISSOR_NORMAL : GPU_SCISSOR_DISABLE,
+                 ViewPort.y - CurrentClip.w - CurrentClip.y,
+                 ViewPort.x - CurrentClip.z - CurrentClip.x,
+                 ViewPort.y - CurrentClip.y, ViewPort.x - CurrentClip.x);
+}
 }  // namespace PD
 #else
 namespace PD {
