@@ -286,7 +286,20 @@ void GfxDirectX9::UploadPools() {
   impl->IBO->Unlock();
 }
 
-void GfxDirectX9::ClipRect() {}
+void GfxDirectX9::ClipRect() {
+  if (CurrentHasClip) {
+    RECT r;
+    r.left = CurrentClip.x;
+    r.top = CurrentClip.y;
+    r.right = CurrentClip.x + CurrentClip.z;
+    r.bottom = CurrentClip.y + CurrentClip.w;
+
+    impl->Device->SetScissorRect(&r);
+    impl->Device->SetRenderState(D3DRS_SCISSORTESTENABLE, TRUE);
+  } else {
+    impl->Device->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
+  }
+}
 }  // namespace PD
 #else
 namespace PD {
