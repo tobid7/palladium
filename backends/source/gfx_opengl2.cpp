@@ -73,6 +73,7 @@ void GfxOpenGL2::pSetupShaderAttribs(u32 shader) {
 }
 
 void GfxOpenGL2::SysInit() {
+  Flags |= PDGfxBackendFlags_HasClipRect;
   pShader = CreateShaderProgram(pVertCode, pFragCode);
   glUseProgram(pShader);
   glGenBuffers(1, &VBO);

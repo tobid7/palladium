@@ -207,7 +207,17 @@ PD_API void Context::MetricsMenu(bool* show) {
     }
     m->SeparatorText("Palladium Info");
     m->Label("Os Driver: {}", PD::Os::GetDriverName());
-    m->Label("Renderer: {}", PD::Gfx::GetDriverName());
+    if (m->BeginTreeNode(
+            std::format("Gfx Driver: {}", PD::Gfx::GetDriverName()))) {
+      m->SeparatorText("Features");
+      if (PD::Gfx::GetFlags() & PDGfxBackendFlags_HasClipRect)
+        m->Label("ClipRects");
+      if (PD::Gfx::GetFlags() & PDGfxBackendFlags_ReqPow2)
+        m->Label("Texture As Pow of 2");
+      if (PD::Gfx::GetFlags() & PDGfxBackendFlags_ApproxSDF)
+        m->Label("SDF Approximation");
+      m->EndTreeNode();
+    }
     if (m->BeginTreeNode(
             std::string(std::string("Input: ") + PD::Hid::GetDriverName()))) {
       /* if (pIO.pCtx.Hid()->Flags & PD::HidDriver::Flags_HasKeyboard) {

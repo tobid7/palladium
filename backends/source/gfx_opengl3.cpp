@@ -11,6 +11,7 @@
 
 namespace PD {
 void GfxOpenGL3::SysInit() {
+  Flags |= PDGfxBackendFlags_HasClipRect;
   std::string vcode = SpirvHelper::SPV2GLSL(
       std::vector<unsigned int>(
           Shaders::VertexShader,

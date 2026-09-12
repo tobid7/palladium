@@ -9,8 +9,11 @@
 using PDGfxBackendFlags = PD::u32;
 enum PDGfxBackendFlags_ {
   PDGfxBackendFlags_None = 0,
-  PDGfxBackendFlags_FlipUV_Y = 1 << 0,   // Essential for font loading
-  PDGfxBackendFlags_WindingCW = 1 << 0,  // Use CW instead of CCW winding
+  PDGfxBackendFlags_FlipUV_Y = 1 << 0,     // Essential for font loading
+  PDGfxBackendFlags_WindingCW = 1 << 1,    // Use CW instead of CCW winding
+  PDGfxBackendFlags_HasClipRect = 1 << 2,  // Clip rects supported
+  PDGfxBackendFlags_ReqPow2 = 1 << 3,      // Tex size must be pow of 2
+  PDGfxBackendFlags_ApproxSDF = 1 << 4,  // Fake SDF for non smoothstep systems
 };
 
 namespace PD {

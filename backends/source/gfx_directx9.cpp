@@ -112,6 +112,7 @@ void GfxDirectX9::SysInit() {
     }
     if (psBlob) psBlob->Release();
     if (errBlob) errBlob->Release();
+    Flags |= PDGfxBackendFlags_HasClipRect;
   } else {
     PDERR(
         "GfxDirectX9::SysInit Error: pDevice is not set!\nYOu need to include "
