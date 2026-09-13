@@ -21,6 +21,8 @@ class OsCtx {
   virtual bool Mainloop() { return false; }
   virtual void ClearViewPort() {}
   virtual void SwapBuffers() {}
+  virtual int GetScreenCount() { return 1; }
+  virtual void DrawOnScreen(int s = 0) {}
   PD::fvec2 PositionTranslate(PD::fvec2 in) {
     return fvec2(in.x * pViewPort.x, in.y * pViewPort.y);
   }

@@ -13,6 +13,8 @@ class HorizonCtr : public PD::OsCtx {
   bool Mainloop() override;
   void ClearViewPort() override;
   void SwapBuffers() override;
+  int GetScreenCount() override { return 2; }
+  void DrawOnScreen(int s) override;
 
  private:
   struct Impl;

@@ -208,11 +208,17 @@ int main(int argc, char** argv) {
   RightStick.pColor = "#00ffff";
   PD::UI7::Context ui7;
   ui7.GetIO().Font = &font;
+#ifdef __3DS__
+  ui7.AddViewPort("Default", PD::ivec4(0, 0, 320, 240));
+  ui7.GetIO().FontScale = 0.5f;
+#else
   ui7.AddViewPort("Default", PD::ivec4(0, 0, 1280, 720));
+#endif
   ui7.UseViewPort("Default");
   bool pMetricsWin = true;
   while (pOs->Mainloop()) {
     PD::TT::End("OSCTX::MainLoop");
+    pOs->DrawOnScreen(0);
     pOs->ClearViewPort();
     PD::TT::Scope __st("MainLoop");
     PD::TT::Beg("MainRaw");
@@ -324,7 +330,10 @@ int main(int argc, char** argv) {
     PD::TT::End("UI7::Context::Update");
     PD::Gfx::Reset();
     PD::TT::Beg("PD::Gfx::Draw");
+    pOs->DrawOnScreen(1);
+    pOs->ClearViewPort();
     PD::Gfx::Draw(ui7.GetDrawData());
+    pOs->DrawOnScreen(0);
     PD::Gfx::Draw(pList);
     PD::TT::End("PD::Gfx::Draw");
     pList.Clear();

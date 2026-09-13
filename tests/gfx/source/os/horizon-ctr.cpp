@@ -16,6 +16,7 @@ struct HorizonCtr::Impl {
   C3D_RenderTarget* Top = nullptr;
   C3D_RenderTarget* Bottom = nullptr;
   uint32_t* pSocBuf = nullptr;
+  int CurrentScreen = 0;
 };
 
 void HorizonCtr::Init() {
@@ -63,13 +64,25 @@ bool HorizonCtr::Mainloop() {
   pViewPort = ivec2(400, 240);
   bool _kill = hidKeysUp() & KEY_START;
   C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
+  impl->CurrentScreen = 0;
   return aptMainLoop() && !_kill;
 }
 
 void HorizonCtr::ClearViewPort() {
+  C3D_RenderTargetClear(impl->CurrentScreen ? impl->Bottom : impl->Top,
+                        C3D_CLEAR_ALL, PD::Color(25, 25, 25, 25), 0);
+}
+
+void HorizonCtr::DrawOnScreen(int s) {
+  impl->CurrentScreen = s;
+  if (s == 0) {
+    C3D_FrameDrawOn(impl->Top);
+    pViewPort = PD::ivec2(400, 240);
+  } else if (s == 1) {
+    C3D_FrameDrawOn(impl->Bottom);
+    pViewPort = PD::ivec2(320, 240);
+  }
   PD::Gfx::SetViewPort(pViewPort);
-  C3D_FrameDrawOn(impl->Top);
-  C3D_RenderTargetClear(impl->Top, C3D_CLEAR_ALL, PD::Color(25, 25, 25, 25), 0);
 }
 
 void HorizonCtr::SwapBuffers() { C3D_FrameEnd(0); }
