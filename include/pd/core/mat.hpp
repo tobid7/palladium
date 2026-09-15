@@ -56,21 +56,9 @@ struct PD_API Mat4 {
   constexpr float* Ptr() { return m.data(); }
   constexpr const float* Ptr() const { return m.data(); }
 
-  constexpr float& operator()(int row, int col) {
-#ifdef __3DS__
-    // 3ds is full reverse order iirc
-    return m[row * 4 + (3 - col)];
-#else
-    return m[col * 4 + row];
-#endif
-  }
+  constexpr float& operator()(int row, int col) { return m[col * 4 + row]; }
   constexpr float operator()(int row, int col) const {
-#ifdef __3DS__
-    // 3ds is full reverse order iirc
-    return m[row * 4 + (3 - col)];
-#else
     return m[col * 4 + row];
-#endif
   }
 
   constexpr Mat4 operator*(const Mat4& v) const {
@@ -122,21 +110,12 @@ struct PD_API Mat4 {
   constexpr static Mat4 Ortho(float l, float r, float b, float t, float n,
                               float f) {
     Mat4 ret;
-#ifdef __3DS__  // Patch to rotate the Matrix correctly
-    ret(0, 1) = 2.f / (t - b);
-    ret(0, 3) = (b + t) / (b - t);
-    ret(1, 0) = 2.f / (l - r);
-    ret(1, 3) = (l + r) / (r - l);
-    ret(2, 2) = 1.f / (n - f);
-    ret(2, 3) = 0.5f * (n + f) / (n - f) - 0.5f;
-#else
     ret(0, 0) = 2.0f / (r - l);
     ret(0, 3) = -(r + l) / (r - l);
     ret(1, 1) = 2.0f / (t - b);
     ret(1, 3) = -(t + b) / (t - b);
     ret(2, 2) = -2.0f / (f - n);
     ret(2, 3) = -(f + n) / (f - n);
-#endif
     ret(3, 3) = 1.f;
     return ret;
   }

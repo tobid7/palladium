@@ -85,13 +85,8 @@ PD_API Mat4 Mat4::Perspective(float fov, float aspect, float n, float f) {
   Mat4 ret;
   ret(0, 0) = 1.f / (aspect * _fov);
   ret(1, 1) = 1.f / _fov;
-#ifdef __3DS__
-  ret(2, 3) = f * n / (n - f);
-  ret(2, 2) = -(-1.f) * n / (n - f);
-#else
   ret(2, 2) = -(f + n) / (f - n);
   ret(2, 3) = -(2.f * f * n) / (f - n);
-#endif
   ret(3, 2) = -1.f;
   ret(3, 3) = 0.0f;
   return ret;
