@@ -20,9 +20,26 @@ bool ColorTests() {
   return true;
 }
 
+bool IDTests() {
+  std::cout << std::format("HashID32(\"1234\") -> {:016X}",
+                           PD::HashID32("1234").Get())
+            << std::endl;
+  std::cout << std::format("HashID32(\"1235\") -> {:016X}",
+                           PD::HashID32("1235").Get())
+            << std::endl;
+  std::cout << std::format("HashID64(\"1234\") -> {:016X}",
+                           PD::HashID64("1234").Get())
+            << std::endl;
+  std::cout << std::format("HashID64(\"1235\") -> {:016X}",
+                           PD::HashID64("1235").Get())
+            << std::endl;
+  return true;
+}
+
 int main() {
   PD::Os::UseDriver<PD::OsDriver>();
   ColorTests();
+  IDTests();
   std::cout << PD::Os::GetTime() << std::endl;
   PD::Pool<int> pool;
   pool.Init(90);

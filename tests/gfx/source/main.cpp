@@ -308,6 +308,7 @@ int main(int argc, char** argv) {
     PD::TT::Beg("BuildUI7Menus");
     if (auto m = ui7.BeginMenu("Test")) {
       m->Label("Hello World!");
+      m->Image(pTex, 128.f);
       ui7.EndMenu();
     }
     if (auto m = ui7.BeginMenu("LI DBG INFO")) {
