@@ -195,8 +195,6 @@ PD_API void Font::LoadTTF(const std::vector<u8>& data, int px_height,
   }
 }
 
-PD_API void Font::LoadDefaultFont(int id, int pixel_height) {}
-
 PD_API Font::Codepoint& Font::GetCodepoint(u32 c) {
   if (c < 128) {
     // Direct Access (~11% improvement)

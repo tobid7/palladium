@@ -57,12 +57,6 @@ class PD_API Font {
   void LoadTTF(const std::vector<u8>& data, int px_height = 32,
                LiFontFlags flags = LiFontFlags_None);
   /**
-   * Function that loads a default integrated font...
-   * This will only work if PD_LI_INCLUDE_FONTS was set
-   * on lithium build cause otherwise the font data is not included
-   */
-  void LoadDefaultFont(int id = 0, int pixel_height = 32);
-  /**
    * Getter for Codepoint reference
    * @return codepoint dataholder reference
    */
