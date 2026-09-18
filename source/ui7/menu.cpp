@@ -219,7 +219,7 @@ PD_API void Menu::DrawBaseLayout() {
     if (!(Flags & UI7MenuFlags_NoResize)) {
       DynObj* r = pIO.DynObjPool.Allocate();
       *r = UI7::DynObj([](IO* io, Li::Drawlist* l, UI7::Container* self) {
-        l->SetLayer(1);
+        l->SetLayer(21);
         l->PathAdd(self->FinalPos() + self->GetSize() - fvec2(0, 20));
         l->PathAdd(self->FinalPos() + self->GetSize());
         l->PathAdd(self->FinalPos() + self->GetSize() - fvec2(20, 0));
