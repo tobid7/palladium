@@ -3,17 +3,21 @@ cmake_minimum_required(VERSION 3.22)
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Nintendo3DS")
     add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/libpicasso)
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "NintendoSwitch")
-    # SPIRV-Helper
-    if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
-        # For some reason cmake is generating wrong headers for glslang on windows
-        set(SPV_EXCLUDE_GLSLANG ON CACHE BOOL "")
+    if(PD_BUILD_BACKENDS)
+        # SPIRV-Helper
+        if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
+            # For some reason cmake is generating wrong headers for glslang on windows
+            set(SPV_EXCLUDE_GLSLANG ON CACHE BOOL "")
+        endif()
+        add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/spirv-helper)
     endif()
-    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/spirv-helper)
 else()
-    # GLAD
-    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/glad)
-    # SPIRV-Helper
-    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/spirv-helper)
+    if(PD_BUILD_BACKENDS)
+        # GLAD
+        add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/glad)
+        # SPIRV-Helper
+        add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/spirv-helper)
+    endif()
 endif()
 
 # STB
@@ -28,7 +32,7 @@ install(TARGETS stb
     INCLUDES DESTINATION include
 )
 
-if(NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Nintendo3DS" AND NOT ${CMAKE_SYSTEM_NAME} STREQUAL "NintendoSwitch")
+if(NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Nintendo3DS" AND NOT ${CMAKE_SYSTEM_NAME} STREQUAL "NintendoSwitch" AND PD_BUILD_BACKENDS)
     # GLFW
     set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "")
     set(GLFW_BUILD_TESTS OFF CACHE BOOL "")

@@ -12,6 +12,7 @@ include(cmake/palladium.cmake)
 option(PD_BUILD_TESTS "Sets if TestApp and TestBench get build" OFF)
 option(PD_BUILD_SHARED "Build Shared Library" OFF)
 option(PD_BUILD_TOOLS "Build Palladium Tools" OFF)
+option(PD_BUILD_BACKENDS "Build pd-system Library for graphics/input backends" ON)
 option(PD_INCLUDE_STB_IMAGE "Inlude stb image symbols in palladium" ON)
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Nintendo3DS")
@@ -178,7 +179,9 @@ add_custom_target(pd-clang-format
     COMMENT "Formatting Project Sources"
 )
 
+if(PD_BUILD_BACKENDS)
 add_subdirectory(backends)
 if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
     add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tests)
+endif()
 endif()
