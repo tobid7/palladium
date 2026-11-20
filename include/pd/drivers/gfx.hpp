@@ -184,6 +184,9 @@ class GfxDriverBase : public GfxDriver {
         pCountDrawcalls++;
       }
     }
+    // State cleanup
+    CurrentClip = false;
+    ClipRect();
   }
 
   size_t AllocateVertices(size_t count, PD::ptr accessor) override {
