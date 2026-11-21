@@ -321,6 +321,23 @@ PD_API void Menu::DrawBaseLayout() {
       pLayout.DrawList.SetLayer(0);
     }
   }
+  // Menu border
+  if (pIO.ShowMenuBorder) {
+    DynObj* r = pIO.DynObjPool.Allocate();
+    *r = UI7::DynObj([](IO* io, Li::Drawlist* l, UI7::Container* self) {
+      l->SetLayer(22);  // Over everything
+      fvec2 p = self->FinalPos() + fvec2(0.5f);
+      fvec2 s = self->GetSize() - fvec2(1.f);
+      l->PathRect(p, p + s, 0.f);
+      l->PathStroke(io->Theme.Get(UI7Color_Border), 1, LiDrawFlags_Close);
+      l->SetLayer(0);
+    });
+    r->SetSize(pIsOpen ? pLayout.GetSize()
+                       : fvec2(pLayout.GetSize().x, TitleBarHeight));
+    r->SetPos(0);
+    pLayout.AddObjectEx(r, UI7LytAdd_NoCursorUpdate | UI7LytAdd_NoScrollHandle |
+                               UI7LytAdd_NoClipTitlebar);
+  }
 }
 
 PD_API void Menu::Update() {
@@ -340,6 +357,12 @@ PD_API void Menu::Update() {
     TitleBarHeight = 0.f;
     pLayout.WorkRect.y = 5.f;
   }
+  // TODO: Add function to layout to fix out this the folowing problem
+  // Make sure windows have fully rounded coords
+  pLayout.Pos.x = std::floor(pLayout.Pos.x);
+  pLayout.Pos.y = std::floor(pLayout.Pos.y);
+  pLayout.Size.x = std::round(pLayout.Size.x);
+  pLayout.Size.y = std::round(pLayout.Size.y);
   DrawBaseLayout();
   pLayout.Update();
 }
