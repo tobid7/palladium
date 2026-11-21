@@ -7,6 +7,7 @@ option(PD_ENABLE_OPENGL3 "Enable OpenGL 3.3 (On Supported Hardware)" ON)
 option(PD_ENABLE_DIRECTX9 "Enable DirectX9 Support" ON)
 option(PD_ENABLE_CITRO3D "Enable Citro3D Support (3DS)" OFF)
 option(PD_ENABLE_VULKAN "Not implemented yet" OFF)
+option(PD_ENABLE_METAL "Enable Metal support on Apple" ON)
 option(PD_ENABLE_HID_GLFW "Enable GLFW Input Driver" ON)
 option(PD_ENABLE_HID_NX "Enable NX Input Driver" OFF)
 option(PD_ENABLE_HID3DS "Enable 3ds Input Driver" OFF)
@@ -15,17 +16,24 @@ if(NOT WIN32) # cause we are not on windows...
     set(PD_ENABLE_DIRECTX9 OFF)
 endif()
 
+if(NOT APPLE)
+    set(PD_ENABLE_METAL OFF)
+endif()
+
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Nintendo3DS")
     set(PD_ENABLE_OPENGL2 OFF)
     set(PD_ENABLE_OPENGL3 OFF)
     set(PD_ENABLE_VULKAN OFF)
+    set(PD_ENABLE_METAL OFF)
     set(PD_ENABLE_CITRO3D ON)
+    set(PD_ENABLE_METAL OFF)
     set(PD_ENABLE_HID_GLFW OFF)
     set(PD_ENABLE_HID_NX OFF)
     set(PD_ENABLE_HID3DS ON)
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "NintendoSwitch")
     set(PD_ENABLE_OPENGL2 OFF)
     set(PD_ENABLE_OPENGL3 ON)
+    set(PD_ENABLE_METAL OFF)
     set(PD_ENABLE_VULKAN OFF)
     set(PD_ENABLE_CITRO3D OFF)
     set(PD_ENABLE_HID_NX ON) # Best case for Nintendo Switch
@@ -38,10 +46,20 @@ add_library(pd-system STATIC
     ${CMAKE_CURRENT_SOURCE_DIR}/source/gfx_opengl3.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/source/gfx_directx9.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/source/gfx_citro3d.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/gfx_metal.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/source/hid_3ds.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/source/hid_glfw.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/source/hid_nx.cpp
 )
+
+if(PD_ENABLE_METAL)
+    enable_language(OBJCXX)
+    set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/source/gfx_metal.cpp
+        PROPERTIES
+        LANGUAGE OBJCXX
+        COMPILE_OPTIONS "-fobjc-arc"
+    )
+endif()
 
 target_include_directories(pd-system
     PUBLIC
@@ -63,7 +81,9 @@ target_compile_definitions(pd-system
     $<$<BOOL:${PD_ENABLE_OPENGL2}>:PD_ENABLE_OPENGL2>
     $<$<BOOL:${PD_ENABLE_OPENGL3}>:PD_ENABLE_OPENGL3>
     $<$<BOOL:${PD_ENABLE_VULKAN}>:PD_ENABLE_VULKAN>
+    $<$<BOOL:${PD_ENABLE_METAL}>:PD_ENABLE_METAL>
     $<$<BOOL:${PD_ENABLE_DIRECTX9}>:PD_ENABLE_DIRECTX9>
+    $<$<BOOL:${PD_ENABLE_METAL}>:PD_ENABLE_METAL>
     $<$<BOOL:${PD_ENABLE_CITRO3D}>:PD_ENABLE_CITRO3D>
     $<$<BOOL:${PD_ENABLE_HID_GLFW}>:PD_ENABLE_HID_GLFW>
     $<$<BOOL:${PD_ENABLE_HID_NX}>:PD_ENABLE_HID_NX>
@@ -78,7 +98,8 @@ target_link_libraries(pd-system PUBLIC palladium::palladium)
 target_link_libraries(pd-system PUBLIC
     $<$<BOOL:${PD_ENABLE_DIRECTX9}>:d3d9 d3dcompiler> # DirectX9
     $<$<BOOL:${PD_ENABLE_CITRO3D}>:pica::pica citro3d ctru> # 3ds
-    $<$<BOOL:${PD_ENABLE_OPENGL3}>:spirv-helper> # OpenGL3
+    # OpenGL3 + Metal (spirv-helper brings spirv-cross-msl)
+    $<$<OR:$<BOOL:${PD_ENABLE_OPENGL3}>,$<BOOL:${PD_ENABLE_METAL}>>:spirv-helper>
     # Include Glad if we have any OpenGL Usage
     $<$<OR:$<BOOL:${PD_ENABLE_OPENGL2}>,$<BOOL:${PD_ENABLE_OPENGL3}>>:glad>
     $<$<BOOL:${PD_ENABLE_HID_NX}>:nx> # Hid NX requirement
@@ -88,3 +109,7 @@ target_link_libraries(pd-system PUBLIC
     $<$<NOT:$<STREQUAL:${CMAKE_SYSTEM_NAME},NintendoSwitch>>:glfw>>
 
 )
+
+if(PD_ENABLE_METAL)
+    target_link_libraries(pd-system PUBLIC "-framework Metal" "-framework Foundation")
+endif()

@@ -32,6 +32,8 @@ class PD_API GfxDriver : public DriverInterface {
 
   void SetViewPort(const ivec2& size);
   void SetViewPort(int x, int y);
+  void SetFramebufferScale(const fvec2& scale) { FramebufferScale = scale; }
+  const fvec2& GetFramebufferScale() const { return FramebufferScale; }
   virtual void BindTexture(TextureID id) {}
   void Reset();
   virtual Li::Texture LoadTexture(
@@ -88,6 +90,7 @@ class PD_API GfxDriver : public DriverInterface {
   fvec4 CurrentClip = 0;
   Mat4 Projection;
   ivec2 ViewPort;
+  fvec2 FramebufferScale = fvec2(1.f, 1.f);
   std::unordered_map<TextureID, Li::Texture> pTextureRegestry;
   Li::Texture pWhite;
   PDGfxBackendFlags Flags = 0;
@@ -264,6 +267,10 @@ class PD_API Gfx {
   static void Deinit() { driver->Deinit(); }
   static void SetViewPort(const ivec2& vp) { driver->SetViewPort(vp); }
   static void SetViewPort(int w, int h) { driver->SetViewPort(w, h); }
+  static void SetFramebufferScale(const fvec2& scale) {
+    driver->SetFramebufferScale(scale);
+  }
+  static fvec2 GetFramebufferScale() { return driver->GetFramebufferScale(); }
   static void Reset() { driver->Reset(); }
   static void Draw(const Li::Drawlist& dl) { driver->Draw(dl); }
   static Li::Texture LoadTexture(const std::vector<PD::u8>& pixels, int w,

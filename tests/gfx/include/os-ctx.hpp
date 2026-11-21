@@ -8,6 +8,7 @@ enum class Driver {
   OpenGL3 = 2,
   DirectX9 = 3,
   Citro3D = 4,
+  Metal = 5,
 };
 
 namespace PD {

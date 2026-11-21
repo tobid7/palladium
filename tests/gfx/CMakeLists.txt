@@ -7,7 +7,21 @@ add_executable(gfx-tests
 	${CMAKE_CURRENT_SOURCE_DIR}/source/os/horizon-nx.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/source/os/horizon-ctr.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/source/os/desktopos.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/source/os/metal-layer.cpp
 )
+
+if(APPLE AND PD_ENABLE_METAL)
+	set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/source/os/metal-layer.cpp
+		PROPERTIES
+		LANGUAGE OBJCXX
+		COMPILE_OPTIONS "-fobjc-arc"
+	)
+	target_link_libraries(gfx-tests PRIVATE
+		"-framework Metal"
+		"-framework QuartzCore"
+		"-framework AppKit"
+	)
+endif()
 target_link_libraries(gfx-tests PRIVATE palladium::palladium pd-system stb)
 target_include_directories(gfx-tests
 	PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include

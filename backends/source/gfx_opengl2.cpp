@@ -188,8 +188,12 @@ void GfxOpenGL2::UploadPools() {
 void GfxOpenGL2::ClipRect() {
   if (CurrentHasClip) {
     glEnable(GL_SCISSOR_TEST);
-    glScissor(CurrentClip.x, ViewPort.y - (CurrentClip.y + CurrentClip.w),
-              CurrentClip.z, CurrentClip.w);
+    const fvec2& s = FramebufferScale;
+    glScissor(static_cast<GLint>(CurrentClip.x * s.x),
+              static_cast<GLint>(
+                  (ViewPort.y - (CurrentClip.y + CurrentClip.w)) * s.y),
+              static_cast<GLsizei>(CurrentClip.z * s.x),
+              static_cast<GLsizei>(CurrentClip.w * s.y));
   } else {
     glDisable(GL_SCISSOR_TEST);
   }

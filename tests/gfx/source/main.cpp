@@ -1,4 +1,5 @@
 #include <future>
+#include <iostream>
 #include <os/desktopos.hpp>
 #include <os/horizon-ctr.hpp>
 #include <os/horizon-nx.hpp>
@@ -182,8 +183,17 @@ int main(int argc, char** argv) {
       drv = Driver::OpenGL3;
     } else if (std::string(argv[1]) == "dx9") {
       drv = Driver::DirectX9;
+    } else if (std::string(argv[1]) == "metal") {
+      drv = Driver::Metal;
     }
   }
+#ifdef __APPLE__
+  if (drv == Driver::OpenGL3) {
+    std::cout << "gfx-tests: OpenGL3 is not supported on macOS, use gl2 or "
+                 "metal\n";
+    return 1;
+  }
+#endif
 #if defined(__SWITCH__)
   pOs = new PD::HorizonNX(drv);
 #elif defined(__3DS__)

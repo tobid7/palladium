@@ -1,4 +1,5 @@
 #include <os/desktopos.hpp>
+#include <os/metal-layer.hpp>
 #include <pdsystem>
 
 #if !defined(__SWITCH__) && !defined(__3DS__)
@@ -15,11 +16,14 @@
 namespace PD {
 struct DesktopOS::Impl {
   GLFWwindow* win = nullptr;
+  PD::ivec2 fb;
 #if WIN32
   IDirect3D9* d3d = nullptr;
   IDirect3DDevice9* dx9_device = nullptr;
   D3DPRESENT_PARAMETERS d3dpp = {};
 #endif
+  PD::MetalLayer metal;
+  PD::GfxMetalCtx metal_ctx;
 };
 
 void DesktopOS::Init() {
@@ -44,9 +48,14 @@ void DesktopOS::Init() {
   } else if (pDriver == Driver::DirectX9) {
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     winname += " (DirectX9)";
+  } else if (pDriver == Driver::Metal) {
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+    winname += " (Metal)";
   }
 #ifdef __APPLE__
-  glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, 0);
+  // Full resolution framebuffer on Retina (only affects OpenGL, Metal
+  // always gets the backing size via glfwGetFramebufferSize)
+  glfwWindowHint(GLFW_SCALE_FRAMEBUFFER, GLFW_TRUE);
 #endif
   impl->win = glfwCreateWindow(1280, 720, winname.c_str(), nullptr, nullptr);
   glfwMakeContextCurrent(impl->win);
@@ -76,11 +85,20 @@ void DesktopOS::Init() {
     PD::Gfx::UseDriver<PD::GfxDirectX9>(impl->dx9_device);
   }
 #endif
+#if defined(__APPLE__) && defined(PD_ENABLE_METAL)
+  if (pDriver == Driver::Metal) {
+    if (!impl->metal.Create(impl->win, impl->metal_ctx)) {
+      std::abort();
+    }
+    PD::Gfx::UseDriver<PD::GfxMetal>(&impl->metal_ctx);
+  }
+#endif
   glfwSwapInterval(1);
   PD::Hid::UseDriver<HidGlfw>(impl->win);
 }
 
 void DesktopOS::Deinit() {
+  if (impl) impl->metal.Destroy(impl->metal_ctx);
   glfwTerminate();
   if (impl) {
     delete impl;
@@ -90,24 +108,30 @@ void DesktopOS::Deinit() {
 
 bool DesktopOS::Mainloop() {
   glfwPollEvents();
-  glfwGetFramebufferSize(impl->win, &pViewPort.x, &pViewPort.y);
+  glfwGetWindowSize(impl->win, &pViewPort.x, &pViewPort.y);
+  glfwGetFramebufferSize(impl->win, &impl->fb.x, &impl->fb.y);
   return !glfwWindowShouldClose(impl->win);
 }
 
 void DesktopOS::ClearViewPort() {
   PD::Gfx::SetViewPort(pViewPort);
+  if (pViewPort.x > 0 && pViewPort.y > 0) {
+    PD::Gfx::SetFramebufferScale(
+        PD::fvec2(static_cast<float>(impl->fb.x) / pViewPort.x,
+                  static_cast<float>(impl->fb.y) / pViewPort.y));
+  }
   if (pDriver == Driver::OpenGL3 || pDriver == Driver::OpenGL2) {
     glClearColor(0.1, 0.1, 0.1, 0.1);
     glClear(GL_COLOR_BUFFER_BIT);
-    glViewport(0, 0, pViewPort.x, pViewPort.y);
+    glViewport(0, 0, impl->fb.x, impl->fb.y);
   } else if (pDriver == Driver::DirectX9) {
 #ifdef _WIN32
     // Resize the swapchain to match the window size
-    if (impl->dx9_device && pViewPort.x > 0 && pViewPort.y > 0) {
-      if (impl->d3dpp.BackBufferWidth != (UINT)pViewPort.x ||
-          impl->d3dpp.BackBufferHeight != (UINT)pViewPort.y) {
-        impl->d3dpp.BackBufferWidth = pViewPort.x;
-        impl->d3dpp.BackBufferHeight = pViewPort.y;
+    if (impl->dx9_device && impl->fb.x > 0 && impl->fb.y > 0) {
+      if (impl->d3dpp.BackBufferWidth != (UINT)impl->fb.x ||
+          impl->d3dpp.BackBufferHeight != (UINT)impl->fb.y) {
+        impl->d3dpp.BackBufferWidth = impl->fb.x;
+        impl->d3dpp.BackBufferHeight = impl->fb.y;
         impl->dx9_device->Reset(&impl->d3dpp);
       }
 
@@ -116,6 +140,8 @@ void DesktopOS::ClearViewPort() {
       impl->dx9_device->BeginScene();
     }
 #endif
+  } else if (pDriver == Driver::Metal) {
+    impl->metal.BeginFrame(impl->metal_ctx, impl->fb);
   }
 }
 
@@ -128,6 +154,8 @@ void DesktopOS::SwapBuffers() {
       impl->dx9_device->Present(nullptr, nullptr, nullptr, nullptr);
     }
 #endif
+  } else if (pDriver == Driver::Metal) {
+    impl->metal.EndFrame(impl->metal_ctx);
   } else {
     glfwSwapBuffers(impl->win);
   }
