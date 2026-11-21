@@ -184,8 +184,7 @@ PD_API void Menu::HandleTitlebarActions() {
     // clr_close_btn = UI7Color_FrameBackground;
     if (pIO.InputHandler.DragObject(UI7::ID(pID.GetName() + "rszs"),
                                     fvec4(cpos, fvec2(20)))) {
-      fvec2 szs = pLayout.Size + (pIO.InputHandler.DragPosition -
-                                  pIO.InputHandler.DragLastPosition);
+      fvec2 szs = pIO.InputHandler.DragMovedPos() + fvec2(20) - pLayout.Pos;
       if (szs.x < 30) szs.x = 30;
       if (szs.y < 30) szs.y = 30;
       pLayout.Size = szs;
@@ -200,8 +199,7 @@ PD_API void Menu::HandleTitlebarActions() {
       if (pIO.InputHandler.DragDoubleRelease) {
         pIsOpen = !pIsOpen;
       }
-      pLayout.Pos = pLayout.Pos + (pIO.InputHandler.DragPosition -
-                                   pIO.InputHandler.DragLastPosition);
+      pLayout.Pos = pIO.InputHandler.DragMovedPos();
       // Keep Window In Viewport
       // Maybe i need to add some operators to vec
       pLayout.Pos.x = std::clamp<float>(pLayout.Pos.x, -pLayout.Size.x + 10,

@@ -66,6 +66,8 @@ class InputHandler {
       DragPosition = p;
       DragLastPosition = p;
       DragDestination = area;
+      DragOrigin = fvec2(area.x, area.y);
+      DragOffset = 0;
       // Reset and Start DragTimer
       DragTime.Reset();
       DragTime.Rseume();
@@ -78,10 +80,12 @@ class InputHandler {
       // Update DragLast and DragPoisition
       DragLastPosition = DragPosition;
       DragPosition = p;
+      DragOffset = p - DragSourcePos;
     } else if ((PD::Hid::IsEvent(PD::Hid::Event::Up, PD::Hid::Gamepad::Touch) ||
                 PD::Hid::IsEvent(PD::Hid::Event::Up,
                                  PD::Hid::Keyboard::MouseLeft)) &&
                IsObjectDragged()) {
+      DragOffset = p - DragSourcePos;
       // Released... Everything gets reset
       DraggedObject = 0;
       DragPosition = 0;
@@ -114,7 +118,13 @@ class InputHandler {
     DragReleased = false;
     DragReleasedAW = false;
     DragDoubleRelease = false;
+    if (!IsObjectDragged()) {
+      DragOrigin = 0;
+      DragOffset = 0;
+    }
   }
+
+  fvec2 DragMovedPos() const { return DragOrigin + DragOffset; }
 
   u64 DoubleClickTime = 500;  // Milliseconds
   u32 FocusedMenu = 0;
@@ -124,6 +134,8 @@ class InputHandler {
   fvec2 DragSourcePos = 0;
   fvec2 DragPosition = 0;
   fvec2 DragLastPosition = 0;
+  fvec2 DragOrigin = 0;
+  fvec2 DragOffset = 0;
   /** Fvec4 has an constructor problem currently */
   fvec4 DragDestination = fvec4(0);
   Timer DragTime;
