@@ -30,7 +30,7 @@ int main(int argc, char** argv) {
   FmtPrint("Loading {}\n", argv[1]);
   std::string shader = LoadFile(argv[1]);
   FmtPrint("Generating SPIRV...\n");
-  auto res = SpirvHelper::GLSL2SPV(SpirvHelper::Stage::Vertex, shader.c_str());
+  auto res = SpirvHelper::GLSL2SPV(mode, shader.c_str());
   FmtPrint("Result size: {}\n", res.size());
   std::ofstream ff(argv[2]);
   FmtPrint("Writing into {}", argv[2]);
