@@ -51,9 +51,9 @@ void GfxOpenGL3::SysInit() {
   pLocIsSDF = glGetUniformLocation(pShader, "push.is_sdf");
   pLocProjection = glGetUniformLocation(pShader, "ubo.projection");
 
+  glBindVertexArray(0);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-  glBindVertexArray(0);
 }
 
 void GfxOpenGL3::SysDeinit() {
@@ -64,8 +64,8 @@ void GfxOpenGL3::SysDeinit() {
 }
 
 void GfxOpenGL3::Submit(size_t count, size_t start) {
-  BindTexture(CurrentTex);
   glUseProgram(pShader);
+  BindTexture(CurrentTex);
   glUniformMatrix4fv(pLocProjection, 1, GL_FALSE, Projection.m.data());
 
   glBindVertexArray(VAO);

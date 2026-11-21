@@ -98,8 +98,8 @@ void GfxOpenGL2::SysDeinit() {
 }
 
 void GfxOpenGL2::Submit(size_t count, size_t start) {
-  BindTexture(CurrentTex);
   glUseProgram(pShader);
+  BindTexture(CurrentTex);
   glUniformMatrix4fv(pLocProjection, 1, GL_FALSE, Projection.m.data());
 
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
