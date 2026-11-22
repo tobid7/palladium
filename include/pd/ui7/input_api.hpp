@@ -85,7 +85,8 @@ class InputHandler {
                 PD::Hid::IsEvent(PD::Hid::Event::Up,
                                  PD::Hid::Keyboard::MouseLeft)) &&
                IsObjectDragged()) {
-      DragOffset = p - DragSourcePos;
+      // Keep DragOffset from the last Held frame: on release some platforms
+      // (libctru) report the touch position as (0, 0)
       // Released... Everything gets reset
       DraggedObject = 0;
       DragPosition = 0;
