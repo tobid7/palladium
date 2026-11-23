@@ -5,7 +5,9 @@ include(GNUInstallDirs)
 # Set Project
 project(palladium LANGUAGES C CXX VERSION 0.7.0)
 
-enable_language(OBJC OBJCXX)
+if(APPLE)
+    enable_language(OBJC OBJCXX)
+endif()
 
 # Required to add this Variable
 set(PD_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
