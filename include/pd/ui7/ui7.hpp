@@ -80,6 +80,11 @@ class PD_API Context {
   std::vector<u32> pCurrentMenus;
   std::vector<u32> pDFO; /** Debug Final Order */
   std::unordered_map<u32, Menu*> pMenus;
+  std::vector<u32> pMinimizedMenus;
+  const ID pDockID = ID("##UI7Dock");
+
+ private:
+  void pBuildDock();
 };
 }  // namespace UI7
 }  // namespace PD

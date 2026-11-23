@@ -226,6 +226,7 @@ int main(int argc, char** argv) {
 #endif
   ui7.UseViewPort("Default");
   bool pMetricsWin = true;
+  bool pTestWin = true;
   while (pOs->Mainloop()) {
     PD::TT::End("OSCTX::MainLoop");
     pOs->DrawOnScreen(0);
@@ -316,12 +317,26 @@ int main(int argc, char** argv) {
     }
     pList.SetFont(&font);
     PD::TT::Beg("BuildUI7Menus");
-    if (auto m = ui7.BeginMenu("Test")) {
+    if (auto m =
+            ui7.BeginMenu("Test",
+                          UI7MenuFlags_Scrolling | UI7MenuFlags_CenterTitle |
+                              UI7MenuFlags_Maximize | UI7MenuFlags_Minimize,
+                          &pTestWin)) {
       m->Label("Hello World!");
+      if (m->Button("Scroll to bottom")) {
+        m->ScrollTo(PD::fvec2(0, m->GetScrollMax().y));
+      }
       m->Image(pTex, 128.f);
+      for (int i = 0; i < 20; i++) {
+        m->Label("Line {}", i);
+      }
+      if (m->Button("Scroll to top")) {
+        m->ScrollTo(0);
+      }
       ui7.EndMenu();
     }
     if (auto m = ui7.BeginMenu("LI DBG INFO")) {
+      m->Checkbox("Show Test Menu", pTestWin);
       m->PushFont(&debug_font);
       m->Label("Gfx Driver: {}", PD::Gfx::GetDriverName());
       m->Separator();

@@ -148,65 +148,153 @@ PD_API void Menu::HandleFocus() {
   }
 }
 
+PD_API fvec2 Menu::pTitleButtonSize() const {
+  float s = std::max(TitleBarHeight - pIO.FramePadding.y * 2, 5.f);
+  return fvec2(s, s);
+}
+
+PD_API int Menu::pNumTitleButtons() const {
+  int n = 0;
+  if (!(Flags & UI7MenuFlags_NoClose) && pIsShown) n++;
+  if (Flags & UI7MenuFlags_Maximize) n++;
+  if (Flags & UI7MenuFlags_Minimize) n++;
+  return n;
+}
+
+PD_API bool Menu::pTitleButtonPos(TitleButton b, fvec2& pos) const {
+  const bool shown[3] = {!(Flags & UI7MenuFlags_NoClose) && pIsShown != nullptr,
+                         (Flags & UI7MenuFlags_Maximize) != 0,
+                         (Flags & UI7MenuFlags_Minimize) != 0};
+  if (!shown[b]) return false;
+  int slot = 0;
+  for (int i = 0; i < b; i++) {
+    if (shown[i]) slot++;
+  }
+  fvec2 size = pTitleButtonSize();
+  pos = fvec2(pLayout.Size.x - (slot + 1) * (size.x + pIO.FramePadding.x),
+              pIO.FramePadding.y);
+  return true;
+}
+
+PD_API void Menu::SetMaximized(bool v) {
+  if (v == pIsMaximized) return;
+  if (v) {
+    pRestorePos = pLayout.Pos;
+    pRestoreSize = pLayout.Size;
+    pIsOpen = true;
+  } else {
+    pLayout.Pos = pRestorePos;
+    pLayout.Size = pRestoreSize;
+  }
+  pIsMaximized = v;
+}
+
+PD_API void Menu::ScrollTo(const fvec2& pos, float seconds) {
+  if (seconds <= 0.f) {
+    pScrollAnimActive = false;
+    pLayout.ScrollOffset = pos;
+    return;
+  }
+  pScrollFrom = pLayout.ScrollOffset;
+  pScrollTarget = pos;
+  pScrollAnim.From(0.f).To(1.f).In(seconds).As(pScrollAnim.EaseOutQuad);
+  pScrollAnimActive = true;
+}
+
+PD_API void Menu::pUpdateScrollAnim() {
+  if (!pScrollAnimActive) return;
+  // user can stop the animation of course
+  if (pLayout.IsScrollDragged()) {
+    pScrollAnimActive = false;
+    return;
+  }
+  const fvec2& max = pLayout.GetScrollMax();
+  fvec2 target(std::clamp(pScrollTarget.x, 0.f, max.x),
+               std::clamp(pScrollTarget.y, 0.f, max.y));
+  pScrollAnim.Update(pIO.Delta);
+  float t = pScrollAnim.Get();
+  pLayout.ScrollOffset = pScrollFrom + (target - pScrollFrom) * t;
+  if (pScrollAnim.IsFinished()) {
+    pLayout.ScrollOffset = target;
+    pScrollAnimActive = false;
+  }
+}
+
 PD_API void Menu::HandleTitlebarActions() {
   // Collapse
   if (!(Flags & UI7MenuFlags_NoCollapse)) {
     vec2 cpos = pLayout.Pos + pIO.FramePadding;
-    // clr_collapse_tri = UI7Color_FrameBackground;
     if (pIO.InputHandler.DragObject(UI7::ID(pID.GetName() + "clbse"),
                                     fvec4(cpos, fvec2(18, TitleBarHeight)))) {
       if (pIO.InputHandler.DragReleased) {
         pIsOpen = !pIsOpen;
       }
-      // clr_collapse_tri = UI7Color_FrameBackgroundHovered;
     }
   }
+  fvec2 bsize = pTitleButtonSize();
+  fvec2 bpos;
   // Close Logic
-  if (!(Flags & UI7MenuFlags_NoClose) && pIsShown != nullptr) {
-    fvec2 size = TitleBarHeight - pIO.FramePadding.y * 2;
-    fvec2 cpos =
-        fvec2(pLayout.Pos.x + pLayout.Size.x - size.x - pIO.FramePadding.x,
-              pLayout.Pos.y + pIO.FramePadding.y);
-
-    // clr_close_btn = UI7Color_FrameBackground;
+  if (pTitleButtonPos(TitleButton_Close, bpos)) {
     if (pIO.InputHandler.DragObject(UI7::ID(pID.GetName() + "clse"),
-                                    fvec4(cpos, size))) {
+                                    fvec4(pLayout.Pos + bpos, bsize))) {
       if (pIO.InputHandler.DragReleased) {
         *pIsShown = !(*pIsShown);
       }
-      // clr_close_btn = UI7Color_FrameBackgroundHovered;
+    }
+  }
+  // Maximize Logic
+  if (pTitleButtonPos(TitleButton_Maximize, bpos)) {
+    if (pIO.InputHandler.DragObject(UI7::ID(pID.GetName() + "mxbt"),
+                                    fvec4(pLayout.Pos + bpos, bsize))) {
+      if (pIO.InputHandler.DragReleased) {
+        SetMaximized(!pIsMaximized);
+      }
+    }
+  }
+  // Minimize Logic
+  if (pTitleButtonPos(TitleButton_Minimize, bpos)) {
+    if (pIO.InputHandler.DragObject(UI7::ID(pID.GetName() + "mnbt"),
+                                    fvec4(pLayout.Pos + bpos, bsize))) {
+      if (pIO.InputHandler.DragReleased) {
+        pIsMinimized = true;
+      }
     }
   }
   // Resize logic
-  if (!(Flags & UI7MenuFlags_NoResize)) {
-    vec2 cpos = pLayout.Pos + pLayout.Size - fvec2(20);
-
-    // clr_close_btn = UI7Color_FrameBackground;
+  if (!(Flags & UI7MenuFlags_NoResize) && !pIsMaximized) {
+    fvec2 grip(pIO.ResizeGripSize);
+    vec2 cpos = pLayout.Pos + pLayout.Size - grip;
     if (pIO.InputHandler.DragObject(UI7::ID(pID.GetName() + "rszs"),
-                                    fvec4(cpos, fvec2(20)))) {
-      fvec2 szs = pIO.InputHandler.DragMovedPos() + fvec2(20) - pLayout.Pos;
+                                    fvec4(cpos, grip))) {
+      fvec2 szs = pIO.InputHandler.DragMovedPos() + grip - pLayout.Pos;
       if (szs.x < 30) szs.x = 30;
       if (szs.y < 30) szs.y = 30;
       pLayout.Size = szs;
-      // clr_close_btn = UI7Color_FrameBackgroundHovered;
     }
   }
   // Menu Movement
-  if (!(Flags & UI7MenuFlags_NoMove)) {
+  if (!(Flags & UI7MenuFlags_NoMove) || (Flags & UI7MenuFlags_Maximize)) {
     if (pIO.InputHandler.DragObject(
             pID.GetName() + "tmv",
             fvec4(pLayout.Pos, fvec2(pLayout.Size.x, TitleBarHeight)))) {
       if (pIO.InputHandler.DragDoubleRelease) {
-        pIsOpen = !pIsOpen;
+        // maximize on double click (like on windows) if enabled
+        if (Flags & UI7MenuFlags_Maximize) {
+          SetMaximized(!pIsMaximized);
+        } else {
+          pIsOpen = !pIsOpen;
+        }
       }
-      pLayout.Pos = pIO.InputHandler.DragMovedPos();
-      // Keep Window In Viewport
-      // Maybe i need to add some operators to vec
-      pLayout.Pos.x = std::clamp<float>(pLayout.Pos.x, -pLayout.Size.x + 10,
-                                        pIO.CurrentViewPort.pSize.z - 10);
-      pLayout.Pos.y =
-          std::clamp<float>(pLayout.Pos.y, pIO.CurrentViewPort.pSize.y,
-                            pIO.CurrentViewPort.pSize.w - 10);
+      if (!(Flags & UI7MenuFlags_NoMove) && !pIsMaximized) {
+        pLayout.Pos = pIO.InputHandler.DragMovedPos();
+        // Keep Window In Viewport
+        // Maybe i need to add some operators to vec
+        pLayout.Pos.x = std::clamp<float>(pLayout.Pos.x, -pLayout.Size.x + 10,
+                                          pIO.CurrentViewPort.pSize.z - 10);
+        pLayout.Pos.y =
+            std::clamp<float>(pLayout.Pos.y, pIO.CurrentViewPort.pSize.y,
+                              pIO.CurrentViewPort.pSize.w - 10);
+      }
     }
   }
 }
@@ -214,61 +302,79 @@ PD_API void Menu::HandleTitlebarActions() {
 PD_API void Menu::DrawBaseLayout() {
   if (pIsOpen) {
     /** Resize Sym (Render on Top of Everything) */
-    if (!(Flags & UI7MenuFlags_NoResize)) {
+    if (!(Flags & UI7MenuFlags_NoResize) && !pIsMaximized) {
       DynObj* r = pIO.DynObjPool.Allocate();
       *r = UI7::DynObj([](IO* io, Li::Drawlist* l, UI7::Container* self) {
         l->SetLayer(21);
-        l->PathAdd(self->FinalPos() + self->GetSize() - fvec2(0, 20));
+        float g = io->ResizeGripSize;
+        l->PathAdd(self->FinalPos() + self->GetSize() - fvec2(0, g));
         l->PathAdd(self->FinalPos() + self->GetSize());
-        l->PathAdd(self->FinalPos() + self->GetSize() - fvec2(20, 0));
+        l->PathAdd(self->FinalPos() + self->GetSize() - fvec2(g, 0));
         l->PathFill(io->Theme.Get(UI7Color_Button));
         l->SetLayer(0);
       });
       r->SetSize(
           fvec2(pLayout.GetSize().x, pLayout.GetSize().y - TitleBarHeight));
       r->SetPos(fvec2(0, TitleBarHeight));
-      pLayout.AddObjectEx(r,
-                          UI7LytAdd_NoCursorUpdate | UI7LytAdd_NoScrollHandle);
+      pLayout.AddObjectEx(r, UI7LytAdd_NoCursorUpdate |
+                                 UI7LytAdd_NoScrollHandle |
+                                 UI7LytAdd_NoClipTitlebar);
     }
 
     /** Background */
-    DynObj* r = pIO.DynObjPool.Allocate();
-    *r = UI7::DynObj([](IO* io, Li::Drawlist* l, UI7::Container* self) {
-      l->SetLayer(0);
-      l->PathRectEx(self->FinalPos(), self->FinalPos() + self->GetSize(), 10.f,
-                    LiPathRectFlags_KeepTop | LiPathRectFlags_KeepBot);
-      l->PathFill(io->Theme.Get(UI7Color_Background));
-      /*l->DrawRectFilled(self->FinalPos(), self->GetSize(),
-                        io->Theme.Get(UI7Color_Background));*/
-    });
-    // Set size before pushing (cause Cursor Move will require it)
-    r->SetSize(
-        fvec2(pLayout.GetSize().x, pLayout.GetSize().y - TitleBarHeight));
-    r->SetPos(fvec2(0, TitleBarHeight));
-    pLayout.AddObjectEx(r, UI7LytAdd_NoCursorUpdate | UI7LytAdd_NoScrollHandle |
-                               UI7LytAdd_Front | UI7LytAdd_NoClipTitlebar);
+    if (!(Flags & UI7MenuFlags_NoBackground)) {
+      DynObj* r = pIO.DynObjPool.Allocate();
+      *r = UI7::DynObj([](IO* io, Li::Drawlist* l, UI7::Container* self) {
+        l->SetLayer(0);
+        l->PathRectEx(self->FinalPos(), self->FinalPos() + self->GetSize(),
+                      10.f, LiPathRectFlags_KeepTop | LiPathRectFlags_KeepBot);
+        l->PathFill(io->Theme.Get(UI7Color_Background));
+      });
+      // Set size before pushing (cause Cursor Move will require it)
+      r->SetSize(
+          fvec2(pLayout.GetSize().x, pLayout.GetSize().y - TitleBarHeight));
+      r->SetPos(fvec2(0, TitleBarHeight));
+      pLayout.AddObjectEx(r, UI7LytAdd_NoCursorUpdate |
+                                 UI7LytAdd_NoScrollHandle | UI7LytAdd_Front |
+                                 UI7LytAdd_NoClipTitlebar);
+    }
   }
   if (!(Flags & UI7MenuFlags_NoTitlebar)) {
+    // calculate lost space of left and right to support center aligned title (0.3.2 feature)
+    float left = (Flags & UI7MenuFlags_NoCollapse)
+                     ? pIO.FramePadding.x
+                     : (TitleBarHeight - pIO.FramePadding.y * 2 +
+                        (pIO.FramePadding.x * 2));
+    float right = pNumTitleButtons() *
+                      (pTitleButtonSize().x + pIO.FramePadding.x) +
+                  pIO.FramePadding.x;
     DynObj* r = pIO.DynObjPool.Allocate();
-    *r = UI7::DynObj(
-        [=, this](UI7::IO* io, Li::Drawlist* l, UI7::Container* self) {
-          l->SetFont(self->GetFont());
-          l->SetLayer(20);
-          /** Header Bar */
-          l->DrawRectFilled(self->FinalPos(), self->GetSize(),
-                            io->Theme.Get(UI7Color_Header));
-          l->SetLayer(21);
-          /** Inline if statement to shift the Text if collapse sym is shown */
-          /** What the hell is this code btw (didn't found a better way) */
-          l->DrawText(self->FinalPos() +
-                          fvec2((Flags & UI7MenuFlags_NoCollapse)
-                                    ? pIO.FramePadding.x
-                                    : (TitleBarHeight - pIO.FramePadding.y * 2 +
-                                       (io->FramePadding.x * 2)),
-                                2),
-                      pID.GetName().c_str(), io->Theme.Get(UI7Color_Text));
-          l->SetLayer(0);
-        });
+    *r = UI7::DynObj([=, this](UI7::IO* io, Li::Drawlist* l,
+                               UI7::Container* self) {
+      l->SetFont(self->GetFont());
+      l->SetLayer(20);
+      /** Header Bar */
+      l->DrawRectFilled(self->FinalPos(), self->GetSize(),
+                        io->Theme.Get(UI7Color_Header));
+      l->SetLayer(21);
+      const std::string title = pID.GetName();
+      float x = left;
+      if (Flags & UI7MenuFlags_CenterTitle) {
+        float tw = io->Font->GetTextBounds(title.c_str(), io->FontScale).x;
+        // center
+        x = (self->GetSize().x - tw) * 0.5f;
+        x = std::min(x, self->GetSize().x - right - tw);
+        x = std::max(x, left);
+      }
+      // clip the title for not draw into the buttons
+      l->PushClipRect(fvec4(self->FinalPos().x + left, self->FinalPos().y,
+                            std::max(self->GetSize().x - left - right, 0.f),
+                            self->GetSize().y));
+      l->DrawText(self->FinalPos() + fvec2(x, 2), title.c_str(),
+                  io->Theme.Get(UI7Color_Text));
+      l->PopClipRect();
+      l->SetLayer(0);
+    });
     r->SetSize(fvec2(pLayout.GetSize().x, TitleBarHeight));
     r->SetPos(0);
     pLayout.AddObjectEx(r, UI7LytAdd_NoCursorUpdate | UI7LytAdd_NoScrollHandle |
@@ -299,25 +405,38 @@ PD_API void Menu::DrawBaseLayout() {
                                  UI7LytAdd_NoScrollHandle |
                                  UI7LytAdd_NoClipTitlebar);
     }
-    /** Close Sym (only shown if pIsShown is not nullptr) */
-    if (!(Flags & UI7MenuFlags_NoClose) && pIsShown) {
-      fvec2 size = TitleBarHeight - pIO.FramePadding.y * 2;  // Fixed quad size
-      // Need to clamp this way as the math lib lacks a less and greater
-      // operator in vec2 (don't checked if it would make sense yet)
-      size.x = std::clamp(size.x, 5.f, std::numeric_limits<float>::max());
-      size.y = std::clamp(size.y, 5.f, std::numeric_limits<float>::max());
-      // Probably should fix the minsize to be locked on y
-      fvec2 cpos =
-          fvec2(pLayout.Pos.x + pLayout.Size.x - size.x - pIO.FramePadding.x,
-                pLayout.Pos.y + pIO.FramePadding.y);
-      pLayout.DrawList.SetLayer(21);
-      pLayout.DrawList.DrawLine(cpos, cpos + size,
-                                pIO.Theme.Get(UI7Color_FrameBackground), 2);
+    /** Titlebar buttons */
+    fvec2 size = pTitleButtonSize();
+    fvec2 bpos;
+    u32 bclr = pIO.Theme.Get(UI7Color_FrameBackground);
+    pLayout.DrawList.SetLayer(21);
+    if (pTitleButtonPos(TitleButton_Close, bpos)) {
+      fvec2 cpos = pLayout.Pos + bpos;
+      pLayout.DrawList.DrawLine(cpos, cpos + size, bclr, 2);
       pLayout.DrawList.DrawLine(cpos + fvec2(0, size.y),
-                                cpos + fvec2(size.x, 0),
-                                pIO.Theme.Get(UI7Color_FrameBackground), 2);
-      pLayout.DrawList.SetLayer(0);
+                                cpos + fvec2(size.x, 0), bclr, 2);
     }
+    if (pTitleButtonPos(TitleButton_Maximize, bpos)) {
+      fvec2 cpos = pLayout.Pos + bpos;
+      if (pIsMaximized) {
+        // Restore sym
+        float o = std::floor(size.x * 0.3f);
+        pLayout.DrawList.DrawRect(cpos + fvec2(o, 0), size - fvec2(o), bclr,
+                                  2);
+        pLayout.DrawList.DrawRect(cpos + fvec2(0, o), size - fvec2(o), bclr,
+                                  2);
+      } else {
+        pLayout.DrawList.DrawRect(cpos, size, bclr, 2);
+      }
+    }
+    if (pTitleButtonPos(TitleButton_Minimize, bpos)) {
+      fvec2 cpos = pLayout.Pos + bpos;
+      // center the minimize sym (win10/11)
+      float cy = std::floor(size.y * 0.5f);
+      pLayout.DrawList.DrawLine(cpos + fvec2(0, cy), cpos + fvec2(size.x, cy),
+                                bclr, 2);
+    }
+    pLayout.DrawList.SetLayer(0);
   }
   // Menu border
   if (pIO.ShowMenuBorder) {
@@ -340,13 +459,28 @@ PD_API void Menu::DrawBaseLayout() {
 
 PD_API void Menu::Update() {
   HandleFocus();
-  if (pLayout.Size == fvec2(0.f) || Flags & UI7MenuFlags_AlwaysAutoSize) {
+  if (pIsMaximized) {
+    const ivec4& vp = pIO.CurrentViewPort.pSize;
+    pLayout.Pos = fvec2(vp.x, vp.y);
+    pLayout.Size = fvec2(vp.z - vp.x, vp.w - vp.y);
+  } else if (pLayout.Size == fvec2(0.f) ||
+             Flags & UI7MenuFlags_AlwaysAutoSize) {
     pLayout.Size = fvec2(pLayout.MaxPosition) + pIO.MenuPadding * 2;
   }
+  // Rebuild layout flags to take changes of menu flags
+  pLayout.Flags = 0;
+  if (!(Flags & UI7MenuFlags_NoClipRect))
+    pLayout.Flags |= UI7LayoutFlags_UseClipRect;
   if (Flags & UI7MenuFlags_VtScrolling)
     pLayout.Flags |= UI7LayoutFlags_VtScrolling;
   if (Flags & UI7MenuFlags_HzScrolling)
     pLayout.Flags |= UI7LayoutFlags_HzScrolling;
+  if (Flags & UI7MenuFlags_NoScrollbar)
+    pLayout.Flags |= UI7LayoutFlags_NoScrollbar;
+  pLayout.pSkipScrolling = !pIsOpen;
+  pLayout.pScrollPadding =
+      (Flags & UI7MenuFlags_NoResize || pIsMaximized) ? 0.f
+                                                      : pIO.ResizeGripSize;
   if (!(Flags & UI7MenuFlags_NoTitlebar)) {
     TitleBarHeight = pIO.FontScale * pIO.Font->PixelHeight + pIO.MenuPadding.y;
     pLayout.WorkRect.y = 5.f + TitleBarHeight;
@@ -355,6 +489,7 @@ PD_API void Menu::Update() {
     TitleBarHeight = 0.f;
     pLayout.WorkRect.y = 5.f;
   }
+  pUpdateScrollAnim();
   // TODO: Add function to layout to fix out this the folowing problem
   // Make sure windows have fully rounded coords
   pLayout.Pos.x = std::floor(pLayout.Pos.x);

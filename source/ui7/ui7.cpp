@@ -71,8 +71,13 @@ PD_API Menu* Context::BeginMenu(const ID& id, UI7MenuFlags flags, bool* pShow) {
   }
   /** Probably we dont even need Input Handling in this stage */
   // this->pIO.InputHandler.CurrentMenu = id;
-  pCurrentMenus.push_back(id);
   pCurrent->Flags = flags;
+  if (pCurrent->pIsMinimized) {
+    pMinimizedMenus.push_back(id);
+    pCurrent = nullptr;
+    return nullptr;
+  }
+  pCurrentMenus.push_back(id);
   if (!pCurrent->pIsOpen) {
     pCurrent = nullptr;
   }
@@ -115,6 +120,7 @@ PD_API void Context::Update() {
    * Very simple ...
    */
   pIO.FDL.Clear();
+  pBuildDock();
   if (std::find(pCurrentMenus.begin(), pCurrentMenus.end(),
                 pIO.InputHandler.FocusedMenu) == pCurrentMenus.end()) {
     pIO.InputHandler.FocusedMenu = 0;
@@ -137,6 +143,12 @@ PD_API void Context::Update() {
   if (pMenus.count(pIO.InputHandler.FocusedMenu)) {
     FinalList.insert(FinalList.begin(), pIO.InputHandler.FocusedMenu);
   }
+  // The dock is always in front of the rest
+  auto dock = std::find(FinalList.begin(), FinalList.end(), pDockID.RawID());
+  if (dock != FinalList.end()) {
+    FinalList.erase(dock);
+    FinalList.insert(FinalList.begin(), pDockID.RawID());
+  }
   pDFO = FinalList;
   for (auto& it : FinalList) {
     this->pIO.InputHandler.CurrentMenu = it;
@@ -150,8 +162,40 @@ PD_API void Context::Update() {
     base_layer += 100;
   }
   pCurrentMenus.clear();
+  pMinimizedMenus.clear();
   pIO.Update();
   pIO.FDL.Optimize();
+}
+
+/**
+ * Einfach erstmal irgendwas zusammen basteln hier
+ */
+PD_API void Context::pBuildDock() {
+  if (pMinimizedMenus.empty()) {
+    return;
+  }
+  Menu* dock =
+      BeginMenu(pDockID, UI7MenuFlags_NoTitlebar | UI7MenuFlags_NoResize |
+                             UI7MenuFlags_NoMove | UI7MenuFlags_AlwaysAutoSize);
+  if (!dock) {
+    return;
+  }
+  std::vector<u32> list = pMinimizedMenus;
+  bool first = true;
+  for (auto id : list) {
+    Menu* m = pMenus[id];
+    if (!first) dock->SameLine();
+    first = false;
+    if (dock->Button(m->pID.GetName())) {
+      m->SetMinimized(false);
+      // TODO: seems to not be focused (or just not pushed to font idnk)
+      pIO.InputHandler.FocusedMenu = id;
+    }
+  }
+  const ivec4& vp = pIO.CurrentViewPort.pSize;
+  dock->SetPosition(fvec2(vp.x + pIO.MenuPadding.x,
+                          vp.w - dock->GetSize().y - pIO.MenuPadding.y));
+  EndMenu();
 }
 
 PD_API void Context::AboutMenu(bool* show) {
@@ -318,6 +362,9 @@ PD_API void UI7::Context::StyleEditor(bool* show) {
     m->DragData("FramePadding", (float*)&pIO.FramePadding, 2, 0.f, 100.f);
     m->DragData("ItemSpace", (float*)&pIO.ItemSpace, 2, 0.f, 100.f);
     m->DragData("MinSliderSize", (float*)&pIO.MinSliderDragSize, 2, 1.f, 100.f);
+    m->DragData("FrameRounding", &pIO.FrameRounding, 1, 0.f, 20.f);
+    m->DragData("ScrollbarSize", &pIO.ScrollbarSize, 1, 2.f, 40.f);
+    m->DragData("ResizeGripSize", &pIO.ResizeGripSize, 1, 5.f, 60.f);
     m->DragData("OverScroll Modifier", &pIO.OverScrollMod, 1, 0.01f,
                 std::numeric_limits<float>::max(), 0.01f, 2);
     m->Checkbox("Menu Border", pIO.ShowMenuBorder);

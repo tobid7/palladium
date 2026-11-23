@@ -170,6 +170,13 @@ class PD_API Layout {
   void Update();
 
   fvec2 DbgScrollOffset() { return ScrollOffset; }
+  const fvec2& GetScrollOffset() const { return ScrollOffset; }
+  void SetScrollOffset(const fvec2& v) { ScrollOffset = v; }
+  /** max scroll (last frame) */
+  const fvec2& GetScrollMax() const { return pScrollMax; }
+  bool HasHorizontalScrollbar() const { return pScrollbarVisible[0]; }
+  bool HasVerticalScrollbar() const { return pScrollbarVisible[1]; }
+  bool IsScrollDragged() const;
 
  private:
   friend class Menu;
@@ -179,7 +186,7 @@ class PD_API Layout {
   UI7::ID ID;
   UI7::IO& IO;
   Li::Drawlist DrawList;
-  UI7LayoutFlags Flags;
+  UI7LayoutFlags Flags = 0;  // set 0 (how did i not see that)
 
   // Positioning
   fvec2 Pos;
@@ -202,6 +209,16 @@ class PD_API Layout {
   fvec2 ScrollOffset;
   fvec2 ScrollStart;
   bool Scrolling[2];
+  fvec2 pScrollMax;
+  bool pScrollbarVisible[2] = {false, false};
+  bool pScrollbarDragged[2] = {false, false};
+  float pScrollPadding = 0.f;
+  bool pSkipScrolling = false;
+
+  void pHandleScrollbar(int axis, const fvec2& view_end);
+
+  // Helper func to calculate clip rects
+  fvec4 pContentClip() const;
 
   // Objects
   std::list<Container*> Objects;

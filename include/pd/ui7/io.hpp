@@ -68,6 +68,8 @@ class PD_API IO {
   float FrameRounding = 0.f;
   fvec2 ItemSpace = fvec2(5.f, 2.f);
   fvec2 MinSliderDragSize = 10.f;  // Min height (Vt) and Min Width (Hz)
+  float ScrollbarSize = 8.f;       // Thickness of menu scrollbars
+  float ResizeGripSize = 20.f;     // Size of the menu resize grip
   bool ShowMenuBorder = true;
   bool ShowFrameBorder = false;  // not implemented yet
   bool WrapLabels = false;       // Beta state

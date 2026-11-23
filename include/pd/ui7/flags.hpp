@@ -60,6 +60,7 @@ enum UI7LayoutFlags_ {
   UI7LayoutFlags_UseClipRect = 1 << 0,  ///< Enable ClipRect
   UI7LayoutFlags_HzScrolling = 1 << 1,  ///< Scrolling Horizontal
   UI7LayoutFlags_VtScrolling = 1 << 2,  ///< Scrolling Vertical
+  UI7LayoutFlags_NoScrollbar = 1 << 3,  ///< Scroll without drawing bars
 };
 
 /** UI7 Context Flags */

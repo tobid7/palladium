@@ -28,6 +28,10 @@ SOFTWARE.
 namespace PD {
 namespace UI7 {
 
+// Helpers to access either x or y
+float& Axis(fvec2& v, int a) { return a ? v.y : v.x; }
+float Axis(const fvec2& v, int a) { return a ? v.y : v.x; }
+
 PD_API Layout::~Layout() {
   // We all love managing memory i guess
   for (Container* obj : IDObjects) {
@@ -78,8 +82,7 @@ PD_API void Layout::AddObject(Container* obj) {
   CursorMove(obj->GetSize());
   obj->HandleScrolling(ScrollOffset, WorkRect);
   if (Flags & UI7LayoutFlags_UseClipRect) {
-    obj->SetClipRect(
-        fvec4(Pos.x, Pos.y + WorkRect.y, Size.x, Size.y - WorkRect.y));
+    obj->SetClipRect(pContentClip());
   }
   Objects.push_back(obj);
 }
@@ -102,8 +105,7 @@ PD_API void Layout::AddObjectEx(Container* obj, u32 flags) {
     if (flags & UI7LytAdd_NoClipTitlebar) {
       obj->SetClipRect(fvec4(Pos.x, Pos.y, Size.x, Size.y));
     } else {
-      obj->SetClipRect(
-          fvec4(Pos.x, Pos.y + WorkRect.y, Size.x, Size.y - WorkRect.y));
+      obj->SetClipRect(pContentClip());
     }
   }
   if (flags & UI7LytAdd_Front) {
@@ -136,38 +138,159 @@ PD_API fvec2 Layout::AlignPosition(fvec2 pos, fvec2 size, fvec4 area,
   return p;
 }
 
+/** calculate the content clip in a func
+ * to not throw this thing into the funcsmultiple times
+ */
+PD_API fvec4 Layout::pContentClip() const {
+  float sbs = IO.ScrollbarSize + 1.f;
+  return fvec4(Pos.x, Pos.y + WorkRect.y,
+               Size.x - (pScrollbarVisible[1] ? sbs : 0.f),
+               Size.y - WorkRect.y - (pScrollbarVisible[0] ? sbs : 0.f));
+}
+
+PD_API bool Layout::IsScrollDragged() const {
+  u32 d = IO.InputHandler.DraggedObject;
+  return d != 0 && (d == (u32)UI7::ID("sbg" + ID.GetName()) ||
+                    pScrollbarDragged[0] || pScrollbarDragged[1]);
+}
+
+PD_API void Layout::pHandleScrollbar(int axis, const fvec2& view_end) {
+  const float sbs = IO.ScrollbarSize;
+  const int other = axis ^ 1;
+  float start = axis ? WorkRect.y - IO.MenuPadding.y : 1.f;
+  float endpad = pScrollPadding;
+  if (pScrollbarVisible[other]) endpad = std::max(endpad, sbs + 1.f);
+  float end = Axis(Size, axis) - 1.f - endpad;
+  float len = end - start;
+  if (len <= 4.f) return;
+  float cross = Axis(Size, other) - sbs - 1.f;
+
+  // vlen -> View Len
+  float vlen = axis ? view_end.y - WorkRect.y : view_end.x - WorkRect.x;
+  float ms = Axis(pScrollMax, axis);
+  float ratio = vlen / (vlen + ms);
+  float glen = std::clamp(len * ratio,
+                          std::min(Axis(IO.MinSliderDragSize, axis), len), len);
+  float fleb = len - glen;
+  float t =
+      ms > 0.f ? std::clamp(Axis(ScrollOffset, axis) / ms, 0.f, 1.f) : 0.f;
+  float gpos = start + fleb * t;
+
+  // input handling
+  fvec2 tpos, tsize;
+  Axis(tpos, axis) = start;
+  Axis(tpos, other) = cross;
+  Axis(tsize, axis) = len;
+  Axis(tsize, other) = sbs;
+  tpos += Pos;
+
+  UI7::ID sid("sb" + std::to_string(axis) + ID.GetName());
+  IO.InputHandler.DragObject(sid, fvec4(tpos, tsize));
+  bool owned = IO.InputHandler.DraggedObject == (u32)sid;
+  float mouse = Axis(PD::Hid::MousePos(), axis) - Axis(Pos, axis);
+  pScrollbarDragged[axis] = owned;
+  if (owned && fleb > 0.f) {
+    // we always drag the centet
+    float nt = std::clamp((mouse - start - glen * 0.5f) / fleb, 0.f, 1.f);
+    Axis(ScrollOffset, axis) = nt * ms;
+    gpos = start + fleb * nt;
+  }
+
+  bool hovered = IO.InputHandler.CurrentMenu == IO.InputHandler.FocusedMenu &&
+                 Li::Math::InBounds(PD::Hid::MousePos(), fvec4(tpos, tsize));
+  UI7Color thumb_clr = owned     ? UI7Color_ButtonActive
+                       : hovered ? UI7Color_ButtonHovered
+                                 : UI7Color_Button;
+
+  // Rendering
+  fvec2 gtl, gbr;
+  Axis(gtl, axis) = gpos;
+  Axis(gtl, other) = cross;
+  Axis(gbr, axis) = gpos + glen;
+  Axis(gbr, other) = cross + sbs;
+  float rad = std::min(IO.FrameRounding, sbs * 0.5f);
+  float grad = std::min(IO.FrameRounding, sbs * 0.5f - 1.f);
+  DrawList.SetLayer(21);
+  DrawList.PathRect(tpos, tpos + tsize, rad);
+  DrawList.PathFill(IO.Theme.Get(UI7Color_FrameBackground));
+  DrawList.PathRect(Pos + gtl + fvec2(1.f), Pos + gbr - fvec2(1.f),
+                    std::max(grad, 0.f));
+  DrawList.PathFill(IO.Theme.Get(thumb_clr));
+  DrawList.SetLayer(0);
+}
+
 PD_API void Layout::HandleScrolling() {
-  if (Flags & UI7LayoutFlags_VtScrolling) {
-    bool allowed = MaxPosition.y > WorkRect.w;
-    if (allowed) {
-      if (PD::Hid::IsEvent(Hid::Event::Down, PD::Hid::Gamepad::Touch) ||
-          PD::Hid::IsEvent(Hid::Event::Down, PD::Hid::Keyboard::MouseLeft)) {
-        ScrollStart = ScrollOffset;
-      }
-      if (IO.InputHandler.DragObject(UI7::ID("sbg" + ID.GetName()),
-                                     fvec4(Pos, fvec2(0.f)) + WorkRect)) {
-        if (!IO.InputHandler.DragReleasedAW) {
-          ScrollOffset.y =
-              std::clamp(ScrollStart.y + IO.InputHandler.DragSourcePos.y -
-                             IO.InputHandler.DragPosition.y,
-                         -20.f, MaxPosition.y - WorkRect.w + 20.f);
+  if (pSkipScrolling) {
+    return;
+  }
+  const bool enabled[2] = {(Flags & UI7LayoutFlags_HzScrolling) != 0,
+                           (Flags & UI7LayoutFlags_VtScrolling) != 0};
+  const bool bars = !(Flags & UI7LayoutFlags_NoScrollbar);
+  const float sbs = bars ? IO.ScrollbarSize + 1.f : 0.f;
+
+  // Vertical check is required twice due to the horizontal bar is
+  // taking a little space
+  fvec2 view_end = Size - IO.MenuPadding;
+  bool need[2] = {false, false};
+  need[1] = enabled[1] && MaxPosition.y > view_end.y;
+  if (need[1]) view_end.x -= sbs;
+  need[0] = enabled[0] && MaxPosition.x > view_end.x;
+  if (need[0]) {
+    view_end.y -= sbs;
+    if (!need[1] && enabled[1] && MaxPosition.y > view_end.y) {
+      need[1] = true;
+      view_end.x -= sbs;
+    }
+  }
+  WorkRect.z = view_end.x;
+  WorkRect.w = view_end.y;
+  pScrollMax = fvec2(std::max(0.f, MaxPosition.x - view_end.x),
+                     std::max(0.f, MaxPosition.y - view_end.y));
+  for (int a = 0; a < 2; a++) {
+    pScrollbarVisible[a] = need[a] && bars;
+    if (!pScrollbarVisible[a]) pScrollbarDragged[a] = false;
+  }
+
+  // Handle input of scrollbars first (io drag order und so)
+  for (int a = 0; a < 2; a++) {
+    if (pScrollbarVisible[a]) pHandleScrollbar(a, view_end);
+  }
+
+  // Drag the content (if no button or anything is there=)
+  if (need[0] || need[1]) {
+    if (PD::Hid::IsEvent(Hid::Event::Down, PD::Hid::Gamepad::Touch) ||
+        PD::Hid::IsEvent(Hid::Event::Down, PD::Hid::Keyboard::MouseLeft)) {
+      ScrollStart = ScrollOffset;
+    }
+    if (IO.InputHandler.DragObject(
+            UI7::ID("sbg" + ID.GetName()),
+            fvec4(Pos + fvec2(WorkRect.x, WorkRect.y),
+                  fvec2(WorkRect.z - WorkRect.x, WorkRect.w - WorkRect.y)))) {
+      if (!IO.InputHandler.DragReleasedAW) {
+        for (int a = 0; a < 2; a++) {
+          if (!need[a]) continue;
+          Axis(ScrollOffset, a) = std::clamp(
+              Axis(ScrollStart, a) + Axis(IO.InputHandler.DragSourcePos, a) -
+                  Axis(IO.InputHandler.DragPosition, a),
+              -20.f, Axis(pScrollMax, a) + 20.f);
         }
       }
-    } else {
-      ScrollOffset.y = 0.f;
     }
+  }
 
-    if (ScrollOffset.y > MaxPosition.y - WorkRect.w) {
-      ScrollOffset.y -= 1.5f;
-      if (ScrollOffset.y < MaxPosition.y - WorkRect.w) {
-        ScrollOffset.y = MaxPosition.y - WorkRect.w;
-      }
+  // delta based overscroll spring back
+  float spring = IO.OverScrollMod * IO.Delta;
+  for (int a = 0; a < 2; a++) {
+    float& off = Axis(ScrollOffset, a);
+    if (!need[a]) {
+      off = 0.f;
+      continue;
     }
-    if (ScrollOffset.y < 0) {
-      ScrollOffset.y += 1.5f;
-      if (ScrollOffset.y > 0) {
-        ScrollOffset.y = 0;
-      }
+    float ms = Axis(pScrollMax, a);
+    if (off > ms) {
+      off = std::max(off - spring, ms);
+    } else if (off < 0.f) {
+      off = std::min(off + spring, 0.f);
     }
   }
 }
@@ -203,6 +326,9 @@ PD_API void Layout::Update() {
   WorkRect = fvec4(fvec2(WorkRect.x, WorkRect.y), Size - IO.MenuPadding);
   CursorInit();
   HandleScrolling();
+  if (!pSkipScrolling) {
+    MaxPosition = 0.f;
+  }
 }
 
 /** SECTION CONTAINERS (STOLEN FROM FORMER MENU) */

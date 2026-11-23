@@ -129,6 +129,30 @@ class PD_API Menu {
   const PD::fvec2& GetSize() const { return pLayout.GetSize(); }
   const PD::fvec2& GetPosition() const { return pLayout.GetPosition(); }
 
+  /** Scrolling */
+
+  /**
+   * Animated scroll to position (only in range of course)
+   * @param pos target pos
+   * @param seconds Duration (0 -> instant)
+   */
+  void ScrollTo(const fvec2& pos, float seconds = 0.25f);
+  bool IsAnimatedScroll() const { return pScrollAnimActive; }
+  const fvec2& GetScrollOffset() const { return pLayout.GetScrollOffset(); }
+  const fvec2& GetScrollMax() const { return pLayout.GetScrollMax(); }
+  bool HasVerticalScrollbar() const { return pLayout.HasVerticalScrollbar(); }
+  bool HasHorizontalScrollbar() const {
+    return pLayout.HasHorizontalScrollbar();
+  }
+
+  /** Window state */
+
+  void SetMaximized(bool v);
+  bool IsMaximized() const { return pIsMaximized; }
+  void SetMinimized(bool v) { pIsMinimized = v; }
+  bool IsMinimized() const { return pIsMinimized; }
+  bool IsCollapsed() const { return !pIsOpen; }
+
   /** Data Section */
 
   UI7MenuFlags Flags = 0;
@@ -137,10 +161,35 @@ class PD_API Menu {
   ID pID;
   bool* pIsShown = nullptr;
   bool pIsOpen = true;
+  bool pIsMaximized = false;
+  bool pIsMinimized = false;
+  fvec2 pRestorePos;
+  fvec2 pRestoreSize;
   std::unordered_map<u32, bool> pTreeNodes;
   fvec2 TempScrollXY;
 
+  // Animatet scrolling like in 0.3.2 but now withh horizontal support
+  Tween<float> pScrollAnim;
+  bool pScrollAnimActive = false;
+  fvec2 pScrollFrom;
+  fvec2 pScrollTarget;
+
   float TitleBarHeight = 0.f;
+
+ private:
+  // Titlebar buttons
+  enum TitleButton {
+    TitleButton_Close,
+    TitleButton_Maximize,
+    TitleButton_Minimize,
+  };
+  // Titlebar button size
+  fvec2 pTitleButtonSize() const;
+  // Position of a button (dont render on false)
+  bool pTitleButtonPos(TitleButton b, fvec2& pos) const;
+  // Count Titlebar buttons
+  int pNumTitleButtons() const;
+  void pUpdateScrollAnim();  // Update animation
 };
 }  // namespace UI7
 }  // namespace PD
