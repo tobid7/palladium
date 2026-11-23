@@ -199,7 +199,7 @@ PD_API void Context::pBuildDock() {
 }
 
 PD_API void Context::AboutMenu(bool* show) {
-  if (auto m = BeginMenu("About UI7", UI7MenuFlags_Scrolling, show)) {
+  if (auto m = BeginMenu("About UI7", UI7MenuFlags_VtScrolling, show)) {
     m->Label("Palladium UI7 " + GetVersion());
     m->Separator();
     m->Label("(c) 2023-2026 René Amthor");
@@ -221,7 +221,7 @@ PD_API void Context::AboutMenu(bool* show) {
 }
 
 PD_API void Context::MetricsMenu(bool* show) {
-  if (auto m = BeginMenu("UI7 Metrics", UI7MenuFlags_Scrolling, show)) {
+  if (auto m = BeginMenu("UI7 Metrics", UI7MenuFlags_VtScrolling, show)) {
     m->Label("Palladium - UI7 " + GetVersion());
     m->Separator();
     m->Label(
@@ -355,7 +355,7 @@ PD_API void Context::MetricsMenu(bool* show) {
 }
 
 PD_API void UI7::Context::StyleEditor(bool* show) {
-  if (auto m = BeginMenu("UI7 Style Editor", UI7MenuFlags_Scrolling, show)) {
+  if (auto m = BeginMenu("UI7 Style Editor", UI7MenuFlags_VtScrolling, show)) {
     m->Label("Palladium - UI7 " + GetVersion() + " Style Editor");
     m->Separator();
     m->DragData("MenuPadding", (float*)&pIO.MenuPadding, 2, 0.f, 100.f);

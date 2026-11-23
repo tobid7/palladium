@@ -340,71 +340,10 @@ PD_API void Menu::DrawBaseLayout() {
     }
   }
   if (!(Flags & UI7MenuFlags_NoTitlebar)) {
-    // calculate lost space of left and right to support center aligned title (0.3.2 feature)
-    float left = (Flags & UI7MenuFlags_NoCollapse)
-                     ? pIO.FramePadding.x
-                     : (TitleBarHeight - pIO.FramePadding.y * 2 +
-                        (pIO.FramePadding.x * 2));
-    float right = pNumTitleButtons() *
-                      (pTitleButtonSize().x + pIO.FramePadding.x) +
-                  pIO.FramePadding.x;
-    DynObj* r = pIO.DynObjPool.Allocate();
-    *r = UI7::DynObj([=, this](UI7::IO* io, Li::Drawlist* l,
-                               UI7::Container* self) {
-      l->SetFont(self->GetFont());
-      l->SetLayer(20);
-      /** Header Bar */
-      l->DrawRectFilled(self->FinalPos(), self->GetSize(),
-                        io->Theme.Get(UI7Color_Header));
-      l->SetLayer(21);
-      const std::string title = pID.GetName();
-      float x = left;
-      if (Flags & UI7MenuFlags_CenterTitle) {
-        float tw = io->Font->GetTextBounds(title.c_str(), io->FontScale).x;
-        // center
-        x = (self->GetSize().x - tw) * 0.5f;
-        x = std::min(x, self->GetSize().x - right - tw);
-        x = std::max(x, left);
-      }
-      // clip the title for not draw into the buttons
-      l->PushClipRect(fvec4(self->FinalPos().x + left, self->FinalPos().y,
-                            std::max(self->GetSize().x - left - right, 0.f),
-                            self->GetSize().y));
-      l->DrawText(self->FinalPos() + fvec2(x, 2), title.c_str(),
-                  io->Theme.Get(UI7Color_Text));
-      l->PopClipRect();
-      l->SetLayer(0);
-    });
-    r->SetSize(fvec2(pLayout.GetSize().x, TitleBarHeight));
-    r->SetPos(0);
-    pLayout.AddObjectEx(r, UI7LytAdd_NoCursorUpdate | UI7LytAdd_NoScrollHandle |
-                               UI7LytAdd_NoClipTitlebar);
-
+    /** Bar/Title */
+    pTitlebar();
     /** Collapse Sym */
-    if (!(Flags & UI7MenuFlags_NoCollapse)) {
-      DynObj* r = pIO.DynObjPool.Allocate();
-      *r = UI7::DynObj([=, this](UI7::IO* io, Li::Drawlist* l,
-                                 UI7::Container* self) {
-        /** This sym actually requires layer 21 (i dont know why) */
-        l->SetLayer(21);
-        /**
-         * Symbol (Position Swapping set by pIsOpen ? openpos : closepos;)
-         */
-        l->DrawTriangleFilled(
-            self->FinalPos(),
-            self->FinalPos() +
-                fvec2(self->GetSize().x, pIsOpen ? 0 : self->GetSize().y * 0.5),
-            self->FinalPos() +
-                fvec2(pIsOpen ? self->GetSize().x * 0.5 : 0, self->GetSize().y),
-            io->Theme.Get(UI7Color_FrameBackground));
-        l->SetLayer(0);
-      });
-      r->SetSize(TitleBarHeight - pIO.FramePadding.y * 2);
-      r->SetPos(pIO.FramePadding);
-      pLayout.AddObjectEx(r, UI7LytAdd_NoCursorUpdate |
-                                 UI7LytAdd_NoScrollHandle |
-                                 UI7LytAdd_NoClipTitlebar);
-    }
+    pCollapseSym();
     /** Titlebar buttons */
     fvec2 size = pTitleButtonSize();
     fvec2 bpos;
@@ -421,10 +360,8 @@ PD_API void Menu::DrawBaseLayout() {
       if (pIsMaximized) {
         // Restore sym
         float o = std::floor(size.x * 0.3f);
-        pLayout.DrawList.DrawRect(cpos + fvec2(o, 0), size - fvec2(o), bclr,
-                                  2);
-        pLayout.DrawList.DrawRect(cpos + fvec2(0, o), size - fvec2(o), bclr,
-                                  2);
+        pLayout.DrawList.DrawRect(cpos + fvec2(o, 0), size - fvec2(o), bclr, 2);
+        pLayout.DrawList.DrawRect(cpos + fvec2(0, o), size - fvec2(o), bclr, 2);
       } else {
         pLayout.DrawList.DrawRect(cpos, size, bclr, 2);
       }
@@ -478,9 +415,9 @@ PD_API void Menu::Update() {
   if (Flags & UI7MenuFlags_NoScrollbar)
     pLayout.Flags |= UI7LayoutFlags_NoScrollbar;
   pLayout.pSkipScrolling = !pIsOpen;
-  pLayout.pScrollPadding =
-      (Flags & UI7MenuFlags_NoResize || pIsMaximized) ? 0.f
-                                                      : pIO.ResizeGripSize;
+  pLayout.pScrollPadding = (Flags & UI7MenuFlags_NoResize || pIsMaximized)
+                               ? 0.f
+                               : pIO.ResizeGripSize;
   if (!(Flags & UI7MenuFlags_NoTitlebar)) {
     TitleBarHeight = pIO.FontScale * pIO.Font->PixelHeight + pIO.MenuPadding.y;
     pLayout.WorkRect.y = 5.f + TitleBarHeight;
@@ -549,12 +486,81 @@ PD_API bool Menu::BeginTreeNode(const ID& id) {
   return n->second;
 }
 
-PD_API void UI7::Menu::EndTreeNode() {
+PD_API void Menu::EndTreeNode() {
   pLayout.InitialCursorOffset.x -= 10.f;
   pLayout.Cursor.x -= 10.f;
   if (pLayout.InitialCursorOffset.x < 0.f) {
     pLayout.InitialCursorOffset.x = 0.f;
   }
+}
+
+PD_API void Menu::pCollapseSym() {
+  if (!(Flags & UI7MenuFlags_NoCollapse)) {
+    DynObj* r = pIO.DynObjPool.Allocate();
+    *r = UI7::DynObj([=, this](UI7::IO* io, Li::Drawlist* l,
+                               UI7::Container* self) {
+      /** This sym actually requires layer 21 (i dont know why) */
+      l->SetLayer(21);
+      /**
+       * Symbol (Position Swapping set by pIsOpen ? openpos : closepos;)
+       */
+      l->DrawTriangleFilled(
+          self->FinalPos(),
+          self->FinalPos() +
+              fvec2(self->GetSize().x, pIsOpen ? 0 : self->GetSize().y * 0.5),
+          self->FinalPos() +
+              fvec2(pIsOpen ? self->GetSize().x * 0.5 : 0, self->GetSize().y),
+          io->Theme.Get(UI7Color_FrameBackground));
+      l->SetLayer(0);
+    });
+    r->SetSize(TitleBarHeight - pIO.FramePadding.y * 2);
+    r->SetPos(pIO.FramePadding);
+    pLayout.AddObjectEx(r, UI7LytAdd_NoCursorUpdate | UI7LytAdd_NoScrollHandle |
+                               UI7LytAdd_NoClipTitlebar);
+  }
+}
+
+PD_API void Menu::pTitlebar() {  // calculate lost space of left and right to
+                                 // support center aligned title
+  // (0.3.2 feature)
+  float left = (Flags & UI7MenuFlags_NoCollapse)
+                   ? pIO.FramePadding.x
+                   : (TitleBarHeight - pIO.FramePadding.y * 2 +
+                      (pIO.FramePadding.x * 2));
+  float right =
+      pNumTitleButtons() * (pTitleButtonSize().x + pIO.FramePadding.x) +
+      pIO.FramePadding.x;
+  DynObj* r = pIO.DynObjPool.Allocate();
+  *r = UI7::DynObj(
+      [=, this](UI7::IO* io, Li::Drawlist* l, UI7::Container* self) {
+        l->SetFont(self->GetFont());
+        l->SetLayer(20);
+        /** Header Bar */
+        l->DrawRectFilled(self->FinalPos(), self->GetSize(),
+                          io->Theme.Get(UI7Color_Header));
+        l->SetLayer(21);
+        const std::string title = pID.GetName();
+        float x = left;
+        if (Flags & UI7MenuFlags_CenterTitle) {
+          float tw = io->Font->GetTextBounds(title.c_str(), io->FontScale).x;
+          // center
+          x = (self->GetSize().x - tw) * 0.5f;
+          x = std::min(x, self->GetSize().x - right - tw);
+          x = std::max(x, left);
+        }
+        // clip the title for not draw into the buttons
+        l->PushClipRect(fvec4(self->FinalPos().x + left, self->FinalPos().y,
+                              std::max(self->GetSize().x - left - right, 0.f),
+                              self->GetSize().y));
+        l->DrawText(self->FinalPos() + fvec2(x, 2), title.c_str(),
+                    io->Theme.Get(UI7Color_Text));
+        l->PopClipRect();
+        l->SetLayer(0);
+      });
+  r->SetSize(fvec2(pLayout.GetSize().x, TitleBarHeight));
+  r->SetPos(0);
+  pLayout.AddObjectEx(r, UI7LytAdd_NoCursorUpdate | UI7LytAdd_NoScrollHandle |
+                             UI7LytAdd_NoClipTitlebar);
 }
 }  // namespace UI7
 }  // namespace PD

@@ -153,6 +153,10 @@ class PD_API Menu {
   bool IsMinimized() const { return pIsMinimized; }
   bool IsCollapsed() const { return !pIsOpen; }
 
+  /** Symbols */
+  void pCollapseSym();
+  void pTitlebar();
+
   /** Data Section */
 
   UI7MenuFlags Flags = 0;
