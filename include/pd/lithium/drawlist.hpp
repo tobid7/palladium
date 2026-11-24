@@ -76,7 +76,8 @@ class PD_API Drawlist {
   void PathReserve(size_t num) { pPath.ExpandIf(num); }
   void PathStroke(const PD::Color& color, int t = 1,
                   LiDrawFlags flags = LiDrawFlags_None);
-  void PathFill(const PD::Color& color);
+  void PathFill(const PD::Color& color,
+                LiDrawFlags flags = LiDrawFlags_None);
   void PathFillGradient(const PD::Color& a, const PD::Color& b,
                         float rad = 0.f);
   void PathArcToN(const fvec2& c, float r, float amin, float amax, int s);
@@ -100,26 +101,31 @@ class PD_API Drawlist {
 
   /** Drawing functions */
   void DrawRect(const fvec2& pos, const fvec2& size, const PD::Color& color,
-                int t = 1);
+                int t = 1, LiDrawFlags flags = LiDrawFlags_None);
   void DrawRectFilled(const fvec2& pos, const fvec2& size,
-                      const PD::Color& color);
+                      const PD::Color& color,
+                      LiDrawFlags flags = LiDrawFlags_None);
   void DrawTriangle(const fvec2& a, const fvec2& b, const fvec2& c,
-                    const PD::Color& color, int t = 1);
+                    const PD::Color& color, int t = 1,
+                    LiDrawFlags flags = LiDrawFlags_None);
   void DrawTriangleFilled(const fvec2& a, const fvec2& b, const fvec2& c,
-                          const PD::Color& color);
+                          const PD::Color& color,
+                          LiDrawFlags flags = LiDrawFlags_None);
   void DrawCircle(const fvec2& center, float rad, const PD::Color& color,
-                  int num_segments, int t = 1);
+                  int num_segments, int t = 1,
+                  LiDrawFlags flags = LiDrawFlags_None);
   void DrawCircleFilled(const fvec2& center, float rad, const PD::Color& color,
-                        int num_segments);
+                        int num_segments, LiDrawFlags flags = LiDrawFlags_None);
   void DrawText(const fvec2& p, const char* text, const PD::Color& color);
   void DrawTextEx(const fvec2& p, const char* text, const PD::Color& color,
                   LiTextFlags flags, const fvec2& box = fvec2(0.f));
   void DrawLine(const fvec2& a, const fvec2& b, const PD::Color& color,
-                int thickness = 1);
+                int thickness = 1, LiDrawFlags flags = LiDrawFlags_None);
 
   void DrawPolyLine(const Pool<fvec2>& points, const PD::Color& color,
                     LiDrawFlags flags = LiDrawFlags_None, int t = 1);
-  void DrawConvexPolyFilled(const Pool<fvec2>& points, const PD::Color& color);
+  void DrawConvexPolyFilled(const Pool<fvec2>& points, const PD::Color& color,
+                            LiDrawFlags flags = LiDrawFlags_None);
   void DrawConvexPolyFilled(const Pool<fvec2>& points, const PD::Color& a,
                             const PD::Color b, float rad = 0.f);
 
@@ -139,6 +145,7 @@ class PD_API Drawlist {
   int pCurrentLayer = 0;
   Pool<Command> pCommands;
   Pool<fvec2> pPath;
+  std::vector<fvec2> pTmp;
   std::vector<fvec4> pClipRects;
   Font* pFont = nullptr;
   float pFontScale = 1.f;

@@ -366,19 +366,22 @@ PD_API void Menu::DrawBaseLayout() {
     pLayout.DrawList.SetLayer(21);
     if (pTitleButtonPos(TitleButton_Close, bpos)) {
       fvec2 cpos = pLayout.Pos + bpos;
-      pLayout.DrawList.DrawLine(cpos, cpos + size, bclr, 2);
+      pLayout.DrawList.DrawLine(cpos, cpos + size, bclr, 2, LiDrawFlags_AA);
       pLayout.DrawList.DrawLine(cpos + fvec2(0, size.y),
-                                cpos + fvec2(size.x, 0), bclr, 2);
+                                cpos + fvec2(size.x, 0), bclr, 2,
+                                LiDrawFlags_AA);
     }
     if (pTitleButtonPos(TitleButton_Maximize, bpos)) {
       fvec2 cpos = pLayout.Pos + bpos;
       if (pIsMaximized) {
         // Restore sym
         float o = std::floor(size.x * 0.3f);
-        pLayout.DrawList.DrawRect(cpos + fvec2(o, 0), size - fvec2(o), bclr, 2);
-        pLayout.DrawList.DrawRect(cpos + fvec2(0, o), size - fvec2(o), bclr, 2);
+        pLayout.DrawList.DrawRect(cpos + fvec2(o, 0), size - fvec2(o), bclr, 2,
+                                  LiDrawFlags_AA);
+        pLayout.DrawList.DrawRect(cpos + fvec2(0, o), size - fvec2(o), bclr, 2,
+                                  LiDrawFlags_AA);
       } else {
-        pLayout.DrawList.DrawRect(cpos, size, bclr, 2);
+        pLayout.DrawList.DrawRect(cpos, size, bclr, 2, LiDrawFlags_AA);
       }
     }
     if (pTitleButtonPos(TitleButton_Minimize, bpos)) {
@@ -386,7 +389,7 @@ PD_API void Menu::DrawBaseLayout() {
       // center the minimize sym (win10/11)
       float cy = std::floor(size.y * 0.5f);
       pLayout.DrawList.DrawLine(cpos + fvec2(0, cy), cpos + fvec2(size.x, cy),
-                                bclr, 2);
+                                bclr, 2, LiDrawFlags_AA);
     }
     pLayout.DrawList.SetLayer(0);
   }
@@ -489,7 +492,8 @@ PD_API bool Menu::BeginTreeNode(const ID& id) {
       pl[1].x = t;
     }
     l->DrawTriangleFilled(ts, ts + pl[0], ts + pl[1],
-                          io->Theme.Get(UI7Color_FrameBackground));
+                          io->Theme.Get(UI7Color_FrameBackground),
+                          LiDrawFlags_AA);
 
     l->DrawText(self->FinalPos() + fvec2(10 + io->ItemSpace.x, 0),
                 id.GetName().c_str(), io->Theme.Get(UI7Color_Text));
@@ -535,7 +539,7 @@ PD_API void Menu::pCollapseSym() {
               fvec2(self->GetSize().x, pIsOpen ? 0 : self->GetSize().y * 0.5),
           self->FinalPos() +
               fvec2(pIsOpen ? self->GetSize().x * 0.5 : 0, self->GetSize().y),
-          io->Theme.Get(UI7Color_FrameBackground));
+          io->Theme.Get(UI7Color_FrameBackground), LiDrawFlags_AA);
       l->SetLayer(0);
     });
     r->SetSize(pTitleButtonSize());
