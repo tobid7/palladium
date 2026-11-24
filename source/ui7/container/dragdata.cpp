@@ -82,10 +82,19 @@ PD_API void DragData<T>::Draw() {
       p = std::format("{}", data[i]);
     }
     vec2 td = io->Font->GetTextBounds(p.c_str(), io->FontScale);
+    u32 eid = this->GetID() + i + 1;
+    UI7Color c = UI7Color_Button;
+    if (io->InputHandler.IsHeld(eid)) {
+      c = UI7Color_ButtonActive;
+    } else if (io->InputHandler.IsHovered(
+                   eid, fvec4(FinalPos() + fvec2(off_x, 0),
+                              td + io->FramePadding))) {
+      c = UI7Color_ButtonHovered;
+    }
     list->PathRect(FinalPos() + fvec2(off_x, 0),
                    FinalPos() + fvec2(off_x, 0) + td + io->FramePadding,
                    io->FrameRounding);
-    list->PathFill(io->Theme.Get(UI7Color_Button));
+    list->PathFill(io->Theme.Get(c));
     list->LayerUp();
     list->DrawTextEx(FinalPos() + fvec2(off_x, 0), p.c_str(),
                      io->Theme.Get(UI7Color_Text), LiTextFlags_AlignMid,

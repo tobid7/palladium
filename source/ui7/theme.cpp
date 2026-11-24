@@ -32,7 +32,7 @@ PD_API void Theme::Default(Theme& theme) {
   theme.Set(UI7Color_Border, Color("#999999ff"));
   theme.Set(UI7Color_Button, Color("#111111FF"));
   theme.Set(UI7Color_ButtonDead, Color("#080808FF"));
-  theme.Set(UI7Color_ButtonActive, Color("#2A2A2AFF"));
+  theme.Set(UI7Color_ButtonActive, Color("#333333FF"));
   theme.Set(UI7Color_ButtonHovered, Color("#222222FF"));
   theme.Set(UI7Color_Header, Color("#111111cc"));
   theme.Set(UI7Color_HeaderDead, Color("#080808FF"));
@@ -40,6 +40,7 @@ PD_API void Theme::Default(Theme& theme) {
   theme.Set(UI7Color_Checkmark, Color("#2A2A2AFF"));
   theme.Set(UI7Color_FrameBackground, Color("#555555FF"));
   theme.Set(UI7Color_FrameBackgroundHovered, Color("#777777FF"));
+  theme.Set(UI7Color_FrameBackgroundActive, Color("#888888FF"));
   theme.Set(UI7Color_Progressbar, Color("#00FF00FF"));
   theme.Set(UI7Color_ListEven, Color("#CCCCCCFF"));
   theme.Set(UI7Color_ListOdd, Color("#BBBBBBFF"));
@@ -52,7 +53,7 @@ PD_API void Theme::Flashbang(Theme& theme) {
   theme.Set(UI7Color_Border, Color("#777777ff"));
   theme.Set(UI7Color_Button, Color("#ccccccFF"));
   theme.Set(UI7Color_ButtonDead, Color("#bbbbbbFF"));
-  theme.Set(UI7Color_ButtonActive, Color("#ccccccFF"));
+  theme.Set(UI7Color_ButtonActive, Color("#9a9a9aFF"));
   theme.Set(UI7Color_ButtonHovered, Color("#acacacFF"));
   theme.Set(UI7Color_Header, Color("#ddddddFF"));
   theme.Set(UI7Color_HeaderDead, Color("#cdcdcdFF"));
@@ -60,6 +61,7 @@ PD_API void Theme::Flashbang(Theme& theme) {
   theme.Set(UI7Color_Checkmark, Color("#ccccccFF"));
   theme.Set(UI7Color_FrameBackground, Color("#aaaaaaFF"));
   theme.Set(UI7Color_FrameBackgroundHovered, Color("#909090FF"));
+  theme.Set(UI7Color_FrameBackgroundActive, Color("#7a7a7aFF"));
   theme.Set(UI7Color_Progressbar, Color("#00FF00FF"));
   theme.Set(UI7Color_ListEven, Color("#CCCCCCFF"));
   theme.Set(UI7Color_ListOdd, Color("#BBBBBBFF"));

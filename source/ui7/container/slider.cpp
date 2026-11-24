@@ -78,9 +78,13 @@ PD_API void Slider<T>::Draw() {
     p = std::format("{}", *data);
   }
   fvec2 td = io->Font->GetTextBounds(p.c_str(), io->FontScale);
+  bool h = io->InputHandler.IsHeld(this->GetID()) ||
+           io->InputHandler.IsHovered(
+               this->GetID(),
+               fvec4(FinalPos() + fvec2(2, 0), fvec2(width, GetSize().y)));
   list->PathRect(FinalPos(), FinalPos() + fvec2(width, td.y) + io->FramePadding,
                  io->FrameRounding);
-  list->PathFill(io->Theme.Get(UI7Color_Button));
+  list->PathFill(io->Theme.Get(h ? UI7Color_ButtonHovered : UI7Color_Button));
   list->PathRect(FinalPos() + 2 + PD::fvec2(slp, 0),
                  FinalPos() + fvec2(slp + slw - 2, td.y - 2) + io->FramePadding,
                  io->FrameRounding);

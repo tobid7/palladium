@@ -125,12 +125,20 @@ class InputHandler {
     }
   }
 
+  bool IsHovered(const UI7::ID& id, const fvec4& area) const {
+    if (!(PD::Hid::GetFlags() & PDHidBackendFlags_HasMouse)) return false;
+    if (CurrentMenu != HoveredMenu) return false;
+    if (IsObjectDragged() && DraggedObject != id) return false;
+    return Li::Math::InBounds(PD::Hid::MousePos(), area);
+  }
+  bool IsHeld(const UI7::ID& id) const { return DraggedObject == id; }
   fvec2 DragMovedPos() const { return DragOrigin + DragOffset; }
 
   u64 DoubleClickTime = 500;  // Milliseconds
   u32 FocusedMenu = 0;
   fvec4 FocusedMenuRect;
   u32 CurrentMenu = 0;
+  u32 HoveredMenu = 0;
   u32 DraggedObject = 0;
   fvec2 DragSourcePos = 0;
   fvec2 DragPosition = 0;

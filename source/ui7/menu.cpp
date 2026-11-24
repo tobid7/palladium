@@ -145,12 +145,16 @@ PD_API void Menu::SeparatorText(const std::string& label) {
   pLayout.MaxPosition.x =
       std::max(pLayout.MaxPosition.x, r->GetPos().x + tw + pIO.ItemSpace.x);
 }
+PD_API fvec4 Menu::pMenuArea() const {
+  if (!pIsOpen) {
+    return fvec4(pLayout.Pos, fvec2(pLayout.Size.x, TitleBarHeight));
+  }
+  return fvec4(pLayout.Pos, pLayout.Size);
+}
+
 PD_API void Menu::HandleFocus() {
   // Check if menu can be focused for Selective Menu Input API
-  vec4 newarea = fvec4(pLayout.Pos, pLayout.Size);
-  if (!pIsOpen) {
-    newarea = fvec4(pLayout.Pos, fvec2(pLayout.Size.x, TitleBarHeight));
-  }
+  vec4 newarea = pMenuArea();
   if ((PD::Hid::IsEvent(Hid::Event::Down, Hid::Gamepad::Touch) ||
        PD::Hid::IsEvent(Hid::Event::Down, Hid::Keyboard::MouseLeft)) &&
       Li::Math::InBounds(PD::Hid::MousePos(), newarea) &&
@@ -174,6 +178,22 @@ PD_API int Menu::pNumTitleButtons() const {
   if (Flags & UI7MenuFlags_Maximize) n++;
   if (Flags & UI7MenuFlags_Minimize) n++;
   return n;
+}
+
+PD_API u32 Menu::pTitleSym(Li::Drawlist* l, const std::string& n,
+                           const fvec2& p) {
+  UI7::ID id(pID.GetName() + n);
+  fvec2 s = pTitleButtonSize();
+  bool held = pIO.InputHandler.IsHeld(id);
+  if (!held && !pIO.InputHandler.IsHovered(id, fvec4(p, s))) {
+    return pIO.Theme.Get(UI7Color_FrameBackground);
+  }
+  float o = std::floor(pIO.FramePadding.y * 0.5f);
+  l->PathRect(p - o, p + s + o, pIO.FrameRounding);
+  l->PathFill(pIO.Theme.Get(held ? UI7Color_ButtonActive : UI7Color_ButtonHovered),
+              LiDrawFlags_AA);
+  return pIO.Theme.Get(held ? UI7Color_FrameBackgroundActive
+                            : UI7Color_FrameBackgroundHovered);
 }
 
 PD_API bool Menu::pTitleButtonPos(TitleButton b, fvec2& pos) const {
@@ -319,13 +339,22 @@ PD_API void Menu::DrawBaseLayout() {
     /** Resize Sym (Render on Top of Everything) */
     if (pCanResize()) {
       DynObj* r = pIO.DynObjPool.Allocate();
-      *r = UI7::DynObj([](IO* io, Li::Drawlist* l, UI7::Container* self) {
+      *r = UI7::DynObj([=, this](IO* io, Li::Drawlist* l,
+                                 UI7::Container* self) {
         l->SetLayer(21);
         float g = io->ResizeGripSize;
+        UI7::ID gid(pID.GetName() + "rszs");
+        UI7Color c = UI7Color_Button;
+        if (io->InputHandler.IsHeld(gid)) {
+          c = UI7Color_ButtonActive;
+        } else if (io->InputHandler.IsHovered(
+                       gid, fvec4(pLayout.Pos + pLayout.Size - g, fvec2(g)))) {
+          c = UI7Color_ButtonHovered;
+        }
         l->PathAdd(self->FinalPos() + self->GetSize() - fvec2(0, g));
         l->PathAdd(self->FinalPos() + self->GetSize());
         l->PathAdd(self->FinalPos() + self->GetSize() - fvec2(g, 0));
-        l->PathFill(io->Theme.Get(UI7Color_Button));
+        l->PathFill(io->Theme.Get(c), LiDrawFlags_AA);
         l->SetLayer(0);
       });
       r->SetSize(
@@ -362,10 +391,11 @@ PD_API void Menu::DrawBaseLayout() {
     /** Titlebar buttons */
     fvec2 size = pTitleButtonSize();
     fvec2 bpos;
-    u32 bclr = pIO.Theme.Get(UI7Color_FrameBackground);
+    u32 bclr;
     pLayout.DrawList.SetLayer(21);
     if (pTitleButtonPos(TitleButton_Close, bpos)) {
       fvec2 cpos = pLayout.Pos + bpos;
+      bclr = pTitleSym(&pLayout.DrawList, "clse", cpos);
       pLayout.DrawList.DrawLine(cpos, cpos + size, bclr, 2, LiDrawFlags_AA);
       pLayout.DrawList.DrawLine(cpos + fvec2(0, size.y),
                                 cpos + fvec2(size.x, 0), bclr, 2,
@@ -373,6 +403,7 @@ PD_API void Menu::DrawBaseLayout() {
     }
     if (pTitleButtonPos(TitleButton_Maximize, bpos)) {
       fvec2 cpos = pLayout.Pos + bpos;
+      bclr = pTitleSym(&pLayout.DrawList, "mxbt", cpos);
       if (pIsMaximized) {
         // Restore sym
         float o = std::floor(size.x * 0.3f);
@@ -386,6 +417,7 @@ PD_API void Menu::DrawBaseLayout() {
     }
     if (pTitleButtonPos(TitleButton_Minimize, bpos)) {
       fvec2 cpos = pLayout.Pos + bpos;
+      bclr = pTitleSym(&pLayout.DrawList, "mnbt", cpos);
       // center the minimize sym (win10/11)
       float cy = std::floor(size.y * 0.5f);
       pLayout.DrawList.DrawLine(cpos + fvec2(0, cy), cpos + fvec2(size.x, cy),
@@ -491,8 +523,15 @@ PD_API bool Menu::BeginTreeNode(const ID& id) {
       pl[0].y = pl[1].x;
       pl[1].x = t;
     }
-    l->DrawTriangleFilled(ts, ts + pl[0], ts + pl[1],
-                          io->Theme.Get(UI7Color_FrameBackground),
+    UI7::ID tid(pID.GetName() + id.GetName());
+    UI7Color c = UI7Color_FrameBackground;
+    if (io->InputHandler.IsHeld(tid)) {
+      c = UI7Color_FrameBackgroundActive;
+    } else if (io->InputHandler.IsHovered(
+                   tid, fvec4(self->FinalPos(), self->GetSize()))) {
+      c = UI7Color_FrameBackgroundHovered;
+    }
+    l->DrawTriangleFilled(ts, ts + pl[0], ts + pl[1], io->Theme.Get(c),
                           LiDrawFlags_AA);
 
     l->DrawText(self->FinalPos() + fvec2(10 + io->ItemSpace.x, 0),
@@ -530,6 +569,7 @@ PD_API void Menu::pCollapseSym() {
                                UI7::Container* self) {
       /** This sym actually requires layer 21 (i dont know why) */
       l->SetLayer(21);
+      u32 c = pTitleSym(l, "clbse", pLayout.Pos + pIO.FramePadding);
       /**
        * Symbol (Position Swapping set by pIsOpen ? openpos : closepos;)
        */
@@ -539,7 +579,7 @@ PD_API void Menu::pCollapseSym() {
               fvec2(self->GetSize().x, pIsOpen ? 0 : self->GetSize().y * 0.5),
           self->FinalPos() +
               fvec2(pIsOpen ? self->GetSize().x * 0.5 : 0, self->GetSize().y),
-          io->Theme.Get(UI7Color_FrameBackground), LiDrawFlags_AA);
+          c, LiDrawFlags_AA);
       l->SetLayer(0);
     });
     r->SetSize(pTitleButtonSize());

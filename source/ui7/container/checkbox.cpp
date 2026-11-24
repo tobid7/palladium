@@ -34,13 +34,16 @@ PD_API void Checkbox::HandleInput() {
   /// Ensure it gets sed to false and stays if not pressed
   // Assert(screen.get(), "Screen is not set up!");
   // if (screen->ScreenType() == Screen::Bottom) {
-  if (io->InputHandler.DragObject(this->GetID(), fvec4(FinalPos(), size))) {
+  fvec4 r(FinalPos(), size);
+  if (io->InputHandler.DragObject(this->GetID(), r)) {
     if (io->InputHandler.DragReleased) {
-      color = UI7Color_FrameBackgroundHovered;
       usr_ref = !usr_ref;
-    } else {
-      color = UI7Color_FrameBackgroundHovered;
     }
+  }
+  if (io->InputHandler.IsHeld(this->GetID())) {
+    color = UI7Color_FrameBackgroundActive;
+  } else if (io->InputHandler.IsHovered(this->GetID(), r)) {
+    color = UI7Color_FrameBackgroundHovered;
   }
   //}
   inp_done = true;

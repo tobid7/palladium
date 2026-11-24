@@ -159,6 +159,13 @@ PD_API void Context::Update() {
     FinalList.insert(FinalList.begin(), pDockID.RawID());
   }
   pDFO = FinalList;
+  pIO.InputHandler.HoveredMenu = 0;
+  for (auto it : FinalList) {
+    if (Li::Math::InBounds(PD::Hid::MousePos(), pMenus[it]->pMenuArea())) {
+      pIO.InputHandler.HoveredMenu = it;
+      break;
+    }
+  }
   for (auto& it : FinalList) {
     this->pIO.InputHandler.CurrentMenu = it;
     pMenus[it]->Update(); /** Render */

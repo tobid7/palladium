@@ -110,6 +110,7 @@ class PD_API Menu {
   void EndTreeNode();
 
   void HandleFocus();
+  fvec4 pMenuArea() const;
   void HandleTitlebarActions();
   void DrawBaseLayout();
 
@@ -193,6 +194,8 @@ class PD_API Menu {
   bool pTitleButtonPos(TitleButton b, fvec2& pos) const;
   // Count Titlebar buttons
   int pNumTitleButtons() const;
+  // Draws hover/held background and returns the sym color
+  u32 pTitleSym(Li::Drawlist* l, const std::string& n, const fvec2& p);
   bool pCanResize() const {
     return !(Flags & (UI7MenuFlags_NoResize | UI7MenuFlags_AlwaysAutoSize)) &&
            !pIsMaximized;

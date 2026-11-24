@@ -51,6 +51,7 @@ enum UI7Color_ {
   UI7Color_Progressbar,             ///< UI7 Progressbar Background
   UI7Color_ListEven,                ///< UI7 List (Even Entry) Background Color
   UI7Color_ListOdd,                 ///< UI7 List (Odd Entry) Background Color
+  UI7Color_FrameBackgroundActive,   ///< UI7 Pressed Frame Background
 };
 
 namespace PD {

@@ -35,13 +35,16 @@ PD_API void Button::HandleInput() {
   color = UI7Color_Button;
   // Assert(screen.get(), "Screen is not set up!");
   // if (screen->ScreenType() == Screen::Bottom) {
-  if (io->InputHandler.DragObject(this->GetID(), fvec4(FinalPos(), size))) {
+  fvec4 r(FinalPos(), size);
+  if (io->InputHandler.DragObject(this->GetID(), r)) {
     if (io->InputHandler.DragReleased) {
-      color = UI7Color_ButtonActive;
       pressed = true;
-    } else {
-      color = UI7Color_ButtonHovered;
     }
+  }
+  if (io->InputHandler.IsHeld(this->GetID())) {
+    color = UI7Color_ButtonActive;
+  } else if (io->InputHandler.IsHovered(this->GetID(), r)) {
+    color = UI7Color_ButtonHovered;
   }
   //}
   inp_done = true;
