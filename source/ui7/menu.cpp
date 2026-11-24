@@ -240,7 +240,7 @@ PD_API void Menu::HandleTitlebarActions() {
   if (!(Flags & UI7MenuFlags_NoCollapse)) {
     vec2 cpos = pLayout.Pos + pIO.FramePadding;
     if (pIO.InputHandler.DragObject(UI7::ID(pID.GetName() + "clbse"),
-                                    fvec4(cpos, fvec2(18, TitleBarHeight)))) {
+                                    fvec4(cpos, pTitleButtonSize()))) {
       if (pIO.InputHandler.DragReleased) {
         pIsOpen = !pIsOpen;
       }
@@ -276,7 +276,7 @@ PD_API void Menu::HandleTitlebarActions() {
     }
   }
   // Resize logic
-  if (!(Flags & UI7MenuFlags_NoResize) && !pIsMaximized) {
+  if (pCanResize()) {
     fvec2 grip(pIO.ResizeGripSize);
     vec2 cpos = pLayout.Pos + pLayout.Size - grip;
     if (pIO.InputHandler.DragObject(UI7::ID(pID.GetName() + "rszs"),
@@ -317,7 +317,7 @@ PD_API void Menu::HandleTitlebarActions() {
 PD_API void Menu::DrawBaseLayout() {
   if (pIsOpen) {
     /** Resize Sym (Render on Top of Everything) */
-    if (!(Flags & UI7MenuFlags_NoResize) && !pIsMaximized) {
+    if (pCanResize()) {
       DynObj* r = pIO.DynObjPool.Allocate();
       *r = UI7::DynObj([](IO* io, Li::Drawlist* l, UI7::Container* self) {
         l->SetLayer(21);
@@ -416,7 +416,7 @@ PD_API void Menu::Update() {
     const ivec4& vp = pIO.CurrentViewPort.pSize;
     pLayout.Pos = fvec2(vp.x, vp.y);
     pLayout.Size = fvec2(vp.z - vp.x, vp.w - vp.y);
-  } else if (n3w || Flags & UI7MenuFlags_AlwaysAutoSize) {
+  } else if (pIsOpen && (n3w || Flags & UI7MenuFlags_AlwaysAutoSize)) {
     pLayout.Size = fvec2(pLayout.MaxPosition) + pIO.MenuPadding * 2;
   }
   // keep window sized by viewport (maybe the issue of this will be fixed if
@@ -441,16 +441,15 @@ PD_API void Menu::Update() {
   if (Flags & UI7MenuFlags_NoScrollbar)
     pLayout.Flags |= UI7LayoutFlags_NoScrollbar;
   pLayout.pSkipScrolling = !pIsOpen;
-  pLayout.pScrollPadding = (Flags & UI7MenuFlags_NoResize || pIsMaximized)
-                               ? 0.f
-                               : pIO.ResizeGripSize;
+  pLayout.pScrollPadding = pCanResize() ? pIO.ResizeGripSize : 0.f;
+  pLayout.WorkRect.x = pIO.MenuPadding.x;
   if (!(Flags & UI7MenuFlags_NoTitlebar)) {
     TitleBarHeight = pIO.FontScale * pIO.Font->PixelHeight + pIO.MenuPadding.y;
-    pLayout.WorkRect.y = 5.f + TitleBarHeight;
+    pLayout.WorkRect.y = pIO.MenuPadding.y + TitleBarHeight;
     HandleTitlebarActions();
   } else {
     TitleBarHeight = 0.f;
-    pLayout.WorkRect.y = 5.f;
+    pLayout.WorkRect.y = pIO.MenuPadding.y;
   }
   pUpdateScrollAnim();
   // TODO: Add function to layout to fix out this the folowing problem
@@ -539,7 +538,7 @@ PD_API void Menu::pCollapseSym() {
           io->Theme.Get(UI7Color_FrameBackground));
       l->SetLayer(0);
     });
-    r->SetSize(TitleBarHeight - pIO.FramePadding.y * 2);
+    r->SetSize(pTitleButtonSize());
     r->SetPos(pIO.FramePadding);
     pLayout.AddObjectEx(r, UI7LytAdd_NoCursorUpdate | UI7LytAdd_NoScrollHandle |
                                UI7LytAdd_NoClipTitlebar);
@@ -551,8 +550,7 @@ PD_API void Menu::pTitlebar() {  // calculate lost space of left and right to
   // (0.3.2 feature)
   float left = (Flags & UI7MenuFlags_NoCollapse)
                    ? pIO.FramePadding.x
-                   : (TitleBarHeight - pIO.FramePadding.y * 2 +
-                      (pIO.FramePadding.x * 2));
+                   : (pTitleButtonSize().x + (pIO.FramePadding.x * 2));
   float right =
       pNumTitleButtons() * (pTitleButtonSize().x + pIO.FramePadding.x) +
       pIO.FramePadding.x;

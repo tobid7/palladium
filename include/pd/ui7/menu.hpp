@@ -193,6 +193,10 @@ class PD_API Menu {
   bool pTitleButtonPos(TitleButton b, fvec2& pos) const;
   // Count Titlebar buttons
   int pNumTitleButtons() const;
+  bool pCanResize() const {
+    return !(Flags & (UI7MenuFlags_NoResize | UI7MenuFlags_AlwaysAutoSize)) &&
+           !pIsMaximized;
+  }
   void pUpdateScrollAnim();  // Update animation
 };
 }  // namespace UI7

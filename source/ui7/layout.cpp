@@ -51,8 +51,8 @@ PD_API void Layout::CursorMove(const fvec2& size) {
   LastObjSize = size;
   SamelineCursor = Cursor + fvec2(size.x + IO.ItemSpace.x, 0);
   if (BeforeSameLine.y) {
-    Cursor =
-        fvec2(IO.MenuPadding.x, Cursor.y + BeforeSameLine.y + IO.ItemSpace.y);
+    Cursor = fvec2(IO.MenuPadding.x + InitialCursorOffset.x,
+                   Cursor.y + BeforeSameLine.y + IO.ItemSpace.y);
     BeforeSameLine = 0.f;
   } else {
     Cursor = fvec2(IO.MenuPadding.x + InitialCursorOffset.x,
