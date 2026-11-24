@@ -93,42 +93,57 @@ PD_API void Menu::Separator() {
                           pIO.Theme.Get(UI7Color_TextDead));
       });
   // Set size before pushing (cause Cursor Move will require it)
-  r->SetSize(fvec2(
-      pLayout.Size.x - pIO.MenuPadding.x * 2 - pLayout.InitialCursorOffset.x,
-      1));
-  pLayout.AddObject(r);
+  // WorkRect.z is already excluding the scrollbar
+  r->SetSize(fvec2(std::max(0.f, pLayout.WorkRect.z - pIO.MenuPadding.x -
+                                     pLayout.InitialCursorOffset.x),
+                   1));
+  pLayout.AddObjectEx(r, UI7LytAdd_FillWidth);
 }
 
 PD_API void Menu::SeparatorText(const std::string& label) {
   // Also note to use [=] instead of [&] to not undefined access label
   DynObj* r = pIO.DynObjPool.Allocate();
-  *r = UI7::DynObj([=, this](UI7::IO* io, Li::Drawlist* l,
-                             UI7::Container* self) {
-    l->SetFont(self->GetFont());
-    fvec2 size = self->GetSize();
-    fvec2 tdim = io->Font->GetTextBounds(label.c_str(), io->FontScale);
-    fvec2 pos = self->FinalPos();
-    auto align = pLayout.GetAlignment();
-    vec2 rpos = pLayout.AlignPosition(pos, tdim,
-                                      fvec4(pLayout.Pos, pLayout.Size), align);
-    if (!(align & UI7Align_Left)) {
-      l->DrawRectFilled(fvec2(rpos.x + io->FramePadding.x, tdim.y * 0.5),
-                        fvec2(pos.x - rpos.x - io->MenuPadding.x, 1),
-                        io->Theme.Get(UI7Color_TextDead));
-    }
-    if (!(align & UI7Align_Right)) {
-      l->DrawRectFilled(pos + fvec2(tdim.x + io->FramePadding.x, tdim.y * 0.5),
-                        fvec2(size.x - tdim.x - io->MenuPadding.x, 1),
-                        io->Theme.Get(UI7Color_TextDead));
-    }
-    l->DrawTextEx(rpos, label.c_str(), io->Theme.Get(UI7Color_Text), 0,
-                  fvec2(pLayout.Size.x, self->GetSize().y));
-  });
+  *r = UI7::DynObj(
+      [=, this](UI7::IO* io, Li::Drawlist* l, UI7::Container* self) {
+        l->SetFont(self->GetFont());
+        fvec2 size = self->GetSize();
+        fvec2 tdim = io->Font->GetTextBounds(label.c_str(), io->FontScale);
+        fvec2 pos = self->FinalPos();
+        auto align = pLayout.GetAlignment();
+        fvec2 rpos = pos;
+        if (align & UI7Align_Center) {
+          rpos.x = pos.x + (size.x - tdim.x) * 0.5f;
+        } else if (align & UI7Align_Right) {
+          rpos.x = pos.x + size.x - tdim.x;
+        }
+        float ly = rpos.y + tdim.y * 0.5f;
+        if (!(align & UI7Align_Left)) {
+          float w = rpos.x - io->FramePadding.x - pos.x;
+          if (w > 0.f) {
+            l->DrawRectFilled(fvec2(pos.x, ly), fvec2(w, 1),
+                              io->Theme.Get(UI7Color_TextDead));
+          }
+        }
+        if (!(align & UI7Align_Right)) {
+          float sx = rpos.x + tdim.x + io->FramePadding.x;
+          float w = pos.x + size.x - sx;
+          if (w > 0.f) {
+            l->DrawRectFilled(fvec2(sx, ly), fvec2(w, 1),
+                              io->Theme.Get(UI7Color_TextDead));
+          }
+        }
+        l->DrawText(rpos, label.c_str(), io->Theme.Get(UI7Color_Text));
+      });
   // Set size before pushing (cause Cursor Move will require it)
-  r->SetSize(fvec2(
-      pLayout.Size.x - pIO.MenuPadding.x * 2 - pLayout.InitialCursorOffset.x,
-      pIO.Font->PixelHeight * pIO.FontScale));
-  pLayout.AddObject(r);
+  // WorkRect.z is already excluding the scrollbar
+  r->SetSize(fvec2(std::max(0.f, pLayout.WorkRect.z - pIO.MenuPadding.x -
+                                     pLayout.InitialCursorOffset.x),
+                   pIO.Font->PixelHeight * pIO.FontScale));
+  pLayout.AddObjectEx(r, UI7LytAdd_FillWidth);
+  // label does count btw
+  float tw = pIO.Font->GetTextBounds(label.c_str(), pIO.FontScale).x;
+  pLayout.MaxPosition.x =
+      std::max(pLayout.MaxPosition.x, r->GetPos().x + tw + pIO.ItemSpace.x);
 }
 PD_API void Menu::HandleFocus() {
   // Check if menu can be focused for Selective Menu Input API
@@ -396,13 +411,24 @@ PD_API void Menu::DrawBaseLayout() {
 
 PD_API void Menu::Update() {
   HandleFocus();
+  const bool n3w = pLayout.Size == fvec2(0.f);
   if (pIsMaximized) {
     const ivec4& vp = pIO.CurrentViewPort.pSize;
     pLayout.Pos = fvec2(vp.x, vp.y);
     pLayout.Size = fvec2(vp.z - vp.x, vp.w - vp.y);
-  } else if (pLayout.Size == fvec2(0.f) ||
-             Flags & UI7MenuFlags_AlwaysAutoSize) {
+  } else if (n3w || Flags & UI7MenuFlags_AlwaysAutoSize) {
     pLayout.Size = fvec2(pLayout.MaxPosition) + pIO.MenuPadding * 2;
+  }
+  // keep window sized by viewport (maybe the issue of this will be fixed if
+  // were able to resize windows from all sides and corners in future)
+  if (!pIsMaximized && n3w) {
+    const ivec4& vp = pIO.CurrentViewPort.pSize;
+    fvec2 avail(vp.z - std::max(pLayout.Pos.x, (float)vp.x),
+                vp.w - std::max(pLayout.Pos.y, (float)vp.y));
+    avail.x = std::max(avail.x, 50.f);
+    avail.y = std::max(avail.y, TitleBarHeight + 20.f);
+    pLayout.Size.x = std::min(pLayout.Size.x, avail.x);
+    pLayout.Size.y = std::min(pLayout.Size.y, avail.y);
   }
   // Rebuild layout flags to take changes of menu flags
   pLayout.Flags = 0;

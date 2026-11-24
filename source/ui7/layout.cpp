@@ -95,7 +95,11 @@ PD_API void Layout::AddObjectEx(Container* obj, u32 flags) {
   }
   obj->Update();
   if (!(flags & UI7LytAdd_NoCursorUpdate)) {
+    float max_x = MaxPosition.x;
     CursorMove(obj->GetSize());
+    if (flags & UI7LytAdd_FillWidth) {
+      MaxPosition.x = max_x;
+    }
   }
   if (!(flags & UI7LytAdd_NoScrollHandle)) {
     obj->HandleScrolling(ScrollOffset, WorkRect);

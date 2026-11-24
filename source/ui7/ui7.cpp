@@ -121,6 +121,15 @@ PD_API void Context::Update() {
    */
   pIO.FDL.Clear();
   pBuildDock();
+  // Focus
+  if (pFocusRequest && std::find(pCurrentMenus.begin(), pCurrentMenus.end(),
+                                 pFocusRequest) != pCurrentMenus.end()) {
+    Menu* m = pMenus[pFocusRequest];
+    pIO.InputHandler.FocusedMenu = pFocusRequest;
+    pIO.InputHandler.FocusedMenuRect =
+        fvec4(m->pLayout.GetPosition(), m->pLayout.GetSize());
+    pFocusRequest = 0;
+  }
   if (std::find(pCurrentMenus.begin(), pCurrentMenus.end(),
                 pIO.InputHandler.FocusedMenu) == pCurrentMenus.end()) {
     pIO.InputHandler.FocusedMenu = 0;
@@ -187,15 +196,22 @@ PD_API void Context::pBuildDock() {
     if (!first) dock->SameLine();
     first = false;
     if (dock->Button(m->pID.GetName())) {
-      m->SetMinimized(false);
-      // TODO: seems to not be focused (or just not pushed to font idnk)
-      pIO.InputHandler.FocusedMenu = id;
+      // Use focus request (schould fix the dock)
+      FocusMenu(id);
     }
   }
   const ivec4& vp = pIO.CurrentViewPort.pSize;
   dock->SetPosition(fvec2(vp.x + pIO.MenuPadding.x,
                           vp.w - dock->GetSize().y - pIO.MenuPadding.y));
   EndMenu();
+}
+
+PD_API void Context::FocusMenu(const ID& id) {
+  auto m = pMenus.find(id);
+  if (m != pMenus.end()) {
+    m->second->SetMinimized(false);
+  }
+  pFocusRequest = id;
 }
 
 PD_API void Context::AboutMenu(bool* show) {

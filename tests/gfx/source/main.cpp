@@ -335,7 +335,7 @@ int main(int argc, char** argv) {
       }
       ui7.EndMenu();
     }
-    if (auto m = ui7.BeginMenu("LI DBG INFO")) {
+    if (auto m = ui7.BeginMenu("LI DBG INFO", UI7MenuFlags_AlwaysAutoSize)) {
       m->Checkbox("Show Test Menu", pTestWin);
       m->PushFont(&debug_font);
       m->Label("Gfx Driver: {}", PD::Gfx::GetDriverName());
@@ -349,6 +349,7 @@ int main(int argc, char** argv) {
       ui7.EndMenu();
     }
     ui7.MetricsMenu(&pMetricsWin);
+    ui7.AboutMenu();
     ui7.StyleEditor();
     PD::TT::End("BuildUI7Menus");
     PD::TT::Beg("UI7::Context::Update");

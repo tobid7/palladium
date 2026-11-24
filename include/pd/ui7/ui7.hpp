@@ -62,6 +62,13 @@ class PD_API Context {
   void AboutMenu(bool* show = nullptr);
   void MetricsMenu(bool* show = nullptr);
   void StyleEditor(bool* show = nullptr);
+  /**
+   * Focus a Menu and bring it to the front.
+   * Restores the menu if it is minimized.
+   * Can be called at anytime (but plz before update thx)
+   * @param id ID of the Menu
+   */
+  void FocusMenu(const ID& id);
 
   Li::Drawlist& GetDrawData() { return pIO.FDL; }
 
@@ -82,6 +89,7 @@ class PD_API Context {
   std::unordered_map<u32, Menu*> pMenus;
   std::vector<u32> pMinimizedMenus;
   const ID pDockID = ID("##UI7Dock");
+  u32 pFocusRequest = 0;
 
  private:
   void pBuildDock();

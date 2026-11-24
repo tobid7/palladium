@@ -325,12 +325,70 @@ PD_API void Font::BakeAndPush(bool final, std::vector<u8>& font_tex,
 
 PD_API std::string Font::pWrapText(const std::string& txt, float scale,
                                    const PD::fvec2& max, PD::fvec2& dim) {
-  return "";
+  if (max.x <= 0.f) {
+    dim = GetTextBounds(txt.c_str(), scale);
+    return txt;
+  }
+  const float space_w = GetTextBounds(" ", scale).x;
+  std::string res;
+  res.reserve(txt.size());
+  size_t pos = 0;
+  while (pos <= txt.size()) {
+    size_t nl = txt.find('\n', pos);
+    if (nl == std::string::npos) nl = txt.size();
+    std::string line = txt.substr(pos, nl - pos);
+    std::string cur;
+    float cur_w = 0.f;
+    size_t i = 0;
+    while (i <= line.size()) {
+      size_t sp = line.find(' ', i);
+      if (sp == std::string::npos) sp = line.size();
+      std::string word = line.substr(i, sp - i);
+      float word_w = GetTextBounds(word.c_str(), scale).x;
+      if (cur.empty()) {
+        cur = word;
+        cur_w = word_w;
+      } else if (cur_w + space_w + word_w > max.x) {
+        res += cur;
+        res += '\n';
+        cur = word;
+        cur_w = word_w;
+      } else {
+        cur += ' ';
+        cur += word;
+        cur_w += space_w + word_w;
+      }
+      i = sp + 1;
+    }
+    res += cur;
+    if (nl < txt.size()) res += '\n';
+    pos = nl + 1;
+  }
+  dim = GetTextBounds(res.c_str(), scale);
+  return res;
 }
 
 PD_API std::string Font::pShortText(const std::string& txt, float scale,
                                     const PD::fvec2& max, PD::fvec2& dim) {
-  return "";
+  dim = GetTextBounds(txt.c_str(), scale);
+  if (max.x <= 0.f || dim.x <= max.x) {
+    return txt;
+  }
+  static const std::string tmp = "...";
+  std::string res = txt;
+  while (!res.empty()) {
+    while (!res.empty() && (static_cast<u8>(res.back()) & 0xC0) == 0x80) {
+      res.pop_back();
+    }
+    if (!res.empty()) res.pop_back();
+    std::string test = res + tmp;
+    dim = GetTextBounds(test.c_str(), scale);
+    if (dim.x <= max.x) {
+      return test;
+    }
+  }
+  dim = GetTextBounds(tmp.c_str(), scale);
+  return tmp;
 }
 
 PD_API void Font::Delete() {

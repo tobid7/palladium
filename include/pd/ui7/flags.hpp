@@ -90,6 +90,7 @@ enum UI7LytAdd_ {
   UI7LytAdd_Front = 1 << 2,           ///< Add in front of the list
   UI7LytAdd_NoGlobalClipping = 1 << 3,  ///< Dont use global Layout clip rect
   UI7LytAdd_NoClipTitlebar = 1 << 4,  ///< Dont clip content behind the titlebar
+  UI7LytAdd_FillWidth = 1 << 5,       ///< Ignore width
 };
 
 /**
