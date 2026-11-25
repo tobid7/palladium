@@ -76,10 +76,42 @@ class PD_API Context {
     auto menu = pMenus.find(id);
     if (menu == pMenus.end()) {
       pMenus[id] = new Menu(id, pIO);
+      pMenus[id]->pCtx = this;
       menu = pMenus.find(id);
     }
     return menu->second;
   }
+
+  /**
+   * Popups
+   * Opened from a Popup -> stacked on top of it
+   * Opened from a Menu -> replaces all open popups
+   * Closed by clicking outside, Escape / B
+   */
+  void OpenPopup(const ID& id);
+  void OpenPopup(const ID& id, const fvec2& pos);
+  Menu* BeginPopup(const ID& id);
+  void EndPopup();
+  void ClosePopup(const ID& id);
+  void CloseCurrentPopup();
+  bool IsPopupOpen(const ID& id) const;
+  /** True if the last click closed this popup */
+  bool pPopupClickClosed(const ID& id) const {
+    return pClickClosed == (u32)id;
+  }
+
+  struct Popup {
+    u32 Id = 0;
+    fvec2 Anchor;
+    bool Fresh = true;
+    bool Keep = true;
+    bool Begun = false;
+  };
+  std::vector<Popup> pPopups;
+  std::vector<Menu*> pMenuStack;
+  u32 pClickClosed = 0;
+  u32 pFocusBackup = 0;
+  bool pFocusSaved = false;
 
   IO pIO;
   /** Current Menu */
@@ -93,6 +125,7 @@ class PD_API Context {
 
  private:
   void pBuildDock();
+  void pUpdatePopups();
 };
 }  // namespace UI7
 }  // namespace PD

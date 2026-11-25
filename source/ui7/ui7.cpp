@@ -135,6 +135,7 @@ PD_API void Context::Update() {
     pIO.InputHandler.FocusedMenu = 0;
     pIO.InputHandler.FocusedMenuRect = fvec4(0);
   }
+  pUpdatePopups();
   std::vector<u32> FinalList;
   for (auto it : pDFO) {
     if (std::find(pCurrentMenus.begin(), pCurrentMenus.end(), it) !=
@@ -149,7 +150,8 @@ PD_API void Context::Update() {
       FinalList.push_back(it);
     }
   }
-  if (pMenus.count(pIO.InputHandler.FocusedMenu)) {
+  if (std::find(pCurrentMenus.begin(), pCurrentMenus.end(),
+                pIO.InputHandler.FocusedMenu) != pCurrentMenus.end()) {
     FinalList.insert(FinalList.begin(), pIO.InputHandler.FocusedMenu);
   }
   // The dock is always in front of the rest
@@ -160,10 +162,20 @@ PD_API void Context::Update() {
   }
   pDFO = FinalList;
   pIO.InputHandler.HoveredMenu = 0;
-  for (auto it : FinalList) {
-    if (Li::Math::InBounds(PD::Hid::MousePos(), pMenus[it]->pMenuArea())) {
-      pIO.InputHandler.HoveredMenu = it;
+  for (size_t i = pPopups.size(); i > 0; i--) {
+    const Popup& p = pPopups[i - 1];
+    if (p.Begun &&
+        Li::Math::InBounds(PD::Hid::MousePos(), pMenus[p.Id]->pMenuArea())) {
+      pIO.InputHandler.HoveredMenu = p.Id;
       break;
+    }
+  }
+  if (!pIO.InputHandler.HoveredMenu) {
+    for (auto it : FinalList) {
+      if (Li::Math::InBounds(PD::Hid::MousePos(), pMenus[it]->pMenuArea())) {
+        pIO.InputHandler.HoveredMenu = it;
+        break;
+      }
     }
   }
   for (auto& it : FinalList) {
@@ -171,11 +183,26 @@ PD_API void Context::Update() {
     pMenus[it]->Update(); /** Render */
     this->pIO.InputHandler.CurrentMenu = 0;
   }
+  for (auto& p : pPopups) {
+    if (!p.Begun) continue;
+    this->pIO.InputHandler.CurrentMenu = p.Id;
+    pMenus[p.Id]->Update();
+    this->pIO.InputHandler.CurrentMenu = 0;
+  }
   int base_layer = 0;
   for (int i = (int)FinalList.size() - 1; i >= 0; i--) {
     pIO.FDL.SetLayer(base_layer);
     pIO.FDL.Merge(pMenus[FinalList[i]]->pLayout.GetDrawList());
     base_layer += 100;
+  }
+  for (auto& p : pPopups) {
+    if (p.Begun) {
+      pIO.FDL.SetLayer(base_layer);
+      pIO.FDL.Merge(pMenus[p.Id]->pLayout.GetDrawList());
+      base_layer += 100;
+    }
+    p.Keep = false;
+    p.Begun = false;
   }
   pCurrentMenus.clear();
   pMinimizedMenus.clear();
@@ -211,6 +238,135 @@ PD_API void Context::pBuildDock() {
   dock->SetPosition(fvec2(vp.x + pIO.MenuPadding.x,
                           vp.w - dock->GetSize().y - pIO.MenuPadding.y));
   EndMenu();
+}
+
+PD_API void Context::OpenPopup(const ID& id) {
+  OpenPopup(id, PD::Hid::MousePos());
+}
+
+PD_API void Context::OpenPopup(const ID& id, const fvec2& pos) {
+  size_t lvl = 0;
+  if (pCurrent && pCurrent->IsPopup()) {
+    for (size_t i = 0; i < pPopups.size(); i++) {
+      if (pPopups[i].Id == (u32)pCurrent->pID) {
+        lvl = i + 1;
+        break;
+      }
+    }
+  }
+  if (lvl < pPopups.size() && pPopups[lvl].Id == (u32)id) {
+    pPopups.resize(lvl + 1);
+    pPopups[lvl].Keep = true;
+    return;
+  }
+  pPopups.resize(lvl);
+  if (pPopups.empty() && !pFocusSaved) {
+    pFocusBackup = pIO.InputHandler.FocusedMenu;
+    pFocusSaved = true;
+  }
+  Popup p;
+  p.Id = id;
+  p.Anchor = pos;
+  pPopups.push_back(p);
+}
+
+PD_API Menu* Context::BeginPopup(const ID& id) {
+  for (auto& p : pPopups) {
+    if (p.Id != (u32)id) continue;
+    Menu* m = pGetOrCreateMenu(id);
+    m->Flags = UI7MenuFlags_Popup | UI7MenuFlags_NoTitlebar |
+               UI7MenuFlags_NoResize | UI7MenuFlags_NoMove |
+               UI7MenuFlags_NoCollapse | UI7MenuFlags_AlwaysAutoSize;
+    m->pIsOpen = true;
+    m->pIsShown = nullptr;
+    if (p.Fresh) {
+      m->pLayout.Pos = p.Anchor;
+      p.Fresh = false;
+    }
+    p.Keep = true;
+    p.Begun = true;
+    pMenuStack.push_back(pCurrent);
+    pCurrent = m;
+    return m;
+  }
+  return nullptr;
+}
+
+PD_API void Context::EndPopup() {
+  if (pMenuStack.empty()) return;
+  pCurrent = pMenuStack.back();
+  pMenuStack.pop_back();
+}
+
+PD_API void Context::ClosePopup(const ID& id) {
+  for (size_t i = 0; i < pPopups.size(); i++) {
+    if (pPopups[i].Id == (u32)id) {
+      pPopups.resize(i);
+      return;
+    }
+  }
+}
+
+PD_API void Context::CloseCurrentPopup() {
+  if (pCurrent && pCurrent->IsPopup()) {
+    ClosePopup(pCurrent->pID);
+  } else if (!pPopups.empty()) {
+    pPopups.pop_back();
+  }
+}
+
+PD_API bool Context::IsPopupOpen(const ID& id) const {
+  for (auto& p : pPopups) {
+    if (p.Id == (u32)id) return true;
+  }
+  return false;
+}
+
+PD_API void Context::pUpdatePopups() {
+  for (size_t i = 0; i < pPopups.size(); i++) {
+    if (!pPopups[i].Keep) {
+      pPopups.resize(i);
+      break;
+    }
+  }
+  bool down = PD::Hid::IsEvent(Hid::Event::Down, Hid::Gamepad::Touch) ||
+              PD::Hid::IsEvent(Hid::Event::Down, Hid::Keyboard::MouseLeft);
+  if (down) pClickClosed = 0;
+  if (!pPopups.empty()) {
+    if (PD::Hid::IsEvent(Hid::Event::Down, Hid::Keyboard::Escape) ||
+        PD::Hid::IsEvent(Hid::Event::Down, Hid::Gamepad::B)) {
+      pPopups.pop_back();
+    } else if (down) {
+      size_t lvl = 0;
+      for (size_t i = pPopups.size(); i > 0; i--) {
+        auto m = pMenus.find(pPopups[i - 1].Id);
+        if (m != pMenus.end() &&
+            Li::Math::InBounds(PD::Hid::MousePos(), m->second->pMenuArea())) {
+          lvl = i;
+          break;
+        }
+      }
+      if (lvl < pPopups.size()) {
+        pClickClosed = pPopups[lvl].Id;
+        pPopups.resize(lvl);
+      }
+    }
+  }
+  auto& ih = pIO.InputHandler;
+  if (!pPopups.empty()) {
+    auto m = pMenus.find(pPopups.back().Id);
+    ih.FocusedMenu = pPopups.back().Id;
+    ih.FocusedMenuRect = m != pMenus.end() ? m->second->pMenuArea() : fvec4(0);
+  } else if (pFocusSaved) {
+    pFocusSaved = false;
+    ih.FocusedMenu = 0;
+    ih.FocusedMenuRect = fvec4(0);
+    if (std::find(pCurrentMenus.begin(), pCurrentMenus.end(), pFocusBackup) !=
+        pCurrentMenus.end()) {
+      ih.FocusedMenu = pFocusBackup;
+      ih.FocusedMenuRect = pMenus[pFocusBackup]->pMenuArea();
+    }
+  }
 }
 
 PD_API void Context::FocusMenu(const ID& id) {
@@ -419,6 +575,8 @@ PD_API void UI7::Context::StyleEditor(bool* show) {
     ts(UI7Color_Checkmark);
     ts(UI7Color_FrameBackground);
     ts(UI7Color_FrameBackgroundHovered);
+    ts(UI7Color_FrameBackgroundActive);
+    ts(UI7Color_PopupBackground);
     ts(UI7Color_Progressbar);
     ts(UI7Color_ListEven);
     ts(UI7Color_ListOdd);

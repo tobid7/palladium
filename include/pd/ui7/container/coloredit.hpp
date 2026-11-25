@@ -25,53 +25,76 @@ SOFTWARE.
 
 #include <pd/ui7/container/container.hpp>
 #include <pd/ui7/io.hpp>
-#include <pd/ui7/layout.hpp>
 
 namespace PD {
 namespace UI7 {
 /**
- * Color Editor (Creating a PopUP when clicking)
+ * Color Swatch + Label (opens a ColorPicker popup when clicked)
  */
 class PD_API ColorEdit : public Container {
  public:
-  /**
-   * Constructor
-   * @param label Label of the Button
-   * @param pos Base Position
-   * @param lr Reference to the Renderer
-   */
   ColorEdit(const std::string& label, u32* color, UI7::IO& io) {
-    // PD::Assert(color != nullptr, "Input Color Address is null!");
     this->label = label;
     this->color_ref = color;
-    this->initial_color = *color;
     this->tdim = io.Font->GetTextBounds(label.c_str(), io.FontScale);
   }
-  ~ColorEdit() {
-    if (layout) delete layout;
-  }
+  ~ColorEdit() = default;
 
-  /**
-   * Override for the Input Handler
-   * @note This function is usally called by Menu::Update
-   */
   void HandleInput() override;
-  /**
-   * Override for the Rendering Handler
-   * @note This function is usally called by Menu::Update
-   * */
   void Draw() override;
-
-  /** Function to Update Size if framepadding changes */
   void Update() override;
 
+  /** Returns true once after the swatch got clicked */
+  bool OpenRequest() {
+    bool r = open_req;
+    open_req = false;
+    return r;
+  }
+  /** Color when the popup was opened */
+  u32& Backup() { return backup; }
+
  private:
-  fvec2 tdim;                ///< Text size
-  u32* color_ref = nullptr;  ///< Color Reference
-  u32 initial_color;         ///< Initial Color
-  std::string label;         ///< Label of the Button
-  Layout* layout = nullptr;  ///< Layout to open
-  bool is_shown = false;     ///< AHow Layout Editor
+  fvec2 tdim;
+  u32* color_ref = nullptr;
+  u32 backup = 0;
+  std::string label;
+  bool open_req = false;
+};
+
+/**
+ * Color Picker (SV square + hue/alpha bars or RGBA sliders)
+ */
+class PD_API ColorPicker : public Container {
+ public:
+  ColorPicker(u32* color, const u32* backup = nullptr) {
+    color_ref = color;
+    this->backup = backup;
+  }
+  ~ColorPicker() = default;
+
+  void HandleInput() override;
+  void Draw() override;
+  void Update() override;
+
+  void SetBackup(const u32* v) { backup = v; }
+
+ private:
+  void pCalc();
+  void pSync();
+  void pApplyHsv();
+
+  u32* color_ref = nullptr;
+  const u32* backup = nullptr;
+  u32 last = 0;
+  bool synced = false;
+  float h = 0.f, s = 0.f, v = 0.f;
+  // Geometry (absolute, calculated by pCalc)
+  fvec4 rTab[2];
+  fvec4 rSV, rHue, rAlpha;
+  fvec4 rBar[4];
+  fvec4 rOld, rNew;
+  fvec2 pHex;
+  float vw = 0.f;
 };
 }  // namespace UI7
 }  // namespace PD

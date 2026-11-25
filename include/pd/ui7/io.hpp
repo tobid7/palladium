@@ -73,6 +73,7 @@ class PD_API IO {
   bool ShowMenuBorder = true;
   bool ShowFrameBorder = false;  // not implemented yet
   bool WrapLabels = false;       // Beta state
+  int ColorPickerMode = 0;       // 0 = SV + Hue, 1 = RGBA sliders
   float OverScrollMod = 0.15f;
   u64 DoubleClickTime = 500;  // Milliseconds
   std::list<std::pair<UI7::ID, Li::Drawlist*>> DrawlistRegestry;

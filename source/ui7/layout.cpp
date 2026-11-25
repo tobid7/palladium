@@ -309,11 +309,15 @@ PD_API void Layout::Update() {
     }
     if (!it->Skippable()) {
       it->SetPos(it->GetPos() + Pos);
+      if (it->HasClipRect()) {
+        IO.InputHandler.SetClip(it->GetClipRect());
+      }
       it->HandleInput();
       it->UnlockInput();
       it->PreDraw();
       it->Draw();
       it->PostDraw();
+      IO.InputHandler.ResetClip();
     }
   }
 

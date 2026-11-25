@@ -213,6 +213,21 @@ PD_API void Drawlist::DrawRectFilled(const fvec2& pos, const fvec2& size,
   PathFill(color, flags);
 }
 
+PD_API void Drawlist::DrawRectFilledMultiColor(
+    const fvec2& pos, const fvec2& size, const PD::Color& tl,
+    const PD::Color& tr, const PD::Color& br, const PD::Color& bl) {
+  UnbindTexture();
+  fvec2 uv = pCurrentTexture.GetUV().TopLeft();
+  auto& cmd = NewCommand();
+  cmd.Reserve(4, 6);
+  cmd.Add(2, 1, 0);
+  cmd.Add(3, 2, 0);
+  cmd.Add(Vertex(pos, uv, tl));
+  cmd.Add(Vertex(pos + fvec2(size.x, 0.f), uv, tr));
+  cmd.Add(Vertex(pos + size, uv, br));
+  cmd.Add(Vertex(pos + fvec2(0.f, size.y), uv, bl));
+}
+
 PD_API void Drawlist::DrawTriangle(const fvec2& a, const fvec2& b,
                                    const fvec2& c, const PD::Color& color,
                                    int t, LiDrawFlags flags) {

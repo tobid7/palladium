@@ -59,7 +59,7 @@ class InputHandler {
     if ((PD::Hid::IsEvent(PD::Hid::Event::Down, PD::Hid::Gamepad::Touch) ||
          PD::Hid::IsEvent(PD::Hid::Event::Down,
                           PD::Hid::Keyboard::MouseLeft)) &&
-        Li::Math::InBounds(p, area)) {
+        Li::Math::InBounds(p, area) && InClip(p)) {
       // Set ID and iniatial Positions
       DraggedObject = id;
       DragSourcePos = p;
@@ -95,7 +95,8 @@ class InputHandler {
       DragDestination = fvec4(0);
       // Set Drag released to true (only one frame)
       // and Only if still in Box
-      DragReleased = Li::Math::InBounds(PD::Hid::MousePosLast(), area);
+      DragReleased = Li::Math::InBounds(PD::Hid::MousePosLast(), area) &&
+                     InClip(PD::Hid::MousePosLast());
       DragReleasedAW = true;  // Advanced
       u64 d_rel = PD::Os::GetTime();
       if (d_rel - DragLastReleased < DoubleClickTime) {
@@ -129,8 +130,20 @@ class InputHandler {
     if (!(PD::Hid::GetFlags() & PDHidBackendFlags_HasMouse)) return false;
     if (CurrentMenu != HoveredMenu) return false;
     if (IsObjectDragged() && DraggedObject != id) return false;
-    return Li::Math::InBounds(PD::Hid::MousePos(), area);
+    return Li::Math::InBounds(PD::Hid::MousePos(), area) &&
+           InClip(PD::Hid::MousePos());
   }
+  /** Clip for input */
+  void SetClip(const fvec4& c) {
+    Clip = c;
+    HasClip = true;
+  }
+  void ResetClip() { HasClip = false; }
+  bool InClip(const fvec2& p) const {
+    return !HasClip || Li::Math::InBounds(p, Clip);
+  }
+  fvec4 Clip;
+  bool HasClip = false;
   bool IsHeld(const UI7::ID& id) const { return DraggedObject == id; }
   fvec2 DragMovedPos() const { return DragOrigin + DragOffset; }
 

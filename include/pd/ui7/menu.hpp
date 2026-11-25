@@ -33,6 +33,7 @@ SOFTWARE.
 
 namespace PD {
 namespace UI7 {
+class Context;
 class PD_API Menu {
  public:
   Menu(const UI7::ID& id, UI7::IO& pIO);
@@ -103,6 +104,16 @@ class PD_API Menu {
     pLayout.AddObject(r);
   }
   void ColorEdit(const std::string& label, u32& clr);
+  void ColorPicker(const std::string& label, u32& clr,
+                   const u32* backup = nullptr);
+
+  /** Popups (forwarded to the Context) */
+  void OpenPopup(const ID& id);
+  void OpenPopup(const ID& id, const fvec2& pos);
+  Menu* BeginPopup(const ID& id);
+  void EndPopup();
+  void CloseCurrentPopup();
+  bool IsPopup() const { return Flags & UI7MenuFlags_Popup; }
   void SameLine() { pLayout.SameLine(); }
   void Separator();
   void SeparatorText(const std::string& label);
@@ -161,6 +172,7 @@ class PD_API Menu {
   /** Data Section */
 
   UI7MenuFlags Flags = 0;
+  Context* pCtx = nullptr;
   Layout pLayout;
   IO& pIO;
   ID pID;

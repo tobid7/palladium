@@ -52,6 +52,7 @@ enum UI7Color_ {
   UI7Color_ListEven,                ///< UI7 List (Even Entry) Background Color
   UI7Color_ListOdd,                 ///< UI7 List (Odd Entry) Background Color
   UI7Color_FrameBackgroundActive,   ///< UI7 Pressed Frame Background
+  UI7Color_PopupBackground,         ///< UI7 Popup Background
 };
 
 namespace PD {

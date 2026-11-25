@@ -24,6 +24,7 @@ SOFTWARE.
 #include <algorithm>
 #include <pd/ui7/containers.hpp>
 #include <pd/ui7/menu.hpp>
+#include <pd/ui7/ui7.hpp>
 
 namespace PD {
 namespace UI7 {
@@ -75,13 +76,55 @@ PD_API void Menu::Image(Li::Texture img, fvec2 size, Li::Rect uv) {
 }
 
 PD_API void Menu::ColorEdit(const std::string& label, u32& clr) {
-  u32 id = Strings::FastHash("drd" + label);
-  Container* r = pLayout.FindObject(id);
+  u32 id = Strings::FastHash("cle" + label + std::to_string((uintptr_t)&clr));
+  auto r = static_cast<UI7::ColorEdit*>(pLayout.FindObject(id));
   if (!r) {
     r = new UI7::ColorEdit(label, &clr, pIO);
     r->SetID(id);
   }
+  UI7::ID pid("##cep" + std::to_string(id));
+  if (r->OpenRequest() && pCtx && !pCtx->pPopupClickClosed(pid)) {
+    r->Backup() = clr;
+    pCtx->OpenPopup(pid, r->GetPos() + fvec2(0, r->GetSize().y +
+                                                    pIO.ItemSpace.y));
+  }
   pLayout.AddObject(r);
+  if (Menu* p = BeginPopup(pid)) {
+    p->ColorPicker(label, clr, &r->Backup());
+    EndPopup();
+  }
+}
+
+PD_API void Menu::ColorPicker(const std::string& label, u32& clr,
+                              const u32* backup) {
+  u32 id = Strings::FastHash("clp" + label + std::to_string((uintptr_t)&clr));
+  auto r = static_cast<UI7::ColorPicker*>(pLayout.FindObject(id));
+  if (!r) {
+    r = new UI7::ColorPicker(&clr, backup);
+    r->SetID(id);
+  }
+  r->SetBackup(backup);
+  pLayout.AddObject(r);
+}
+
+PD_API void Menu::OpenPopup(const ID& id) {
+  if (pCtx) pCtx->OpenPopup(id);
+}
+
+PD_API void Menu::OpenPopup(const ID& id, const fvec2& pos) {
+  if (pCtx) pCtx->OpenPopup(id, pos);
+}
+
+PD_API Menu* Menu::BeginPopup(const ID& id) {
+  return pCtx ? pCtx->BeginPopup(id) : nullptr;
+}
+
+PD_API void Menu::EndPopup() {
+  if (pCtx) pCtx->EndPopup();
+}
+
+PD_API void Menu::CloseCurrentPopup() {
+  if (pCtx) pCtx->CloseCurrentPopup();
 }
 
 PD_API void Menu::Separator() {
@@ -368,11 +411,13 @@ PD_API void Menu::DrawBaseLayout() {
     /** Background */
     if (!(Flags & UI7MenuFlags_NoBackground)) {
       DynObj* r = pIO.DynObjPool.Allocate();
-      *r = UI7::DynObj([](IO* io, Li::Drawlist* l, UI7::Container* self) {
+      bool pop = Flags & UI7MenuFlags_Popup;
+      *r = UI7::DynObj([=](IO* io, Li::Drawlist* l, UI7::Container* self) {
         l->SetLayer(0);
         l->PathRectEx(self->FinalPos(), self->FinalPos() + self->GetSize(),
                       10.f, LiPathRectFlags_KeepTop | LiPathRectFlags_KeepBot);
-        l->PathFill(io->Theme.Get(UI7Color_Background));
+        l->PathFill(io->Theme.Get(pop ? UI7Color_PopupBackground
+                                      : UI7Color_Background));
       });
       // Set size before pushing (cause Cursor Move will require it)
       r->SetSize(
@@ -464,6 +509,13 @@ PD_API void Menu::Update() {
     avail.y = std::max(avail.y, TitleBarHeight + 20.f);
     pLayout.Size.x = std::min(pLayout.Size.x, avail.x);
     pLayout.Size.y = std::min(pLayout.Size.y, avail.y);
+  }
+  if (Flags & UI7MenuFlags_Popup) {
+    const ivec4& vp = pIO.CurrentViewPort.pSize;
+    pLayout.Pos.x = std::clamp<float>(
+        pLayout.Pos.x, vp.x, std::max<float>(vp.x, vp.z - pLayout.Size.x));
+    pLayout.Pos.y = std::clamp<float>(
+        pLayout.Pos.y, vp.y, std::max<float>(vp.y, vp.w - pLayout.Size.y));
   }
   // Rebuild layout flags to take changes of menu flags
   pLayout.Flags = 0;

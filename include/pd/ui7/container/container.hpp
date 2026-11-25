@@ -69,6 +69,8 @@ class PD_API Container {
   }
 
   /** Setter for Position */
+  bool HasClipRect() const { return pCLipRectUsed; }
+  const fvec4& GetClipRect() const { return pClipRect; }
   void SetPos(const fvec2& pos) { this->pos = pos; }
   /** Setter for Size */
   void SetSize(const fvec2& size) { this->size = size; }

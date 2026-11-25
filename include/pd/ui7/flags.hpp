@@ -50,6 +50,7 @@ enum UI7MenuFlags_ {
   UI7MenuFlags_Maximize = 1 << 11,        ///< Add a Maximize Button
   UI7MenuFlags_Minimize = 1 << 12,        ///< Add a Minimize Button
   UI7MenuFlags_AlwaysAutoSize = 1 << 13,  ///< Always Auto Resize Menu
+  UI7MenuFlags_Popup = 1 << 14,           ///< Internal: Menu is a Popup
   // Enable Horizontal and Vertical Scrolling
   UI7MenuFlags_Scrolling = UI7MenuFlags_HzScrolling | UI7MenuFlags_VtScrolling,
 };

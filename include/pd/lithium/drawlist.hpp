@@ -105,6 +105,9 @@ class PD_API Drawlist {
   void DrawRectFilled(const fvec2& pos, const fvec2& size,
                       const PD::Color& color,
                       LiDrawFlags flags = LiDrawFlags_None);
+  void DrawRectFilledMultiColor(const fvec2& pos, const fvec2& size,
+                                const PD::Color& tl, const PD::Color& tr,
+                                const PD::Color& br, const PD::Color& bl);
   void DrawTriangle(const fvec2& a, const fvec2& b, const fvec2& c,
                     const PD::Color& color, int t = 1,
                     LiDrawFlags flags = LiDrawFlags_None);
