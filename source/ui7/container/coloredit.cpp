@@ -37,12 +37,36 @@ static Color Hsv(float h, float s, float v, u8 a = 255) {
     float q = v * (1.f - s * f);
     float t = v * (1.f - s * (1.f - f));
     switch (i) {
-      case 0: r = v; g = t; b = p; break;
-      case 1: r = q; g = v; b = p; break;
-      case 2: r = p; g = v; b = t; break;
-      case 3: r = p; g = q; b = v; break;
-      case 4: r = t; g = p; b = v; break;
-      default: r = v; g = p; b = q; break;
+      case 0:
+        r = v;
+        g = t;
+        b = p;
+        break;
+      case 1:
+        r = q;
+        g = v;
+        b = p;
+        break;
+      case 2:
+        r = p;
+        g = v;
+        b = t;
+        break;
+      case 3:
+        r = p;
+        g = q;
+        b = v;
+        break;
+      case 4:
+        r = t;
+        g = p;
+        b = v;
+        break;
+      default:
+        r = v;
+        g = p;
+        b = q;
+        break;
     }
   }
   return Color((int)(r * 255.f + 0.5f), (int)(g * 255.f + 0.5f),
@@ -69,16 +93,14 @@ static void MarkHz(Li::Drawlist* l, const fvec4& r, float y) {
   y = std::round(y);
   l->DrawRectFilled(fvec2(r.x - 1.f, y - 2.f), fvec2(r.z + 2.f, 4.f),
                     Color(0, 0, 0));
-  l->DrawRectFilled(fvec2(r.x, y - 1.f), fvec2(r.z, 2.f),
-                    Color(255, 255, 255));
+  l->DrawRectFilled(fvec2(r.x, y - 1.f), fvec2(r.z, 2.f), Color(255, 255, 255));
 }
 
 static void MarkVt(Li::Drawlist* l, const fvec4& r, float x) {
   x = std::round(x);
   l->DrawRectFilled(fvec2(x - 2.f, r.y - 1.f), fvec2(4.f, r.w + 2.f),
                     Color(0, 0, 0));
-  l->DrawRectFilled(fvec2(x - 1.f, r.y), fvec2(2.f, r.w),
-                    Color(255, 255, 255));
+  l->DrawRectFilled(fvec2(x - 1.f, r.y), fvec2(2.f, r.w), Color(255, 255, 255));
 }
 
 static const char* sTabs[2] = {"HSV", "RGBA"};

@@ -238,8 +238,7 @@ PD_API void Drawlist::DrawTriangle(const fvec2& a, const fvec2& b,
 }
 
 PD_API void Drawlist::DrawTriangleFilled(const fvec2& a, const fvec2& b,
-                                         const fvec2& c,
-                                         const PD::Color& color,
+                                         const fvec2& c, const PD::Color& color,
                                          LiDrawFlags flags) {
   PathAdd(a);
   PathAdd(b);
@@ -261,8 +260,8 @@ PD_API void Drawlist::DrawCircle(const fvec2& center, float rad,
 }
 
 PD_API void Drawlist::DrawCircleFilled(const fvec2& center, float rad,
-                                       const PD::Color& color,
-                                       int num_segments, LiDrawFlags flags) {
+                                       const PD::Color& color, int num_segments,
+                                       LiDrawFlags flags) {
   if (num_segments <= 0) {
     // Auto Segment
   } else {

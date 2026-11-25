@@ -96,9 +96,7 @@ class PD_API Context {
   void CloseCurrentPopup();
   bool IsPopupOpen(const ID& id) const;
   /** True if the last click closed this popup */
-  bool pPopupClickClosed(const ID& id) const {
-    return pClickClosed == (u32)id;
-  }
+  bool pPopupClickClosed(const ID& id) const { return pClickClosed == (u32)id; }
 
   struct Popup {
     u32 Id = 0;

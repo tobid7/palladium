@@ -86,9 +86,9 @@ PD_API void DragData<T>::Draw() {
     UI7Color c = UI7Color_Button;
     if (io->InputHandler.IsHeld(eid)) {
       c = UI7Color_ButtonActive;
-    } else if (io->InputHandler.IsHovered(
-                   eid, fvec4(FinalPos() + fvec2(off_x, 0),
-                              td + io->FramePadding))) {
+    } else if (io->InputHandler.IsHovered(eid,
+                                          fvec4(FinalPos() + fvec2(off_x, 0),
+                                                td + io->FramePadding))) {
       c = UI7Color_ButtonHovered;
     }
     list->PathRect(FinalPos() + fvec2(off_x, 0),

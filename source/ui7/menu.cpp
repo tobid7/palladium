@@ -85,8 +85,8 @@ PD_API void Menu::ColorEdit(const std::string& label, u32& clr) {
   UI7::ID pid("##cep" + std::to_string(id));
   if (r->OpenRequest() && pCtx && !pCtx->pPopupClickClosed(pid)) {
     r->Backup() = clr;
-    pCtx->OpenPopup(pid, r->GetPos() + fvec2(0, r->GetSize().y +
-                                                    pIO.ItemSpace.y));
+    pCtx->OpenPopup(pid,
+                    r->GetPos() + fvec2(0, r->GetSize().y + pIO.ItemSpace.y));
   }
   pLayout.AddObject(r);
   if (Menu* p = BeginPopup(pid)) {
@@ -233,8 +233,9 @@ PD_API u32 Menu::pTitleSym(Li::Drawlist* l, const std::string& n,
   }
   float o = std::floor(pIO.FramePadding.y * 0.5f);
   l->PathRect(p - o, p + s + o, pIO.FrameRounding);
-  l->PathFill(pIO.Theme.Get(held ? UI7Color_ButtonActive : UI7Color_ButtonHovered),
-              LiDrawFlags_AA);
+  l->PathFill(
+      pIO.Theme.Get(held ? UI7Color_ButtonActive : UI7Color_ButtonHovered),
+      LiDrawFlags_AA);
   return pIO.Theme.Get(held ? UI7Color_FrameBackgroundActive
                             : UI7Color_FrameBackgroundHovered);
 }

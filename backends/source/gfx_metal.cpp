@@ -459,10 +459,8 @@ void GfxMetal::ClipRect() {
   MTLScissorRect r = {0, 0, static_cast<NSUInteger>(vw),
                       static_cast<NSUInteger>(vh)};
   if (CurrentHasClip) {
-    const long x0 =
-        std::clamp(static_cast<long>(CurrentClip.x * s.x), 0L, vw);
-    const long y0 =
-        std::clamp(static_cast<long>(CurrentClip.y * s.y), 0L, vh);
+    const long x0 = std::clamp(static_cast<long>(CurrentClip.x * s.x), 0L, vw);
+    const long y0 = std::clamp(static_cast<long>(CurrentClip.y * s.y), 0L, vh);
     const long x1 = std::clamp(
         static_cast<long>((CurrentClip.x + CurrentClip.z) * s.x), 0L, vw);
     const long y1 = std::clamp(

@@ -76,8 +76,7 @@ class PD_API Drawlist {
   void PathReserve(size_t num) { pPath.ExpandIf(num); }
   void PathStroke(const PD::Color& color, int t = 1,
                   LiDrawFlags flags = LiDrawFlags_None);
-  void PathFill(const PD::Color& color,
-                LiDrawFlags flags = LiDrawFlags_None);
+  void PathFill(const PD::Color& color, LiDrawFlags flags = LiDrawFlags_None);
   void PathFillGradient(const PD::Color& a, const PD::Color& b,
                         float rad = 0.f);
   void PathArcToN(const fvec2& c, float r, float amin, float amax, int s);
