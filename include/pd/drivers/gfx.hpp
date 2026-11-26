@@ -188,7 +188,7 @@ class GfxDriverBase : public GfxDriver {
       }
     }
     // State cleanup
-    CurrentClip = false;
+    CurrentHasClip = false;
     ClipRect();
   }
 
