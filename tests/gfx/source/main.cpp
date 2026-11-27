@@ -306,7 +306,7 @@ int main(int argc, char** argv) {
 #else
     pList.SetFontscale(0.6f);
 #endif
-    pList.SetFont(&debug_font);
+    /*pList.SetFont(&debug_font);
     int __i = 0;
     for (auto& it : PD::TT::GetTraceMap()) {
       pList.DrawText(
@@ -315,7 +315,7 @@ int main(int argc, char** argv) {
                       PD::Strings::FormatNanos(it.second.GetLastDiff()))
               .c_str(),
           "#ff00ff");
-    }
+    }*/
     pList.SetFont(&font);
     PD::TT::Beg("BuildUI7Menus");
     if (auto m =
@@ -349,6 +349,14 @@ int main(int argc, char** argv) {
       m->Label("GFX Triangles: {}", PD::Gfx::GetNumVertices() / 3);
       m->Label("GFX Indices: {}", PD::Gfx::GetNumIndices());
       m->PopFont();
+      ui7.EndMenu();
+    }
+    if (auto m = ui7.BeginMenu("Debug Info", UI7MenuFlags_AlwaysAutoSize)) {
+      int __i = 0;
+      for (auto& it : PD::TT::GetTraceMap()) {
+        m->Label("{}: {}", it.second.GetID(),
+                 PD::Strings::FormatNanos(it.second.GetLastDiff()));
+      }
       ui7.EndMenu();
     }
     ui7.MetricsMenu(&pMetricsWin);
